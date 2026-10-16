@@ -531,7 +531,7 @@ body:not(.in) .app{display:none}
 </script>
 <script>
 (()=>{
-const {sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {upGR,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
@@ -564,7 +564,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const lsDel=(...ks)=>{try{ks.forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k)})}catch(e){}};
 const normU=s=>String(s||'').trim().toLowerCase();
 const pubU=u=>({id:u.id,username:u.username,name:u.name,role:u.role,workerId:u.workerId||''});
-const initials=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+const initials=n=>upGR(String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join(''));
 async function api(path,body){
   let r;try{r=await fetch('api/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,cache:'no-store'})}
   catch(e){const x=new Error('Δεν υπάρχει σύνδεση με τον server.');x.status=0;throw x}
@@ -977,7 +977,7 @@ function remBlocks(d,who){
 }
 function dayText(d,R){
   const day=R.byDay[d]||{jobs:[],gen:[]};
-  let s='ΠΡΟΓΡΑΜΜΑ '+fmt(d).toUpperCase()+'\n';
+  let s='ΠΡΟΓΡΑΜΜΑ '+upGR(fmt(d))+'\n';
   S.projects.forEach(p=>{const pj=day.jobs.filter(j=>j.task.projectId===p.id);if(!pj.length)return;
     s+='\n'+p.name+' ('+p.location+')\n';
     pj.forEach(j=>{s+='▸ '+j.task.title+': '+[...(j.lead?[j.lead.name+' (υπεύθ.)']:[]),...j.helpers.map(w=>w.name)].join(', ')+'\n'})});
