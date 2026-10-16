@@ -26,6 +26,7 @@ const CFG = {
   body: process.env.VIBER_BODY || '',
   sender: process.env.VIBER_SENDER || '',
   weatherUrl: process.env.WEATHER_URL || '',             // κενό = Open-Meteo· άλλη διεύθυνση μόνο για δοκιμές
+  plan: (process.env.ERGO_PLAN || '').toLowerCase(),    // κενό = το πακέτο το διαλέγει ο διαχειριστής· αλλιώς mastoras | synergeio | ergotaxio
 };
 
 require(path.join(ROOT, 'src', 'core.js'));
@@ -333,10 +334,11 @@ http.createServer(async (req, res) => {
       }
     }
     if (url.pathname === '/api/state') {
-      if (req.method === 'GET') return send(res, 200, readJSON(F.state, {}));
+      if (req.method === 'GET') { const o = readJSON(F.state, {}); if (CFG.plan && o.settings) { o.settings.plan = CFG.plan; o.settings.planLock = true; } return send(res, 200, o); }
       if (req.method === 'PUT') {
         const o = JSON.parse(await readBody(req));
         if (!o || o.v !== 2 || !Array.isArray(o.workers) || !Array.isArray(o.tasks)) return send(res, 400, { error: 'Μη έγκυρα δεδομένα' });
+        if (o.settings) { delete o.settings.planLock; if (CFG.plan) o.settings.plan = CFG.plan; }   // το πακέτο το ορίζει η συνδρομή, όχι η εφαρμογή
         saveState(o); return send(res, 200, { ok: true });
       }
     }
