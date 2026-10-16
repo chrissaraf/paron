@@ -1,0 +1,46 @@
+<section class="sec tight" id="calc">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΠΟΣΑ ΚΕΡΔΙΖΕΤΕ</p>
+      <h2>Βάλτε τα δικά σας νούμερα.</h2>
+      <p class="lead">Ο υπολογισμός κρατάει χαμηλά τα κέρδη: θεωρεί ότι το πρόγραμμα θα σας παίρνει ακόμη ένα τέταρτο κάθε μέρα και ότι οι πληρωμές θα θέλουν τον μισό χρόνο.</p>
+    </div>
+    <div class="calc">
+      <form id="calcForm" onsubmit="return false">
+        <div class="field">
+          <label for="cWorkers">Άτομα στην ομάδα <output id="oWorkers" for="cWorkers">12</output></label>
+          <input id="cWorkers" type="range" min="2" max="40" step="1" value="12">
+        </div>
+        <div class="field">
+          <label for="cMins">Λεπτά την ημέρα για πρόγραμμα και τηλέφωνα <output id="oMins" for="cMins">45</output></label>
+          <input id="cMins" type="range" min="15" max="180" step="5" value="45">
+        </div>
+        <div class="field">
+          <label for="cPay">Ώρες την εβδομάδα για μεροκάματα και πληρωμές <output id="oPay" for="cPay">3</output></label>
+          <input id="cPay" type="range" min="0" max="15" step="1" value="3">
+        </div>
+        <div class="field">
+          <label for="cErr">Μεροκάματα τον μήνα σε λάθος έργο ή πληρωμένα δύο φορές <output id="oErr" for="cErr">1</output></label>
+          <input id="cErr" type="range" min="0" max="8" step="1" value="1">
+          <span class="hint">Υπολογίζεται με 50 € το μεροκάματο.</span>
+        </div>
+        <div class="field">
+          <label for="cRate">Κόστος μιας ώρας γραφείου <output id="oRate" for="cRate">10 €</output></label>
+          <input id="cRate" type="range" min="7" max="50" step="1" value="10">
+          <span class="hint">Αν τα κάνετε εσείς, βάλτε την αξία της δικής σας ώρας.</span>
+        </div>
+      </form>
+      <div class="res on-dark" aria-live="polite">
+        <div>
+          <p class="eyebrow">ΧΡΟΝΟΣ ΠΟΥ ΓΛΙΤΩΝΕΤΕ</p>
+          <p class="big"><span id="rHours">17,5</span><small>ώρες τον μήνα</small></p>
+        </div>
+        <div class="row">
+          <div><b id="rEuro">225 €</b><span>αξία τον μήνα, με τα λάθη που δεν γίνονται</span></div>
+          <div><b id="rRoi">11×</b><span>την τιμή του πακέτου <span id="rPlan">Συνεργείο</span></span></div>
+        </div>
+        <p class="note">Εκτίμηση με 22 εργάσιμες τον μήνα. Δεν μετράει τον χρόνο του επικεφαλής ούτε τις χαμένες ώρες όταν κάποιος πάει σε λάθος δουλειά.</p>
+      </div>
+    </div>
+  </div>
+</section>
