@@ -1,6 +1,6 @@
-// ERGODO service worker: κρατά την εφαρμογή για να ανοίγει και χωρίς σύνδεση.
+// PARON service worker: κρατά την εφαρμογή για να ανοίγει και χωρίς σύνδεση.
 // Τα δεδομένα (/api/) δεν αποθηκεύονται εδώ, πάνε πάντα στον server.
-const CACHE = 'ergodo-v7';
+const CACHE = 'ergodo-v8';
 const SHELL = ['/', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting()));

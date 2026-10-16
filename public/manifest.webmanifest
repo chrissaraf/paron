@@ -1,6 +1,6 @@
 {
-  "name": "ERGODO · Get the job Done",
-  "short_name": "ERGODO",
+  "name": "PARON · ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ",
+  "short_name": "PARON",
   "description": "Εργασίες, συνεργεία, μεροκάματα και πρόγραμμα στο Viber για όλα τα έργα.",
   "lang": "el",
   "start_url": "/?source=app",
@@ -8,16 +8,40 @@
   "id": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#161b1f",
-  "theme_color": "#161b1f",
+  "background_color": "#0E3B34",
+  "theme_color": "#0E3B34",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Σήμερα", "url": "/#today" },
-    { "name": "Εβδομάδα", "url": "/#week" },
-    { "name": "Πληρωμές", "url": "/#pay" }
+    {
+      "name": "Σήμερα",
+      "url": "/#today"
+    },
+    {
+      "name": "Εβδομάδα",
+      "url": "/#week"
+    },
+    {
+      "name": "Πληρωμές",
+      "url": "/#pay"
+    }
   ]
 }

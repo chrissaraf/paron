@@ -1,8 +1,8 @@
-/* ERGODO: κοινή λογική για browser και server */
+/* PARON: κοινή λογική για browser και server */
 (function(root){
 let S=null;
 // όνομα και σύνθημα της εφαρμογής σε ένα σημείο, για εύκολη μετονομασία
-const BRAND={name:'ERGODO',tag:'Get the job Done'};
+const BRAND={name:'PARON',tag:'ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ',mark:3,site:'paron.gr'};   // mark: ποιο γράμμα του ονόματος γίνεται ο κύκλος με το άτομο
 const setState=s=>{S=s;today()};   // και ανανεώνει τη σημερινή μέρα (ο server τρέχει για μέρες)
 const ROLES={arxi:'Αρχιεργάτης',texn:'Τεχνίτης',voith:'Βοηθός',ypal:'Υπάλληλος γραφείου',ext:'Εξωτερικός συνεργάτης'};
 const DAYS=['Κυρ','Δευ','Τρί','Τετ','Πέμ','Παρ','Σάβ'];
@@ -226,7 +226,7 @@ function migrate(o){
 }
 const byId=(arr,id)=>arr.find(x=>x.id===id);
 const P=id=>byId(S.projects,id), W=id=>byId(S.workers,id), T=id=>byId(S.tasks,id), SP=id=>byId(S.specialties,id);
-const PSEUDO={office:{name:'Γραφείο',color:'muted'},gen:{name:'Αποθήκη και συντήρηση',color:'hivis'}};
+const PSEUDO={office:{name:'Γραφείο',color:'muted'},gen:{name:'Αποθήκη και συντήρηση',color:'gen'}};
 const pname=id=>PSEUDO[id]?.name||P(id)?.name||'—';
 /* ---------- Αργίες ----------
    Επίσημες αργίες (σταθερές και του Πάσχα) και μέρες που η εταιρεία είναι κλειστή: δεν μπαίνει πρόγραμμα, δεν στέλνεται Viber.
@@ -505,7 +505,7 @@ const dutyLine=t=>'  • '+(t.time?t.time+' ':'')+t.title+(t.projectId&&P(t.proj
 // ό,τι μετρά για να μάθει ένας εργαζόμενος ότι άλλαξε η μέρα του: πού, τι και με ποιον ρόλο (όχι ποιοι άλλοι είναι στο συνεργείο)
 const dayKey=(R,w,d)=>dayBlock(R,w,d).split('\n').filter(l=>!/^\s+Μαζί:/.test(l)).join('\n');
 // υπογραφή σε κάθε μήνυμα προς το προσωπικό
-const SIGN0='\n✅ '+BRAND.name+' · '+BRAND.tag;
+const SIGN0='\n'+BRAND.name+' · '+BRAND.tag;
 const sign=()=>(S&&S.settings&&S.settings.company&&S.settings.company.name?'\n'+S.settings.company.name:'')+SIGN0;
 function personText(R,w,ws){
   let s='ΠΡΟΓΡΑΜΜΑ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n'+w.name+'\n';

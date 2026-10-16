@@ -1,4 +1,4 @@
-// ERGODO server: κοινή βάση δεδομένων για όλους και αυτόματη αποστολή προγράμματος στο Viber.
+// PARON server: κοινή βάση δεδομένων για όλους και αυτόματη αποστολή προγράμματος στο Viber.
 // Χωρίς εξαρτήσεις, χρειάζεται μόνο Node.js 18 ή νεότερο.  Εκκίνηση:  node server/server.js
 process.env.TZ = process.env.TZ || 'Europe/Athens';
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
@@ -175,8 +175,8 @@ setInterval(() => {
 const PUBLIC = { '/manifest.webmanifest': 'application/manifest+json', '/sw.js': 'text/javascript; charset=utf-8', '/icon-192.png': 'image/png', '/icon-512.png': 'image/png', '/icon-maskable-512.png': 'image/png', '/apple-touch-icon.png': 'image/png' };
 const PWA_HEAD = '<script>window.ERGO_SERVER=true</script>' +
   '<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png">' +
-  '<meta name="theme-color" content="#eef0ed" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#121518" media="(prefers-color-scheme: dark)"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">' +
-  '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="ERGODO">' +
+  '<meta name="theme-color" content="#E8ECE4" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#071F1B" media="(prefers-color-scheme: dark)"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">' +
+  '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="' + C.BRAND.name + '">' +
   '<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))</script>';
 
 // --- HTTP ---
@@ -256,7 +256,12 @@ http.createServer(async (req, res) => {
     const pub = PUBLIC[new URL(req.url, 'http://x').pathname];
     if (pub && req.method === 'GET') {
       res.writeHead(200, { 'content-type': pub, 'cache-control': req.url.startsWith('/sw.js') ? 'no-cache' : 'public, max-age=86400' });
-      return res.end(fs.readFileSync(path.join(ROOT, 'public', new URL(req.url, 'http://x').pathname.slice(1))));
+      const file = path.join(ROOT, 'public', new URL(req.url, 'http://x').pathname.slice(1));
+      if (pub.startsWith('application/manifest')) {   // το όνομα έρχεται από το BRAND του core
+        const m = JSON.parse(fs.readFileSync(file, 'utf8')); m.name = C.BRAND.name + ' · ' + C.BRAND.tag; m.short_name = C.BRAND.name;
+        return res.end(JSON.stringify(m));
+      }
+      return res.end(fs.readFileSync(file));
     }
     const url = new URL(req.url, 'http://x');
     // η σελίδα της εφαρμογής δεν έχει δεδομένα, γι' αυτό ανοίγει χωρίς σύνδεση και δείχνει την οθόνη σύνδεσης
@@ -365,7 +370,7 @@ http.createServer(async (req, res) => {
     send(res, 404, { error: 'Δεν βρέθηκε' });
   } catch (e) { console.error(e); send(res, 500, { error: 'Σφάλμα server' }); }
 }).listen(CFG.port, CFG.host, () => {
-  console.log(`ERGODO · Get the job Done: http://localhost:${CFG.port}  (Viber: ${CFG.provider === 'http' ? 'πάροχος ' + CFG.url : 'δοκιμαστική λειτουργία'})`);
+  console.log(`${C.BRAND.name} · ${C.BRAND.tag}: http://localhost:${CFG.port}  (Viber: ${CFG.provider === 'http' ? 'πάροχος ' + CFG.url : 'δοκιμαστική λειτουργία'})`);
   if (!USERS.length) console.log('ΠΡΟΣΟΧΗ: δεν υπάρχει ακόμη λογαριασμός. Άνοιξε τώρα την εφαρμογή και φτιάξε τον λογαριασμό του διαχειριστή.');
   else console.log('Χρήστες: ' + USERS.length + ' (διαχειριστές: ' + USERS.filter(u => u.role === 'admin').map(u => u.username).join(', ') + ')');
 });

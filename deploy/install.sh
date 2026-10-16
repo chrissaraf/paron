@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ERGODO: εγκατάσταση ή ενημέρωση σε VPS με Ubuntu 22.04 / 24.04 (ή Debian 12).
+# PARON: εγκατάσταση ή ενημέρωση σε VPS με Ubuntu 22.04 / 24.04 (ή Debian 12).
 #
-#   sudo bash deploy/install.sh app.ergodo.gr [email-για-ειδοποιήσεις-https]
+#   sudo bash deploy/install.sh app.paron.gr [email-για-ειδοποιήσεις-https]
 #
 # Τι κάνει: Node.js, Caddy (https αυτόματα με Let's Encrypt), χρήστη συστήματος ergodo,
 # υπηρεσία που ξεκινά μόνη της, τείχος προστασίας (μόνο 22, 80, 443), αυτόματες ενημερώσεις
@@ -18,7 +18,7 @@ say() { printf '\n\033[1;33m==> %s\033[0m\n' "$*"; }
 die() { printf '\n\033[1;31mΣφάλμα: %s\033[0m\n' "$*" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "τρέξε το με sudo."
-[[ "$DOMAIN" =~ ^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]] || die "δώσε τη διεύθυνση, π.χ.: sudo bash deploy/install.sh app.ergodo.gr"
+[[ "$DOMAIN" =~ ^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]] || die "δώσε τη διεύθυνση, π.χ.: sudo bash deploy/install.sh app.paron.gr"
 [ -f "$SRC/server/server.js" ] && [ -f "$SRC/src/core.js" ] || die "τρέξε το μέσα από τον φάκελο ergodo που αποσυμπίεσες."
 command -v apt-get >/dev/null || die "χρειάζεται Ubuntu ή Debian."
 export DEBIAN_FRONTEND=noninteractive
@@ -59,7 +59,7 @@ if [ ! -f "$ENVF" ]; then
   FIRST=1
   PASS="$(tr -dc 'a-km-np-zA-HJ-NP-Z2-9' </dev/urandom | head -c 14 || true)"
   cat > "$ENVF" <<ENV
-# Ρυθμίσεις ERGODO. Μετά από αλλαγή: systemctl restart ergodo
+# Ρυθμίσεις PARON. Μετά από αλλαγή: systemctl restart ergodo
 PORT=8080
 HOST=127.0.0.1
 TRUST_PROXY=1
@@ -82,7 +82,7 @@ say "Υπηρεσία ergodo"
 install -d "$R/etc/systemd/system" "$R/etc/caddy" "$R/etc/cron.d" "$R/etc/apt/apt.conf.d"
 cat > "$R/etc/systemd/system/ergodo.service" <<UNIT
 [Unit]
-Description=ERGODO · Get the job Done
+Description=PARON
 After=network-online.target
 Wants=network-online.target
 
@@ -129,7 +129,7 @@ printf 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgr
 
 say "Νυχτερινό αντίγραφο δεδομένων (κρατά 30 μέρες)"
 cat > "$R/etc/cron.d/ergodo-backup" <<CRON
-# ERGODO: αντίγραφο των δεδομένων κάθε βράδυ στις 02:30, κρατά 30 μέρες
+# PARON: αντίγραφο των δεδομένων κάθε βράδυ στις 02:30, κρατά 30 μέρες
 30 2 * * * root tar -czf $BK/ergodo-\$(date +\%F).tar.gz -C $DATA . && find $BK -name 'ergodo-*.tar.gz' -mtime +30 -delete
 CRON
 chmod 644 "$R/etc/cron.d/ergodo-backup"
@@ -141,7 +141,7 @@ rm -rf "$APP.old"
 IP="$(curl -fs4 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}' || true)"
 DNS="$(getent ahostsv4 "$DOMAIN" 2>/dev/null | awk 'NR==1{print $1}' || true)"
 
-printf '\n\033[1;32mΤο ERGODO τρέχει.\033[0m\n'
+printf '\n\033[1;32mΤο PARON τρέχει.\033[0m\n'
 echo "  Διεύθυνση: https://$DOMAIN"
 if [ "$DNS" != "$IP" ]; then
   echo "  ΠΡΟΣΟΧΗ: το $DOMAIN δείχνει σε '${DNS:-πουθενά}'. Βάλε εγγραφή A προς $IP στον πάροχο του domain."
