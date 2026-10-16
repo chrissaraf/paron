@@ -144,6 +144,9 @@ a.btn{text-decoration:none}
 .gaps .chips .chip{cursor:pointer;font:inherit}.gaps .gwhy{font-size:13px;font-weight:600;color:var(--warn)}.gaps .gsub{font-size:12.5px;color:var(--muted);margin:6px 0 4px}
 .gaps.ok{display:flex;align-items:center;gap:12px}.gaps .gi{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--ok-bg);color:var(--ok);flex:none}
 @media(max-width:900px){.gaps .ggrid{grid-template-columns:1fr}}
+.warnline.bad{color:var(--bad);background:var(--bad-bg)}.warnline.bad b{color:inherit}
+.lateln{display:flex;gap:10px;align-items:flex-start}.lateln .lnk{color:inherit;font-weight:700;text-decoration:underline}.lateln>svg{flex:none;margin-top:3px}
+table.gantt td.dl{box-shadow:inset -2px 0 0 var(--bad)}
 .tag.hard{background:var(--accent-soft);color:var(--accent-soft-ink)}
 .stars{display:inline-flex;gap:1px;vertical-align:-2px;margin-left:6px;color:var(--accent-strong)}.stars svg{width:12px;height:12px}.stars .e{color:var(--line-2)}
 .bonus{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:6px;font-size:13px;color:var(--ink-2);background:var(--accent-soft);border-radius:var(--r);padding:6px 10px}.bonus .grow{min-width:12em}
@@ -992,6 +995,10 @@ function gapsOf(R,d){
   const idle=S.workers.filter(w=>!isExt(w)&&!isOffice(w)&&!isOff(w,nd)&&!onJob.has(w.id)).map(w=>({w,gen:N.gen.some(x=>x.w.id===w.id&&!x.forced),fx:N.gen.some(x=>x.w.id===w.id&&x.forced)})).filter(x=>!x.fx);
   return {tasks,specs,idle,nd,nw};
 }
+// έργα που με το τωρινό πρόγραμμα δεν προλαβαίνουν την παράδοση
+function lateNote(R){if(!hasF('deadline'))return '';
+  const xs=S.projects.map(p=>({p,d:projStats(R,p).due})).filter(x=>x.d&&x.d.late);if(!xs.length)return '';
+  return `<div class="warnline bad lateln">${ico('info')}<div class="grow">${xs.map(x=>`<div><button class="lnk" data-tab="project" data-p="${x.p.id}">${h(x.p.name)}</button>: παράδοση ${fmt(x.p.due)}. ${h(x.d.txt)}</div>`).join('')}</div></div>`}
 function gapsPanel(R,d){
   const G=gapsOf(R,d),n=G.tasks.length+G.specs.length+G.idle.length;
   const when=G.nd===add(TODAY,1)?'αύριο':fmt(G.nd);
@@ -1051,6 +1058,7 @@ function vToday(R){
     <div class="kpi"><span class="lbl">Ανοιχτές εργασίες</span><span class="v">${openN}</span><span class="s">σε ${S.projects.length} έργα</span></div>
     <div class="kpi"><span class="lbl">Τέλος όλων των εργασιών</span><span class="v">${fmtS(R.end)}</span><span class="s">${R.unplanned.length?R.unplanned.length+' δεν προγραμματίζονται':'με το τρέχον προσωπικό'}</span></div>
   </div>
+  ${lateNote(R)}
   ${hasF('gaps')?gapsPanel(R,d):''}
   ${(aps=>aps.length?`<section class="panel"><div class="bar" style="margin-bottom:2px"><h2 class="grow" style="margin:0">Ραντεβού ${d===TODAY?'σήμερα':fmt(d)}</h2><button class="btn sm" data-act="newappt">${ico('plus')}Νέο ραντεβού</button></div>${aps.map(apCard).join('')}</section>`:'')(apptsOn(d))}
   ${(b=>`<section class="panel"><div class="bar" style="margin-bottom:0"><h2 class="grow" style="margin:0">Υπενθυμίσεις ${d===TODAY?'σήμερα':fmt(d)}</h2><button class="btn sm" data-act="newduty">${ico('plus')}Νέα υπενθύμιση</button></div>${b?`<div class="remgrid">${b}</div>`:'<p class="note" style="margin:8px 0 0">Καμία υπενθύμιση γι᾽ αυτή τη μέρα.</p>'}</section>`)(remBlocks(d))}
@@ -1320,7 +1328,7 @@ function taskTable(R,list,withProj){
   const resp=t=>{const w=W(t.responsibleId);if(!w)return '—';return isExt(w)?`${h(w.company||w.name)} <span class="tag mute">συνεργάτης</span>`:h(w.name)};
   return `<table class="tt"><thead><tr><th>Εργασία</th><th>Ειδικότητα</th><th>Υπεύθυνος</th><th class="n">Συνεργείο</th><th class="n">Μέρες</th><th>Διάστημα</th><th class="n">Κόστος</th><th>Κατάσταση</th><th></th></tr></thead><tbody>
   ${list.map(t=>{const p=P(t.projectId);const dep=T(t.after);const w=W(t.responsibleId);const job=isExt(w)&&w.pay==='job';return `<tr>
-    <td class="tt-main"><div style="display:flex;gap:6px;align-items:center">${withProj?`<i class="dot" style="background:${pc(p)}"></i>`:''}<b>${h(t.title)}</b></div><div class="note">${withProj?h(p?.name):''}${dep?(withProj?' · ':'')+'μετά από «'+h(dep.title)+'»':''}${t.priority==1?' · <span class="tag warn">Υψηλή</span>':''}${t.dry&&hasF('wx')?` <span class="tag rain" title="Δεν μπαίνει στο πρόγραμμα όταν βρέχει">${ico('umb')}Στεγνή μέρα</span>`:''}${hardTag(t)}</div></td>
+    <td class="tt-main"><div style="display:flex;gap:6px;align-items:center">${withProj?`<i class="dot" style="background:${pc(p)}"></i>`:''}<b>${h(t.title)}</b></div><div class="note">${withProj?h(p?.name):''}${dep?(withProj?' · ':'')+'μετά από «'+h(dep.title)+'»':''}${t.priority==1?((withProj||dep)?' · ':'')+'<span class="tag warn">Υψηλή</span>':''}${t.dry&&hasF('wx')?` <span class="tag rain" title="Δεν μπαίνει στο πρόγραμμα όταν βρέχει">${ico('umb')}Στεγνή μέρα</span>`:''}${hardTag(t)}</div></td>
     <td data-l="Ειδικότητα">${h(SP(t.specialtyId)?.name)}</td><td data-l="Υπεύθυνος">${resp(t)}</td>
     <td class="n mono" data-l="Συνεργείο">1+${+t.helpers||0}</td><td class="n mono" data-l="Μέρες">${t.days}</td>
     <td class="mono" data-l="Διάστημα">${t.status==='done'?'—':fmt(R.begin[t.id])+'<div class="note">έως '+fmt(R.finish[t.id])+'</div>'}</td>
@@ -1420,22 +1428,35 @@ function projStats(R,p){
   const A=R.asg.filter(a=>a.projectId===p.id);const cost=A.reduce((s,a)=>s+a.wage,0);
   const fin=ts.map(t=>R.finish[t.id]).filter(Boolean).sort().pop();
   const pct=p.budget?Math.min(100,cost/p.budget*100):0;const over=p.budget&&cost>p.budget;
-  return {ts,dn,A,cost,fin,pct,over};
+  const unpl=R.unplanned.filter(t=>t.projectId===p.id).length;
+  return {ts,dn,A,cost,fin,pct,over,unpl,due:dueOf(p,fin,unpl,ts)};
 }
+// προθεσμία παράδοσης: σύγκριση με το εκτιμώμενο τέλος (ημερολογιακές μέρες)
+const dayDiff=(a,b)=>Math.round((pd(b)-pd(a))/864e5);
+function dueOf(p,fin,unpl,ts){if(!hasF('deadline')||!p.due)return null;
+  if(ts.length&&ts.every(t=>t.status==='done'))return {cls:'ok',short:'Ολοκληρώθηκε',txt:'Όλες οι εργασίες ολοκληρώθηκαν.'};
+  if(unpl)return {cls:'bad',late:true,short:'Άγνωστο τέλος',txt:(unpl==1?'1 εργασία δεν χωρά':unpl+' εργασίες δεν χωρούν')+' στο πρόγραμμα, οπότε το τέλος είναι άγνωστο.'};
+  if(!fin)return {cls:'mute',short:'Χωρίς εργασίες',txt:'Δεν έχει ανοιχτές εργασίες στο πρόγραμμα.'};
+  const n=dayDiff(p.due,fin);
+  if(n>0)return {cls:'bad',late:true,n,short:n==1?'1 μέρα αργότερα':n+' μέρες αργότερα',txt:'Με το τωρινό πρόγραμμα τελειώνει '+fmt(fin)+', '+(n==1?'1 μέρα':n+' μέρες')+' μετά την παράδοση.'};
+  const m=-n;return {cls:m<=3?'warn':'ok',n,short:m===0?'Την ίδια μέρα':m==1?'1 μέρα περιθώριο':m+' μέρες περιθώριο',txt:'Με το τωρινό πρόγραμμα τελειώνει '+fmt(fin)+(m===0?', την ίδια μέρα με την παράδοση.':', '+(m==1?'1 μέρα':m+' μέρες')+' πριν την παράδοση.')}}
+const dueTag=d=>d?`<span class="tag ${d.cls}">${h(d.short)}</span>`:'';
 const mgrNames=p=>(p.managers||[]).map(id=>h(short(W(id)?.name))).filter(Boolean).join(', ');
 // χρονοδιάγραμμα για ένα ή περισσότερα έργα
 function gantt(R,projs){
   const open=S.tasks.filter(t=>t.status!=='done'&&projs.some(p=>p.id===t.projectId));
-  const b=open.map(t=>R.begin[t.id]).filter(Boolean).sort()[0]||R.start,e=open.map(t=>R.finish[t.id]).filter(Boolean).sort().pop()||R.end;
+  const b=open.map(t=>R.begin[t.id]).filter(Boolean).sort()[0]||R.start;let e=open.map(t=>R.finish[t.id]).filter(Boolean).sort().pop()||R.end;
+  // η παράδοση φαίνεται στο χρονοδιάγραμμα αν πέφτει λίγο μετά το τέλος
+  const dues=hasF('deadline')?projs.map(p=>p.due).filter(x=>x&&x>=b):[];dues.forEach(x=>{if(x>e&&x<=add(e,21))e=x});
   const span=[];let d=b;while(d<=e&&span.length<120){span.push(d);d=add(d,1)}
   const work={};R.asg.forEach(a=>{if(a.taskId)work[a.taskId+'|'+a.date]=1});
   const one=projs.length===1;
   const rows=projs.map(p=>{const ts=open.filter(t=>t.projectId===p.id);if(!ts.length)return '';
     return (one?'':`<tr><td class="lab" style="font-weight:700;padding-top:12px">${h(p.name)}</td>${span.map(()=>'<td></td>').join('')}</tr>`)+
-    ts.map(t=>`<tr style="--pc:${pc(p)}"><td class="lab">${h(t.title)}<span class="note"> · ${h(short(isExt(W(t.responsibleId))?W(t.responsibleId).company||W(t.responsibleId).name:W(t.responsibleId)?.name||''))}</span></td>${span.map(d=>`<td class="g${isWork(d)?'':' we'}">${work[t.id+'|'+d]?'<i></i>':''}</td>`).join('')}</tr>`).join('')}).join('');
+    ts.map(t=>`<tr style="--pc:${pc(p)}"><td class="lab">${h(t.title)}<span class="note"> · ${h(short(isExt(W(t.responsibleId))?W(t.responsibleId).company||W(t.responsibleId).name:W(t.responsibleId)?.name||''))}</span></td>${span.map(d=>`<td class="g${isWork(d)?'':' we'}${hasF('deadline')&&d===p.due?' dl':''}"${hasF('deadline')&&d===p.due?' title="Παράδοση '+fmt(d)+'"':''}>${work[t.id+'|'+d]?'<i></i>':''}</td>`).join('')}</tr>`).join('')}).join('');
   if(!rows)return '<p class="empty">Δεν υπάρχουν ανοιχτές εργασίες.</p>';
   return `<div class="scroll"><table class="gantt"><thead><tr><th></th>${span.map(d=>`<th class="d${pd(d).getDate()===1?' mon':''}">${pd(d).getDate()}<br>${DAYS[dow(d)][0]}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <p class="note">Από ${fmt(b)} έως ${fmt(e)}. Οι γκρι στήλες είναι μη εργάσιμες μέρες.</p>`;
+  <p class="note">Από ${fmt(b)} έως ${fmt(e)}. Οι γκρι στήλες είναι μη εργάσιμες μέρες.${dues.length?' Η κόκκινη γραμμή είναι η παράδοση του έργου.':''}</p>`;
 }
 function vProjects(R){
   const cards=S.projects.map(p=>{const st=projStats(R,p);
@@ -1448,6 +1469,7 @@ function vProjects(R){
     <div class="job"><div class="bar"><span class="grow">Εργασίες</span><b class="mono">${st.dn}/${st.ts.length} ολοκληρωμένες</b></div>
     <div class="bar"><span class="grow">Μεροκάματα σε πρόγραμμα</span><b class="mono">${nf(md(st.A))}</b></div>
     <div class="bar"><span class="grow">Εκτιμώμενο τέλος</span><b class="mono">${fmt(st.fin)}</b></div>
+    ${st.due?`<div class="bar"><span class="grow">Παράδοση</span><b class="mono">${fmt(p.due)}</b> ${dueTag(st.due)}</div>`:''}
     <div class="bar"><span class="grow">Διαχειριστές</span><b>${mgrNames(p)||'<span class="tag warn">κανένας</span>'}</b></div></div></article>`}).join('');
   return `<div class="bar"><h1 class="grow">Όλα τα έργα</h1><button class="btn pri" data-act="newproj">${ico('plus')}Νέο έργο</button></div>
   <div class="projgrid">${cards||'<p class="empty">Δεν υπάρχουν έργα ακόμη.</p>'}</div>`;
@@ -1459,11 +1481,12 @@ function vProject(R){
   const ext=new Set(st.ts.map(t=>W(t.responsibleId)).filter(isExt));
   return `<div class="bar"><h1 class="grow ptitle"><i class="dot lg" style="background:${pc(p)}"></i><span>${h(p.name)}</span></h1><button class="btn" data-act="editproj" data-id="${p.id}">Επεξεργασία έργου</button><button class="btn pri" data-act="newtask" data-p="${p.id}">${ico('plus')}Νέα εργασία</button></div>
   <p class="note" style="margin-top:-12px">${h(p.location)} · Διαχειριστές: ${mgrNames(p)||'κανένας'}${ext.size?' · Συνεργάτες: '+[...ext].map(w=>h(w.company||w.name)).join(', '):''}</p>
+  ${st.due&&st.due.late?`<p class="warnline bad">${ico('info')}<span><b>Παράδοση ${fmt(p.due)}.</b> ${h(st.due.txt)} Δες το «Τι λείπει» στο Σήμερα ή πρόσθεσε άτομα στις εργασίες.</span></p>`:''}
   <div class="kpis">
     <div class="kpi"><span class="lbl">Εργατικά σε πρόγραμμα</span><span class="v">${eur(st.cost)}</span><div class="meter"><i class="${st.over?'over':''}" style="width:${st.pct}%"></i></div><span class="s">${st.over?'Υπέρβαση '+eur(st.cost-p.budget):'από '+eur(p.budget)+' προϋπολογισμό'}</span></div>
     <div class="kpi"><span class="lbl">Εργασίες</span><span class="v">${st.dn}<span class="sub"> / ${st.ts.length}</span></span><span class="s">${open} ανοιχτές</span></div>
     <div class="kpi"><span class="lbl">Μεροκάματα</span><span class="v">${nf(md(st.A))}</span><span class="s">σε πρόγραμμα</span></div>
-    <div class="kpi"><span class="lbl">Εκτιμώμενο τέλος</span><span class="v">${fmtS(st.fin)}</span><span class="s">${st.fin?fmt(st.fin):'—'}</span></div>
+    <div class="kpi"><span class="lbl">Εκτιμώμενο τέλος</span><span class="v"${st.due&&st.due.late?' style="color:var(--bad)"':''}>${fmtS(st.fin)}</span><span class="s">${st.due?'Παράδοση '+fmtS(p.due)+' '+dueTag(st.due):st.fin?fmt(st.fin):'—'}</span></div>
   </div>
   <section class="panel scroll"><h2>Εργασίες</h2>${taskTable(R,list,false)}</section>
   <section class="panel"><h2>Χρονοδιάγραμμα</h2>${gantt(R,[p])}</section>`;
@@ -1478,6 +1501,7 @@ function projForm(p){
   <label class="full">Διεύθυνση<input id="g_loc" value="${h(p.location)}"></label>
   ${hasF('wx')?`<label class="full">Περιοχή για τον καιρό<span class="inl"><input id="g_place" value="${h(p.place||'')}" placeholder="π.χ. Καλαμαριά · κενό = η έδρα (${h(wxCfg().place||'')})" data-lat="${hasLL(p)?p.lat:''}" data-lon="${hasLL(p)?p.lon:''}" data-q="${h(p.place||'')}"><button type="button" class="btn" data-act="geo" data-t="g">Εύρεση</button></span><span class="note" id="g_geo">${hasLL(p)?h(geoNote(p)):''}</span></label>`:''}
   <label>Προϋπολογισμός εργατικών (€)<input id="g_budget" type="number" min="0" step="100" value="${+p.budget||0}"></label>
+  ${hasF('deadline')?`<label>Παράδοση έργου<input id="g_due" type="date" value="${h(p.due||'')}"><span class="note">Σε προειδοποιεί αν το πρόγραμμα τελειώνει αργότερα.</span></label>`:''}
   ${!hasF('pm')?'':`<label class="full">Διαχειριστές έργου<div class="wd">${S.workers.filter(isPM).map(w=>`<label><input type="checkbox" data-mgr="${w.id}"${(p.managers||[]).includes(w.id)?' checked':''}> ${h(w.name)}</label>`).join('')||'<span class="note">Δεν υπάρχει κανείς με ειδικότητα διαχείρισης έργων.</span>'}</div></label>`}
   <label>Χρώμα${sel('g_color',[['p1','Μπλε'],['p2','Πορτοκαλί'],['p3','Πράσινο'],['p4','Μωβ'],['p5','Κόκκινο'],['p6','Πετρόλ']],p.color)}</label></form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delproj" data-id="${p.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveproj">Αποθήκευση</button></div>`);
@@ -1822,7 +1846,7 @@ function vSettings(){
 // σελίδες που ανοίγουν από συγκεκριμένο πακέτο (τα πακέτα και οι λειτουργίες τους είναι στο core)
 const TAB_F={partners:'partners',appts:'appts'};
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -2024,7 +2048,7 @@ document.addEventListener('click',e=>{
     case 'remday':{const dir=+el.dataset.dir,cur=UI.remDay||nextWork(TODAY);UI.remDay=dir===0?nextWork(TODAY):nextWork(add(cur,dir),dir);render();break}
     case 'newproj':projForm(null);break;
     case 'editproj':projForm(P(id));break;
-    case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color')};
+    case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color'),...(document.getElementById('g_due')?{due:g('g_due')}:{})};
       // κλειδωμένα πεδία του πακέτου δεν υπάρχουν στη φόρμα: κρατούν ό,τι είχε το έργο
       if(hasF('pm'))v.managers=[...f.querySelectorAll('[data-mgr]:checked')].map(x=>x.dataset.mgr);else if(f.dataset.new==='1')v.managers=[];
       if(!v.name){toast('Γράψε όνομα έργου.');break}

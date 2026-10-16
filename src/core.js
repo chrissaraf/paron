@@ -70,6 +70,8 @@ const WX_DEMO={
 // demo βαθμοί εργαζομένων και δυσκολία εργασιών
 const RATE_DEMO={w:{w1:5,w2:4,w3:3,w4:2,w5:4,w6:4,w7:2,w8:5,w9:3,w10:4,w11:3,w12:5,w13:3,w14:4,w15:3,w16:3,w17:2},
   t:{t0:5,t1:4,t3:3,t4:3,t5:4,t6:3,t7:4,t9:4,t11:2,t12:2,t13:5,t14:2,t15:2,t18:5,t19:4}};
+// demo προθεσμίες παράδοσης, σε μέρες από σήμερα
+const DUE_DEMO={p1:17,p2:28,p3:12};
 function officeDemo(){
   return {
     specialties:[{id:'o1',name:'Γραμματεία',office:true},{id:'o2',name:'Διαχείριση έργων',office:true,pm:true},{id:'o3',name:'Ταμείο και λογιστήριο',office:true},{id:'o4',name:'Εξωτερικός υπάλληλος',office:true}],
@@ -158,8 +160,8 @@ function demo(){
   ];
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
-  workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id]});
-  return {v:2,extDemo:true,rateDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id]});
+  return {v:2,extDemo:true,rateDemo:true,dueDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 function migrate(o){
   if(o.v===1){
@@ -180,6 +182,11 @@ function migrate(o){
     o.rateDemo=true;const d=demo();
     o.workers.forEach(w=>{const x=d.workers.find(y=>y.id===w.id);if(x&&x.rating&&w.rating==null&&x.name===w.name)w.rating=x.rating});
     o.tasks.forEach(t=>{const x=d.tasks.find(y=>y.id===t.id);if(x&&x.diff&&t.diff==null&&x.title===t.title)t.diff=x.diff});
+  }
+  // μία φορά: demo προθεσμίες σε demo έργα
+  if(o&&Array.isArray(o.projects)&&!o.dueDemo){
+    o.dueDemo=true;const d=demo();
+    o.projects.forEach(p=>{const x=d.projects.find(y=>y.id===p.id);if(x&&x.due&&p.due==null&&x.name===p.name)p.due=x.due});
   }
   // μία φορά: προσθέτει τους demo συνεργάτες σε demo δεδομένα
   if(o&&Array.isArray(o.workers)&&!o.extDemo){
