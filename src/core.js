@@ -1,7 +1,7 @@
 /* ERGODO: κοινή λογική για browser και server */
 (function(root){
 let S=null;
-const setState=s=>{S=s};
+const setState=s=>{S=s;today()};   // και ανανεώνει τη σημερινή μέρα (ο server τρέχει για μέρες)
 const ROLES={arxi:'Αρχιεργάτης',texn:'Τεχνίτης',voith:'Βοηθός',ypal:'Υπάλληλος γραφείου',ext:'Εξωτερικός συνεργάτης'};
 const DAYS=['Κυρ','Δευ','Τρί','Τετ','Πέμ','Παρ','Σάβ'];
 const MONTHS=['Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
@@ -29,6 +29,19 @@ function apDemo(wd){
     {id:'a1',date:d1,time:'10:00',end:'11:00',title:'Αυτοψία για ανακαίνιση μπάνιου',client:'Κ. Ιωάννου',phone:'697 300 4512',place:'Αγ. Δημητρίου 45, Θεσσαλονίκη',projectId:'',people:['owner','w8'],notes:'Να δούμε τον πίνακα και τις παροχές πριν δοθεί προσφορά.',status:'open'},
     {id:'a2',date:d0,time:'13:30',end:'',title:'Παράδοση προσφοράς για το βάψιμο',client:'Κατάστημα Τσιμισκή',phone:'',place:'Τσιμισκή 112, Θεσσαλονίκη',projectId:'p3',people:['w21'],notes:'',status:'open'},
     {id:'a3',date:d3,time:'09:00',end:'10:30',title:'Επιμέτρηση κουφωμάτων',client:'Οικογένεια Νικολαΐδη',phone:'694 220 9981',place:'Αγ. Αντωνίου 7, Πανόραμα',projectId:'p2',people:['w19','w22'],notes:'',status:'open'},
+  ];
+}
+// υπενθυμίσεις στα demo: του εργολάβου (μία εκκρεμεί από χθες) και μία για το ταμείο
+function remDemo(wd){
+  const nw=s=>{let d=s;for(let i=0;i<14&&!wd.includes(dow(d));i++)d=add(d,1);return d};
+  const pw=s=>{let d=add(s,-1);for(let i=0;i<14&&!wd.includes(dow(d));i++)d=add(d,-1);return d};
+  const d0=nw(TODAY),d1=nw(add(d0,1));
+  return [
+    {id:'r1',title:'Υπογραφή σύμβασης με τον πελάτη',workerId:'owner',freq:'once',date:d0,time:'09:30',days:[],dom:'',projectId:'p3',notes:'Να πάρει μαζί την προσφορά και το χρονοδιάγραμμα.'},
+    {id:'r2',title:'Τηλέφωνο στον προμηθευτή για τα πλακάκια',workerId:'owner',freq:'once',date:pw(d0),time:'',days:[],dom:'',projectId:'p2',notes:''},
+    {id:'r3',title:'Σύσκεψη με τους διαχειριστές έργων',workerId:'owner',freq:'days',date:'',time:'08:00',days:[1],dom:'',projectId:'',notes:''},
+    {id:'r4',title:'Έλεγχος πληρωμών ΕΦΚΑ με το λογιστήριο',workerId:'owner',freq:'month',date:'',time:'',days:[],dom:25,projectId:'',notes:''},
+    {id:'r5',title:'Επιταγές για τον προμηθευτή σιδήρου',workerId:'w20',freq:'once',date:d1,time:'11:00',days:[],dom:'',projectId:'',notes:''},
   ];
 }
 // καιρός στα demo: περιοχή ανά έργο και εξωτερικές εργασίες που θέλουν στεγνή μέρα
@@ -128,7 +141,7 @@ function demo(){
   ];
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
-  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:o.duties,overrides:{},payments:{},dutyDone:{}};
+  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 function migrate(o){
   if(o.v===1){
@@ -171,6 +184,12 @@ function migrate(o){
       o.appts=apDemo((o.settings&&o.settings.workdays)||[1,2,3,4,5,6]);
     }
   }
+  // μία φορά: παραδείγματα υπενθυμίσεων στα demo δεδομένα
+  if(o&&Array.isArray(o.workers)&&!o.remDemo){
+    o.remDemo=true;o.duties=o.duties||[];o.dutyDone=o.dutyDone||{};
+    if(o.workers.some(w=>w.id==='w20')&&o.duties.some(x=>x.id==='d1')&&(o.projects||[]).some(p=>p.id==='p3')&&!o.duties.some(x=>/^r\d/.test(x.id)))
+      o.duties.push(...remDemo((o.settings&&o.settings.workdays)||[1,2,3,4,5,6]));
+  }
   // μία φορά: καιρός στα demo δεδομένα (περιοχές έργων, εξωτερικές εργασίες)
   if(o&&Array.isArray(o.tasks)&&!o.wxDemo){
     o.wxDemo=true;
@@ -207,8 +226,23 @@ const managersOf=(pid,d)=>S.workers.filter(w=>isPM(w)&&pmProjects(w.id,d).includ
 const ov=(d,wid)=>S.overrides[d+'|'+wid];
 const isOff=(w,d)=>(w.off||[]).includes(d)||ov(d,w.id)?.type==='off';
 const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return +(r!==''&&r!=null?r:w.wage)||0};
-const dutyOn=(x,d)=>x.freq==='daily'?isWork(d):x.freq==='days'?(x.days||[]).includes(dow(d)):x.date===d;
-const dutiesFor=(wid,d)=>S.duties.filter(x=>x.workerId===wid&&dutyOn(x,d));
+/* ---------- Υπενθυμίσεις ----------
+   Τι έχει να κάνει ο καθένας κάθε μέρα, και ο εργολάβος. Αποθηκεύονται στο S.duties (τα παλιά «καθήκοντα γραφείου»).
+   Συχνότητα: κάθε εργάσιμη (daily), συγκεκριμένες μέρες (days), κάθε μήνα (month, μέρα dom) ή μία φορά (once, date).
+   Το «έγινε» κρατιέται στο S.dutyDone ανά μέρα. Μια «μία φορά» που δεν έγινε φαίνεται ως εκκρεμότητα στη σημερινή μέρα. */
+// η μέρα του μήνα του d όπου πέφτει μια μηνιαία υπενθύμιση· αν δεν είναι εργάσιμη, πάει στην επόμενη εργάσιμη
+const monthDay=(x,d)=>{const [y,m]=d.split('-').map(Number);const last=new Date(y,m,0).getDate();return nextWork(y+'-'+pad(m)+'-'+pad(Math.min(Math.max(+x.dom||1,1),last)))};
+const dutyOn=(x,d)=>x.freq==='daily'?isWork(d):x.freq==='days'?(x.days||[]).includes(dow(d)):x.freq==='month'?(monthDay(x,d)===d||monthDay(x,add(d.slice(0,8)+'01',-1))===d):x.date===d;
+const doneKey=(x,d)=>(x.freq==='once'?x.date:d)+'|'+x.id;
+const isDone=(x,d)=>!!(S.dutyDone||{})[doneKey(x,d)];
+const dutySort=(a,b)=>(a.time||'99').localeCompare(b.time||'99');
+function dutiesFor(wid,d){
+  const on=S.duties.filter(x=>x.workerId===wid&&dutyOn(x,d));
+  // εκκρεμότητες: «μία φορά» υπενθυμίσεις που πέρασαν χωρίς να γίνουν, μόνο στη σημερινή (ή την επόμενη εργάσιμη) μέρα.
+  // Όσες τσεκαρίστηκαν σήμερα μένουν ορατές ως «έγινε» μέχρι να τελειώσει η μέρα.
+  const late=d===nextWork(TODAY)?S.duties.filter(x=>x.workerId===wid&&x.freq==='once'&&x.date<d&&x.date>=add(d,-60)&&(!isDone(x,x.date)||S.dutyDone[doneKey(x,x.date)]===d)).map(x=>({...x,late:x.date})):[];
+  return [...late,...on.sort(dutySort)];
+}
 
 /* ---------- Καιρός ----------
    Πρόγνωση από το Open-Meteo (δωρεάν, χωρίς κλειδί): 7 μέρες πίσω και 16 μπροστά, ανά περιοχή έργου.
@@ -276,6 +310,9 @@ function wxText(f){
 const OWNER='owner';
 const ownerName=()=>(S&&S.settings&&S.settings.ownerName)||'Εργολάβος';
 const apPerson=id=>id===OWNER?{id:OWNER,name:ownerName()}:W(id);
+// ο εργολάβος ως παραλήπτης: παίρνει Viber με τα ραντεβού και τις υπενθυμίσεις του, αν έχει δοθεί κινητό στις Ρυθμίσεις
+const ownerW=()=>{const ph=(S&&S.settings&&S.settings.ownerPhone)||'';return {id:OWNER,name:ownerName(),phone:ph,role:'owner',specialtyId:'',off:[],viber:!!ph}};
+const anyone=id=>id===OWNER?ownerW():W(id);
 const apptsOn=(d,wid)=>(S.appts||[]).filter(a=>a.date===d&&(!wid||(a.people||[]).includes(wid))).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 const apTime=a=>a.time?a.time+(a.end?'–'+a.end:''):'Χωρίς ώρα';
 const apMin=t=>{const m=/^(\d\d):(\d\d)$/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
@@ -381,7 +418,7 @@ function schedule(){
 // τι κάνει ένας εργαζόμενος μια μέρα
 const taskIdsOf=o=>!o?[]:o.type==='tasks'?(o.taskIds||[]):o.type==='task'?[o.taskId]:[];
 function whatDoes(R,wid,d){
-  const w=W(wid);const res={off:isOff(w,d),job:null,lead:false,jobs:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d),appts:apptsOn(d,wid)};
+  const w=anyone(wid)||{id:wid};const res={off:isOff(w,d),job:null,lead:false,jobs:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d),appts:apptsOn(d,wid)};
   if(res.off)return res;
   const day=R.byDay[d];
   if(day){
@@ -403,21 +440,23 @@ function dayBlock(R,w,d){
     const others=[job.lead,...job.helpers].filter(o=>o&&o.id!==w.id).map(o=>short(o.name));if(others.length)s+='  Μαζί: '+others.join(', ')+'\n'})}
   else if(x.gen)s+='Αποθήκη και συντήρηση εξοπλισμού\n';
   else if(x.pm.length)s+='Διαχείριση έργων:\n'+x.pm.map(pid=>'  '+P(pid).name+' ('+P(pid).location+')\n').join('');
+  else if(w.id===OWNER);
   else if(isOffice(w))s+=(SP(w.specialtyId)?.name||'Γραφείο')+'\n';
   else if(isExt(w))s+='Καμία εργασία\n';
   else s+='Χωρίς ανάθεση (θα ενημερωθείς)\n';
   x.appts.forEach(a=>{s+='Ραντεβού '+apTime(a)+': '+a.title+(a.client?', '+a.client:'')+(a.place?' ('+a.place+')':'')+'\n';
     const o=(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>short(p.name));if(o.length)s+='  Μαζί: '+o.join(', ')+'\n'});
-  x.duties.forEach(t=>s+='  • '+t.title+(t.projectId?' ('+P(t.projectId)?.name+')':'')+'\n');
+  if(x.duties.length)s+='Υπενθυμίσεις:\n'+x.duties.map(dutyLine).join('');
   return s;
 }
+const dutyLine=t=>'  • '+(t.time?t.time+' ':'')+t.title+(t.projectId&&P(t.projectId)?' ('+P(t.projectId).name+')':'')+(t.late?', εκκρεμεί από '+fmt(t.late):'')+'\n';
 // ό,τι μετρά για να μάθει ένας εργαζόμενος ότι άλλαξε η μέρα του: πού, τι και με ποιον ρόλο (όχι ποιοι άλλοι είναι στο συνεργείο)
 const dayKey=(R,w,d)=>dayBlock(R,w,d).split('\n').filter(l=>!/^\s+Μαζί:/.test(l)).join('\n');
 // υπογραφή σε κάθε μήνυμα προς το προσωπικό
 const SIGN='\n✅ ERGODO · Get the job Done';
 function personText(R,w,ws){
   let s='ΠΡΟΓΡΑΜΜΑ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n'+w.name+'\n';
-  weekDays(ws).forEach(d=>{s+='\n'+fmt(d)+': '+dayBlock(R,w,d)});
+  weekDays(ws).forEach(d=>{s+='\n'+fmt(d)+': '+(dayBlock(R,w,d)||'—\n')});
   return s+SIGN;
 }
 // το καθημερινό μήνυμα που φεύγει αυτόματα
@@ -425,7 +464,8 @@ function personText(R,w,ws){
 function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.pm.length?x.pm[0]:'',d)}
 function personDayText(R,w,d,upd){
   const f=wxFor(R,w.id,d);
-  return 'Γεια σου '+String(w.name).split(/\s+/)[0]+'! '+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+SIGN;
+  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+String(w.name).split(/\s+/)[0]+'! ';
+  return hi+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+SIGN;
 }
 // η εβδομάδα ενός εργαζόμενου σε δεδομένα, για τη σελίδα «Το πρόγραμμά μου».
 // Περιέχει μόνο ό,τι χρειάζεται ο ίδιος: πού, τι και με ποιους. Όχι μεροκάματα ή κόστη.
@@ -442,13 +482,13 @@ function personWeek(R,w,ws){
       else if(isOffice(w))o.items.push({kind:'office',title:SP(w.specialtyId)?.name||'Γραφείο'});
       else o.items.push({kind:'none',title:isExt(w)?'Καμία εργασία':'Χωρίς ανάθεση ακόμη. Θα ενημερωθείς.'});
     }
-    o.duties=x.duties.map(t=>({title:t.title,project:t.projectId?P(t.projectId)?.name||'':''}));
+    o.duties=x.duties.map(t=>({title:t.title,project:t.projectId?P(t.projectId)?.name||'':'',time:t.time||'',late:t.late||'',notes:t.notes||''}));
     o.appts=x.appts.map(a=>({time:apTime(a),title:a.title,client:a.client||'',phone:a.phone||'',place:a.place||'',done:a.status==='done',
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
 root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
-  OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,
+  OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
 })(typeof window!=='undefined'?window:globalThis);

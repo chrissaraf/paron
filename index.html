@@ -177,6 +177,21 @@ a.btn{text-decoration:none}
 .ap.done .t b{text-decoration:line-through}
 .ap.past:not(.done) .tm{color:var(--warn)}
 .form .fs{grid-column:1/-1;display:grid;gap:8px;min-width:0}
+[hidden]{display:none!important}
+.remgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:12px}
+.remp{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;background:var(--surface);min-width:0}
+.remp>.t{display:flex;gap:10px;align-items:baseline;margin-bottom:10px}
+.remp>.t .who{flex:1;min-width:0}
+.remp>.t .cnt{flex:none;font-variant-numeric:tabular-nums}
+.remrow{display:flex;gap:6px;align-items:flex-start}
+.remrow>.ck{flex:1;min-width:0}
+.remrow>.iconbtn{width:32px;height:32px;border-color:transparent;background:none;color:var(--muted);margin-top:-6px}
+.remrow>.iconbtn svg{width:16px;height:16px}
+.ck.rem .rt{font-variant-numeric:tabular-nums;margin-right:2px}
+.ck.rem.done .rtt{text-decoration:line-through;color:var(--muted)}
+.ck.rem .rn{display:block;margin-top:2px}
+.mrem{margin-top:10px}
+.mrem>.lbl{font-size:12.5px;color:var(--muted);font-weight:600}
 .form .fs .wd label{white-space:normal;max-width:100%}
 .form .fs>.fl{font-size:13px;color:var(--ink-2);font-weight:560}
 .wd .grp-l{flex-basis:100%;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:4px}
@@ -484,7 +499,7 @@ body:not(.in) .app{display:none}
 /* ERGODO: κοινή λογική για browser και server */
 (function(root){
 let S=null;
-const setState=s=>{S=s};
+const setState=s=>{S=s;today()};   // και ανανεώνει τη σημερινή μέρα (ο server τρέχει για μέρες)
 const ROLES={arxi:'Αρχιεργάτης',texn:'Τεχνίτης',voith:'Βοηθός',ypal:'Υπάλληλος γραφείου',ext:'Εξωτερικός συνεργάτης'};
 const DAYS=['Κυρ','Δευ','Τρί','Τετ','Πέμ','Παρ','Σάβ'];
 const MONTHS=['Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
@@ -512,6 +527,19 @@ function apDemo(wd){
     {id:'a1',date:d1,time:'10:00',end:'11:00',title:'Αυτοψία για ανακαίνιση μπάνιου',client:'Κ. Ιωάννου',phone:'697 300 4512',place:'Αγ. Δημητρίου 45, Θεσσαλονίκη',projectId:'',people:['owner','w8'],notes:'Να δούμε τον πίνακα και τις παροχές πριν δοθεί προσφορά.',status:'open'},
     {id:'a2',date:d0,time:'13:30',end:'',title:'Παράδοση προσφοράς για το βάψιμο',client:'Κατάστημα Τσιμισκή',phone:'',place:'Τσιμισκή 112, Θεσσαλονίκη',projectId:'p3',people:['w21'],notes:'',status:'open'},
     {id:'a3',date:d3,time:'09:00',end:'10:30',title:'Επιμέτρηση κουφωμάτων',client:'Οικογένεια Νικολαΐδη',phone:'694 220 9981',place:'Αγ. Αντωνίου 7, Πανόραμα',projectId:'p2',people:['w19','w22'],notes:'',status:'open'},
+  ];
+}
+// υπενθυμίσεις στα demo: του εργολάβου (μία εκκρεμεί από χθες) και μία για το ταμείο
+function remDemo(wd){
+  const nw=s=>{let d=s;for(let i=0;i<14&&!wd.includes(dow(d));i++)d=add(d,1);return d};
+  const pw=s=>{let d=add(s,-1);for(let i=0;i<14&&!wd.includes(dow(d));i++)d=add(d,-1);return d};
+  const d0=nw(TODAY),d1=nw(add(d0,1));
+  return [
+    {id:'r1',title:'Υπογραφή σύμβασης με τον πελάτη',workerId:'owner',freq:'once',date:d0,time:'09:30',days:[],dom:'',projectId:'p3',notes:'Να πάρει μαζί την προσφορά και το χρονοδιάγραμμα.'},
+    {id:'r2',title:'Τηλέφωνο στον προμηθευτή για τα πλακάκια',workerId:'owner',freq:'once',date:pw(d0),time:'',days:[],dom:'',projectId:'p2',notes:''},
+    {id:'r3',title:'Σύσκεψη με τους διαχειριστές έργων',workerId:'owner',freq:'days',date:'',time:'08:00',days:[1],dom:'',projectId:'',notes:''},
+    {id:'r4',title:'Έλεγχος πληρωμών ΕΦΚΑ με το λογιστήριο',workerId:'owner',freq:'month',date:'',time:'',days:[],dom:25,projectId:'',notes:''},
+    {id:'r5',title:'Επιταγές για τον προμηθευτή σιδήρου',workerId:'w20',freq:'once',date:d1,time:'11:00',days:[],dom:'',projectId:'',notes:''},
   ];
 }
 // καιρός στα demo: περιοχή ανά έργο και εξωτερικές εργασίες που θέλουν στεγνή μέρα
@@ -611,7 +639,7 @@ function demo(){
   ];
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
-  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:o.duties,overrides:{},payments:{},dutyDone:{}};
+  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 function migrate(o){
   if(o.v===1){
@@ -654,6 +682,12 @@ function migrate(o){
       o.appts=apDemo((o.settings&&o.settings.workdays)||[1,2,3,4,5,6]);
     }
   }
+  // μία φορά: παραδείγματα υπενθυμίσεων στα demo δεδομένα
+  if(o&&Array.isArray(o.workers)&&!o.remDemo){
+    o.remDemo=true;o.duties=o.duties||[];o.dutyDone=o.dutyDone||{};
+    if(o.workers.some(w=>w.id==='w20')&&o.duties.some(x=>x.id==='d1')&&(o.projects||[]).some(p=>p.id==='p3')&&!o.duties.some(x=>/^r\d/.test(x.id)))
+      o.duties.push(...remDemo((o.settings&&o.settings.workdays)||[1,2,3,4,5,6]));
+  }
   // μία φορά: καιρός στα demo δεδομένα (περιοχές έργων, εξωτερικές εργασίες)
   if(o&&Array.isArray(o.tasks)&&!o.wxDemo){
     o.wxDemo=true;
@@ -690,8 +724,23 @@ const managersOf=(pid,d)=>S.workers.filter(w=>isPM(w)&&pmProjects(w.id,d).includ
 const ov=(d,wid)=>S.overrides[d+'|'+wid];
 const isOff=(w,d)=>(w.off||[]).includes(d)||ov(d,w.id)?.type==='off';
 const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return +(r!==''&&r!=null?r:w.wage)||0};
-const dutyOn=(x,d)=>x.freq==='daily'?isWork(d):x.freq==='days'?(x.days||[]).includes(dow(d)):x.date===d;
-const dutiesFor=(wid,d)=>S.duties.filter(x=>x.workerId===wid&&dutyOn(x,d));
+/* ---------- Υπενθυμίσεις ----------
+   Τι έχει να κάνει ο καθένας κάθε μέρα, και ο εργολάβος. Αποθηκεύονται στο S.duties (τα παλιά «καθήκοντα γραφείου»).
+   Συχνότητα: κάθε εργάσιμη (daily), συγκεκριμένες μέρες (days), κάθε μήνα (month, μέρα dom) ή μία φορά (once, date).
+   Το «έγινε» κρατιέται στο S.dutyDone ανά μέρα. Μια «μία φορά» που δεν έγινε φαίνεται ως εκκρεμότητα στη σημερινή μέρα. */
+// η μέρα του μήνα του d όπου πέφτει μια μηνιαία υπενθύμιση· αν δεν είναι εργάσιμη, πάει στην επόμενη εργάσιμη
+const monthDay=(x,d)=>{const [y,m]=d.split('-').map(Number);const last=new Date(y,m,0).getDate();return nextWork(y+'-'+pad(m)+'-'+pad(Math.min(Math.max(+x.dom||1,1),last)))};
+const dutyOn=(x,d)=>x.freq==='daily'?isWork(d):x.freq==='days'?(x.days||[]).includes(dow(d)):x.freq==='month'?(monthDay(x,d)===d||monthDay(x,add(d.slice(0,8)+'01',-1))===d):x.date===d;
+const doneKey=(x,d)=>(x.freq==='once'?x.date:d)+'|'+x.id;
+const isDone=(x,d)=>!!(S.dutyDone||{})[doneKey(x,d)];
+const dutySort=(a,b)=>(a.time||'99').localeCompare(b.time||'99');
+function dutiesFor(wid,d){
+  const on=S.duties.filter(x=>x.workerId===wid&&dutyOn(x,d));
+  // εκκρεμότητες: «μία φορά» υπενθυμίσεις που πέρασαν χωρίς να γίνουν, μόνο στη σημερινή (ή την επόμενη εργάσιμη) μέρα.
+  // Όσες τσεκαρίστηκαν σήμερα μένουν ορατές ως «έγινε» μέχρι να τελειώσει η μέρα.
+  const late=d===nextWork(TODAY)?S.duties.filter(x=>x.workerId===wid&&x.freq==='once'&&x.date<d&&x.date>=add(d,-60)&&(!isDone(x,x.date)||S.dutyDone[doneKey(x,x.date)]===d)).map(x=>({...x,late:x.date})):[];
+  return [...late,...on.sort(dutySort)];
+}
 
 /* ---------- Καιρός ----------
    Πρόγνωση από το Open-Meteo (δωρεάν, χωρίς κλειδί): 7 μέρες πίσω και 16 μπροστά, ανά περιοχή έργου.
@@ -759,6 +808,9 @@ function wxText(f){
 const OWNER='owner';
 const ownerName=()=>(S&&S.settings&&S.settings.ownerName)||'Εργολάβος';
 const apPerson=id=>id===OWNER?{id:OWNER,name:ownerName()}:W(id);
+// ο εργολάβος ως παραλήπτης: παίρνει Viber με τα ραντεβού και τις υπενθυμίσεις του, αν έχει δοθεί κινητό στις Ρυθμίσεις
+const ownerW=()=>{const ph=(S&&S.settings&&S.settings.ownerPhone)||'';return {id:OWNER,name:ownerName(),phone:ph,role:'owner',specialtyId:'',off:[],viber:!!ph}};
+const anyone=id=>id===OWNER?ownerW():W(id);
 const apptsOn=(d,wid)=>(S.appts||[]).filter(a=>a.date===d&&(!wid||(a.people||[]).includes(wid))).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 const apTime=a=>a.time?a.time+(a.end?'–'+a.end:''):'Χωρίς ώρα';
 const apMin=t=>{const m=/^(\d\d):(\d\d)$/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
@@ -864,7 +916,7 @@ function schedule(){
 // τι κάνει ένας εργαζόμενος μια μέρα
 const taskIdsOf=o=>!o?[]:o.type==='tasks'?(o.taskIds||[]):o.type==='task'?[o.taskId]:[];
 function whatDoes(R,wid,d){
-  const w=W(wid);const res={off:isOff(w,d),job:null,lead:false,jobs:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d),appts:apptsOn(d,wid)};
+  const w=anyone(wid)||{id:wid};const res={off:isOff(w,d),job:null,lead:false,jobs:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d),appts:apptsOn(d,wid)};
   if(res.off)return res;
   const day=R.byDay[d];
   if(day){
@@ -886,21 +938,23 @@ function dayBlock(R,w,d){
     const others=[job.lead,...job.helpers].filter(o=>o&&o.id!==w.id).map(o=>short(o.name));if(others.length)s+='  Μαζί: '+others.join(', ')+'\n'})}
   else if(x.gen)s+='Αποθήκη και συντήρηση εξοπλισμού\n';
   else if(x.pm.length)s+='Διαχείριση έργων:\n'+x.pm.map(pid=>'  '+P(pid).name+' ('+P(pid).location+')\n').join('');
+  else if(w.id===OWNER);
   else if(isOffice(w))s+=(SP(w.specialtyId)?.name||'Γραφείο')+'\n';
   else if(isExt(w))s+='Καμία εργασία\n';
   else s+='Χωρίς ανάθεση (θα ενημερωθείς)\n';
   x.appts.forEach(a=>{s+='Ραντεβού '+apTime(a)+': '+a.title+(a.client?', '+a.client:'')+(a.place?' ('+a.place+')':'')+'\n';
     const o=(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>short(p.name));if(o.length)s+='  Μαζί: '+o.join(', ')+'\n'});
-  x.duties.forEach(t=>s+='  • '+t.title+(t.projectId?' ('+P(t.projectId)?.name+')':'')+'\n');
+  if(x.duties.length)s+='Υπενθυμίσεις:\n'+x.duties.map(dutyLine).join('');
   return s;
 }
+const dutyLine=t=>'  • '+(t.time?t.time+' ':'')+t.title+(t.projectId&&P(t.projectId)?' ('+P(t.projectId).name+')':'')+(t.late?', εκκρεμεί από '+fmt(t.late):'')+'\n';
 // ό,τι μετρά για να μάθει ένας εργαζόμενος ότι άλλαξε η μέρα του: πού, τι και με ποιον ρόλο (όχι ποιοι άλλοι είναι στο συνεργείο)
 const dayKey=(R,w,d)=>dayBlock(R,w,d).split('\n').filter(l=>!/^\s+Μαζί:/.test(l)).join('\n');
 // υπογραφή σε κάθε μήνυμα προς το προσωπικό
 const SIGN='\n✅ ERGODO · Get the job Done';
 function personText(R,w,ws){
   let s='ΠΡΟΓΡΑΜΜΑ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n'+w.name+'\n';
-  weekDays(ws).forEach(d=>{s+='\n'+fmt(d)+': '+dayBlock(R,w,d)});
+  weekDays(ws).forEach(d=>{s+='\n'+fmt(d)+': '+(dayBlock(R,w,d)||'—\n')});
   return s+SIGN;
 }
 // το καθημερινό μήνυμα που φεύγει αυτόματα
@@ -908,7 +962,8 @@ function personText(R,w,ws){
 function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.pm.length?x.pm[0]:'',d)}
 function personDayText(R,w,d,upd){
   const f=wxFor(R,w.id,d);
-  return 'Γεια σου '+String(w.name).split(/\s+/)[0]+'! '+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+SIGN;
+  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+String(w.name).split(/\s+/)[0]+'! ';
+  return hi+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+SIGN;
 }
 // η εβδομάδα ενός εργαζόμενου σε δεδομένα, για τη σελίδα «Το πρόγραμμά μου».
 // Περιέχει μόνο ό,τι χρειάζεται ο ίδιος: πού, τι και με ποιους. Όχι μεροκάματα ή κόστη.
@@ -925,21 +980,21 @@ function personWeek(R,w,ws){
       else if(isOffice(w))o.items.push({kind:'office',title:SP(w.specialtyId)?.name||'Γραφείο'});
       else o.items.push({kind:'none',title:isExt(w)?'Καμία εργασία':'Χωρίς ανάθεση ακόμη. Θα ενημερωθείς.'});
     }
-    o.duties=x.duties.map(t=>({title:t.title,project:t.projectId?P(t.projectId)?.name||'':''}));
+    o.duties=x.duties.map(t=>({title:t.title,project:t.projectId?P(t.projectId)?.name||'':'',time:t.time||'',late:t.late||'',notes:t.notes||''}));
     o.appts=x.appts.map(a=>({time:apTime(a),title:a.title,client:a.client||'',phone:a.phone||'',place:a.place||'',done:a.status==='done',
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
 root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
-  OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,
+  OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
 <script>
 (()=>{
-const {OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Καθήκοντα γραφείου'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
@@ -1198,7 +1253,7 @@ const crewChip=(j,w)=>{const cls=['chip'];if(j.lead&&j.lead.id===w.id)cls.push('
 const wxChip=(f,wet)=>f?`<span class="wx${wet?' wet':''}" title="${h(wxText(f))}">${ico(wxKind(f.code).k)}${f.tmax!=null?`<b>${Math.round(f.tmax)}°</b>`:''}${f.p!=null&&f.p>=20?`<span>${Math.round(f.p)}%</span>`:''}</span>`:'';
 // ημερομηνία που ξαναμπαίνει στο πρόγραμμα μια εργασία μετά από μια μέρα
 const nextOn=(R,tid,d)=>Object.keys(R.byDay).sort().find(x=>x>d&&R.byDay[x].jobs.some(j=>j.task.id===tid));
-const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?(x.days||[]).map(d=>DAYS[d]).join(', '):'Μία φορά, '+fmt(x.date);
+const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?'Κάθε '+(x.days||[]).map(d=>DAYS[d]).join(', '):x.freq==='month'?'Κάθε μήνα στις '+(+x.dom||1):'Μία φορά, '+fmt(x.date);
 
 /* ---------- Καρτέλες ---------- */
 const ICONS={cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
@@ -1236,15 +1291,16 @@ const ICONS={cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="
   snow:'<path d="M7.5 14.5h9.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 7a3.8 3.8 0 0 0 1.3 7.5z"/><path d="M8.5 18v.1M12 20v.1M15.5 18v.1M10 21.5v.1M14 21.5v.1"/>',
   fog:'<path d="M7.5 12.5h9.5a3.5 3.5 0 0 0 .5-6.95A5.5 5.5 0 0 0 6.6 6a3.3 3.3 0 0 0 .9 6.5z"/><path d="M4 16h16M6.5 19.5h11"/>',
   umb:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6.5a2 2 0 0 1-4 0M12 3v-.5"/>',
+  bell:'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/>',
   meet:'<path d="M20.5 11V6.5a2 2 0 0 0-2-2h-13a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2H11"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.6v2l1.3.9"/>'};
 const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
-const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'clip',pay:'cash',costs:'chart'};
+const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
 const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
-  {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού']]},
+  {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['duties','Υπενθυμίσεις']]},
   {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα']]},
-  {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Καθήκοντα γραφείου']]},
+  {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες']]},
   {k:'fin',l:'Οικονομικά',i:'eur',items:[['pay','Πληρωμές'],['costs','Κόστος']]}];
 const isCur=(k,p)=>UI.tab===k&&(!p||UI.proj===p.id);
 function renderNav(){
@@ -1304,7 +1360,7 @@ function vMine(){
   const apItem=a=>`<div class="mi"><div class="t">${ico('meet')}<b>Ραντεβού ${h(a.time)}</b></div><div>${h(a.title)}${a.client?` <span class="note">· ${h(a.client)}</span>`:''}</div>
       ${a.with&&a.with.length?`<div class="chips">${a.with.map(n=>`<span class="chip">${h(n)}</span>`).join('')}</div>`:''}
       <div class="mbtns">${a.place?`<a class="btn sm" href="${mapsUrl(a.place)}" target="_blank" rel="noopener">Οδηγίες στον χάρτη</a>`:''}${a.phone?`<a class="btn sm" href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">Κλήση πελάτη</a>`:''}</div></div>`;
-  const body=d=>d.off?'<span class="tag warn">Άδεια</span>':d.items.map(item).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<ul class="mduties">${d.duties.map(t=>`<li>${h(t.title)}${t.project?` <span class="note">(${h(t.project)})</span>`:''}</li>`).join('')}</ul>`:'');
+  const body=d=>d.off?'<span class="tag warn">Άδεια</span>':d.items.map(item).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<div class="mrem"><span class="lbl">Υπενθυμίσεις</span><ul class="mduties">${d.duties.map(t=>`<li>${t.time?`<b>${h(t.time)}</b> `:''}${h(t.title)}${t.project?` <span class="note">(${h(t.project)})</span>`:''}${t.late?` <span class="tag warn">από ${h(fmt(t.late))}</span>`:''}${t.notes?`<div class="note">${h(t.notes)}</div>`:''}</li>`).join('')}</ul></div>`:'');
   const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span>${h(d.wx.text)}</span></div>`:'';
   const next=o.days.find(d=>d.date>=TODAY);
   return head+`<p class="note" style="margin:-8px 0 0">${h(o.name)}${o.specialty?' · '+h(o.specialty):''}${o.offline?' · <span class="tag warn">Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε</span>':''}</p>
@@ -1329,7 +1385,7 @@ function vToday(R){
     const pj=jobs.filter(j=>j.task.projectId===p.id);
     const pw=(day.wet||[]).filter(t=>t.projectId===p.id);
     const f=wxDay(p.id,d);
-    const pd_=S.duties.filter(x=>x.projectId===p.id&&dutyOn(x,d)&&!isOff(W(x.workerId)||{},d));
+    const pd_=S.duties.filter(x=>x.projectId===p.id&&dutyOn(x,d)&&!isOff(anyone(x.workerId)||{},d));
     const mg=managersOf(p.id,d);
     return `<article class="pcard" style="--pc:${pc(p)}"><div class="ph"><h3>${h(p.name)}</h3>${wxChip(f,rainy(p.id,d))}<span class="note">${h(p.location)}</span></div>
       <div class="mgr"><span class="lbl">Διαχείριση</span>${mg.length?mg.map(w=>`<span class="chip lead${ov(d,w.id)?.type==='pm'?' fx':''}">${h(w.name)}</span>`).join(''):'<span class="tag warn">Κανένας διαχειριστής</span>'}<button class="btn sm ghost" data-act="pmday" data-p="${p.id}" data-d="${d}">Αλλαγή</button></div>
@@ -1338,14 +1394,13 @@ function vToday(R){
         <div class="chips">${[j.lead,...j.helpers].filter(Boolean).map(w=>crewChip(j,w)).join('')}</div></div>`).join('')
         :(pw.length?'':'<div class="empty">Καμία εργασία αυτή τη μέρα.</div>')}
       ${pw.map(t=>{const n=nextOn(R,t.id,d);return `<div class="job wet"><div class="t"><b>${h(t.title)}</b><span class="tag rain">${ico('rain')}Αναβάλλεται λόγω βροχής</span></div><span class="note">${n?'Συνεχίζει '+fmt(n)+'. ':''}Το συνεργείο της πάει σε άλλη δουλειά.</span></div>`}).join('')}
-      ${pd_.length?`<div class="job"><span class="lbl">Επισκέψεις γραφείου</span>${pd_.map(x=>`<div class="note">${h(W(x.workerId)?.name)}: ${h(x.title)}</div>`).join('')}</div>`:''}</article>`}).join('');
-  const offices=S.workers.filter(w=>isOffice(w)||dutiesFor(w.id,d).length);
-  const officeCard=`<article class="pcard wide" style="--pc:var(--muted)"><div class="ph"><h3>Γραφείο και γενικά καθήκοντα</h3></div>
-    ${offices.map(w=>{const ds_=dutiesFor(w.id,d);if(!isOffice(w)&&!ds_.length)return '';
+      ${pd_.length?`<div class="job"><span class="lbl">Υπενθυμίσεις για το έργο</span>${pd_.map(x=>`<div class="note">${h(anyone(x.workerId)?.name)}: ${h(x.title)}</div>`).join('')}</div>`:''}</article>`}).join('');
+  const offices=S.workers.filter(isOffice);
+  const officeCard=`<article class="pcard wide" style="--pc:var(--muted)"><div class="ph"><h3>Γραφείο</h3></div>
+    ${offices.map(w=>{const n=dutiesFor(w.id,d).length;
       const pp=pmProjects(w.id,d);
-      return `<div class="job"><div class="t"><b>${h(w.name)}</b><span class="tag mute">${h(SP(w.specialtyId)?.name)}</span>${isOff(w,d)?'<span class="tag warn">Άδεια</span>':''}</div>
-      ${pp.length?`<div class="chips">${pp.map(pid=>`<span class="chip"><i class="dot" style="background:${pc(pid)}"></i>${h(P(pid).name)}</span>`).join('')}</div>`:''}
-      ${ds_.length?`<div class="checks">${ds_.map(x=>dutyCheck(x,d)).join('')}</div>`:'<span class="note">Χωρίς καθήκοντα σήμερα.</span>'}</div>`}).join('')}
+      return `<div class="job"><div class="t"><b>${h(w.name)}</b><span class="tag mute">${h(SP(w.specialtyId)?.name)}</span>${isOff(w,d)?'<span class="tag warn">Άδεια</span>':''}${n?`<span class="note">${n==1?'1 υπενθύμιση':n+' υπενθυμίσεις'}</span>`:''}</div>
+      ${pp.length?`<div class="chips">${pp.map(pid=>`<span class="chip"><i class="dot" style="background:${pc(pid)}"></i>${h(P(pid).name)}</span>`).join('')}</div>`:''}</div>`}).join('')}
     ${day.gen.length?`<div class="job"><div class="t"><b>Αποθήκη και συντήρηση εξοπλισμού</b></div><div class="chips">${day.gen.map(g=>`<span class="chip${g.forced?' fx':''}">${h(g.w.name)}</span>`).join('')}</div></div>`:''}</article>`;
   const viber=dayText(d,R);
   return `<div class="bar"><h1 class="grow">Πρόγραμμα ${fmt(d)}${d===TODAY?' <span class="tag hv">σήμερα</span>':''}</h1>
@@ -1361,6 +1416,7 @@ function vToday(R){
     <div class="kpi"><span class="lbl">Τέλος όλων των εργασιών</span><span class="v">${fmtS(R.end)}</span><span class="s">${R.unplanned.length?R.unplanned.length+' δεν προγραμματίζονται':'με το τρέχον προσωπικό'}</span></div>
   </div>
   ${(aps=>aps.length?`<section class="panel"><div class="bar" style="margin-bottom:2px"><h2 class="grow" style="margin:0">Ραντεβού ${d===TODAY?'σήμερα':fmt(d)}</h2><button class="btn sm" data-act="newappt">${ico('plus')}Νέο ραντεβού</button></div>${aps.map(apCard).join('')}</section>`:'')(apptsOn(d))}
+  ${(b=>`<section class="panel"><div class="bar" style="margin-bottom:0"><h2 class="grow" style="margin:0">Υπενθυμίσεις ${d===TODAY?'σήμερα':fmt(d)}</h2><button class="btn sm" data-act="newduty">${ico('plus')}Νέα υπενθύμιση</button></div>${b?`<div class="remgrid">${b}</div>`:'<p class="note" style="margin:8px 0 0">Καμία υπενθύμιση γι᾽ αυτή τη μέρα.</p>'}</section>`)(remBlocks(d))}
   <details class="legend-d"><summary>${ico('info')}Τι σημαίνει η εμφάνιση κάθε ονόματος</summary><div class="legend"><span><span class="chip lead">Όνομα</span> υπεύθυνος</span><span><span class="chip fx">Όνομα</span> το όρισες εσύ</span><span><span class="chip x">Όνομα</span> ενίσχυση συνεργείου</span><span><span class="chip">Όνομα<span class="mx">⇄</span></span> και σε άλλη εργασία την ίδια μέρα</span></div></details>
   <div class="projgrid">${cards}${officeCard}</div>
   ${(idle.length||off.length||wait.length)?`<div class="two">
@@ -1370,7 +1426,16 @@ function vToday(R){
       ${wait.length?`<table style="margin-top:10px"><tbody>${wait.map(x=>`<tr><td>${h(x.task.title)}<div class="note">${h(P(x.task.projectId)?.name)}</div></td><td><span class="tag warn">${h(x.reason)}</span></td></tr>`).join('')}</tbody></table>`:''}
     </section></div>`:''}`;
 }
-function dutyCheck(x,d){const k=d+'|'+x.id;return `<label class="ck"><input type="checkbox" data-duty="${h(k)}"${S.dutyDone[k]?' checked':''}> <span>${h(x.title)}${x.projectId?' <span class="note">· '+h(P(x.projectId)?.name)+'</span>':''}</span></label>`}
+// μία υπενθύμιση με κουτάκι «έγινε»· οι «μία φορά» κρατούν το «έγινε» στη δική τους μέρα, ώστε οι εκκρεμότητες να σβήνουν
+function dutyCheck(x,d){const k=doneKey(x,d),done=!!S.dutyDone[k];
+  return `<label class="ck rem${done?' done':''}"><input type="checkbox" data-duty="${h(k)}"${done?' checked':''}> <span>${x.time?`<b class="rt">${h(x.time)}</b> `:''}<span class="rtt">${h(x.title)}</span>${x.projectId&&P(x.projectId)?' <span class="note">· '+h(P(x.projectId).name)+'</span>':''}${x.late?` <span class="tag warn">από ${h(fmt(x.late))}</span>`:''}${x.notes?`<span class="note rn">${h(x.notes)}</span>`:''}</span></label>`}
+const remRow=(x,d)=>`<div class="remrow">${dutyCheck(x,d)}<button class="iconbtn" data-act="editduty" data-id="${h(x.id)}" title="Επεξεργασία" aria-label="Επεξεργασία: ${h(x.title)}">${ico('edit')}</button></div>`;
+// οι υπενθυμίσεις μιας μέρας ανά άτομο: πρώτα ο εργολάβος, μετά το προσωπικό με τη σειρά του
+function remBlocks(d,who){
+  return [ownerW(),...S.workers].filter(p=>!who||p.id===who).map(p=>{const xs=dutiesFor(p.id,d);if(!xs.length)return '';
+    const n=xs.filter(x=>isDone(x,d)).length;
+    return `<div class="remp"><div class="t"><span class="who"><b>${h(p.name)}</b>${p.id===OWNER?'':` <span class="note">${h(SP(p.specialtyId)?.name||'')}</span>`}${p.id!==OWNER&&isOff(p,d)?' <span class="tag warn">Άδεια</span>':''}</span><span class="note cnt">${n} από ${xs.length}</span></div><div class="checks">${xs.map(x=>remRow(x,d)).join('')}</div></div>`}).join('');
+}
 function dayText(d,R){
   const day=R.byDay[d]||{jobs:[],gen:[]};
   let s='ΠΡΟΓΡΑΜΜΑ '+fmt(d).toUpperCase()+'\n';
@@ -1631,11 +1696,50 @@ function vTasks(R){
   <p class="note">Εδώ βλέπεις τις εργασίες όλων των έργων μαζί, π.χ. τι εκκρεμεί για κάθε ειδικότητα. Κάθε έργο έχει και δική του σελίδα από το μενού. Το συνεργείο «1+2» σημαίνει υπεύθυνος και δύο βοηθοί.</p>`;
 }
 function vDuties(){
-  const rows=S.workers.filter(w=>S.duties.some(x=>x.workerId===w.id)).map(w=>`<tr class="grp"><td colspan="4">${h(w.name)} <span class="note">· ${h(SP(w.specialtyId)?.name)}</span></td></tr>`+
-    S.duties.filter(x=>x.workerId===w.id).map(x=>`<tr><td><b>${h(x.title)}</b></td><td>${h(freqText(x))}</td><td>${x.projectId?h(P(x.projectId)?.name):'<span class="note">Γενικό</span>'}</td><td><button class="btn sm" data-act="editduty" data-id="${x.id}">Επεξεργασία</button></td></tr>`).join('')).join('');
-  return `<div class="bar"><h1 class="grow">Καθήκοντα γραφείου</h1><button class="btn pri" data-act="newduty">${ico('plus')}Νέο καθήκον</button></div>
-  <section class="panel scroll"><table><thead><tr><th>Καθήκον</th><th>Πότε</th><th>Έργο</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="empty">Δεν υπάρχουν καθήκοντα.</td></tr>'}</tbody></table></section>
-  <p class="note">Τα καθήκοντα είναι επαναλαμβανόμενες δουλειές ανά άτομο, όπως η ΕΡΓΑΝΗ ή η πληρωμή μεροκαμάτων. Εμφανίζονται στο «Σήμερα» και στο ατομικό πρόγραμμα με κουτάκι για «έγινε».</p>`;
+  const m=UI.remV||'day',who=UI.remW||'',d=UI.remDay||nextWork(TODAY);
+  const ppl=[[OWNER,ownerName()],...S.workers.map(w=>[w.id,w.name])];
+  const head=`<div class="bar"><h1 class="grow">Υπενθυμίσεις</h1>
+    <div class="seg">${[['day','Ανά μέρα'],['all','Όλες']].map(([k,l])=>`<button data-act="remv" data-m="${k}"${m===k?' aria-pressed="true"':''}>${l}</button>`).join('')}</div>
+    ${sel('remW',[['','Όλα τα άτομα'],...ppl],who)}
+    <button class="btn pri" data-act="newduty">${ico('plus')}Νέα υπενθύμιση</button></div>`;
+  if(m==='day'){
+    const b=remBlocks(d,who);
+    return head+`<div class="bar" style="margin-bottom:0"><h2 class="grow" style="margin:0">${d===TODAY?'Σήμερα, ':d===add(TODAY,1)?'Αύριο, ':''}${fmt(d)}</h2>
+      <div class="bgrp"><button class="btn" data-act="remday" data-dir="-1" aria-label="Προηγούμενη μέρα">${ico('cl')}</button><button class="btn" data-act="remday" data-dir="0">Σήμερα</button><button class="btn" data-act="remday" data-dir="1" aria-label="Επόμενη μέρα">${ico('cr')}</button></div></div>
+    ${b?`<div class="remgrid">${b}</div>`:`<section class="panel" style="margin-top:12px"><p class="empty">Καμία υπενθύμιση${who?' για αυτό το άτομο':''} αυτή τη μέρα. Πρόσθεσε μία με «Νέα υπενθύμιση».</p></section>`}
+    <p class="note">Τσέκαρε ό,τι έγινε. Όσες είναι για μία φορά και δεν τσεκαρίστηκαν, μένουν στη σημερινή λίστα ως εκκρεμότητα. Κάθε άτομο τις βλέπει και στο μήνυμα Viber της ημέρας του${S.settings.ownerPhone?', και ο εργολάβος':'. Για να τις παίρνει και ο εργολάβος στο Viber, βάλε το κινητό του στις Ρυθμίσεις'}.</p>`;
+  }
+  const rank={daily:0,days:1,month:2,once:3};
+  const groups=[ownerW(),...S.workers].filter(p=>(!who||p.id===who)&&S.duties.some(x=>x.workerId===p.id));
+  const rows=groups.map(p=>`<tr class="grp"><td colspan="4">${h(p.name)}${p.id===OWNER?'':` <span class="note">· ${h(SP(p.specialtyId)?.name)}</span>`}</td></tr>`+
+    S.duties.filter(x=>x.workerId===p.id).sort((a,b)=>(rank[a.freq]??3)-(rank[b.freq]??3)||(a.freq==='once'?String(b.date).localeCompare(a.date):0)||(a.time||'99').localeCompare(b.time||'99')).map(x=>`<tr><td><b>${h(x.title)}</b>${x.notes?`<div class="note">${h(x.notes)}</div>`:''}</td>
+      <td>${h(freqText(x))}${x.time?', '+h(x.time):''}${x.freq==='once'?(isDone(x,x.date)?' <span class="tag ok">Έγινε</span>':x.date<TODAY?' <span class="tag warn">Εκκρεμεί</span>':''):''}</td>
+      <td>${x.projectId&&P(x.projectId)?h(P(x.projectId).name):'<span class="note">Γενική</span>'}</td><td><button class="btn sm" data-act="editduty" data-id="${x.id}">Επεξεργασία</button></td></tr>`).join('')).join('');
+  return head+`<section class="panel scroll"><table><thead><tr><th>Υπενθύμιση</th><th>Πότε</th><th>Έργο</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="empty">Δεν υπάρχουν υπενθυμίσεις.</td></tr>'}</tbody></table></section>
+  <p class="note">Εδώ είναι όλες οι υπενθυμίσεις, και οι επαναλαμβανόμενες, όπως η ΕΡΓΑΝΗ ή η πληρωμή μεροκαμάτων. Δεν μετράνε μεροκάματο.</p>`;
+}
+// «Ποιος»: ο εργολάβος και το προσωπικό ανά ομάδα
+function personSel(id,val){
+  const g=(l,xs)=>xs.length?`<optgroup label="${l}">${xs.map(w=>`<option value="${h(w.id)}"${w.id===val?' selected':''}>${h(w.name)}${isExt(w)&&w.company?' · '+h(w.company):SP(w.specialtyId)?' · '+h(SP(w.specialtyId).name):''}</option>`).join('')}</optgroup>`:'';
+  return `<select id="${id}"><option value="${OWNER}"${val===OWNER?' selected':''}>${h(ownerName())}</option>${g('Γραφείο',S.workers.filter(isOffice))}${g('Αρχιεργάτες και τεχνίτες',S.workers.filter(w=>!isOffice(w)&&!isExt(w)&&w.role!=='voith'))}${g('Συνεργάτες',S.workers.filter(isExt))}${g('Βοηθοί',S.workers.filter(w=>!isOffice(w)&&!isExt(w)&&w.role==='voith'))}</select>`;
+}
+function dutyForm(x){
+  const isNew=!x,me=AUTH.user&&W(AUTH.user.workerId);
+  const day=UI.tab==='duties'&&UI.remV!=='all'&&UI.remDay?UI.remDay:UI.tab==='today'&&UI.day?UI.day:nextWork(TODAY);
+  x=x||{id:uid('r'),title:'',workerId:UI.tab==='duties'&&UI.remW?UI.remW:me?me.id:OWNER,freq:'once',days:[],date:day,dom:'',time:'',projectId:'',notes:''};
+  const f=x.freq,hid=k=>f===k?'':' hidden';
+  openModal(`<h2>${isNew?'Νέα υπενθύμιση':'Επεξεργασία υπενθύμισης'}</h2><form class="form" id="df" data-id="${x.id}" data-new="${isNew?1:0}">
+  <label class="full">Τι πρέπει να γίνει<input id="d_title" value="${h(x.title)}" placeholder="π.χ. Υπογραφή σύμβασης με τον πελάτη"></label>
+  <label>Ποιος${personSel('d_worker',x.workerId)}</label>
+  <label>Έργο (προαιρετικό)${sel('d_proj',[['','Γενική'],...projOpts()],x.projectId)}</label>
+  <label>Πότε${sel('d_freq',[['once','Μία φορά'],['daily','Κάθε εργάσιμη μέρα'],['days','Συγκεκριμένες μέρες της εβδομάδας'],['month','Κάθε μήνα']],f)}</label>
+  <label data-fq="once"${hid('once')}>Ημερομηνία<input id="d_date" type="date" value="${h(x.date||day)}"></label>
+  <label data-fq="month"${hid('month')}>Μέρα του μήνα<input id="d_dom" type="number" min="1" max="31" inputmode="numeric" value="${h(x.dom||+day.slice(8))}"></label>
+  <label>Ώρα (προαιρετικό)<input id="d_time" type="time" value="${h(x.time||'')}"></label>
+  <div class="fs" data-fq="days"${hid('days')}><span class="fl">Μέρες</span><div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-dd="${d}"${(x.days||[]).includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></div>
+  <label class="full">Σημειώσεις<textarea id="d_notes" rows="2" placeholder="Ό,τι χρειάζεται για να γίνει">${h(x.notes||'')}</textarea></label>
+  <p class="note full" style="grid-column:1/-1;margin:0">Μπαίνει στη λίστα της ημέρας του ατόμου και στο μήνυμα Viber του. Αν είναι για μία φορά και δεν τσεκαριστεί, συνεχίζει να φαίνεται ως εκκρεμότητα.</p></form>
+  <div class="acts">${isNew?'':`<button class="btn danger" data-act="delduty" data-id="${x.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveduty">Αποθήκευση</button></div>`);
 }
 // ποιοι μπορούν να είναι υπεύθυνοι: αρχιεργάτες/τεχνίτες της ειδικότητας και συνεργάτες της ειδικότητας
 const leadOpts=spec=>S.workers.filter(w=>w.role!=='voith'&&w.specialtyId===spec).map(w=>[w.id,isExt(w)?(w.company||w.name)+' (συνεργάτης'+(w.pay==='job'?', κατ\' αποκοπή)':')'):w.name+' ('+ROLES[w.role]+')']);
@@ -1663,18 +1767,6 @@ function readTaskForm(){
   const f=document.getElementById('tf');const g=id=>document.getElementById(id).value;
   return {id:f.dataset.id,isNew:f.dataset.new==='1',projectId:g('f_project'),title:g('f_title').trim(),specialtyId:g('f_spec'),responsibleId:g('f_resp'),helpers:+g('f_help')||0,days:Math.max(1,+g('f_days')||1),priority:+g('f_prio'),after:g('f_after'),earliest:g('f_earliest'),price:+g('f_price')||0,dry:document.getElementById('f_dry').checked};
 }
-function dutyForm(x){
-  const isNew=!x;x=x||{id:uid('d'),title:'',workerId:S.workers.find(isOffice)?.id||S.workers[0]?.id,freq:'daily',days:[],date:TODAY,projectId:''};
-  openModal(`<h2>${isNew?'Νέο καθήκον':'Επεξεργασία καθήκοντος'}</h2><form class="form" id="df" data-id="${x.id}" data-new="${isNew?1:0}">
-  <label class="full">Τίτλος<input id="d_title" value="${h(x.title)}" placeholder="π.χ. Κατάθεση ΦΠΑ στο λογιστή"></label>
-  <label>Ποιος${sel('d_worker',S.workers.map(w=>[w.id,w.name+' · '+(SP(w.specialtyId)?.name||'')]),x.workerId)}</label>
-  <label>Έργο (προαιρετικό)${sel('d_proj',[['','Γενικό καθήκον'],...projOpts()],x.projectId)}</label>
-  <label>Πότε${sel('d_freq',[['daily','Κάθε εργάσιμη μέρα'],['days','Συγκεκριμένες μέρες'],['once','Μία φορά']],x.freq)}</label>
-  <label>Ημερομηνία (για «μία φορά»)<input id="d_date" type="date" value="${h(x.date||TODAY)}"></label>
-  <label class="full">Μέρες (για «συγκεκριμένες μέρες»)<div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-dd="${d}"${(x.days||[]).includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></label></form>
-  <div class="acts">${isNew?'':`<button class="btn danger" data-act="delduty" data-id="${x.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveduty">Αποθήκευση</button></div>`);
-}
-
 /* Έργα */
 function projStats(R,p){
   const ts=S.tasks.filter(t=>t.projectId===p.id);const dn=ts.filter(t=>t.status==='done').length;
@@ -1923,7 +2015,8 @@ function vSettings(){
   return `<h1>Ρυθμίσεις</h1>${vAccount()}
   <section class="panel"><h2>Πρόγραμμα</h2><div class="form">
     <label>Έναρξη προγραμματισμού<input type="date" id="s_start" value="${h(S.settings.start)}"></label>
-    <label>Όνομα του εργολάβου στα ραντεβού<input id="s_owner" value="${h(S.settings.ownerName||'')}" placeholder="Εργολάβος"></label>
+    <label>Όνομα του εργολάβου<input id="s_owner" value="${h(S.settings.ownerName||'')}" placeholder="Εργολάβος"></label>
+    <label>Κινητό του εργολάβου για Viber<input id="s_ownerph" type="tel" value="${h(S.settings.ownerPhone||'')}" placeholder="π.χ. 694 123 4567"><span class="note">Παίρνει τα ραντεβού και τις υπενθυμίσεις του μαζί με τους άλλους.</span></label>
     <label class="full">Εργάσιμες μέρες<div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-wd="${d}"${S.settings.workdays.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></label>
     <label class="full ck"><input type="checkbox" id="s_fill"${S.settings.fillIdle?' checked':''}> <span>Δουλειά για όλους κάθε μέρα: όσοι περισσεύουν ενισχύουν συνεργεία της ειδικότητάς τους ή πάνε στην αποθήκη</span></label></div></section>
   ${wxSettings()}
@@ -1941,7 +2034,7 @@ function vSettings(){
   <section class="panel"><h2>Αντίγραφο δεδομένων</h2><p class="note">${SERVER?'Τα δεδομένα αποθηκεύονται στον server και τα βλέπουν όλοι. Ο server κρατά και ένα αντίγραφο ασφαλείας κάθε μέρα.':'Τα δεδομένα μένουν σε αυτόν τον browser. Αντέγραψε το αντίγραφο για να το φυλάξεις ή να το μεταφέρεις σε άλλον υπολογιστή.'}</p>
     <div class="bar" style="margin-block:8px"><button class="btn" data-act="export">Αντιγραφή αντιγράφου</button><button class="btn" data-act="import">Επαναφορά από επικολλημένο κείμενο</button></div>
     <textarea id="io" rows="6" placeholder="Επικόλλησε εδώ ένα αντίγραφο για επαναφορά"></textarea></section>
-  <section class="panel"><h2>Demo δεδομένα</h2><p class="note">Σβήνει ό,τι έχεις αλλάξει και φορτώνει ξανά τα παραδείγματα (${(D=>`${D.projects.length} έργα, ${D.workers.length} άτομα, ${D.tasks.length} εργασίες, ${D.duties.length} καθήκοντα`)(demo())}).</p>
+  <section class="panel"><h2>Demo δεδομένα</h2><p class="note">Σβήνει ό,τι έχεις αλλάξει και φορτώνει ξανά τα παραδείγματα (${(D=>`${D.projects.length} έργα, ${D.workers.length} άτομα, ${D.tasks.length} εργασίες, ${D.duties.length} υπενθυμίσεις`)(demo())}).</p>
     <div class="bar" style="margin-top:8px" id="resetbox"><button class="btn danger" data-act="reset1">Επαναφορά demo</button></div></section>`;
 }
 
@@ -1983,10 +2076,10 @@ function pwForm(){
 /* ---------- Modal ---------- */
 // η επόμενη εργάσιμη μετά από σήμερα: αυτή στέλνεται το βράδυ
 const nextDay=()=>nextWork(add(TODAY,1));
-const vRecipients=()=>S.workers.filter(w=>w.viber!==false);
+const vRecipients=()=>[...S.workers.filter(w=>w.viber!==false),...(S.settings.ownerPhone?[ownerW()]:[])];
 function sendForm(d,week){
   const R=schedule();const key=(week?'w':'d')+d;UI.sent=UI.sent&&UI.sent.key===key?UI.sent:{key,ids:[]};const msg=w=>week?personText(R,w,d):personDayText(R,w,d);const wk=week?' data-week="1"':'';
-  const ws=vRecipients().filter(w=>!isExt(w)||hasJob(R,w.id,week?weekDays(d):[d]));const left=ws.filter(w=>!UI.sent.ids.includes(w.id));
+  const ws=vRecipients().filter(w=>w.id===OWNER?(week?weekDays(d):[d]).some(x=>dayBlock(R,w,x).trim()):!isExt(w)||hasJob(R,w.id,week?weekDays(d):[d]));const left=ws.filter(w=>!UI.sent.ids.includes(w.id));
   const rows=ws.map(w=>{const ok=UI.sent.ids.includes(w.id);return `<tr><td><b>${h(w.name)}</b><div class="note">${h(week?SP(w.specialtyId)?.name||'':msg(w).split('\n').slice(2,4).filter(Boolean).join(' · '))}</div></td><td class="mono" style="white-space:nowrap">${h(w.phone||'—')}</td>
     <td style="white-space:nowrap">${ok?'<span class="tag ok">'+ico('check')+'Στάλθηκε</span> ':''}<button class="btn sm${ok?' ghost':''}" data-act="sendone" data-id="${w.id}" data-d="${d}"${wk}>${ok?'Ξανά':'Viber'}</button></td></tr>`}).join('');
   openModal(`<h2>${week?'Εβδομαδιαίο πρόγραμμα '+fmtS(d)+' – '+fmtS(add(d,6)):'Αποστολή προγράμματος για '+fmt(d)}</h2>
@@ -2035,7 +2128,7 @@ document.addEventListener('click',e=>{
     case 'pcopy':{const R=schedule();const txt=personText(R,W(id),UI.week);const ta=id===UI.person?document.getElementById('ptext'):null;copy(txt,ta);break}
     case 'sendnext':sendForm(nextDay());break;
     case 'sendweek':{if(!UI.week)UI.week=weekStart(TODAY);sendForm(UI.week,true);break}
-    case 'sendone':{const w=W(id),d=el.dataset.d,wk=!!el.dataset.week;const R=schedule();openViber(w,wk?personText(R,w,d):personDayText(R,w,d));if(!UI.sent.ids.includes(id))UI.sent.ids.push(id);sendForm(d,wk);break}
+    case 'sendone':{const w=anyone(id),d=el.dataset.d,wk=!!el.dataset.week;const R=schedule();openViber(w,wk?personText(R,w,d):personDayText(R,w,d));if(!UI.sent.ids.includes(id))UI.sent.ids.push(id);sendForm(d,wk);break}
     case 'sendall':{if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά για αποστολή';break}
       const d=el.dataset.d;el.disabled=true;el.textContent='Αποστολή…';
       fetch('api/viber/send',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({date:d,week:!!el.dataset.week})}).then(r=>r.json()).then(r=>{closeModal();toast(r.message||'Η αποστολή ολοκληρώθηκε.')}).catch(()=>{el.disabled=false;el.dataset.sure='';el.textContent='Αποστολή σε όλους';toast('Η αποστολή απέτυχε. Δεν βρέθηκε ο server.')});break}
@@ -2100,11 +2193,16 @@ document.addEventListener('click',e=>{
     case 'newduty':dutyForm(null);break;
     case 'editduty':dutyForm(byId(S.duties,id));break;
     case 'saveduty':{const f=document.getElementById('df');const g=x=>document.getElementById(x).value;
-      const v={id:f.dataset.id,title:g('d_title').trim(),workerId:g('d_worker'),projectId:g('d_proj'),freq:g('d_freq'),date:g('d_date'),days:[...f.querySelectorAll('[data-dd]:checked')].map(x=>+x.dataset.dd)};
-      if(!v.title){toast('Γράψε τίτλο για το καθήκον.');break}
+      const v={id:f.dataset.id,title:g('d_title').trim(),workerId:g('d_worker'),projectId:g('d_proj'),freq:g('d_freq'),date:g('d_date'),dom:Math.round(+g('d_dom'))||'',time:g('d_time'),notes:g('d_notes').trim(),days:[...f.querySelectorAll('[data-dd]:checked')].map(x=>+x.dataset.dd)};
+      if(!v.title){toast('Γράψε τι πρέπει να γίνει.');break}
+      if(v.freq==='once'&&!v.date){toast('Διάλεξε ημερομηνία.');break}
       if(v.freq==='days'&&!v.days.length){toast('Διάλεξε τουλάχιστον μία μέρα.');break}
-      if(f.dataset.new==='1')S.duties.push(v);else Object.assign(byId(S.duties,v.id),v);commit('Το καθήκον αποθηκεύτηκε.');break}
-    case 'delduty':if(el.dataset.sure){S.duties=S.duties.filter(x=>x.id!==id);commit('Το καθήκον διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
+      if(v.freq==='month'&&!(v.dom>=1&&v.dom<=31)){toast('Γράψε μέρα του μήνα από 1 έως 31.');break}
+      if(f.dataset.new==='1')S.duties.push(v);else Object.assign(byId(S.duties,v.id),v);
+      commit(f.dataset.new==='1'?'Η υπενθύμιση προστέθηκε για '+(anyone(v.workerId)?.name||'')+'.':'Η υπενθύμιση αποθηκεύτηκε.');break}
+    case 'delduty':if(el.dataset.sure){S.duties=S.duties.filter(x=>x.id!==id);commit('Η υπενθύμιση διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
+    case 'remv':UI.remV=el.dataset.m;render();break;
+    case 'remday':{const dir=+el.dataset.dir,cur=UI.remDay||nextWork(TODAY);UI.remDay=dir===0?nextWork(TODAY):nextWork(add(cur,dir),dir);render();break}
     case 'newproj':projForm(null);break;
     case 'editproj':projForm(P(id));break;
     case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color'),managers:[...f.querySelectorAll('[data-mgr]:checked')].map(x=>x.dataset.mgr)};
@@ -2158,7 +2256,13 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.at!=null){const r=document.querySelector('#af input[name=asg][value=tasks]');if(r)r.checked=true;return}
-  if(t.dataset.duty){S.dutyDone[t.dataset.duty]=t.checked;if(!t.checked)delete S.dutyDone[t.dataset.duty];save();toast(t.checked?'Σημειώθηκε ως έγινε.':'Σημειώθηκε ως εκκρεμές.');return}
+  if(t.dataset.duty){S.dutyDone[t.dataset.duty]=t.checked?TODAY:false;if(!t.checked)delete S.dutyDone[t.dataset.duty];save();
+    // ενημερώνει μόνο την ένδειξη, χωρίς να ξαναστήνεται η σελίδα
+    document.querySelectorAll(`[data-duty="${CSS.escape(t.dataset.duty)}"]`).forEach(c=>{c.checked=t.checked;c.closest('.ck')?.classList.toggle('done',t.checked)});
+    document.querySelectorAll('.remp').forEach(b=>{const c=b.querySelector('.cnt'),all=b.querySelectorAll('[data-duty]');if(c)c.textContent=[...all].filter(i=>i.checked).length+' από '+all.length});
+    toast(t.checked?'Σημειώθηκε ως έγινε.':'Σημειώθηκε ως εκκρεμές.');return}
+  if(t.id==='d_freq'){document.querySelectorAll('#df [data-fq]').forEach(e=>e.hidden=e.dataset.fq!==t.value);return}
+  if(t.id==='remW'){UI.remW=t.value;render();return}
   if(t.id==='fProj'||t.id==='fSpec'||t.id==='fStat'){UI[t.id]=t.value;render()}
   else if(t.id==='person'){UI.person=t.value;render()}
   else if(t.id==='u_w'){const w=W(t.value),f=document.getElementById('uf');if(!w)return;
@@ -2175,7 +2279,8 @@ document.addEventListener('change',e=>{
   else if(t.dataset.viber){W(t.dataset.viber).viber=t.checked;save();toast(t.checked?'Θα λαμβάνει το πρόγραμμα στο Viber.':'Δεν θα λαμβάνει το πρόγραμμα στο Viber.')}
   else if(t.id==='apW'){UI.apW=t.value;render()}
   else if(t.id==='ap_proj'){const p=P(t.value),pl=document.getElementById('ap_place');if(p&&!pl.value.trim())pl.value=p.location||''}
-  else if(t.id==='s_owner'){S.settings.ownerName=t.value.trim();commit('Το όνομα του εργολάβου στα ραντεβού έγινε «'+ownerName()+'».')}
+  else if(t.id==='s_owner'){S.settings.ownerName=t.value.trim();commit('Το όνομα του εργολάβου έγινε «'+ownerName()+'».')}
+  else if(t.id==='s_ownerph'){S.settings.ownerPhone=t.value.trim();commit(S.settings.ownerPhone?'Ο εργολάβος θα παίρνει τα ραντεβού και τις υπενθυμίσεις του στο Viber.':'Ο εργολάβος δεν θα παίρνει μήνυμα στο Viber.')}
   else if(t.id==='s_wx'){S.settings.wx=Object.assign(wxCfg(),{on:t.checked});commit(t.checked?'Το πρόγραμμα ακολουθεί την πρόγνωση καιρού.':'Το πρόγραμμα δεν λαμβάνει υπόψη τον καιρό.');if(t.checked)wxRefresh()}
   else if(t.id==='s_wprob'||t.id==='s_wmm'){const v=Math.max(0,+String(t.value).replace(',','.')||0);S.settings.wx=Object.assign(wxCfg(),t.id==='s_wprob'?{minProb:Math.min(100,v)}:{minMm:v});commit('Το όριο για βροχερή μέρα άλλαξε. Το πρόγραμμα ξαναστήθηκε.')}
   else if(t.id==='s_place')saveBase();

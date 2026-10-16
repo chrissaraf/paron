@@ -118,14 +118,17 @@ async function runSend(date, trigger, week = false, changed = false) {
     const R = C.schedule();
     const log = readJSON(F.log, []);
     let sent = 0, dry = 0, failed = 0, skipped = 0;
-    for (const w of S.workers) {
+    const days = week ? C.weekDays(C.weekStart(date)) : [date];
+    const owner = C.ownerW();   // ο εργολάβος, αν έχει κινητό στις Ρυθμίσεις: μόνο ραντεβού και υπενθυμίσεις
+    for (const w of owner.phone ? [...S.workers, owner] : S.workers) {
       if (only && !only.has(w.id)) continue;
       const phone = normPhone(w.phone);
       const entry = { at: now(), date, trigger: week ? trigger + '-week' : trigger, workerId: w.id, name: w.name, phone: w.phone || '' };
       if (!week) entry.cmp = C.dayKey(R, w, date);   // για να φανεί αν αλλάξει το πρόγραμμα μετά την αποστολή
       if (only) entry.upd = true;
       if (w.viber === false) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Απενεργοποιημένο' }); continue; }
-      if (!only && C.isExt(w) && !C.hasJob(R, w.id, week ? C.weekDays(C.weekStart(date)) : [date])) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Συνεργάτης χωρίς εργασία' }); continue; }
+      if (!only && C.isExt(w) && !C.hasJob(R, w.id, days)) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Συνεργάτης χωρίς εργασία' }); continue; }
+      if (w.id === C.OWNER && !days.some(d => C.dayBlock(R, w, d).trim())) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Χωρίς ραντεβού ή υπενθυμίσεις' }); continue; }
       if (!phone) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); continue; }
       const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date, !!only);
       try { const r = await sendOne(phone, text); r.status === 'sent' ? sent++ : dry++; log.push({ ...entry, status: r.status, text }); }
@@ -149,7 +152,7 @@ function changedSince(date) {
   if (!Object.keys(last).length) return [];
   C.setState(S);
   const R = C.schedule();
-  return S.workers.filter(w => last[w.id] != null && w.viber !== false && last[w.id] !== C.dayKey(R, w, date)).map(w => ({ id: w.id, name: w.name }));
+  return [...S.workers, C.ownerW()].filter(w => last[w.id] != null && w.viber !== false && last[w.id] !== C.dayKey(R, w, date)).map(w => ({ id: w.id, name: w.name }));
 }
 // έλεγχος κάθε 30 δευτερόλεπτα αν ήρθε η ώρα της καθημερινής αποστολής
 setInterval(() => {
