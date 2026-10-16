@@ -546,6 +546,16 @@ let TODAY=ds(new Date());
 const today=()=>(TODAY=ds(new Date()));
 // κεφαλαία χωρίς τόνους, όπως θέλει η ορθογραφία· όπου ο τόνος χωρίζει δίφθογγο (τσάι, άυλος) μπαίνουν διαλυτικά
 const upGR=s=>String(s??'').replace(/([άέόύΆΈΌΎ])([ιυ])/g,(m,a,b)=>a+(b==='ι'?'ϊ':'ϋ')).normalize('NFD').replace(/\u0301/g,'').normalize('NFC').toUpperCase();
+// κλητική του μικρού ονόματος για τον χαιρετισμό: Γιώργος → Γιώργο, Αλέξανδρος → Αλέξανδρε, Βασίλης → Βασίλη, Κώστας → Κώστα.
+// Στα -ος: δισύλλαβα σε -ο, τα υπόλοιπα σε -ε. Οι συλλαβές μετριούνται με τις διφθόγγους και το «ι/υ» πριν από φωνήεν (Γιώρ-γος, Στέ-λιος).
+const VOW='αεηιουωάέήίόύώϊϋΐΰ';
+function sylls(w){let s=String(w).toLowerCase().replace(/ς/g,'σ');
+  s=s.replace(/[αεο][ιυίύ]|υ[ιί]/g,'V');
+  s=s.replace(new RegExp('(^|[^'+VOW+'V])[ιυ](?=['+VOW+'V])','g'),'$1');
+  return (s.match(new RegExp('['+VOW+'V]','g'))||[]).length}
+function voc(name){const n=String(name||'').trim().split(/\s+/)[0]||'';const m=n.match(/^(.*[^\s])([οόΟ])([ςσΣ])$|^(.*)([ηήαάΗΑ])([ςσΣ])$/);if(!m)return n;
+  if(m[4]!=null)return m[4]+m[5];
+  const up=m[2]==='Ο',e=sylls(n)<=2?'ο':'ε';return m[1]+(up?e.toUpperCase():m[2]==='ό'?(e==='ο'?'ό':'έ'):e)}
 const eur=n=>new Intl.NumberFormat('el-GR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);
 const h=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=p=>p+Math.random().toString(36).slice(2,8);
@@ -1022,7 +1032,7 @@ function personText(R,w,ws){
 function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.pm.length?x.pm[0]:'',d)}
 function personDayText(R,w,d,upd){
   const f=wxFor(R,w.id,d);
-  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+String(w.name).split(/\s+/)[0]+'! ';
+  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+voc(w.name)+'! ';
   // ώρα έναρξης από τις Ρυθμίσεις, μόνο για όσους πάνε σε εργοτάξιο ή αποθήκη
   const x=whatDoes(R,w.id,d),st=S.settings&&S.settings.startTime;
   const start=st&&!x.off&&(x.jobs.length||x.gen)?'Έναρξη: '+st+'\n':'';
@@ -1048,7 +1058,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,upGR,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
@@ -1058,7 +1068,7 @@ root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,upGR,pad,ds,pd,add,dow,fmt,fmtS,
 </script>
 <script>
 (()=>{
-const {upGR,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
@@ -2048,7 +2058,7 @@ const payAfter=(rest,v)=>{const left=r2(rest-v),carry=S.settings.payCarry!==fals
   return v<=0?'Γράψε πόσα πληρώνεις.':Math.abs(left)<0.5?'Εξοφλείται όλο το ποσό.':left>0?`Μένουν <b>${money(left)}</b>${carry?', περνούν στην επόμενη εβδομάδα.':' απλήρωτα σε αυτή την εβδομάδα.'}`
     :`Δίνεις <b>${money(-left)}</b> παραπάνω${carry?', αφαιρούνται ως προκαταβολή από την επόμενη εβδομάδα.':', μένουν ως προκαταβολή σε αυτή την εβδομάδα.'}`};
 function payText(r,ws){
-  let s='Γεια σου '+String(r.w.name).split(/\s+/)[0]+'!\nΠληρωμή εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n';
+  let s='Γεια σου '+voc(r.w.name)+'!\nΠληρωμή εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n';
   s+='Μέρες: '+nf(r.days)+'\nΜεροκάματα: '+money(r.amount)+'\n';
   if(Math.abs(r.carry)>=0.5)s+=(r.carry>0?'Από προηγούμενες εβδομάδες: ':'Προκαταβολή από πριν: −')+money(Math.abs(r.carry))+'\n';
   r.pays.forEach(p=>s+='Πληρωμή '+fmt(p.date)+(p.method?' ('+payM(p.method).toLowerCase()+')':'')+': '+money(p.amount)+'\n');

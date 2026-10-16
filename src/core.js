@@ -17,6 +17,16 @@ let TODAY=ds(new Date());
 const today=()=>(TODAY=ds(new Date()));
 // κεφαλαία χωρίς τόνους, όπως θέλει η ορθογραφία· όπου ο τόνος χωρίζει δίφθογγο (τσάι, άυλος) μπαίνουν διαλυτικά
 const upGR=s=>String(s??'').replace(/([άέόύΆΈΌΎ])([ιυ])/g,(m,a,b)=>a+(b==='ι'?'ϊ':'ϋ')).normalize('NFD').replace(/\u0301/g,'').normalize('NFC').toUpperCase();
+// κλητική του μικρού ονόματος για τον χαιρετισμό: Γιώργος → Γιώργο, Αλέξανδρος → Αλέξανδρε, Βασίλης → Βασίλη, Κώστας → Κώστα.
+// Στα -ος: δισύλλαβα σε -ο, τα υπόλοιπα σε -ε. Οι συλλαβές μετριούνται με τις διφθόγγους και το «ι/υ» πριν από φωνήεν (Γιώρ-γος, Στέ-λιος).
+const VOW='αεηιουωάέήίόύώϊϋΐΰ';
+function sylls(w){let s=String(w).toLowerCase().replace(/ς/g,'σ');
+  s=s.replace(/[αεο][ιυίύ]|υ[ιί]/g,'V');
+  s=s.replace(new RegExp('(^|[^'+VOW+'V])[ιυ](?=['+VOW+'V])','g'),'$1');
+  return (s.match(new RegExp('['+VOW+'V]','g'))||[]).length}
+function voc(name){const n=String(name||'').trim().split(/\s+/)[0]||'';const m=n.match(/^(.*[^\s])([οόΟ])([ςσΣ])$|^(.*)([ηήαάΗΑ])([ςσΣ])$/);if(!m)return n;
+  if(m[4]!=null)return m[4]+m[5];
+  const up=m[2]==='Ο',e=sylls(n)<=2?'ο':'ε';return m[1]+(up?e.toUpperCase():m[2]==='ό'?(e==='ο'?'ό':'έ'):e)}
 const eur=n=>new Intl.NumberFormat('el-GR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);
 const h=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=p=>p+Math.random().toString(36).slice(2,8);
@@ -493,7 +503,7 @@ function personText(R,w,ws){
 function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.pm.length?x.pm[0]:'',d)}
 function personDayText(R,w,d,upd){
   const f=wxFor(R,w.id,d);
-  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+String(w.name).split(/\s+/)[0]+'! ';
+  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+voc(w.name)+'! ';
   // ώρα έναρξης από τις Ρυθμίσεις, μόνο για όσους πάνε σε εργοτάξιο ή αποθήκη
   const x=whatDoes(R,w.id,d),st=S.settings&&S.settings.startTime;
   const start=st&&!x.off&&(x.jobs.length||x.gen)?'Έναρξη: '+st+'\n':'';
@@ -519,7 +529,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,upGR,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,

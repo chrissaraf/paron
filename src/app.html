@@ -531,7 +531,7 @@ body:not(.in) .app{display:none}
 </script>
 <script>
 (()=>{
-const {upGR,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
@@ -1521,7 +1521,7 @@ const payAfter=(rest,v)=>{const left=r2(rest-v),carry=S.settings.payCarry!==fals
   return v<=0?'Γράψε πόσα πληρώνεις.':Math.abs(left)<0.5?'Εξοφλείται όλο το ποσό.':left>0?`Μένουν <b>${money(left)}</b>${carry?', περνούν στην επόμενη εβδομάδα.':' απλήρωτα σε αυτή την εβδομάδα.'}`
     :`Δίνεις <b>${money(-left)}</b> παραπάνω${carry?', αφαιρούνται ως προκαταβολή από την επόμενη εβδομάδα.':', μένουν ως προκαταβολή σε αυτή την εβδομάδα.'}`};
 function payText(r,ws){
-  let s='Γεια σου '+String(r.w.name).split(/\s+/)[0]+'!\nΠληρωμή εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n';
+  let s='Γεια σου '+voc(r.w.name)+'!\nΠληρωμή εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n';
   s+='Μέρες: '+nf(r.days)+'\nΜεροκάματα: '+money(r.amount)+'\n';
   if(Math.abs(r.carry)>=0.5)s+=(r.carry>0?'Από προηγούμενες εβδομάδες: ':'Προκαταβολή από πριν: −')+money(Math.abs(r.carry))+'\n';
   r.pays.forEach(p=>s+='Πληρωμή '+fmt(p.date)+(p.method?' ('+payM(p.method).toLowerCase()+')':'')+': '+money(p.amount)+'\n');
