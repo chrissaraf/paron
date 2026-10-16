@@ -1,0 +1,10 @@
+# Δεδομένα και ρυθμίσεις του server (ποτέ στο GitHub)
+data/
+.env
+*.env
+!.env.example
+
+# Πακέτα και προσωρινά
+*.zip
+node_modules/
+.DS_Store

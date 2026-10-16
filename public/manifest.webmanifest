@@ -1,0 +1,23 @@
+{
+  "name": "ERGODO · Get the job Done",
+  "short_name": "ERGODO",
+  "description": "Εργασίες, συνεργεία, μεροκάματα και πρόγραμμα στο Viber για όλα τα έργα.",
+  "lang": "el",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#17212b",
+  "theme_color": "#17212b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Σήμερα", "url": "/#today" },
+    { "name": "Εβδομάδα", "url": "/#week" },
+    { "name": "Πληρωμές", "url": "/#pay" }
+  ]
+}

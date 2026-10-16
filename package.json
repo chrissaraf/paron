@@ -1,0 +1,11 @@
+{
+  "name": "ergodo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "ERGODO · Get the job Done: εργασίες, συνεργεία, μεροκάματα και αυτόματη αποστολή προγράμματος στο Viber",
+  "scripts": {
+    "start": "node server/server.js",
+    "build": "node build.js"
+  },
+  "engines": { "node": ">=18" }
+}
