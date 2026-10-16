@@ -149,6 +149,10 @@ a.btn{text-decoration:none}
 .warnline.bad{color:var(--bad);background:var(--bad-bg)}.warnline.bad b{color:inherit}
 .lateln{display:flex;gap:10px;align-items:flex-start}.lateln .lnk{color:inherit;font-weight:700;text-decoration:underline}.lateln>svg{flex:none;margin-top:3px}
 table.gantt td.dl{box-shadow:inset -2px 0 0 var(--bad)}
+.hist{list-style:none;margin:8px 0 0;padding:0}.hist li{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.hist li.hd{border:0;padding:12px 0 2px;font-weight:650;font-size:13px;color:var(--muted)}.hist .tm{color:var(--muted);flex:none;width:3.2em}.hist .grow{flex:1 1 0;min-width:0}.hist .by{flex:none;text-align:right;max-width:40%}
+.hist li.undone .grow{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted)}.hist li.undone .tag{text-decoration:none}.hist li.un .grow{font-style:italic}
+@media(max-width:640px){.hist li{flex-wrap:wrap;gap:2px 10px}.hist .grow{flex:1 1 0;min-width:0}.hist .by{box-sizing:border-box;flex:1 0 100%;max-width:none;text-align:left;padding-left:calc(3.2em + 10px)}}
 .tag.hard{background:var(--accent-soft);color:var(--accent-soft-ink)}
 .stars{display:inline-flex;gap:1px;vertical-align:-2px;margin-left:6px;color:var(--accent-strong)}.stars svg{width:12px;height:12px}.stars .e{color:var(--line-2)}
 .bonus{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:6px;font-size:13px;color:var(--ink-2);background:var(--accent-soft);border-radius:var(--r);padding:6px 10px}.bonus .grow{min-width:12em}
@@ -405,6 +409,7 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;min-width:20px;min
   .modal>:last-child:not(.acts){margin-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
   @media (prefers-reduced-motion:no-preference){.modal{animation:sheet .22s cubic-bezier(.2,.8,.2,1)}@keyframes sheet{from{transform:translateY(40px);opacity:.4}}}
 }
+.toast .tbtn{font:inherit;font-weight:700;color:var(--accent);background:none;border:0;padding:2px 4px;margin-left:6px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:14px;z-index:70;font-size:14.5px;font-weight:500;max-width:min(520px,calc(100% - 32px));box-shadow:var(--pop)}
 @media (prefers-reduced-motion:no-preference){.toast{animation:up .18s ease-out}@keyframes up{from{transform:translate(-50%,8px);opacity:0}}}
 
@@ -883,6 +888,11 @@ function pmProjects(wid,d){
 }
 const managersOf=(pid,d)=>S.workers.filter(w=>isPM(w)&&pmProjects(w.id,d).includes(pid));
 const ov=(d,wid)=>S.overrides[d+'|'+wid];
+// ιστορικό αλλαγών: S.hist=[{id,at,by,msg,undo?}]· undo = οι αλλαγές που αναίρεσε μια εγγραφή
+const stamp=()=>{const d=new Date();return ds(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())};
+function undoneIds(hist){const U=new Set();(hist||[]).forEach(e=>{if(e&&e.undo)[].concat(e.undo).forEach(x=>U.add(x))});return U}
+// η τελευταία αλλαγή που δεν έχει αναιρεθεί: μόνο αυτή αναιρείται, ώστε να μη χαθεί κάτι που έγινε αργότερα
+function undoTarget(hist){hist=hist||[];const U=undoneIds(hist);for(let i=hist.length-1;i>=0;i--){const e=hist[i];if(!e||e.undo||U.has(e.id))continue;return e}return null}
 // διαθεσιμότητα (πακέτο Συνεργείο): w.days = οι μέρες της εβδομάδας που δουλεύει· τις άλλες έχει ρεπό
 const availOn=()=>hasF('avail');
 const isRest=(w,d)=>availOn()&&Array.isArray(w.days)&&w.days.length>0&&!w.days.includes(dow(d));
@@ -1178,7 +1188,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
@@ -1188,7 +1198,7 @@ root.ErgoCore={availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,plan
 </script>
 <script>
 (()=>{
-const {availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
@@ -1198,10 +1208,17 @@ const SERVER=!!window.ERGO_SERVER;
 let S,saveT;
 function setS(x){S=x;ErgoCore.setState(x)}
 function load(){try{const r=localStorage.getItem(LS);if(r){const o=migrate(JSON.parse(r));if(o&&o.v===2)return o}}catch(e){}return demo()}
-function save(){if(isWorker())return;try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}if(SERVER){clearTimeout(saveT);saveT=setTimeout(push,300)}}
+function save(){if(isWorker())return;const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}if(SERVER){clearTimeout(saveT);saveT=setTimeout(()=>{saveT=null;push()},300)}}
+// ιστορικό αλλαγών (γράφεται πάντα· η σελίδα και η αναίρεση είναι στο πακέτο Εργοτάξιο)
+const HMAX=300,ULS=LS+'.undo';
+let LAST=null;   // τα δεδομένα όπως ήταν στην τελευταία αποθήκευση: από εκεί γίνεται η αναίρεση χωρίς server
+const undoRing=()=>{try{return JSON.parse(localStorage.getItem(ULS)||'[]')}catch(e){return []}};
+function logChange(msg){if(!msg||isWorker())return null;S.hist=S.hist||[];const e={id:uid('h'),at:stamp(),by:AUTH.user?AUTH.user.name:'',msg:String(msg)};S.hist.push(e);if(S.hist.length>HMAX)S.hist.splice(0,S.hist.length-HMAX);
+  if(!SERVER&&LAST){try{const r=undoRing().slice(-4);r.push({id:e.id,snap:LAST});localStorage.setItem(ULS,JSON.stringify(r))}catch(err){}}
+  return e}
 async function push(){if(isWorker())return;try{const r=await fetch('api/state',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(S)});if(r.status===401)return expired();if(!r.ok)throw 0;if(UI.tab==='today')loadChanges(true)}catch(e){toast('Η αλλαγή δεν αποθηκεύτηκε στον server. Έλεγξε τη σύνδεση.')}}
-async function pull(){if(isWorker())return false;try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));return true}push();return false}catch(e){toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
-setS(load());
+async function pull(){if(isWorker())return false;try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));LAST=JSON.stringify(S);return true}push();return false}catch(e){toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
+setS(load());LAST=JSON.stringify(S);
 
 let UI={proj:'',closed:[],tab:'today',day:null,week:null,weekMode:'workers',person:'',taskMode:'site',fProj:'',fSpec:'',fStat:'open',period:'week',from:'',to:'',payWeek:null};
 try{const t=localStorage.getItem(LS+'.tab');if(t&&TABS.some(x=>x[0]===t))UI.tab=t;UI.proj=localStorage.getItem(LS+'.proj')||'';UI.closed=JSON.parse(localStorage.getItem(LS+'.nav')||'[]')}catch(e){}
@@ -1394,8 +1411,18 @@ async function geoField(t){
 async function saveBase(){
   if(saveBase.busy)return;saveBase.busy=true;
   try{const g=await geoField('s'),c=wxCfg();if(!g||(g.lat===c.lat&&g.lon===c.lon))return;
-    S.settings.wx=Object.assign(c,{place:g.place,lat:g.lat,lon:g.lon});save();toast('Η έδρα για τον καιρό έγινε: '+g.place+'.');wxRefresh()}
+    S.settings.wx=Object.assign(c,{place:g.place,lat:g.lat,lon:g.lon});note('Η έδρα για τον καιρό έγινε: '+g.place+'.');wxRefresh()}
   finally{saveBase.busy=false}
+}
+function histPanel(){
+  if(!hasF('history'))return `<section class="panel"><h2>Ιστορικό αλλαγών</h2>${upsell('history')}</section>`;
+  const H=S.hist||[],U=undoneIds(H),t=undoTarget(H),n=UI.histAll?HMAX:30,xs=H.slice(-n).reverse();let last='';
+  return `<section class="panel" id="hist"><div class="bar" style="margin-bottom:2px"><h2 class="grow" style="margin:0">Ιστορικό αλλαγών</h2>${t?`<button class="btn" data-act="undo" data-id="${t.id}">${ico('undo')}Αναίρεση της τελευταίας</button>`:''}</div>
+    <p class="note">Ποιος άλλαξε τι και πότε. Η αναίρεση γυρίζει τα δεδομένα όπως ήταν πριν την τελευταία αλλαγή${t?': «'+h(t.msg.replace(/\.$/,''))+'»':''}.</p>
+    ${xs.length?`<ol class="hist">${xs.map(e=>{const d=e.at.slice(0,10),hd=d!==last?(last=d,`<li class="hd">${fmt(d)}</li>`):'';
+      return hd+`<li class="${U.has(e.id)?'undone':''}${e.undo?' un':''}"><span class="mono tm">${h(e.at.slice(11,16))}</span><span class="grow">${h(e.msg)}${U.has(e.id)?' <span class="tag mute">αναιρέθηκε</span>':''}</span><span class="note by">${h(e.by||'')}</span></li>`}).join('')}</ol>`
+      :'<p class="note">Δεν έχει γίνει καμία αλλαγή ακόμη.</p>'}
+    ${H.length>n?`<button class="btn sm" data-act="histall">Δες και τις παλιότερες</button>`:''}</section>`;
 }
 function rateSettings(){
   if(!hasF('rating'))return `<section class="panel"><h2>Βαθμοί και δυσκολία</h2>${upsell('rating')}</section>`;
@@ -1438,7 +1465,9 @@ function chgBanner(){
 }
 
 /* ---------- Βοηθητικά UI ---------- */
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2800)}
+function toast(msg,undo){const t=document.getElementById('toast');t.textContent=msg;
+  if(undo){const b=document.createElement('button');b.className='tbtn';b.dataset.act='undo';b.dataset.id=undo;b.textContent='Αναίρεση';t.append(' ',b)}
+  t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,undo?6000:2800)}
 function copy(text,ta){
   const done=()=>toast('Αντιγράφηκε. Επικόλλησέ το σε Viber ή email.');
   const fb=()=>{if(ta){ta.hidden=false;ta.select()}toast('Επίλεξε το κείμενο και αντέγραψέ το με Ctrl+C.')};
@@ -2456,6 +2485,7 @@ function vSettings(){
     <div class="bar" style="margin-top:12px"><button class="btn" data-act="vpreview">Προεπισκόπηση επόμενης εργάσιμης</button>${SERVER?'<button class="btn pri" data-act="vsend">Αποστολή τώρα για σήμερα</button>':''}</div>
     <div id="vpreview"></div>
     ${SERVER?'<div id="vstatus" class="note" style="margin-top:12px">Φόρτωση κατάστασης…</div>':''}</section>
+  ${histPanel()}
   <section class="panel"><h2>Αντίγραφο δεδομένων</h2><p class="note">${SERVER?'Τα δεδομένα αποθηκεύονται στον server και τα βλέπουν όλοι. Ο server κρατά και ένα αντίγραφο ασφαλείας κάθε μέρα.':'Τα δεδομένα μένουν σε αυτόν τον browser. Αντέγραψε το αντίγραφο για να το φυλάξεις ή να το μεταφέρεις σε άλλον υπολογιστή.'}</p>
     <div class="bar" style="margin-block:8px"><button class="btn" data-act="export">Αντιγραφή αντιγράφου</button><button class="btn" data-act="import">Επαναφορά από επικολλημένο κείμενο</button></div>
     <textarea id="io" rows="6" placeholder="Επικόλλησε εδώ ένα αντίγραφο για επαναφορά"></textarea></section>
@@ -2467,7 +2497,7 @@ function vSettings(){
 // σελίδες που ανοίγουν από συγκεκριμένο πακέτο (τα πακέτα και οι λειτουργίες τους είναι στο core)
 const TAB_F={partners:'partners',appts:'appts'};
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -2556,7 +2586,19 @@ function openModal(html){document.getElementById('modal').innerHTML=`<div class=
 function closeModal(){document.getElementById('modal').innerHTML='';if(UI.wxDirty&&UI.tab!=='settings'){UI.wxDirty=false;render()}}
 
 /* ---------- Ενέργειες ---------- */
-function commit(msg){save();closeModal();render();if(msg)toast(msg)}
+// UI.hmsg: πιο συγκεκριμένο κείμενο για το ιστορικό από το μήνυμα στην οθόνη
+function commit(msg){const e=logChange(UI.hmsg||msg);UI.hmsg='';save();closeModal();render();if(msg)toast(msg,e&&hasF('history')?e.id:'')}
+function note(msg){logChange(UI.hmsg||msg);UI.hmsg='';save();toast(msg)}
+async function undoChange(id){const t=undoTarget(S.hist);
+  if(!t||(id&&t.id!==id)){toast('Μετά έγιναν κι άλλες αλλαγές. Δες το ιστορικό στις Ρυθμίσεις.');return}
+  if(SERVER){if(saveT){clearTimeout(saveT);saveT=null;await push()}   // μόνο ό,τι δεν έχει φύγει ακόμη
+    try{const r=await fetch('api/undo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:t.id})});if(r.status===401)return expired();const o=await r.json();
+      if(!r.ok){if(r.status===409&&await pull())render();toast(o.error||'Η αναίρεση δεν έγινε.');return}
+      setS(migrate(o));const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}}catch(e){toast('Δεν βρέθηκε ο server. Η αναίρεση δεν έγινε.');return}}
+  else{const ring=undoRing(),x=ring.find(r=>r.id===t.id);if(!x){toast('Αυτή η αλλαγή δεν αναιρείται πια.');return}
+    const o=migrate(JSON.parse(x.snap));o.hist=(S.hist||[]).concat({id:uid('h'),at:stamp(),by:AUTH.user?AUTH.user.name:'',msg:'Αναίρεση: '+t.msg,undo:[t.id]});o.dutyDone=S.dutyDone;
+    setS(o);try{localStorage.setItem(ULS,JSON.stringify(ring.filter(r=>r.id!==t.id)))}catch(e){}save()}
+  closeModal();render();toast('Αναιρέθηκε: '+t.msg)}
 document.addEventListener('click',e=>{
   const tab=e.target.closest('[data-tab]');
   if(tab){UI.tab=tab.dataset.tab;if(tab.dataset.p)UI.proj=tab.dataset.p;if(tab.dataset.pw)UI.payWeek=tab.dataset.pw;UI.sec=tab.dataset.sec||'';try{localStorage.setItem(LS+'.tab',UI.tab);localStorage.setItem(LS+'.proj',UI.proj)}catch(err){}
@@ -2623,7 +2665,7 @@ document.addEventListener('click',e=>{
     case 'planpick':{if(planLock()||!isAdmin())break;const p=PLANS[planIx(el.dataset.plan)];S.settings.plan=p.id;commit('Το πακέτο άλλαξε σε '+p.name+'.');break}
     case 'editappt':apptForm((S.appts||[]).find(a=>a.id===id));break;
     case 'apf':UI.apF=el.dataset.m;render();break;
-    case 'doneappt':{const a=S.appts.find(x=>x.id===id);a.status=a.status==='done'?'open':'done';commit(a.status==='done'?'Το ραντεβού σημειώθηκε ότι έγινε.':'Το ραντεβού άνοιξε ξανά.');break}
+    case 'doneappt':{const a=S.appts.find(x=>x.id===id);a.status=a.status==='done'?'open':'done';UI.hmsg='Ραντεβού «'+a.title+(a.status==='done'?'»: έγινε':'»: άνοιξε ξανά');commit(a.status==='done'?'Το ραντεβού σημειώθηκε ότι έγινε.':'Το ραντεβού άνοιξε ξανά.');break}
     case 'saveappt':{const f=document.getElementById('apf'),g=x=>document.getElementById(x).value;
       const v={id:f.dataset.id,date:g('ap_date'),time:g('ap_time'),end:g('ap_end'),title:g('ap_title').trim(),client:g('ap_client').trim(),phone:g('ap_phone').trim(),place:g('ap_place').trim(),projectId:g('ap_proj'),notes:g('ap_notes').trim(),people:[...f.querySelectorAll('[data-ap]:checked')].map(c=>c.dataset.ap)};
       if(!v.title){toast('Γράψε τι ραντεβού είναι.');break}
@@ -2633,8 +2675,8 @@ document.addEventListener('click',e=>{
       const isNew=f.dataset.new==='1';
       if(isNew)S.appts.push({...v,status:'open'});else Object.assign(S.appts.find(a=>a.id===v.id),v);
       const cf=apConflicts(S.appts.find(a=>a.id===v.id));
-      commit((isNew?'Το ραντεβού προστέθηκε.':'Οι αλλαγές αποθηκεύτηκαν.')+(cf.length?' Προσοχή: '+cf.map(c=>c.name+', '+c.why).join('. '):''));break}
-    case 'delappt':if(el.dataset.sure){S.appts=S.appts.filter(a=>a.id!==id);commit('Το ραντεβού διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
+      UI.hmsg=(isNew?'Νέο ραντεβού «':'Αλλαγές στο ραντεβού «')+v.title+'», '+fmt(v.date);commit((isNew?'Το ραντεβού προστέθηκε.':'Οι αλλαγές αποθηκεύτηκαν.')+(cf.length?' Προσοχή: '+cf.map(c=>c.name+', '+c.why).join('. '):''));break}
+    case 'delappt':if(el.dataset.sure){UI.hmsg='Διαγραφή ραντεβού «'+((S.appts||[]).find(a=>a.id===id)?.title||'')+'»';S.appts=S.appts.filter(a=>a.id!==id);commit('Το ραντεβού διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
     case 'wxday':wxDayForm(el.dataset.d);break;
     case 'savewx':{const f=document.getElementById('wxf'),d=f.dataset.d,v=(f.querySelector('input[name=asg]:checked')||{}).value||'auto';
       if(v==='auto')delete S.wxMark[d];else S.wxMark[d]=v;
@@ -2647,13 +2689,13 @@ document.addEventListener('click',e=>{
         .catch(x=>{el.disabled=false;el.dataset.sure='';el.lastChild.textContent='Στείλε τους την αλλαγή';toast(x.message)});break}
     case 'newtask':taskForm(null,el.dataset.p);break;
     case 'edittask':taskForm(T(id));break;
-    case 'donetask':{const t=T(id);t.status=t.status==='done'?'todo':'done';commit(t.status==='done'?'Η εργασία ολοκληρώθηκε και βγήκε από το πρόγραμμα.':'Η εργασία άνοιξε ξανά.');break}
+    case 'donetask':{const t=T(id);t.status=t.status==='done'?'todo':'done';UI.hmsg='Εργασία «'+t.title+(t.status==='done'?'»: ολοκληρώθηκε':'»: άνοιξε ξανά');commit(t.status==='done'?'Η εργασία ολοκληρώθηκε και βγήκε από το πρόγραμμα.':'Η εργασία άνοιξε ξανά.');break}
     case 'savetask':{const v=readTaskForm();if(!v.title){toast('Γράψε τίτλο για την εργασία.');break}
       if(!v.responsibleId){const l=S.workers.find(w=>w.role!=='voith'&&!isExt(w)&&w.specialtyId===v.specialtyId)||S.workers.find(w=>isExt(w)&&w.specialtyId===v.specialtyId);if(!l){toast('Δεν υπάρχει αρχιεργάτης, τεχνίτης ή συνεργάτης σε αυτή την ειδικότητα.');break}v.responsibleId=l.id}
       const isNew=v.isNew;delete v.isNew;
       if(isNew)S.tasks.push({...v,status:'todo'});else Object.assign(T(v.id),v);
-      commit(isNew?'Η εργασία προστέθηκε στο πρόγραμμα.':'Οι αλλαγές αποθηκεύτηκαν.');break}
-    case 'deltask':if(el.dataset.sure){S.tasks=S.tasks.filter(t=>t.id!==id);S.tasks.forEach(t=>{if(t.after===id)t.after=''});commit('Η εργασία διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
+      UI.hmsg=(isNew?'Νέα εργασία «':'Αλλαγές στην εργασία «')+v.title+'» ('+pname(v.projectId)+')';commit(isNew?'Η εργασία προστέθηκε στο πρόγραμμα.':'Οι αλλαγές αποθηκεύτηκαν.');break}
+    case 'deltask':if(el.dataset.sure){UI.hmsg='Διαγραφή εργασίας «'+(T(id)?.title||'')+'»';S.tasks=S.tasks.filter(t=>t.id!==id);S.tasks.forEach(t=>{if(t.after===id)t.after=''});commit('Η εργασία διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
     case 'newduty':dutyForm(null);break;
     case 'editduty':dutyForm(byId(S.duties,id));break;
     case 'saveduty':{const f=document.getElementById('df');const g=x=>document.getElementById(x).value;
@@ -2663,8 +2705,8 @@ document.addEventListener('click',e=>{
       if(v.freq==='days'&&!v.days.length){toast('Διάλεξε τουλάχιστον μία μέρα.');break}
       if(v.freq==='month'&&!(v.dom>=1&&v.dom<=31)){toast('Γράψε μέρα του μήνα από 1 έως 31.');break}
       if(f.dataset.new==='1')S.duties.push(v);else Object.assign(byId(S.duties,v.id),v);
-      commit(f.dataset.new==='1'?'Η υπενθύμιση προστέθηκε για '+(anyone(v.workerId)?.name||'')+'.':'Η υπενθύμιση αποθηκεύτηκε.');break}
-    case 'delduty':if(el.dataset.sure){S.duties=S.duties.filter(x=>x.id!==id);commit('Η υπενθύμιση διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
+      UI.hmsg=(f.dataset.new==='1'?'Νέα υπενθύμιση για '+(anyone(v.workerId)?.name||'')+': «':'Αλλαγές στην υπενθύμιση «')+v.title+'»';commit(f.dataset.new==='1'?'Η υπενθύμιση προστέθηκε για '+(anyone(v.workerId)?.name||'')+'.':'Η υπενθύμιση αποθηκεύτηκε.');break}
+    case 'delduty':if(el.dataset.sure){UI.hmsg='Διαγραφή υπενθύμισης «'+(byId(S.duties,id)?.title||'')+'»';S.duties=S.duties.filter(x=>x.id!==id);commit('Η υπενθύμιση διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
     case 'remv':UI.remV=el.dataset.m;render();break;
     case 'remday':{const dir=+el.dataset.dir,cur=UI.remDay||nextWork(TODAY);UI.remDay=dir===0?nextWork(TODAY):nextWork(add(cur,dir),dir);render();break}
     case 'newproj':projForm(null);break;
@@ -2678,8 +2720,8 @@ document.addEventListener('click',e=>{
       (document.getElementById('g_place')?geoField('g'):Promise.resolve(undefined)).then(geo=>{
         if(geo!==undefined)Object.assign(v,geo?{place:geo.place,lat:geo.lat,lon:geo.lon}:{place:'',lat:null,lon:null});
         if(f.dataset.new==='1')S.projects.push(v);else Object.assign(P(v.id),v);
-        commit('Το έργο αποθηκεύτηκε.'+(geo===null&&g('g_place').trim()?' Η περιοχή δεν βρέθηκε, ο καιρός παίρνεται από την έδρα.':''));wxRefresh()}).finally(()=>{el.disabled=false});break}
-    case 'delproj':if(el.dataset.sure){S.projects=S.projects.filter(p=>p.id!==id);S.tasks=S.tasks.filter(t=>t.projectId!==id);S.duties.forEach(x=>{if(x.projectId===id)x.projectId=''});(S.appts||[]).forEach(a=>{if(a.projectId===id)a.projectId=''});commit('Το έργο και οι εργασίες του διαγράφηκαν.')}else{el.dataset.sure=1;el.textContent='Διαγράφει και τις εργασίες. Πάτα ξανά'}break;
+        UI.hmsg=(f.dataset.new==='1'?'Νέο έργο «':'Αλλαγές στο έργο «')+v.name+'»';commit('Το έργο αποθηκεύτηκε.'+(geo===null&&g('g_place').trim()?' Η περιοχή δεν βρέθηκε, ο καιρός παίρνεται από την έδρα.':''));wxRefresh()}).finally(()=>{el.disabled=false});break}
+    case 'delproj':if(el.dataset.sure){UI.hmsg='Διαγραφή έργου «'+(P(id)?.name||'')+'» και των εργασιών του';S.projects=S.projects.filter(p=>p.id!==id);S.tasks=S.tasks.filter(t=>t.projectId!==id);S.duties.forEach(x=>{if(x.projectId===id)x.projectId=''});(S.appts||[]).forEach(a=>{if(a.projectId===id)a.projectId=''});commit('Το έργο και οι εργασίες του διαγράφηκαν.')}else{el.dataset.sure=1;el.textContent='Διαγράφει και τις εργασίες. Πάτα ξανά'}break;
     case 'newworker':workerForm(null);break;
     case 'newpartner':partnerForm(null);break;
     case 'editpartner':partnerForm(W(id));break;
@@ -2687,22 +2729,22 @@ document.addEventListener('click',e=>{
       const v={id:f.dataset.id,company:g('x_company').trim(),name:g('x_name').trim(),afm:g('x_afm').trim(),specialtyId:g('x_spec'),phone:g('x_phone').trim(),pay:g('x_pay'),wage:+g('x_wage')||0,role:'ext',off:g('x_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s))};
       if(!v.company&&!v.name){toast('Γράψε επωνυμία ή όνομα.');break}if(!v.name)v.name=v.company;
       if(v.pay==='day'&&!v.wage){toast('Γράψε μεροκάματο ή διάλεξε «κατ\' αποκοπή».');break}
-      if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else Object.assign(W(v.id),v);commit('Ο συνεργάτης αποθηκεύτηκε.');break}
+      UI.hmsg=(f.dataset.new==='1'?'Νέος συνεργάτης: ':'Αλλαγές στον συνεργάτη ')+(v.company||v.name);if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else Object.assign(W(v.id),v);commit('Ο συνεργάτης αποθηκεύτηκε.');break}
     case 'cpay':cpayForm(W(id));break;
     case 'savecpay':{const f=document.getElementById('cpf');const amount=num(document.getElementById('c_amount').value);if(amount<=0){toast('Γράψε ποσό.');break}
-      S.cpay=S.cpay||[];S.cpay.push({id:uid('c'),workerId:f.dataset.id,amount,date:document.getElementById('c_date').value||TODAY,method:document.getElementById('c_method').value,note:document.getElementById('c_note').value.trim()});const left=r2(+f.dataset.rest-amount);commit('Η πληρωμή των '+money(amount)+' καταχωρίστηκε. '+(Math.abs(left)<0.5?'Εξοφλήθηκε.':left>0?'Μένουν '+money(left)+'.':'Προκαταβολή '+money(-left)+'.'));break}
-    case 'delcpay':{const x=(S.cpay||[]).find(c=>c.id===id);S.cpay=S.cpay.filter(c=>c.id!==id);save();cpayForm(W(x.workerId));render();toast('Η πληρωμή αναιρέθηκε.');break}
+      S.cpay=S.cpay||[];S.cpay.push({id:uid('c'),workerId:f.dataset.id,amount,date:document.getElementById('c_date').value||TODAY,method:document.getElementById('c_method').value,note:document.getElementById('c_note').value.trim()});const left=r2(+f.dataset.rest-amount);UI.hmsg=(W(f.dataset.id)?.company||W(f.dataset.id)?.name||'')+': πληρωμή '+money(amount);commit('Η πληρωμή των '+money(amount)+' καταχωρίστηκε. '+(Math.abs(left)<0.5?'Εξοφλήθηκε.':left>0?'Μένουν '+money(left)+'.':'Προκαταβολή '+money(-left)+'.'));break}
+    case 'delcpay':{const x=(S.cpay||[]).find(c=>c.id===id);S.cpay=S.cpay.filter(c=>c.id!==id);logChange((W(x.workerId)?.company||W(x.workerId)?.name||'')+': διαγραφή πληρωμής '+money(x.amount));save();cpayForm(W(x.workerId));render();toast('Η πληρωμή αναιρέθηκε.');break}
     case 'editworker':workerForm(W(id));break;
     case 'rates':ratesForm(W(id));break;
-    case 'saverates':{const f=document.getElementById('rf');const w=W(f.dataset.id);w.rates={};f.querySelectorAll('[data-rate]').forEach(i=>{if(i.value!=='')w.rates[i.dataset.rate]=+i.value});commit('Τα μεροκάματα ανά έργο αποθηκεύτηκαν.');break}
+    case 'saverates':{const f=document.getElementById('rf');const w=W(f.dataset.id);w.rates={};f.querySelectorAll('[data-rate]').forEach(i=>{if(i.value!=='')w.rates[i.dataset.rate]=+i.value});UI.hmsg='Μεροκάματα ανά έργο: '+w.name;commit('Τα μεροκάματα ανά έργο αποθηκεύτηκαν.');break}
     case 'saveworker':{const f=document.getElementById('wf');const g=x=>document.getElementById(x).value;
       const v={id:f.dataset.id,name:g('h_name').trim(),specialtyId:g('h_spec'),role:g('h_role'),wage:+g('h_wage')||0,phone:g('h_phone').trim(),off:g('h_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)),...(document.getElementById('h_rate')?{rating:+g('h_rate')}:{})};
       if(document.getElementById('h_spec2')){v.spec2=g('h_spec2')===v.specialtyId?'':g('h_spec2');const dd=[...f.querySelectorAll('[data-wday]:checked')].map(x=>+x.dataset.wday);
         if(!dd.length){toast('Διάλεξε τουλάχιστον μία μέρα που δουλεύει.');break}v.days=S.settings.workdays.every(d=>dd.includes(d))?null:dd}
       if(!v.name){toast('Γράψε ονοματεπώνυμο.');break}
       if(SP(v.specialtyId)?.office)v.role='ypal';else if(v.role==='ypal'||v.role==='ext')v.role='voith';
-      if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else Object.assign(W(v.id),v);commit('Ο εργαζόμενος αποθηκεύτηκε.');break}
-    case 'delworker':if(el.dataset.sure){S.workers=S.workers.filter(w=>w.id!==id);S.duties=S.duties.filter(x=>x.workerId!==id);(S.appts||[]).forEach(a=>{a.people=(a.people||[]).filter(x=>x!==id)});
+      UI.hmsg=(f.dataset.new==='1'?'Νέος εργαζόμενος: ':'Αλλαγές στον εργαζόμενο ')+v.name;if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else Object.assign(W(v.id),v);commit('Ο εργαζόμενος αποθηκεύτηκε.');break}
+    case 'delworker':if(el.dataset.sure){UI.hmsg='Διαγραφή εργαζόμενου: '+(W(id)?.name||'');S.workers=S.workers.filter(w=>w.id!==id);S.duties=S.duties.filter(x=>x.workerId!==id);(S.appts||[]).forEach(a=>{a.people=(a.people||[]).filter(x=>x!==id)});
       S.cpay=(S.cpay||[]).filter(x=>x.workerId!==id);S.tasks.forEach(t=>{if(t.responsibleId===id){const l=S.workers.find(w=>w.role!=='voith'&&!isExt(w)&&w.specialtyId===t.specialtyId);t.responsibleId=l?l.id:''}});commit('Ο εργαζόμενος διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
     case 'newspec':openModal(`<h2>Νέα ειδικότητα</h2><form class="form" id="sf"><label class="full">Όνομα<input id="sp_name" placeholder="π.χ. Μονωτές ή Λογιστήριο"></label><label class="full ck"><input type="checkbox" id="sp_office"> <span>Ειδικότητα γραφείου (δεν μπαίνει σε συνεργεία έργων)</span></label><label class="full ck"><input type="checkbox" id="sp_pm"> <span>Διαχείριση έργων (ορίζεται σε έργα, μπορεί σε πολλά μαζί)</span></label></form><div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savespec">Αποθήκευση</button></div>`);break;
     case 'savespec':{const n=document.getElementById('sp_name').value.trim();if(!n){toast('Γράψε όνομα ειδικότητας.');break}const pm=document.getElementById('sp_pm').checked;const office=pm||document.getElementById('sp_office').checked;
@@ -2715,12 +2757,14 @@ document.addEventListener('click',e=>{
       addPay(R,ws,r,{amount,date:g('p_date')||TODAY,method:g('p_method'),note:g('p_note').trim()});
       const left=r2(r.rest-amount);
       commit(r.w.name+': πληρώθηκαν '+money(amount)+'. '+(Math.abs(left)<0.5?'Εξοφλήθηκε.':left>0?'Μένουν '+money(left)+(S.settings.payCarry===false?'.':' για την επόμενη εβδομάδα.'):'Προκαταβολή '+money(-left)+'.'));break}
-    case 'delpay':{const wid=el.dataset.w,k=UI.payWeek+'|'+wid,rec=S.payments[k];if(rec){rec.pays=rec.pays.filter(p=>p.id!==id);if(!rec.pays.length&&!rec.lock&&rec.bonus==null&&!rec.bonusOff)delete S.payments[k]}
+    case 'delpay':{const wid=el.dataset.w,k=UI.payWeek+'|'+wid,rec=S.payments[k];if(rec){const dp=rec.pays.find(p=>p.id===id);if(dp)logChange((W(wid)?.name||'')+': διαγραφή πληρωμής '+money(dp.amount));rec.pays=rec.pays.filter(p=>p.id!==id);if(!rec.pays.length&&!rec.lock&&rec.bonus==null&&!rec.bonusOff)delete S.payments[k]}
       save();render();payForm(wid);toast('Η πληρωμή αναιρέθηκε.');break}
     case 'bonusok':case 'bonusno':case 'bonusundo':{const k=UI.payWeek+'|'+id,rec=S.payments[k]=S.payments[k]||{earned:0,days:0,pays:[]},n=W(id)?.name||'';
       if(a==='bonusok'){rec.bonus=num(el.dataset.v);delete rec.bonusOff}else if(a==='bonusno'){rec.bonusOff=true;delete rec.bonus}else{delete rec.bonus;delete rec.bonusOff}
       if(!rec.pays.length&&!rec.lock&&rec.bonus==null&&!rec.bonusOff)delete S.payments[k];
       commit(a==='bonusok'?n+': μπόνους '+money(rec.bonus)+' στο ποσό της εβδομάδας.':a==='bonusno'?n+': χωρίς μπόνους αυτή την εβδομάδα.':n+': το μπόνους αναιρέθηκε.');break}
+    case 'undo':undoChange(id);break;
+    case 'histall':UI.histAll=true;render();break;
     case 'payviber':{const r=payData(schedule(),UI.payWeek).find(x=>x.w.id===id);if(r)openViber(r.w,payText(r,UI.payWeek));break}
     case 'payall':{if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά';break}
       const R=schedule(),ws=UI.payWeek,rs=payData(R,ws).filter(r=>r.rest>=0.5);
@@ -2764,7 +2808,7 @@ document.addEventListener('change',e=>{
   else if(t.id==='s_start'){S.settings.start=t.value||TODAY;commit('Η έναρξη άλλαξε. Το πρόγραμμα ξαναστήθηκε.')}
   else if(t.id==='s_auto'){S.settings.autoSend=t.checked;commit(t.checked?'Η αυτόματη αποστολή ενεργοποιήθηκε στις '+(S.settings.sendTime||'06:30')+'.':'Η αυτόματη αποστολή σταμάτησε.')}
   else if(t.id==='s_time'){S.settings.sendTime=t.value||'06:30';commit('Η ώρα αποστολής έγινε '+S.settings.sendTime+'.')}
-  else if(t.dataset.viber){W(t.dataset.viber).viber=t.checked;save();toast(t.checked?'Θα λαμβάνει το πρόγραμμα στο Viber.':'Δεν θα λαμβάνει το πρόγραμμα στο Viber.')}
+  else if(t.dataset.viber){W(t.dataset.viber).viber=t.checked;UI.hmsg=W(t.dataset.viber).name+(t.checked?': λαμβάνει το πρόγραμμα στο Viber':': δεν λαμβάνει το πρόγραμμα στο Viber');note(t.checked?'Θα λαμβάνει το πρόγραμμα στο Viber.':'Δεν θα λαμβάνει το πρόγραμμα στο Viber.')}
   else if(t.id==='apW'){UI.apW=t.value;render()}
   else if(t.id==='ap_proj'){const p=P(t.value),pl=document.getElementById('ap_place');if(p&&!pl.value.trim())pl.value=p.location||''}
   else if(t.id==='s_owner'){S.settings.ownerName=t.value.trim();commit('Το όνομα του εργολάβου έγινε «'+ownerName()+'».')}
@@ -2772,16 +2816,16 @@ document.addEventListener('change',e=>{
   else if(t.id==='s_wx'){S.settings.wx=Object.assign(wxCfg(),{on:t.checked});commit(t.checked?'Το πρόγραμμα ακολουθεί την πρόγνωση καιρού.':'Το πρόγραμμα δεν λαμβάνει υπόψη τον καιρό.');if(t.checked)wxRefresh()}
   else if(t.id==='s_wprob'||t.id==='s_wmm'){const v=Math.max(0,+String(t.value).replace(',','.')||0);S.settings.wx=Object.assign(wxCfg(),t.id==='s_wprob'?{minProb:Math.min(100,v)}:{minMm:v});commit('Το όριο για βροχερή μέρα άλλαξε. Το πρόγραμμα ξαναστήθηκε.')}
   else if(t.id==='s_place')saveBase();
-  else if(t.dataset.co){S.settings.company=Object.assign({},company(),{[t.dataset.co]:t.value.trim()});save();toast(t.dataset.co==='name'?(t.value.trim()?'Η επωνυμία μπαίνει στα μηνύματα.':'Η επωνυμία βγήκε από τα μηνύματα.'):'Τα στοιχεία της εταιρείας αποθηκεύτηκαν.')}
+  else if(t.dataset.co){S.settings.company=Object.assign({},company(),{[t.dataset.co]:t.value.trim()});UI.hmsg='Στοιχεία εταιρείας: '+({name:'επωνυμία',afm:'ΑΦΜ',phone:'τηλέφωνο',addr:'διεύθυνση'}[t.dataset.co]||'')+' «'+t.value.trim()+'»';note(t.dataset.co==='name'?(t.value.trim()?'Η επωνυμία μπαίνει στα μηνύματα.':'Η επωνυμία βγήκε από τα μηνύματα.'):'Τα στοιχεία της εταιρείας αποθηκεύτηκαν.')}
   else if(t.id==='s_stime'){S.settings.startTime=t.value;commit(t.value?'Η ώρα έναρξης '+t.value+' μπαίνει στο μήνυμα της ημέρας.':'Η ώρα έναρξης βγήκε από τα μηνύματα.')}
   else if(t.id==='s_hol'){S.settings.hol=Object.assign(holDefaults(),S.settings.hol,{on:t.checked});commit(t.checked?'Τις αργίες δεν μπαίνει πρόγραμμα.':'Οι αργίες μετράνε ως κανονικές εργάσιμες.')}
   else if(t.dataset.hol){const hol=Object.assign(holDefaults(),S.settings.hol);const sk=new Set(hol.skip||[]);t.checked?sk.delete(t.dataset.hol):sk.add(t.dataset.hol);hol.skip=[...sk];S.settings.hol=hol;
     const n=HOLIDAYS.find(x=>x[0]===t.dataset.hol)[1];commit(t.checked?n+': αργία, χωρίς πρόγραμμα.':n+': κανονική εργάσιμη.')}
   else if(t.id==='s_payday'){S.settings.payDay=+t.value;commit('Μέρα πληρωμής: '+DAYF[+t.value]+'.')}
-  else if(t.id==='s_paym'){S.settings.payMethod=t.value;save();toast('Συνήθης τρόπος πληρωμής: '+payM(t.value).toLowerCase()+'.')}
+  else if(t.id==='s_paym'){S.settings.payMethod=t.value;note('Συνήθης τρόπος πληρωμής: '+payM(t.value).toLowerCase()+'.')}
   else if(t.id==='s_carry'){S.settings.payCarry=t.checked;commit(t.checked?'Τα υπόλοιπα περνούν στην επόμενη εβδομάδα.':'Κάθε εβδομάδα μετρά μόνη της, χωρίς μεταφορά υπολοίπου.')}
   else if(t.id==='s_payfrom'){if(!t.value)return;S.settings.payFrom=weekStart(t.value);commit('Τα υπόλοιπα μετράνε από την εβδομάδα '+fmtS(S.settings.payFrom)+'.')}
-  else if(t.dataset.dw){S.settings.defWage=Object.assign({},S.settings.defWage,{[t.dataset.dw]:Math.max(0,+t.value||0)});save();toast('Νέος '+ROLES[t.dataset.dw].toLowerCase()+': '+eur(defWage(t.dataset.dw))+' μεροκάματο.')}
+  else if(t.dataset.dw){S.settings.defWage=Object.assign({},S.settings.defWage,{[t.dataset.dw]:Math.max(0,+t.value||0)});note('Νέος '+ROLES[t.dataset.dw].toLowerCase()+': '+eur(defWage(t.dataset.dw))+' μεροκάματο.')}
   else if(t.id==='h_role'){const f=document.getElementById('wf'),i=document.getElementById('h_wage');if(f&&f.dataset.new==='1'&&Object.keys(DEFW).some(k=>+i.value===defWage(k)))i.value=defWage(t.value)}
   else if(t.id==='s_rate'){S.settings.rate=Object.assign(rateCfg(),{on:t.checked});commit(t.checked?'Το πρόγραμμα βάζει τους πιο έμπειρους στις δύσκολες εργασίες, με εναλλαγή.':'Το πρόγραμμα δεν λαμβάνει υπόψη βαθμούς και δυσκολία.')}
   else if(t.id==='s_rhard'||t.id==='s_rstreak'||t.id==='s_rbonus'){const v=Math.max(t.id==='s_rbonus'?0:1,Math.round(+t.value||0)),k={s_rhard:'hard',s_rstreak:'streak',s_rbonus:'bonus'}[t.id];S.settings.rate=Object.assign(rateCfg(),{[k]:k==='streak'?Math.min(10,v):k==='bonus'?Math.min(100,v):Math.min(5,Math.max(3,v))});

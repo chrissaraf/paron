@@ -52,6 +52,21 @@ function saveState(o) {
   writeJSON(F.state, o);
 }
 
+// --- αναίρεση: πριν από κάθε αλλαγή με νέα εγγραφή ιστορικού κρατά τα δεδομένα όπως ήταν (τα 15 τελευταία) ---
+const UNDO = path.join(CFG.dataDir, 'undo');
+function saveUndo(ids, prev) {
+  fs.mkdirSync(UNDO, { recursive: true, mode: 0o700 });
+  writeJSON(path.join(UNDO, ids[ids.length - 1].replace(/[^\w-]/g, '') + '.json'), { ids, at: now(), state: prev });
+  const fs_ = fs.readdirSync(UNDO).filter(f => f.endsWith('.json')).map(f => ({ f, t: fs.statSync(path.join(UNDO, f)).mtimeMs })).sort((a, b) => a.t - b.t);
+  fs_.slice(0, -15).forEach(x => fs.unlinkSync(path.join(UNDO, x.f)));
+}
+function findUndo(id) {
+  if (!fs.existsSync(UNDO)) return null;
+  for (const f of fs.readdirSync(UNDO).filter(f => f.endsWith('.json'))) { const o = readJSON(path.join(UNDO, f), null); if (o && (o.ids || []).includes(id)) return { file: path.join(UNDO, f), ...o }; }
+  return null;
+}
+const withPlan = o => { if (CFG.plan && o.settings) { o.settings.plan = CFG.plan; o.settings.planLock = true; } return o; };
+
 // --- καιρός ---
 // Η πρόγνωση (Open-Meteo, δωρεάν, χωρίς κλειδί) φυλάγεται στο data/weather.json και ανανεώνεται κάθε 3 ώρες,
 // ή αμέσως όταν μπει έργο σε νέα περιοχή. Όλοι, και τα μηνύματα Viber, βλέπουν το ίδιο πρόγραμμα.
@@ -340,13 +355,31 @@ http.createServer(async (req, res) => {
       }
     }
     if (url.pathname === '/api/state') {
-      if (req.method === 'GET') { const o = readJSON(F.state, {}); if (CFG.plan && o.settings) { o.settings.plan = CFG.plan; o.settings.planLock = true; } return send(res, 200, o); }
+      if (req.method === 'GET') return send(res, 200, withPlan(readJSON(F.state, {})));
       if (req.method === 'PUT') {
         const o = JSON.parse(await readBody(req));
         if (!o || o.v !== 2 || !Array.isArray(o.workers) || !Array.isArray(o.tasks)) return send(res, 400, { error: 'Μη έγκυρα δεδομένα' });
         if (o.settings) { delete o.settings.planLock; if (CFG.plan) o.settings.plan = CFG.plan; }   // το πακέτο το ορίζει η συνδρομή, όχι η εφαρμογή
+        // ιστορικό: οι νέες εγγραφές παίρνουν το όνομα του χρήστη που συνδέθηκε, και κρατιούνται τα δεδομένα πριν την αλλαγή
+        const cur = readJSON(F.state, null), known = new Set(((cur && cur.hist) || []).map(e => e && e.id));
+        const fresh = (Array.isArray(o.hist) ? o.hist : []).filter(e => e && e.id && !known.has(e.id));
+        fresh.forEach(e => { e.by = me.name; });
+        if (cur && fresh.length && !fresh.some(e => e.undo)) saveUndo(fresh.map(e => String(e.id)), cur);
         saveState(o); return send(res, 200, { ok: true });
       }
+    }
+    if (url.pathname === '/api/undo' && req.method === 'POST') {
+      const b = JSON.parse((await readBody(req)) || '{}'), cur = readJSON(F.state, {}), t = C.undoTarget(cur.hist);
+      if (!t || t.id !== b.id) return send(res, 409, { error: 'Στο μεταξύ έγινε άλλη αλλαγή. Δες το ιστορικό και δοκίμασε ξανά.' });
+      const u = findUndo(t.id);
+      if (!u || !u.state) return send(res, 410, { error: 'Αυτή η αλλαγή δεν αναιρείται πια.' });
+      const o = u.state;
+      o.hist = (cur.hist || []).concat({ id: 'h' + Date.now().toString(36), at: now().slice(0, 16), by: me.name, msg: 'Αναίρεση: ' + t.msg, undo: u.ids });
+      o.dutyDone = cur.dutyDone || {};   // τα «έγινε» των υπενθυμίσεων μένουν όπως είναι
+      if (o.settings) { delete o.settings.planLock; if (CFG.plan) o.settings.plan = CFG.plan; }
+      saveState(o); try { fs.unlinkSync(u.file); } catch {}
+      console.log(now(), 'αναίρεση', me.username, t.msg);
+      return send(res, 200, withPlan(o));
     }
     if (url.pathname === '/api/weather' && req.method === 'GET') {
       const w = await wxFetch(3 * 3600e3, url.searchParams.get('refresh') === '1');

@@ -309,6 +309,11 @@ function pmProjects(wid,d){
 }
 const managersOf=(pid,d)=>S.workers.filter(w=>isPM(w)&&pmProjects(w.id,d).includes(pid));
 const ov=(d,wid)=>S.overrides[d+'|'+wid];
+// ιστορικό αλλαγών: S.hist=[{id,at,by,msg,undo?}]· undo = οι αλλαγές που αναίρεσε μια εγγραφή
+const stamp=()=>{const d=new Date();return ds(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())};
+function undoneIds(hist){const U=new Set();(hist||[]).forEach(e=>{if(e&&e.undo)[].concat(e.undo).forEach(x=>U.add(x))});return U}
+// η τελευταία αλλαγή που δεν έχει αναιρεθεί: μόνο αυτή αναιρείται, ώστε να μη χαθεί κάτι που έγινε αργότερα
+function undoTarget(hist){hist=hist||[];const U=undoneIds(hist);for(let i=hist.length-1;i>=0;i--){const e=hist[i];if(!e||e.undo||U.has(e.id))continue;return e}return null}
 // διαθεσιμότητα (πακέτο Συνεργείο): w.days = οι μέρες της εβδομάδας που δουλεύει· τις άλλες έχει ρεπό
 const availOn=()=>hasF('avail');
 const isRest=(w,d)=>availOn()&&Array.isArray(w.days)&&w.days.length>0&&!w.days.includes(dow(d));
@@ -604,7 +609,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
