@@ -6,7 +6,7 @@
 <!--BODY-START-->
 <title>ERGODO · Πρόγραμμα συνεργείων και μεροκάματα</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Το ERGODO βγάζει μόνο του το πρόγραμμα των συνεργείων σας, το στέλνει σε κάθε εργάτη στο Viber και κρατάει τα μεροκάματα κάθε έργου. Για εργολάβους και κατασκευαστικές. 30 μέρες δωρεάν, πακέτα από 9,90 € τον μήνα.">
+<meta name="description" content="Το ERGODO βγάζει μόνο του το πρόγραμμα των συνεργείων σας, το στέλνει σε κάθε εργάτη στο Viber και κρατάει τα μεροκάματα κάθε έργου. Για εργολάβους και κατασκευαστικές. 30 μέρες δωρεάν, πακέτα από 9,99 € τον μήνα.">
 <meta name="theme-color" content="#161b1f">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="el_GR">
@@ -22,9 +22,9 @@
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"ERGODO","applicationCategory":"BusinessApplication","operatingSystem":"Web, Android, iOS","inLanguage":"el","url":"https://ergodo.gr/",
  "description":"Πρόγραμμα συνεργείων, αποστολή προγράμματος στο Viber και μεροκάματα ανά έργο για κατασκευαστικές εταιρείες.",
  "offers":[
-  {"@type":"Offer","name":"Μάστορας","description":"Έως 5 άτομα","price":"9.90","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"9.90","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
-  {"@type":"Offer","name":"Συνεργείο","description":"Έως 15 άτομα","price":"19.90","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"19.90","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
-  {"@type":"Offer","name":"Εργοτάξιο","description":"Έως 40 άτομα","price":"39.90","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"39.90","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}}
+  {"@type":"Offer","name":"Μάστορας","description":"Έως 5 άτομα","price":"9.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"9.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Συνεργείο","description":"Έως 15 άτομα","price":"19.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"19.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Εργοτάξιο","description":"Έως 40 άτομα","price":"39.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"39.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}}
  ]}
 </script>
 <style>
@@ -248,6 +248,27 @@ input[type=range]{width:100%;accent-color:var(--hivis-2);height:28px;margin:0}
 .plan .btn{width:100%}
 .plans-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;margin-top:22px;color:var(--muted);font-size:15px}
 .plans-foot a{color:var(--ink);font-weight:600}
+.plan li.inc{display:block;font-weight:600}
+.soon{display:inline-block;vertical-align:2px;margin-left:6px;padding:2px 6px;border-radius:5px;background:var(--hivis-soft);color:var(--ink);font:700 11px/1.2 var(--f-display);letter-spacing:.08em;white-space:nowrap}
+.soon-note{margin-top:14px;color:var(--muted);font-size:14px}
+.soon-note .soon{margin:0 6px 0 0}
+.compare{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.compare summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;font-weight:600;font-size:17px}
+.compare summary::-webkit-details-marker{display:none}
+.compare summary::after{content:"";width:11px;height:11px;flex:none;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg) translate(-3px,-3px);transition:transform .2s}
+.compare[open] summary::after{transform:rotate(-135deg)}
+.cmp-wrap{overflow-x:auto;padding:0 22px 18px}
+.cmp{width:100%;border-collapse:collapse;table-layout:fixed;font-size:15px}
+.cmp col:first-child{width:46%}
+.cmp col.pick{background:var(--sunk)}
+.cmp th,.cmp td{padding:10px 8px;border-top:1px solid var(--line);text-align:center;vertical-align:middle;overflow-wrap:break-word}
+.cmp thead th{border-top:0;font:800 18px var(--f-display);padding-bottom:12px}
+.cmp tbody th{text-align:left;font-weight:500}
+.cmp .grp th{font:700 13px var(--f-display);letter-spacing:.12em;color:var(--muted);padding-top:20px}
+.cmp td svg{width:18px;height:18px;color:var(--ok);vertical-align:middle}
+.cmp .no{color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:560px){.cmp-wrap{padding:0 10px 14px}.cmp{font-size:13px}.cmp th,.cmp td{padding:9px 3px}.cmp thead th{font-size:13px}.cmp col:first-child{width:37%}.compare summary{padding:16px 16px}}
 @media (max-width:900px){.plans{grid-template-columns:minmax(0,1fr);max-width:520px}}
 
 /* Launch programme */
@@ -365,7 +386,7 @@ footer a:hover{color:var(--on-asphalt)}
         <a class="btn pri" href="#start">Ξεκινήστε 30 μέρες δωρεάν <svg><use href="#i-arrow"/></svg></a>
         <a class="btn ghost-d" href="#pricing">Δείτε τις τιμές</a>
       </div>
-      <p class="fine">Χωρίς κάρτα. <b>Πακέτα από 9,90 € τον μήνα</b> για όλη την εταιρεία.</p>
+      <p class="fine">Χωρίς κάρτα. <b>Πακέτα από 9,99 € τον μήνα</b> για όλη την εταιρεία.</p>
       <ul class="trust">
         <li><svg><use href="#i-flag"/></svg>Ελληνικά σε κάθε οθόνη</li>
         <li><svg><use href="#i-phone"/></svg>Στο Viber που ήδη έχουν</li>
@@ -579,7 +600,7 @@ footer a:hover{color:var(--on-asphalt)}
     <div class="sec-head">
       <p class="eyebrow">ΤΙΜΕΣ</p>
       <h2>Μία συνδρομή για όλη την εταιρεία.</h2>
-      <p class="lead">Όλες οι λειτουργίες σε κάθε πακέτο. Αλλάζει μόνο πόσα άτομα χωράνε και πόση βοήθεια θέλετε στο ξεκίνημα. Το γραφείο και ο ιδιοκτήτης δεν μετράνε στα άτομα, και το Συνεργείο κοστίζει λιγότερο από μισό μεροκάματο τον μήνα.</p>
+      <p class="lead">Ξεκινάτε με ό,τι χρειάζεται ένα μικρό συνεργείο και ανεβαίνετε όταν μεγαλώσει η δουλειά. Το γραφείο και ο ιδιοκτήτης δεν μετράνε στα άτομα, και το Συνεργείο κοστίζει λιγότερο από μισό μεροκάματο τον μήνα.</p>
     </div>
     <div class="bill" role="group" aria-label="Τρόπος χρέωσης">
       <button type="button" id="bMonth" aria-pressed="true">Μηνιαία</button>
@@ -588,38 +609,46 @@ footer a:hover{color:var(--on-asphalt)}
     <div class="plans">
       <article class="plan">
         <div><h3>Μάστορας</h3><p class="who">Έως 5 άτομα στα έργα</p></div>
-        <p class="price"><b data-m="9.9" data-n="5">9,90</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
+        <p class="price"><b data-m="9.99" data-n="5">9,99</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
         <p class="per" data-per></p>
         <ul>
-          <li><svg><use href="#i-ok"/></svg>Όλες οι λειτουργίες</li>
-          <li><svg><use href="#i-ok"/></svg>Απεριόριστα έργα και εργασίες</li>
-          <li><svg><use href="#i-ok"/></svg>Αποστολή στο Viber με ένα πάτημα</li>
-          <li><svg><use href="#i-ok"/></svg>Βοήθεια με email</li>
+          <li><svg><use href="#i-ok"/></svg><span>Αυτόματο πρόγραμμα κάθε μέρα</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Viber με ένα πάτημα</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Η εφαρμογή του εργάτη στο κινητό</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Μεροκάματα, κόστος και πληρωμές</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Υπενθυμίσεις και αργίες</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>1 χρήστης γραφείου, βοήθεια με email</span></li>
         </ul>
         <a class="btn ghost" href="#start" data-plan="0">Δοκιμή 30 ημερών</a>
       </article>
       <article class="plan top-pick">
         <span class="flag">ΠΡΟΤΕΙΝΟΥΜΕ</span>
         <div><h3>Συνεργείο</h3><p class="who">Έως 15 άτομα στα έργα</p></div>
-        <p class="price"><b data-m="19.9" data-n="15">19,90</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
+        <p class="price"><b data-m="19.99" data-n="15">19,99</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
         <p class="per" data-per></p>
         <ul>
-          <li><svg><use href="#i-ok"/></svg>Όλες οι λειτουργίες</li>
-          <li><svg><use href="#i-ok"/></svg>Στήσιμο μαζί σας σε μία συνάντηση</li>
-          <li><svg><use href="#i-ok"/></svg>Εκπαίδευση για το γραφείο</li>
-          <li><svg><use href="#i-ok"/></svg>Βοήθεια και στο τηλέφωνο</li>
+          <li class="inc">Όλα του Μάστορα, και:</li>
+          <li><svg><use href="#i-ok"/></svg><span>Πρόγραμμα με τον καιρό</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Συνεργάτες και ραντεβού</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Πρόοδος από το εργοτάξιο <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Ένσημα ανά έργο για τον λογιστή <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Ειδοποιήσεις στο κινητό χωρίς Viber Business <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Έως 3 χρήστες γραφείου, στήσιμο μαζί σας</span></li>
         </ul>
         <a class="btn pri" href="#start" data-plan="1">Δοκιμή 30 ημερών</a>
       </article>
       <article class="plan">
         <div><h3>Εργοτάξιο</h3><p class="who">Έως 40 άτομα στα έργα</p></div>
-        <p class="price"><b data-m="39.9" data-n="40">39,90</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
+        <p class="price"><b data-m="39.99" data-n="40">39,99</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
         <p class="per" data-per></p>
         <ul>
-          <li><svg><use href="#i-ok"/></svg>Όλα του Συνεργείου</li>
-          <li><svg><use href="#i-ok"/></svg>Μεταφορά των δεδομένων σας από Excel</li>
-          <li><svg><use href="#i-ok"/></svg>Εκπαίδευση και για τους εργοδηγούς</li>
-          <li><svg><use href="#i-ok"/></svg>Προτεραιότητα στη βοήθεια</li>
+          <li class="inc">Όλα του Συνεργείου, και:</li>
+          <li><svg><use href="#i-ok"/></svg><span>Κέρδος ανά έργο <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Παρουσίες με GPS <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Ημερολόγιο έργου με φωτογραφίες <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Σελίδα προόδου για τον πελάτη <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Μηχανήματα, οχήματα και λήξεις <span class="soon">ΣΥΝΤΟΜΑ</span></span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Χρήστες γραφείου χωρίς όριο, μεταφορά από Excel</span></li>
         </ul>
         <a class="btn ghost" href="#start" data-plan="2">Δοκιμή 30 ημερών</a>
       </article>
@@ -628,6 +657,47 @@ footer a:hover{color:var(--on-asphalt)}
       <span>30 μέρες δωρεάν σε κάθε πακέτο, χωρίς κάρτα. Ακυρώνετε όποτε θέλετε.</span>
       <span>Πάνω από 40 άτομα; <a href="#start" data-plan="3">Ζητήστε προσφορά</a></span>
     </div>
+    <p class="soon-note"><span class="soon">ΣΥΝΤΟΜΑ</span> Ετοιμάζεται τώρα και μπαίνει στο πακέτο σας χωρίς αλλαγή τιμής μόλις βγει.</p>
+    <details class="compare">
+      <summary>Όλες οι λειτουργίες ανά πακέτο</summary>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <colgroup><col><col><col class="pick"><col></colgroup>
+          <thead><tr><th scope="col"><span class="vh">Λειτουργία</span></th><th scope="col">Μάστορας</th><th scope="col">Συνεργείο</th><th scope="col">Εργοτάξιο</th></tr></thead>
+          <tbody>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΠΡΟΓΡΑΜΜΑ</th></tr>
+          <tr><th scope="row">Αυτόματο πρόγραμμα ημέρας και εβδομάδας</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Viber με ένα πάτημα</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Η εφαρμογή του εργάτη στο κινητό</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Έργα, εργασίες και χρονοδιάγραμμα</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Υπενθυμίσεις, αργίες και κλειστές μέρες</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Πρόγραμμα με τον καιρό</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ραντεβού με πελάτες</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Πρόοδος από το εργοτάξιο <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Άδειες από το κινητό <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ειδοποιήσεις στο κινητό <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Παρουσίες με GPS <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Υλικά πριν την εργασία <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΧΡΗΜΑΤΑ</th></tr>
+          <tr><th scope="row">Μεροκάματα, κόστος εργατικών και πληρωμές</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Συνεργάτες με μεροκάματο ή κατ' αποκοπή</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ένσημα ανά έργο για τον λογιστή <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Εξαγωγή σε Excel και PDF <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Κέρδος ανά έργο <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΕΡΓΟΤΑΞΙΟ ΚΑΙ ΠΕΛΑΤΗΣ</th></tr>
+          <tr><th scope="row">Μηχανήματα, οχήματα και λήξεις <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ημερολόγιο έργου με φωτογραφίες <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Σελίδα προόδου για τον πελάτη <span class="soon">ΣΥΝΤΟΜΑ</span></th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΟΜΑΔΑ ΚΑΙ ΒΟΗΘΕΙΑ</th></tr>
+          <tr><th scope="row">Άτομα στα έργα</th><td>5</td><td>15</td><td>40</td></tr>
+          <tr><th scope="row">Χρήστες γραφείου</th><td>1</td><td>3</td><td>Χωρίς όριο</td></tr>
+          <tr><th scope="row">Διαχειριστές έργων</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Βοήθεια</th><td>Email</td><td>Και τηλέφωνο</td><td>Πρώτη σειρά</td></tr>
+          <tr><th scope="row">Στήσιμο</th><td><span class="no" aria-label="Όχι">–</span></td><td>Μαζί σας</td><td>Και από Excel</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
 
     <div class="launch">
       <div class="seats"><b>20</b><span>ΘΕΣΕΙΣ</span></div>
@@ -662,7 +732,7 @@ footer a:hover{color:var(--on-asphalt)}
       <details><summary>Πρέπει οι εργάτες να κατεβάσουν εφαρμογή;</summary><p>Όχι. Το πρόγραμμά τους έρχεται στο Viber που ήδη έχουν. Όποιος θέλει, ανοίγει το ERGODO από το κινητό του και το βάζει στην αρχική οθόνη σαν εφαρμογή, χωρίς κατέβασμα από store.</p></details>
       <details><summary>Κι αν αλλάξει κάτι το πρωί;</summary><p>Αλλάζετε το άτομο ή την εργασία και το ERGODO προσαρμόζει τα υπόλοιπα γύρω από την επιλογή σας. Νέο μήνυμα στέλνεται μόνο σε όσους άλλαξε η μέρα τους.</p></details>
       <details><summary>Πόσο χρόνο θέλει για να ξεκινήσουμε;</summary><p>Λίγες ώρες. Περνάτε έργα, εργασίες και προσωπικό, και από την επόμενη μέρα το πρόγραμμα βγαίνει μόνο του. Στα πακέτα Συνεργείο και Εργοτάξιο το στήσιμο το κάνουμε εμείς μαζί σας.</p></details>
-      <details><summary>Μπορώ να βάλω και εξωτερικά συνεργεία;</summary><p>Ναι. Οι συνεργάτες μπαίνουν με μεροκάματο ή κατ' αποκοπή, παίρνουν το πρόγραμμά τους στο Viber, και βλέπετε υπόλοιπο και προκαταβολές για τον καθένα.</p></details>
+      <details><summary>Μπορώ να βάλω και εξωτερικά συνεργεία;</summary><p>Ναι, από το πακέτο Συνεργείο. Οι συνεργάτες μπαίνουν με μεροκάματο ή κατ' αποκοπή, παίρνουν το πρόγραμμά τους στο Viber, και βλέπετε υπόλοιπο και προκαταβολές για τον καθένα.</p></details>
       <details><summary>Ποιος βλέπει τα μεροκάματα;</summary><p>Μόνο όσοι ορίσετε, συνήθως ο διαχειριστής και το γραφείο. Ο εργάτης βλέπει μόνο το δικό του πρόγραμμα.</p></details>
       <details><summary>Τι γίνεται αν ξεπεράσουμε τα άτομα του πακέτου;</summary><p>Δεν κόβεται τίποτα. Σας ειδοποιούμε και περνάτε στο επόμενο πακέτο από τον επόμενο μήνα.</p></details>
       <details><summary>Πού είναι τα δεδομένα μας;</summary><p>Σε server στην Ευρώπη, με κρυπτογραφημένη σύνδεση και αντίγραφο ασφαλείας κάθε μέρα. Τα δεδομένα είναι δικά σας και παίρνετε αντίγραφό τους από τις Ρυθμίσεις όποτε θέλετε.</p></details>
@@ -736,13 +806,13 @@ footer a:hover{color:var(--on-asphalt)}
   var nf=function(n,d){return n.toLocaleString('el-GR',{minimumFractionDigits:d||0,maximumFractionDigits:d||0})};
 
   // Plans: monthly price per plan and the people it fits. Yearly = 10 months.
-  var PLANS=[['Μάστορας',9.9,5],['Συνεργείο',19.9,15],['Εργοτάξιο',39.9,40]];
+  var PLANS=[['Μάστορας',9.99,5],['Συνεργείο',19.99,15],['Εργοτάξιο',39.99,40]];
   var yearly=false;
   function monthly(m){return yearly?m*10/12:m}
   function renderPrices(){
     document.querySelectorAll('[data-m]').forEach(function(b){
       var m=+b.dataset.m,n=+b.dataset.n,pm=monthly(m),plan=b.closest('.plan');
-      b.textContent=yearly?nf(Math.round(m*10)):nf(m,2);
+      b.textContent=nf(yearly?Math.round(m*1000)/100:m,2);
       plan.querySelector('[data-unit]').textContent=yearly?'€ / χρόνο + ΦΠΑ':'€ / μήνα + ΦΠΑ';
       plan.querySelector('[data-per]').innerHTML=(yearly?'Ίσο με '+nf(pm,2)+' € τον μήνα':'Χρέωση κάθε μήνα')+'<strong>Από '+nf(pm/n,2)+' € ανά άτομο τον μήνα</strong>';
     });
