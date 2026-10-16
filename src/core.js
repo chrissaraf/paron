@@ -21,6 +21,16 @@ const uid=p=>p+Math.random().toString(36).slice(2,8);
 const short=n=>{const p=String(n||'').trim().split(/\s+/);return p.length>1?p[0]+' '+p[p.length-1][0]+'.':p[0]};
 function weekStart(s){const d=dow(s);return add(s,d===0?-6:1-d)}
 /* ---------- Demo δεδομένα ---------- */
+// ραντεβού στα demo: ο εργολάβος με τον ηλεκτρολόγο σε αυτοψία, παράδοση προσφοράς, επιμέτρηση με τον αλουμινά
+function apDemo(wd){
+  const nw=s=>{let d=s;for(let i=0;i<14&&!wd.includes(dow(d));i++)d=add(d,1);return d};
+  const d0=nw(TODAY),d1=nw(add(TODAY,1)),d3=nw(add(d1,2));
+  return [
+    {id:'a1',date:d1,time:'10:00',end:'11:00',title:'Αυτοψία για ανακαίνιση μπάνιου',client:'Κ. Ιωάννου',phone:'697 300 4512',place:'Αγ. Δημητρίου 45, Θεσσαλονίκη',projectId:'',people:['owner','w8'],notes:'Να δούμε τον πίνακα και τις παροχές πριν δοθεί προσφορά.',status:'open'},
+    {id:'a2',date:d0,time:'13:30',end:'',title:'Παράδοση προσφοράς για το βάψιμο',client:'Κατάστημα Τσιμισκή',phone:'',place:'Τσιμισκή 112, Θεσσαλονίκη',projectId:'p3',people:['w21'],notes:'',status:'open'},
+    {id:'a3',date:d3,time:'09:00',end:'10:30',title:'Επιμέτρηση κουφωμάτων',client:'Οικογένεια Νικολαΐδη',phone:'694 220 9981',place:'Αγ. Αντωνίου 7, Πανόραμα',projectId:'p2',people:['w19','w22'],notes:'',status:'open'},
+  ];
+}
 // καιρός στα demo: περιοχή ανά έργο και εξωτερικές εργασίες που θέλουν στεγνή μέρα
 const WX_DEMO={
   p1:{place:'Καλαμαριά',lat:40.5823,lon:22.9502},
@@ -118,7 +128,7 @@ function demo(){
   ];
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
-  return {v:2,extDemo:true,extEmp:true,wxDemo:true,cpay:[],wxMark:{},settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:o.duties,overrides:{},payments:{},dutyDone:{}};
+  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:o.duties,overrides:{},payments:{},dutyDone:{}};
 }
 function migrate(o){
   if(o.v===1){
@@ -152,6 +162,15 @@ function migrate(o){
   if(o&&!Array.isArray(o.cpay))o.cpay=[];
   if(o&&o.settings&&!o.settings.wx)o.settings.wx=wxDefaults();
   if(o&&(!o.wxMark||typeof o.wxMark!=='object'))o.wxMark={};
+  if(o&&!Array.isArray(o.appts))o.appts=[];
+  // μία φορά: παραδείγματα ραντεβού στα demo δεδομένα
+  if(o&&Array.isArray(o.workers)&&!o.apDemo){
+    o.apDemo=true;
+    const has=id=>o.workers.some(w=>w.id===id);
+    if(has('w8')&&has('w19')&&has('w21')&&has('w22')&&(o.projects||[]).some(p=>p.id==='p3'&&p.name==='Κατάστημα Τσιμισκή')&&!o.appts.length){
+      o.appts=apDemo((o.settings&&o.settings.workdays)||[1,2,3,4,5,6]);
+    }
+  }
   // μία φορά: καιρός στα demo δεδομένα (περιοχές έργων, εξωτερικές εργασίες)
   if(o&&Array.isArray(o.tasks)&&!o.wxDemo){
     o.wxDemo=true;
@@ -251,6 +270,28 @@ function wxText(f){
   return k.l+(f.p!=null&&f.p>=20?' (πιθανότητα βροχής '+Math.round(f.p)+'%)':'')+(f.tmin!=null&&f.tmax!=null?', '+Math.round(f.tmin)+'–'+Math.round(f.tmax)+'°C':'');
 }
 
+/* ---------- Ραντεβού ----------
+   Συναντήσεις με πελάτες, αυτοψίες, επιμετρήσεις, υπηρεσίες. Μπορούν να πάνε πολλοί μαζί (π.χ. ο εργολάβος με τον ηλεκτρολόγο).
+   Δεν κοστίζουν μεροκάματο και δεν αλλάζουν τα συνεργεία: μπαίνουν σαν επιπλέον γραμμή στο πρόγραμμα του καθενός. */
+const OWNER='owner';
+const ownerName=()=>(S&&S.settings&&S.settings.ownerName)||'Εργολάβος';
+const apPerson=id=>id===OWNER?{id:OWNER,name:ownerName()}:W(id);
+const apptsOn=(d,wid)=>(S.appts||[]).filter(a=>a.date===d&&(!wid||(a.people||[]).includes(wid))).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+const apTime=a=>a.time?a.time+(a.end?'–'+a.end:''):'Χωρίς ώρα';
+const apMin=t=>{const m=/^(\d\d):(\d\d)$/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+// ποιοι από τα άτομα ενός ραντεβού έχουν άλλο ραντεβού την ίδια ώρα ή άδεια εκείνη τη μέρα
+function apConflicts(a){
+  const span=x=>{const s=apMin(x.time);if(s==null)return [0,1440];const e=apMin(x.end);return [s,e!=null&&e>s?e:s+60]};
+  const [s,e]=span(a),out=[];
+  (a.people||[]).forEach(id=>{
+    const p=apPerson(id);if(!p)return;
+    if(id!==OWNER&&isOff(p,a.date))out.push({id,name:p.name,why:'άδεια'});
+    (S.appts||[]).forEach(b=>{if(b.id===a.id||b.date!==a.date||b.status==='done'||!(b.people||[]).includes(id))return;
+      const [s2,e2]=span(b);if(s<e2&&s2<e)out.push({id,name:p.name,why:'«'+b.title+'» '+apTime(b)})});
+  });
+  return out;
+}
+
 /* ---------- Αυτόματος προγραμματισμός ---------- */
 function schedule(){
   today();
@@ -340,7 +381,7 @@ function schedule(){
 // τι κάνει ένας εργαζόμενος μια μέρα
 const taskIdsOf=o=>!o?[]:o.type==='tasks'?(o.taskIds||[]):o.type==='task'?[o.taskId]:[];
 function whatDoes(R,wid,d){
-  const w=W(wid);const res={off:isOff(w,d),job:null,lead:false,jobs:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d)};
+  const w=W(wid);const res={off:isOff(w,d),job:null,lead:false,jobs:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d),appts:apptsOn(d,wid)};
   if(res.off)return res;
   const day=R.byDay[d];
   if(day){
@@ -351,7 +392,7 @@ function whatDoes(R,wid,d){
   return res;
 }
 // έχει δουλειά σε έργο κάποια από αυτές τις μέρες (για να μη στέλνεται κενό μήνυμα σε συνεργάτες)
-const hasJob=(R,wid,days)=>days.some(d=>whatDoes(R,wid,d).jobs.length>0);
+const hasJob=(R,wid,days)=>days.some(d=>whatDoes(R,wid,d).jobs.length>0||apptsOn(d,wid).length>0);
 const weekDays=ws=>{const a=[];for(let i=0;i<7;i++){const d=add(ws,i);if(isWork(d))a.push(d)}return a};
 // μία μέρα ενός εργαζόμενου σε κείμενο
 function dayBlock(R,w,d){
@@ -365,6 +406,8 @@ function dayBlock(R,w,d){
   else if(isOffice(w))s+=(SP(w.specialtyId)?.name||'Γραφείο')+'\n';
   else if(isExt(w))s+='Καμία εργασία\n';
   else s+='Χωρίς ανάθεση (θα ενημερωθείς)\n';
+  x.appts.forEach(a=>{s+='Ραντεβού '+apTime(a)+': '+a.title+(a.client?', '+a.client:'')+(a.place?' ('+a.place+')':'')+'\n';
+    const o=(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>short(p.name));if(o.length)s+='  Μαζί: '+o.join(', ')+'\n'});
   x.duties.forEach(t=>s+='  • '+t.title+(t.projectId?' ('+P(t.projectId)?.name+')':'')+'\n');
   return s;
 }
@@ -400,9 +443,12 @@ function personWeek(R,w,ws){
       else o.items.push({kind:'none',title:isExt(w)?'Καμία εργασία':'Χωρίς ανάθεση ακόμη. Θα ενημερωθείς.'});
     }
     o.duties=x.duties.map(t=>({title:t.title,project:t.projectId?P(t.projectId)?.name||'':''}));
+    o.appts=x.appts.map(a=>({time:apTime(a),title:a.title,client:a.client||'',phone:a.phone||'',place:a.place||'',done:a.status==='done',
+      with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
 root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
+  OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
 })(typeof window!=='undefined'?window:globalThis);
