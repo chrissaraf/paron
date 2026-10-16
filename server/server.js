@@ -25,6 +25,7 @@ const CFG = {
   headers: process.env.VIBER_HEADERS || '{}',
   body: process.env.VIBER_BODY || '',
   sender: process.env.VIBER_SENDER || '',
+  weatherUrl: process.env.WEATHER_URL || '',             // κενό = Open-Meteo· άλλη διεύθυνση μόνο για δοκιμές
 };
 
 require(path.join(ROOT, 'src', 'core.js'));
@@ -50,6 +51,41 @@ function saveState(o) {
   writeJSON(F.state, o);
 }
 
+// --- καιρός ---
+// Η πρόγνωση (Open-Meteo, δωρεάν, χωρίς κλειδί) φυλάγεται στο data/weather.json και ανανεώνεται κάθε 3 ώρες,
+// ή αμέσως όταν μπει έργο σε νέα περιοχή. Όλοι, και τα μηνύματα Viber, βλέπουν το ίδιο πρόγραμμα.
+F.weather = path.join(CFG.dataDir, 'weather.json');
+let WX = readJSON(F.weather, null), wxBusy = null, wxTry = 0;
+C.setWeather(WX);
+function wxFetch(maxAge = 3 * 3600e3, force = false) {
+  const S = readJSON(F.state, null);
+  if (!S || !S.settings) return Promise.resolve(WX);
+  C.setState(S);
+  if (C.wxCfg().on === false) return Promise.resolve(WX);
+  const locs = C.wxLocs();
+  const fresh = WX && Date.now() - Date.parse(WX.at) < maxAge && locs.every(l => WX.locs[l.key]);
+  if (fresh && !force) return Promise.resolve(WX);
+  if (wxBusy) return wxBusy;
+  if (Date.now() - wxTry < (force ? 15e3 : 60e3)) return Promise.resolve(WX);   // όχι συνέχεια, ακόμη κι αν αποτυγχάνει
+  wxTry = Date.now();
+  wxBusy = (async () => {
+    try {
+      const r = await fetch(C.wxUrl(locs, CFG.weatherUrl), { signal: AbortSignal.timeout(20000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      WX = C.wxParse(await r.json(), locs); WX.error = '';
+      writeJSON(F.weather, WX); C.setWeather(WX);
+      console.log(now(), 'καιρός: νέα πρόγνωση για', locs.length, 'περιοχές');
+    } catch (e) {
+      console.error(now(), 'καιρός: δεν ήρθε πρόγνωση:', e.message);
+      if (WX) WX.error = 'Η τελευταία ενημέρωση απέτυχε.';
+    } finally { wxBusy = null; }
+    return WX;
+  })();
+  return wxBusy;
+}
+setInterval(() => wxFetch().catch(() => {}), 20 * 60e3);
+setTimeout(() => wxFetch().catch(() => {}), 2000);
+
 // --- Viber ---
 function normPhone(p) {
   let d = String(p || '').replace(/\D/g, '');
@@ -67,10 +103,14 @@ async function sendOne(phone, text) {
   return { status: 'sent', response: out.slice(0, 300) };
 }
 let running = false;
-async function runSend(date, trigger, week = false) {
+// changed: στέλνει μόνο σε όσους πήραν ήδη το πρόγραμμα της μέρας και από τότε τους άλλαξε, με μήνυμα «Άλλαξε το πρόγραμμά σου»
+async function runSend(date, trigger, week = false, changed = false) {
   if (running) return { ok: false, message: 'Τρέχει ήδη μια αποστολή.' };
   running = true;
   try {
+    await wxFetch(60 * 60e3).catch(() => {});   // πρόσφατη πρόγνωση πριν φύγουν τα μηνύματα
+    const only = changed ? new Set(changedSince(date).map(x => x.id)) : null;
+    if (only && !only.size) return { ok: true, message: 'Κανείς δεν χρειάζεται ενημέρωση: το πρόγραμμα δεν άλλαξε από την αποστολή.', sent: 0, dry: 0, failed: 0, skipped: 0 };
     const S = readJSON(F.state, null);
     if (!S) return { ok: false, message: 'Δεν υπάρχουν ακόμη δεδομένα στον server.' };
     C.setState(S);
@@ -79,22 +119,37 @@ async function runSend(date, trigger, week = false) {
     const log = readJSON(F.log, []);
     let sent = 0, dry = 0, failed = 0, skipped = 0;
     for (const w of S.workers) {
+      if (only && !only.has(w.id)) continue;
       const phone = normPhone(w.phone);
       const entry = { at: now(), date, trigger: week ? trigger + '-week' : trigger, workerId: w.id, name: w.name, phone: w.phone || '' };
+      if (!week) entry.cmp = C.dayKey(R, w, date);   // για να φανεί αν αλλάξει το πρόγραμμα μετά την αποστολή
+      if (only) entry.upd = true;
       if (w.viber === false) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Απενεργοποιημένο' }); continue; }
-      if (C.isExt(w) && !C.hasJob(R, w.id, week ? C.weekDays(C.weekStart(date)) : [date])) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Συνεργάτης χωρίς εργασία' }); continue; }
+      if (!only && C.isExt(w) && !C.hasJob(R, w.id, week ? C.weekDays(C.weekStart(date)) : [date])) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Συνεργάτης χωρίς εργασία' }); continue; }
       if (!phone) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); continue; }
-      const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date);
+      const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date, !!only);
       try { const r = await sendOne(phone, text); r.status === 'sent' ? sent++ : dry++; log.push({ ...entry, status: r.status, text }); }
       catch (e) { failed++; log.push({ ...entry, status: 'error', error: e.message, text }); }
     }
     writeJSON(F.log, log.slice(-3000));
+    const what = only ? ' με την αλλαγή' : '';
     const msg = CFG.provider === 'http'
-      ? `Στάλθηκαν ${sent} μηνύματα${failed ? ', ' + failed + ' απέτυχαν' : ''}${skipped ? ', ' + skipped + ' παραλείφθηκαν' : ''}.`
-      : `Δοκιμαστική λειτουργία: ετοιμάστηκαν ${dry} μηνύματα χωρίς να σταλούν${skipped ? ', ' + skipped + ' παραλείφθηκαν' : ''}.`;
+      ? `Στάλθηκαν ${sent} μηνύματα${what}${failed ? ', ' + failed + ' απέτυχαν' : ''}${skipped ? ', ' + skipped + ' παραλείφθηκαν' : ''}.`
+      : `Δοκιμαστική λειτουργία: ετοιμάστηκαν ${dry} μηνύματα${what} χωρίς να σταλούν${skipped ? ', ' + skipped + ' παραλείφθηκαν' : ''}.`;
     console.log(now(), trigger, date, msg);
     return { ok: true, message: msg, sent, dry, failed, skipped };
   } finally { running = false; }
+}
+// ποιοι πήραν ήδη το πρόγραμμα μιας μέρας και από τότε τους άλλαξε (π.χ. η βροχή μετέθεσε την εργασία τους)
+function changedSince(date) {
+  const S = readJSON(F.state, null);
+  if (!S || !Array.isArray(S.workers)) return [];
+  const last = {};
+  for (const x of readJSON(F.log, [])) if (x.date === date && x.cmp != null && (x.status === 'sent' || x.status === 'dry')) last[x.workerId] = x.cmp;
+  if (!Object.keys(last).length) return [];
+  C.setState(S);
+  const R = C.schedule();
+  return S.workers.filter(w => last[w.id] != null && w.viber !== false && last[w.id] !== C.dayKey(R, w, date)).map(w => ({ id: w.id, name: w.name }));
 }
 // έλεγχος κάθε 30 δευτερόλεπτα αν ήρθε η ώρα της καθημερινής αποστολής
 setInterval(() => {
@@ -105,7 +160,8 @@ setInterval(() => {
   const [sh, sm] = (S.settings.sendTime || '06:30').split(':').map(Number);
   const late = d.getHours() * 60 + d.getMinutes() - (sh * 60 + sm);
   if (meta.lastAuto === today || late < 0 || late > 120) return;
-  if ((meta.sentFor || []).includes(today)) { meta.lastAuto = today; writeJSON(F.meta, meta); return; }   // στάλθηκε ήδη από το βράδυ   // στέλνει μόνο μέσα σε 2 ώρες από την ώρα αποστολής
+  // στάλθηκε ήδη από το βράδυ: το πρωί φεύγει μήνυμα μόνο σε όσους άλλαξε από τότε (π.χ. λόγω βροχής)
+  if ((meta.sentFor || []).includes(today)) { meta.lastAuto = today; writeJSON(F.meta, meta); runSend(today, 'auto', false, true).catch(e => console.error('auto update', e)); return; }
   meta.lastAuto = today; writeJSON(F.meta, meta);
   runSend(today, 'auto').catch(e => console.error('auto send', e));
 }, 30000);
@@ -281,6 +337,15 @@ http.createServer(async (req, res) => {
         saveState(o); return send(res, 200, { ok: true });
       }
     }
+    if (url.pathname === '/api/weather' && req.method === 'GET') {
+      const w = await wxFetch(3 * 3600e3, url.searchParams.get('refresh') === '1');
+      return send(res, 200, w || { locs: null, error: 'Δεν έχει έρθει ακόμη πρόγνωση. Ο server δοκιμάζει ξανά σύντομα.' });
+    }
+    if (url.pathname === '/api/viber/changes' && req.method === 'GET') {
+      const today = C.ds(new Date());
+      const dates = [...new Set(readJSON(F.log, []).filter(x => x.date >= today && x.cmp != null).map(x => x.date))].sort();
+      return send(res, 200, { changes: dates.map(date => ({ date, people: changedSince(date) })).filter(x => x.people.length) });
+    }
     if (url.pathname === '/api/viber/status' && req.method === 'GET') {
       const log = readJSON(F.log, []);
       return send(res, 200, { mode: CFG.provider === 'http' ? 'live' : 'dryrun', lastAuto: readJSON(F.meta, {}).lastAuto || null, log: log.slice(-40).reverse().map(({ text, ...x }) => x) });
@@ -288,8 +353,8 @@ http.createServer(async (req, res) => {
     if (url.pathname === '/api/viber/send' && req.method === 'POST') {
       const b = JSON.parse((await readBody(req)) || '{}');
       const date = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : C.ds(new Date());
-      const r = await runSend(date, 'manual', !!b.week);
-      if (r.ok && !b.week && date > C.ds(new Date())) { const meta = readJSON(F.meta, {}); meta.sentFor = [...(meta.sentFor || []).slice(-30), date]; writeJSON(F.meta, meta); }
+      const r = await runSend(date, 'manual', !!b.week, !!b.changed && !b.week);
+      if (r.ok && !b.week && !b.changed && date > C.ds(new Date())) { const meta = readJSON(F.meta, {}); meta.sentFor = [...(meta.sentFor || []).slice(-30), date]; writeJSON(F.meta, meta); }
       return send(res, 200, r);
     }
     send(res, 404, { error: 'Δεν βρέθηκε' });

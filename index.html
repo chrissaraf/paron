@@ -12,7 +12,7 @@
 :root{
   --bg:#eef0ed; --surface:#ffffff; --sunk:#f5f6f4; --hover:#e6e9e5; --ink:#1d2328; --ink-2:#39424a; --muted:#5f6971; --line:#e1e4e0; --line-2:#cbd0ca;
   --hivis:#f5b800; --hivis-2:#e2a800; --hivis-ink:#1d2328; --hivis-soft:#fdf2cc;
-  --ok:#23824f; --warn:#965700; --bad:#c0362c; --ok-bg:#e2f3e8; --warn-bg:#fcefd6; --bad-bg:#fce5e2;
+  --ok:#23824f; --warn:#965700; --bad:#c0362c; --ok-bg:#e2f3e8; --warn-bg:#fcefd6; --bad-bg:#fce5e2; --rain:#2d68a8; --rain-bg:#e5eef8;
   --p1:#2f6db0; --p2:#c9622a; --p3:#2f8a57; --p4:#8a4fb0; --p5:#b8395c; --p6:#3f7f8c;
   --f-ui:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-display:var(--f-ui);
   --f-logo:"Fira Sans Condensed","Arial Narrow",system-ui,sans-serif;
@@ -25,7 +25,7 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#121518; --surface:#1b1f23; --sunk:#171a1e; --hover:#262b30; --ink:#e9ecee; --ink-2:#cdd3d8; --muted:#98a2ab; --line:#2a3036; --line-2:#3b4249;
   --hivis:#f7c21e; --hivis-2:#ffd24d; --hivis-ink:#15191c; --hivis-soft:#3a3214;
-  --ok:#5cc58a; --warn:#e9a84c; --bad:#f07a6f; --ok-bg:#173123; --warn-bg:#35290f; --bad-bg:#3c1d1a;
+  --ok:#5cc58a; --warn:#e9a84c; --bad:#f07a6f; --ok-bg:#173123; --warn-bg:#35290f; --bad-bg:#3c1d1a; --rain:#86b6ec; --rain-bg:#1a2736;
   --p1:#6aa2e0; --p2:#e38a55; --p3:#5fbf86; --p4:#b88ae0; --p5:#e07a98; --p6:#78b3bf;
   --pop:0 18px 44px -14px rgba(0,0,0,.65),0 2px 6px rgba(0,0,0,.3); --auth-bg:#0d1013; --scrim:rgba(0,0,0,.6); --edge:rgba(0,0,0,.6);
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a2ab' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -33,7 +33,7 @@
 :root[data-theme="dark"]{
   --bg:#121518; --surface:#1b1f23; --sunk:#171a1e; --hover:#262b30; --ink:#e9ecee; --ink-2:#cdd3d8; --muted:#98a2ab; --line:#2a3036; --line-2:#3b4249;
   --hivis:#f7c21e; --hivis-2:#ffd24d; --hivis-ink:#15191c; --hivis-soft:#3a3214;
-  --ok:#5cc58a; --warn:#e9a84c; --bad:#f07a6f; --ok-bg:#173123; --warn-bg:#35290f; --bad-bg:#3c1d1a;
+  --ok:#5cc58a; --warn:#e9a84c; --bad:#f07a6f; --ok-bg:#173123; --warn-bg:#35290f; --bad-bg:#3c1d1a; --rain:#86b6ec; --rain-bg:#1a2736;
   --p1:#6aa2e0; --p2:#e38a55; --p3:#5fbf86; --p4:#b88ae0; --p5:#e07a98; --p6:#78b3bf;
   --pop:0 18px 44px -14px rgba(0,0,0,.65),0 2px 6px rgba(0,0,0,.3); --auth-bg:#0d1013; --scrim:rgba(0,0,0,.6); --edge:rgba(0,0,0,.6);
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a2ab' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -130,6 +130,35 @@ a.btn{text-decoration:none}
 .tag.ok{background:var(--ok-bg);color:var(--ok)} .tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.bad{background:var(--bad-bg);color:var(--bad)}
 .tag.mute{background:var(--sunk);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
 .tag.hv{background:var(--hivis);color:var(--hivis-ink)}
+.tag.rain{background:var(--rain-bg);color:var(--rain)}
+/* καιρός */
+.wx{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted);font-weight:560;white-space:nowrap;line-height:1;font-variant-numeric:tabular-nums}
+.wx svg{width:17px;height:17px;flex:none}
+.wx b{color:var(--ink);font-weight:650}
+.wx.wet,.wx.wet b{color:var(--rain)}
+.wxb{display:inline-flex;align-items:center;justify-content:center;gap:4px;margin:6px auto 0;padding:3px 8px;min-height:26px;border:0;border-radius:999px;background:none;font:inherit;color:inherit;cursor:pointer}
+.wxb:hover{background:var(--hover)}
+.wxb.wet{background:var(--rain-bg)}
+.wxb.mark{box-shadow:inset 0 0 0 1.5px currentColor}
+.wxb .none{color:var(--muted);opacity:.55}
+.sched th .wxb{display:flex}
+.rainb{background:var(--rain-bg);border-color:color-mix(in srgb,var(--rain) 28%,var(--line))}
+.rainb h2{display:flex;align-items:center;gap:9px;color:var(--rain);margin-bottom:6px}
+.rainb h2 svg{width:22px;height:22px;flex:none}
+.rainb ul{margin:4px 0 8px;padding:0;list-style:none;display:grid;gap:6px}
+.rainb li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.cell small.rn{display:flex;align-items:center;gap:3px;color:var(--rain);font-weight:600;margin-top:3px}
+.cell small.rn svg{width:13px;height:13px;flex:none}
+.job.wet{background:repeating-linear-gradient(-45deg,transparent 0 9px,color-mix(in srgb,var(--rain) 7%,transparent) 9px 18px)}
+.job.wet .t b{color:var(--muted)}
+.chgb{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;border-color:var(--ink)}
+.chgb>div{flex:1 1 320px;min-width:0}
+.hwx{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:color-mix(in srgb,var(--surface) 78%,var(--ink))}
+.hwx svg{width:20px;height:20px}
+.hwx.wet{color:#9cc4f2}
+.pday .wx{white-space:normal;line-height:1.3}
+.inl{display:flex;gap:8px}
+.inl>input{flex:1;min-width:0}
 .legend{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}
 .legend>span{display:inline-flex;gap:6px;align-items:center}
 .legend svg{width:14px;height:14px}
@@ -445,6 +474,15 @@ const uid=p=>p+Math.random().toString(36).slice(2,8);
 const short=n=>{const p=String(n||'').trim().split(/\s+/);return p.length>1?p[0]+' '+p[p.length-1][0]+'.':p[0]};
 function weekStart(s){const d=dow(s);return add(s,d===0?-6:1-d)}
 /* ---------- Demo δεδομένα ---------- */
+// καιρός στα demo: περιοχή ανά έργο και εξωτερικές εργασίες που θέλουν στεγνή μέρα
+const WX_DEMO={
+  p1:{place:'Καλαμαριά',lat:40.5823,lon:22.9502},
+  p2:{place:'Πανόραμα',lat:40.5878,lon:23.0333},
+  dry:['t5','t18','t19'],
+  tasks:t=>[
+    t('t18','p2','Μόνωση και στεγάνωση ταράτσας','s1','w2',1,2,2),
+    t('t19','p1','Εξωτερικοί σοβάδες όψης','s2','w5',2,5,3,'t4'),
+  ]};
 function officeDemo(){
   return {
     specialties:[{id:'o1',name:'Γραμματεία',office:true},{id:'o2',name:'Διαχείριση έργων',office:true,pm:true},{id:'o3',name:'Ταμείο και λογιστήριο',office:true},{id:'o4',name:'Εξωτερικός υπάλληλος',office:true}],
@@ -507,11 +545,11 @@ function demo(){
     w('w17','Ηλίας Μπέκας','gen','voith',50,'698 027 5541'),
   ];
   const projects=[
-    {id:'p1',name:'Πολυκατοικία Καλαμαριάς',location:'Κομνηνών 24, Καλαμαριά',budget:24000,color:'p1',managers:['w19']},
-    {id:'p2',name:'Μονοκατοικία Πανοράματος',location:'Αγ. Αντωνίου 7, Πανόραμα',budget:9500,color:'p2',managers:['w19','w21']},
+    {id:'p1',name:'Πολυκατοικία Καλαμαριάς',location:'Κομνηνών 24, Καλαμαριά',budget:24000,color:'p1',managers:['w19'],...WX_DEMO.p1},
+    {id:'p2',name:'Μονοκατοικία Πανοράματος',location:'Αγ. Αντωνίου 7, Πανόραμα',budget:9500,color:'p2',managers:['w19','w21'],...WX_DEMO.p2},
     {id:'p3',name:'Κατάστημα Τσιμισκή',location:'Τσιμισκή 112, Θεσσαλονίκη',budget:5200,color:'p3',managers:['w21']},
   ];
-  const t=(id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after,earliestOffset)=>({id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after:after||'',earliest:earliestOffset!=null?add(TODAY,earliestOffset):'',status:'todo'});
+  const t=(id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after,earliestOffset)=>({id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after:after||'',earliest:earliestOffset!=null?add(TODAY,earliestOffset):'',status:'todo',...(WX_DEMO.dry.includes(id)?{dry:true}:{})});
   const tasks=[
     t('t1','p1','Τοιχοποιία 2ου ορόφου','s1','w1',2,6,1),
     t('t2','p1','Ηλεκτρολογικές σωληνώσεις 2ου','s3','w8',1,4,1,'t1'),
@@ -528,11 +566,12 @@ function demo(){
     t('t13','p3','Δάπεδο πλακάκι 80×80','s5','w13',1,4,1,'',2),
     t('t14','p3','Ηλεκτρολογικά φωτισμού','s3','w8',0,3,2),
     t('t15','p3','Βάψιμο καταστήματος','s6','w14',1,3,2,'t12'),
+    ...WX_DEMO.tasks(t),
     {id:'t0',projectId:'p1',title:'Σκυροδέτηση πλάκας 3ου',specialtyId:'s1',responsibleId:'w1',helpers:3,days:2,priority:1,after:'',earliest:'',status:'done'},
   ];
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
-  return {v:2,extDemo:true,extEmp:true,cpay:[],settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:o.duties,overrides:{},payments:{},dutyDone:{}};
+  return {v:2,extDemo:true,extEmp:true,wxDemo:true,cpay:[],wxMark:{},settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:o.duties,overrides:{},payments:{},dutyDone:{}};
 }
 function migrate(o){
   if(o.v===1){
@@ -564,6 +603,19 @@ function migrate(o){
     if(o.workers.some(w=>w.id==='w19')&&!o.workers.some(w=>w.id==='w24')){o.workers.push(d.workers.find(w=>w.id==='w24'));o.duties=o.duties||[];d.duties.filter(x=>x.workerId==='w24').forEach(x=>{if(!o.duties.some(y=>y.id===x.id))o.duties.push(x)})}
   }
   if(o&&!Array.isArray(o.cpay))o.cpay=[];
+  if(o&&o.settings&&!o.settings.wx)o.settings.wx=wxDefaults();
+  if(o&&(!o.wxMark||typeof o.wxMark!=='object'))o.wxMark={};
+  // μία φορά: καιρός στα demo δεδομένα (περιοχές έργων, εξωτερικές εργασίες)
+  if(o&&Array.isArray(o.tasks)&&!o.wxDemo){
+    o.wxDemo=true;
+    const dp=id=>(o.projects||[]).find(p=>p.id===id);
+    if(dp('p2')&&dp('p2').name==='Μονοκατοικία Πανοράματος'&&dp('p1')&&dp('p1').name==='Πολυκατοικία Καλαμαριάς'&&(o.workers||[]).some(w=>w.id==='w2')&&(o.workers||[]).some(w=>w.id==='w5')){
+      ['p1','p2'].forEach(id=>{const p=dp(id);if(p.lat==null)Object.assign(p,WX_DEMO[id])});
+      const t5=o.tasks.find(t=>t.id==='t5');if(t5&&t5.dry==null)t5.dry=true;
+      const mk=(id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after)=>({id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after:after||'',earliest:'',status:'todo',dry:true});
+      WX_DEMO.tasks(mk).forEach(t=>{if(!o.tasks.some(x=>x.id===t.id)){if(t.after&&!o.tasks.some(x=>x.id===t.after))t.after='';o.tasks.push(t)}});
+    }
+  }
   if(o&&o.settings){if(o.settings.sendTime==null)o.settings.sendTime='06:30';if(o.settings.autoSend==null)o.settings.autoSend=false}
   return o;
 }
@@ -592,6 +644,66 @@ const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return +(r!==''&&r!=null?r:w.
 const dutyOn=(x,d)=>x.freq==='daily'?isWork(d):x.freq==='days'?(x.days||[]).includes(dow(d)):x.date===d;
 const dutiesFor=(wid,d)=>S.duties.filter(x=>x.workerId===wid&&dutyOn(x,d));
 
+/* ---------- Καιρός ----------
+   Πρόγνωση από το Open-Meteo (δωρεάν, χωρίς κλειδί): 7 μέρες πίσω και 16 μπροστά, ανά περιοχή έργου.
+   Μια εργασία με «θέλει στεγνή μέρα» δεν μπαίνει στο πρόγραμμα όταν στο έργο της αναμένεται βροχή. */
+let WX=null;
+const setWeather=w=>{WX=w&&w.locs?w:null};
+const getWeather=()=>WX;
+function wxDefaults(){return {on:true,place:'Θεσσαλονίκη',lat:40.6403,lon:22.9439,minProb:50,minMm:1}}
+const wxCfg=()=>Object.assign(wxDefaults(),(S&&S.settings&&S.settings.wx)||{});
+const hasLL=o=>!!o&&o.lat!=null&&o.lon!=null&&o.lat!==''&&o.lon!==''&&isFinite(o.lat)&&isFinite(o.lon);
+const locKey=(lat,lon)=>(+lat).toFixed(2)+','+(+lon).toFixed(2);
+// πού είναι ένα έργο για τον καιρό: η δική του περιοχή ή η έδρα της εταιρείας
+function projLoc(pid){const p=P(pid);if(hasLL(p))return {lat:+p.lat,lon:+p.lon,place:p.place||''};const c=wxCfg();return {lat:+c.lat,lon:+c.lon,place:c.place||''}}
+// τα σημεία που χρειάζονται πρόγνωση: η έδρα και κάθε έργο με ανοιχτές εργασίες
+function wxLocs(){
+  const m={},put=l=>{const k=locKey(l.lat,l.lon);if(!m[k])m[k]={key:k,lat:+(+l.lat).toFixed(2),lon:+(+l.lon).toFixed(2)}};
+  put(projLoc(''));
+  S.projects.forEach(p=>{if(S.tasks.some(t=>t.projectId===p.id&&t.status!=='done'))put(projLoc(p.id))});
+  return Object.values(m);
+}
+const WX_API='https://api.open-meteo.com/v1/forecast';
+const wxUrl=(locs,base)=>(base||WX_API)+'?latitude='+locs.map(l=>l.lat).join(',')+'&longitude='+locs.map(l=>l.lon).join(',')
+  +'&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Europe%2FAthens&past_days=7&forecast_days=16';
+// η απάντηση του Open-Meteo (ένα σημείο ή λίστα με τη σειρά των locs) σε {at, locs:{key:{days:{ημερομηνία:{…}}}}}
+function wxParse(j,locs){
+  const arr=Array.isArray(j)?j:[j],n=v=>v==null||v===''||!isFinite(v)?null:+v,out={at:new Date().toISOString(),locs:{}};
+  arr.forEach((r,i)=>{const l=locs[i],d=r&&r.daily;if(!l||!d||!Array.isArray(d.time))return;const days={};
+    d.time.forEach((t,k)=>{const g=a=>n(d[a]&&d[a][k]);days[t]={mm:g('precipitation_sum'),p:g('precipitation_probability_max'),code:g('weather_code'),tmax:g('temperature_2m_max'),tmin:g('temperature_2m_min')}});
+    out.locs[l.key]={lat:l.lat,lon:l.lon,days}});
+  if(!Object.keys(out.locs).length)throw new Error('Η πρόγνωση καιρού δεν είχε δεδομένα.');
+  return out;
+}
+// η πρόγνωση μιας μέρας για ένα έργο ('' = η έδρα)
+function wxDay(pid,d){const l=projLoc(pid),x=WX&&WX.locs[locKey(l.lat,l.lon)];return x&&x.days[d]||null}
+const isWet=(f,c)=>!!f&&(+f.mm||0)>=(+c.minMm||0)&&(f.p==null||f.p>=(+c.minProb||0));
+// βρέχει σε ένα έργο μια μέρα; πρώτα ό,τι όρισες εσύ για τη μέρα, μετά η πρόγνωση
+function rainy(pid,d){
+  const m=S.wxMark&&S.wxMark[d];if(m==='rain')return true;if(m==='dry')return false;
+  const c=wxCfg();return c.on!==false&&isWet(wxDay(pid,d),c);
+}
+// κωδικοί καιρού WMO σε εικονίδιο και λέξη
+function wxKind(code){
+  const c=+code;
+  if(code==null||!isFinite(c))return {k:'cloud',l:'Χωρίς πρόγνωση'};
+  if(c===0)return {k:'sun',l:'Λιακάδα'};
+  if(c<=2)return {k:'pcloud',l:'Λίγα σύννεφα'};
+  if(c===3)return {k:'cloud',l:'Συννεφιά'};
+  if(c===45||c===48)return {k:'fog',l:'Ομίχλη'};
+  if(c>=51&&c<=57)return {k:'rain',l:'Ψιχάλα'};
+  if((c>=61&&c<=67)||(c>=80&&c<=82))return {k:'rain',l:'Βροχή'};
+  if((c>=71&&c<=77)||c===85||c===86)return {k:'snow',l:'Χιόνι'};
+  if(c>=95)return {k:'storm',l:'Καταιγίδα'};
+  return {k:'cloud',l:'Συννεφιά'};
+}
+// η πρόγνωση σε σύντομο κείμενο, π.χ. «Βροχή (πιθανότητα βροχής 80%), 12–18°C»
+function wxText(f){
+  if(!f)return '';
+  const k=wxKind(f.code);
+  return k.l+(f.p!=null&&f.p>=20?' (πιθανότητα βροχής '+Math.round(f.p)+'%)':'')+(f.tmin!=null&&f.tmax!=null?', '+Math.round(f.tmin)+'–'+Math.round(f.tmax)+'°C':'');
+}
+
 /* ---------- Αυτόματος προγραμματισμός ---------- */
 function schedule(){
   today();
@@ -614,8 +726,13 @@ function schedule(){
     S.workers.forEach(w=>{if(busy.has(w.id))return;const o=ov(day,w.id);if(!o)return;
       if(o.type==='task'||o.type==='tasks'){taskIdsOf(o).forEach(id=>{const t=T(id);if(t&&t.status!=='done'&&rem[t.id]>0){(forced[t.id]=forced[t.id]||[]).push(w);busy.add(w.id)}})}
       else if(o.type==='gen'){gen.push({w,forced:true});busy.add(w.id)}});
-    const jobs=[];
-    const ready=open.filter(t=>rem[t.id]>0&&(forced[t.id]||((!t.earliest||t.earliest<=day)&&depOk(t,day))))
+    const jobs=[],wet=[];
+    // όσες θέλουν στεγνή μέρα και στο έργο τους βρέχει μένουν για την επόμενη στεγνή· το συνεργείο πάει αλλού
+    const ready=open.filter(t=>{
+      if(rem[t.id]<=0)return false;if(forced[t.id])return true;
+      if(!((!t.earliest||t.earliest<=day)&&depOk(t,day)))return false;
+      if(t.dry&&rainy(t.projectId,day)){wet.push(t);(waiting[day]=waiting[day]||[]).push({task:t,reason:'Βροχή: θέλει στεγνή μέρα',rain:true});return false}
+      return true})
       .sort((a,b)=>(a.priority-b.priority)||((begin[a.id]?0:1)-(begin[b.id]?0:1))||((a.earliest||'').localeCompare(b.earliest||''))||S.tasks.indexOf(a)-S.tasks.indexOf(b));
     for(const t of ready){
       const fx=forced[t.id]||[];
@@ -639,7 +756,7 @@ function schedule(){
         pool.slice(0,need-helpers.length).forEach(w=>{helpers.push(w);busy.add(w.id)});
       }
       prevCrew[t.id]=helpers.map(w=>w.id);
-      jobs.push({task:t,lead,sub,helpers,forced:new Set(fx.map(w=>w.id)),extra:new Set(),short:helpers.length<need,dayNo:(+t.days||1)-rem[t.id]+1});
+      jobs.push({task:t,lead,sub,helpers,forced:new Set(fx.map(w=>w.id)),extra:new Set(),short:helpers.length<need,dayNo:(+t.days||1)-rem[t.id]+1,rain:!!t.dry&&rainy(t.projectId,day)});
       if(lead){
         if(!begin[t.id])begin[t.id]=day;
         rem[t.id]--;
@@ -664,7 +781,7 @@ function schedule(){
       const pp=pmProjects(w.id,day);
       if(pp.length)pp.forEach(pid=>asg.push({date:day,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
       else asg.push({date:day,taskId:null,projectId:'office',workerId:w.id,wage:+w.wage||0})});
-    byDay[day]={jobs,gen};
+    byDay[day]={jobs,gen,wet};
     if(jobs.length)lastEnd.v=day;
     idleStreak=jobs.length?0:idleStreak+1;
     day=add(day,1);
@@ -704,6 +821,8 @@ function dayBlock(R,w,d){
   x.duties.forEach(t=>s+='  • '+t.title+(t.projectId?' ('+P(t.projectId)?.name+')':'')+'\n');
   return s;
 }
+// ό,τι μετρά για να μάθει ένας εργαζόμενος ότι άλλαξε η μέρα του: πού, τι και με ποιον ρόλο (όχι ποιοι άλλοι είναι στο συνεργείο)
+const dayKey=(R,w,d)=>dayBlock(R,w,d).split('\n').filter(l=>!/^\s+Μαζί:/.test(l)).join('\n');
 // υπογραφή σε κάθε μήνυμα προς το προσωπικό
 const SIGN='\n✅ ERGODO · Get the job Done';
 function personText(R,w,ws){
@@ -712,8 +831,11 @@ function personText(R,w,ws){
   return s+SIGN;
 }
 // το καθημερινό μήνυμα που φεύγει αυτόματα
-function personDayText(R,w,d){
-  return 'Γεια σου '+String(w.name).split(/\s+/)[0]+'! Το πρόγραμμά σου για '+fmt(d)+':\n\n'+dayBlock(R,w,d)+SIGN;
+// ο καιρός της μέρας εκεί που δουλεύει (στο πρώτο έργο του, αλλιώς στην έδρα)
+function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.pm.length?x.pm[0]:'',d)}
+function personDayText(R,w,d,upd){
+  const f=wxFor(R,w.id,d);
+  return 'Γεια σου '+String(w.name).split(/\s+/)[0]+'! '+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+SIGN;
 }
 // η εβδομάδα ενός εργαζόμενου σε δεδομένα, για τη σελίδα «Το πρόγραμμά μου».
 // Περιέχει μόνο ό,τι χρειάζεται ο ίδιος: πού, τι και με ποιους. Όχι μεροκάματα ή κόστη.
@@ -721,6 +843,7 @@ function personWeek(R,w,ws){
   return {name:w.name,specialty:SP(w.specialtyId)?.name||'',weekStart:ws,days:weekDays(ws).map(d=>{
     const x=whatDoes(R,w.id,d),o={date:d,off:x.off,items:[],duties:[]};
     if(x.off)return o;
+    const f=wxFor(R,w.id,d);if(f){const k=wxKind(f.code);o.wx={k:k.k,text:wxText(f),wet:isWet(f,wxCfg())}}
     x.jobs.forEach(({job,lead})=>{const p=P(job.task.projectId);o.items.push({kind:'job',project:p.name,location:p.location||'',color:p.color||'',task:job.task.title,lead,
       with:[job.lead,...job.helpers].filter(q=>q&&q.id!==w.id).map(q=>q.name)})});
     if(!x.jobs.length){
@@ -733,13 +856,14 @@ function personWeek(R,w,ws){
     return o})};
 }
 root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
-  byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,personText,personDayText,personWeek};
+  setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
+  byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
 <script>
 (()=>{
-const {isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Καθήκοντα γραφείου'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
@@ -750,7 +874,7 @@ let S,saveT;
 function setS(x){S=x;ErgoCore.setState(x)}
 function load(){try{const r=localStorage.getItem(LS);if(r){const o=migrate(JSON.parse(r));if(o&&o.v===2)return o}}catch(e){}return demo()}
 function save(){if(isWorker())return;try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}if(SERVER){clearTimeout(saveT);saveT=setTimeout(push,300)}}
-async function push(){if(isWorker())return;try{const r=await fetch('api/state',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(S)});if(r.status===401)return expired();if(!r.ok)throw 0}catch(e){toast('Η αλλαγή δεν αποθηκεύτηκε στον server. Έλεγξε τη σύνδεση.')}}
+async function push(){if(isWorker())return;try{const r=await fetch('api/state',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(S)});if(r.status===401)return expired();if(!r.ok)throw 0;if(UI.tab==='today')loadChanges(true)}catch(e){toast('Η αλλαγή δεν αποθηκεύτηκε στον server. Έλεγξε τη σύνδεση.')}}
 async function pull(){if(isWorker())return false;try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));return true}push();return false}catch(e){toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
 setS(load());
 
@@ -875,11 +999,99 @@ function enter(u){
   document.body.classList.add('in');
   if(u.role==='worker'){UI.tab='mine';UI.week=null}else if(UI.tab==='mine')UI.tab='today';
   render();fitLogo();window.scrollTo(0,0);
-  if(SERVER&&u.role!=='worker')pull().then(ok=>ok&&render());
+  if(SERVER&&u.role!=='worker')pull().then(ok=>{ok&&render();wxRefresh()});else wxRefresh();
 }
 const expired=()=>showAuth('login','Η σύνδεση έληξε. Μπες ξανά.');
 
 const pc=p=>'var(--'+((typeof p==='string'?(PSEUDO[p]||P(p)):p)?.color||'p6')+')';
+
+/* ---------- Καιρός ----------
+   Με τον server: η πρόγνωση έρχεται από τον server, ώστε όλοι και τα μηνύματα Viber να βλέπουν την ίδια.
+   Χωρίς server: ο browser τη ζητά κατευθείαν από το Open-Meteo. Κρατιέται και για χρήση χωρίς σήμα. */
+const WXK=LS+'.wx';
+{const c=lsGet(WXK,null);if(c&&c.locs)setWeather(c)}
+const tfetch=(u,ms=15000)=>fetch(u,{cache:'no-store',signal:typeof AbortSignal!=='undefined'&&AbortSignal.timeout?AbortSignal.timeout(ms):undefined});
+async function wxRefresh(force){
+  if(!AUTH.user||(SERVER&&isWorker())||wxRefresh.busy||wxCfg().on===false)return;
+  const cur=getWeather(),locs=wxLocs(),has=cur&&locs.every(l=>cur.locs[l.key]);
+  // με τον server ρωτά συχνά (ο server κρατά την πρόγνωση), χωρίς server ξαναζητά από το Open-Meteo όταν παλιώσει
+  if(!force&&has&&(SERVER?Date.now()-(wxRefresh.last||0)<60e3:Date.now()-Date.parse(cur.at)<90*60e3))return;
+  wxRefresh.busy=true;wxRefresh.last=Date.now();
+  try{
+    let w;
+    if(SERVER)w=await api('weather'+(force?'?refresh=1':''));
+    else{const r=await tfetch(wxUrl(locs));if(!r.ok)throw new Error('απάντηση '+r.status);w=wxParse(await r.json(),locs)}
+    if(!w||!w.locs)throw new Error(w&&w.error||'δεν υπάρχει ακόμη πρόγνωση');
+    const before=JSON.stringify(cur&&cur.locs);
+    setWeather(w);lsSet(WXK,w);UI.wxErr='';
+    JSON.stringify(w.locs)!==before?wxChanged():wxStat();
+    if(force)toast('Η πρόγνωση ενημερώθηκε.');
+  }catch(e){
+    UI.wxErr=e.status===0||e.name==='TypeError'||e.name==='TimeoutError'||e.name==='AbortError'?'δεν υπάρχει σύνδεση με την υπηρεσία καιρού':(e.message||'σφάλμα');
+    wxStat();if(force)toast('Η πρόγνωση δεν ενημερώθηκε: '+UI.wxErr+'.');
+  }finally{wxRefresh.busy=false}
+}
+function wxStatus(){
+  const w=getWeather();
+  if(wxCfg().on===false)return 'Η πρόγνωση δεν λαμβάνεται υπόψη.';
+  if(w){const t=new Date(w.at);return 'Τελευταία ενημέρωση πρόγνωσης: '+fmt(ds(t))+', '+pad(t.getHours())+':'+pad(t.getMinutes())+(UI.wxErr?'. Η τελευταία προσπάθεια απέτυχε: '+UI.wxErr+'.':'')}
+  return UI.wxErr?'Δεν ήρθε πρόγνωση: '+UI.wxErr+'.':'Φόρτωση πρόγνωσης…';
+}
+const wxStat=()=>{const el=document.getElementById('wxstat');if(el)el.textContent=wxStatus()};
+// νέα πρόγνωση: το πρόγραμμα ξαναστήνεται, χωρίς να κλείνει φόρμα που συμπληρώνεις
+function wxChanged(){wxStat();if(document.querySelector('.modal')||UI.tab==='settings'){UI.wxDirty=true;return}render();loadChanges(true)}
+// αναζήτηση περιοχής (δήμος ή πόλη) για τον καιρό
+async function geocode(q){
+  const r=await tfetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=el&countryCode=GR&format=json&name='+encodeURIComponent(q));
+  if(!r.ok)throw new Error('απάντηση '+r.status);
+  const x=((await r.json()).results||[])[0];
+  return x?{place:x.name,lat:Math.round(x.latitude*1e4)/1e4,lon:Math.round(x.longitude*1e4)/1e4,area:[x.admin2,x.admin1].filter(a=>a&&a!==x.name).join(', ')}:null;
+}
+const geoNote=o=>'Ο καιρός παίρνεται για: '+o.place+(o.area?', '+o.area:'');
+// διαβάζει το πεδίο περιοχής (g = έργο, s = έδρα) και το ψάχνει αν άλλαξε
+async function geoField(t){
+  const i=document.getElementById(t+'_place'),note=document.getElementById(t+'_geo'),q=i.value.trim();
+  if(!q){note.textContent='';return null}
+  if(q===i.dataset.q&&i.dataset.lat!=='')return {place:q,lat:+i.dataset.lat,lon:+i.dataset.lon};
+  note.textContent='Αναζήτηση…';
+  try{
+    const g=await geocode(q);
+    if(!g){note.textContent='Δεν βρέθηκε περιοχή με αυτό το όνομα. Δοκίμασε τον δήμο ή την πόλη.';return null}
+    Object.assign(i.dataset,{q:g.place,lat:g.lat,lon:g.lon});i.value=g.place;note.textContent=geoNote(g);return g;
+  }catch(e){note.textContent='Δεν υπάρχει σύνδεση με την υπηρεσία καιρού. Δοκίμασε ξανά αργότερα.';return null}
+}
+async function saveBase(){
+  if(saveBase.busy)return;saveBase.busy=true;
+  try{const g=await geoField('s'),c=wxCfg();if(!g||(g.lat===c.lat&&g.lon===c.lon))return;
+    S.settings.wx=Object.assign(c,{place:g.place,lat:g.lat,lon:g.lon});save();toast('Η έδρα για τον καιρό έγινε: '+g.place+'.');wxRefresh()}
+  finally{saveBase.busy=false}
+}
+function wxSettings(){
+  const c=wxCfg();
+  return `<section class="panel"><h2>Καιρός</h2>
+    <p class="note">Οι εργασίες με «Θέλει στεγνή μέρα» δεν μπαίνουν στο πρόγραμμα τις μέρες που η πρόγνωση δίνει βροχή στο έργο τους, και το συνεργείο τους πάει σε άλλη δουλειά. Η πρόγνωση έρχεται από το Open-Meteo για 16 μέρες μπροστά και ανανεώνεται μόνη της. Κάθε έργο μπορεί να έχει δική του περιοχή.</p>
+    <div class="form" style="margin-top:8px">
+      <label class="full ck"><input type="checkbox" id="s_wx"${c.on!==false?' checked':''}> <span>Το πρόγραμμα ακολουθεί την πρόγνωση καιρού</span></label>
+      <label class="full">Έδρα της εταιρείας, για έργα χωρίς δική τους περιοχή<span class="inl"><input id="s_place" value="${h(c.place||'')}" data-q="${h(c.place||'')}" data-lat="${c.lat}" data-lon="${c.lon}"><button type="button" class="btn" data-act="geo" data-t="s">Εύρεση</button></span><span class="note" id="s_geo"></span></label>
+      <label>Βροχερή μέρα από πιθανότητα (%)<input type="number" id="s_wprob" min="0" max="100" step="5" value="${+c.minProb}"></label>
+      <label>και ποσότητα βροχής από (mm)<input type="number" id="s_wmm" min="0" max="50" step="0.5" value="${+c.minMm}"></label>
+    </div>
+    <div class="bar" style="margin-top:12px"><span class="note grow" id="wxstat">${h(wxStatus())}</span><button class="btn" data-act="wxnow">Ενημέρωση τώρα</button></div></section>`;
+}
+/* ---------- Αλλαγές μετά την αποστολή (μόνο με τον server) ----------
+   Αν το πρόγραμμα μιας μέρας αλλάξει αφού στάλθηκε (π.χ. λόγω βροχής), το «Σήμερα» δείχνει ποιοι πρέπει να μάθουν την αλλαγή. */
+function loadChanges(force){
+  if(!SERVER||!AUTH.user||isWorker())return;
+  if(!force&&UI.chg&&Date.now()-UI.chg.t<60e3)return;
+  UI.chg=Object.assign(UI.chg||{list:[]},{t:Date.now()});
+  api('viber/changes').then(o=>{const list=o.changes||[];if(JSON.stringify(list)===JSON.stringify(UI.chg.list))return;UI.chg.list=list;
+    if(UI.tab==='today'&&!document.querySelector('.modal'))render()}).catch(()=>{});
+}
+function chgBanner(){
+  return ((UI.chg&&UI.chg.list)||[]).filter(x=>x.date>=TODAY&&x.people.length).map(x=>`<section class="panel chgb"><div><b>Το πρόγραμμα της ${fmt(x.date)} άλλαξε αφού στάλθηκε</b>
+    <div class="note">Αφορά ${x.people.length===1?'':x.people.length+' άτομα'}: ${x.people.map(p=>h(p.name)).join(', ')}. Συνήθως αλλάζει λόγω καιρού ή αλλαγής ανάθεσης.</div></div>
+    <button class="btn sm pri" data-act="sendchg" data-d="${x.date}">${ico('send')}Στείλε τους την αλλαγή</button></section>`).join('');
+}
 
 /* ---------- Βοηθητικά UI ---------- */
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2800)}
@@ -906,6 +1118,10 @@ const specOpts=(all)=>(all?S.specialties:siteSpecs()).map(s=>[s.id,s.name]);
 const roleTag=r=>r==='ext'?'<span class="tag mute">Συνεργάτης</span>':r==='voith'?'<span class="tag mute">Βοηθός</span>':r==='arxi'?'<span class="tag hv">Αρχιεργάτης</span>':r==='ypal'?'<span class="tag mute">Γραφείο</span>':'<span class="tag mute">Τεχνίτης</span>';
 const crewChip=(j,w)=>{const cls=['chip'];if(j.lead&&j.lead.id===w.id)cls.push('lead');if(j.forced.has(w.id))cls.push('fx');if(j.extra.has(w.id))cls.push('x');
   return `<span class="${cls.join(' ')}" title="${j.forced.has(w.id)?'Χειροκίνητη ανάθεση':j.extra.has(w.id)?'Ενίσχυση συνεργείου':''}${j.multi&&j.multi.has(w.id)?' · και σε άλλη εργασία σήμερα':''}">${h(w.name)}${j.multi&&j.multi.has(w.id)?'<span class="mx">⇄</span>':''}</span>`};
+// μικρή ένδειξη καιρού: εικονίδιο, μέγιστη θερμοκρασία και πιθανότητα βροχής όταν αξίζει
+const wxChip=(f,wet)=>f?`<span class="wx${wet?' wet':''}" title="${h(wxText(f))}">${ico(wxKind(f.code).k)}${f.tmax!=null?`<b>${Math.round(f.tmax)}°</b>`:''}${f.p!=null&&f.p>=20?`<span>${Math.round(f.p)}%</span>`:''}</span>`:'';
+// ημερομηνία που ξαναμπαίνει στο πρόγραμμα μια εργασία μετά από μια μέρα
+const nextOn=(R,tid,d)=>Object.keys(R.byDay).sort().find(x=>x>d&&R.byDay[x].jobs.some(j=>j.task.id===tid));
 const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?(x.days||[]).map(d=>DAYS[d]).join(', '):'Μία φορά, '+fmt(x.date);
 
 /* ---------- Καρτέλες ---------- */
@@ -935,7 +1151,15 @@ const ICONS={cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="
   cl:'<path d="M14.5 5.5 8 12l6.5 6.5"/>',
   cr:'<path d="M9.5 5.5 16 12l-6.5 6.5"/>',
   menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
-  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.3"/>'};
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.3"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  pcloud:'<path d="M8.5 3.2v1.4M3.4 5.6l1 1M2.2 10.6h1.4M13.6 5.6l-1 1"/><path d="M5.2 13a3.6 3.6 0 1 1 6.6-3.3"/><path d="M9.5 20.5h8a3.6 3.6 0 0 0 .5-7.2 5 5 0 0 0-9.6 1.2 3 3 0 0 0 1.1 6z"/>',
+  cloud:'<path d="M7.5 18.5h9.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 11a3.8 3.8 0 0 0 1.3 7.5z"/>',
+  rain:'<path d="M7.5 14.5h9.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 7a3.8 3.8 0 0 0 1.3 7.5z"/><path d="M8.5 17.5 7.3 20.5M12.5 17.5l-1.2 3M16.5 17.5l-1.2 3"/>',
+  storm:'<path d="M7.5 14.5h9.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 7a3.8 3.8 0 0 0 1.3 7.5z"/><path d="M12.8 14.5 10.6 18h3l-2.2 3.5"/>',
+  snow:'<path d="M7.5 14.5h9.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 7a3.8 3.8 0 0 0 1.3 7.5z"/><path d="M8.5 18v.1M12 20v.1M15.5 18v.1M10 21.5v.1M14 21.5v.1"/>',
+  fog:'<path d="M7.5 12.5h9.5a3.5 3.5 0 0 0 .5-6.95A5.5 5.5 0 0 0 6.6 6a3.3 3.3 0 0 0 .9 6.5z"/><path d="M4 16h16M6.5 19.5h11"/>',
+  umb:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6.5a2 2 0 0 1-4 0M12 3v-.5"/>'};
 const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
 const NAVI={mine:'day',today:'day',week:'week',person:'user',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'clip',pay:'cash',costs:'chart'};
@@ -974,6 +1198,7 @@ function render(){
   const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,settings:vSettings}[UI.tab]||vToday;
   document.getElementById('main').innerHTML=v(R);
   if(UI.tab==='settings'){if(SERVER&&!isWorker())loadVStatus();if(isAdmin())loadUsers()}
+  if(UI.tab==='today')loadChanges();
 }
 
 /* Το πρόγραμμά μου (λογαριασμός εργαζόμενου) */
@@ -1000,10 +1225,11 @@ function vMine(){
       ${it.location?`<a class="btn sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.location)}" target="_blank" rel="noopener">Οδηγίες στον χάρτη</a>`:''}</div>`
     :`<div class="mi"><b>${h(it.title)}</b></div>`;
   const body=d=>d.off?'<span class="tag warn">Άδεια</span>':d.items.map(item).join('')+(d.duties.length?`<ul class="mduties">${d.duties.map(t=>`<li>${h(t.title)}${t.project?` <span class="note">(${h(t.project)})</span>`:''}</li>`).join('')}</ul>`:'');
+  const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span>${h(d.wx.text)}</span></div>`:'';
   const next=o.days.find(d=>d.date>=TODAY);
   return head+`<p class="note" style="margin:-8px 0 0">${h(o.name)}${o.specialty?' · '+h(o.specialty):''}${o.offline?' · <span class="tag warn">Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε</span>':''}</p>
-  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${body(next)}</section>`:''}
-  <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
+  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${body(next)}${wx(next,'hwx')}</section>`:''}
+  <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}${wx(d,'wx')}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
   <p class="note">Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.</p>`;
 }
 
@@ -1018,17 +1244,20 @@ function vToday(R){
   const idle=staff.filter(w=>!working.has(w.id)&&!off.includes(w));
   const cost=A.reduce((s,a)=>s+a.wage,0);
   const openN=S.tasks.filter(t=>t.status!=='done').length;
-  const wait=R.waiting[d]||[];
+  const wait=(R.waiting[d]||[]).filter(x=>!x.rain);   // όσες περιμένουν βροχή φαίνονται μέσα στην κάρτα του έργου
   const cards=S.projects.map(p=>{
     const pj=jobs.filter(j=>j.task.projectId===p.id);
+    const pw=(day.wet||[]).filter(t=>t.projectId===p.id);
+    const f=wxDay(p.id,d);
     const pd_=S.duties.filter(x=>x.projectId===p.id&&dutyOn(x,d)&&!isOff(W(x.workerId)||{},d));
     const mg=managersOf(p.id,d);
-    return `<article class="pcard" style="--pc:${pc(p)}"><div class="ph"><h3>${h(p.name)}</h3><span class="note">${h(p.location)}</span></div>
+    return `<article class="pcard" style="--pc:${pc(p)}"><div class="ph"><h3>${h(p.name)}</h3>${wxChip(f,rainy(p.id,d))}<span class="note">${h(p.location)}</span></div>
       <div class="mgr"><span class="lbl">Διαχείριση</span>${mg.length?mg.map(w=>`<span class="chip lead${ov(d,w.id)?.type==='pm'?' fx':''}">${h(w.name)}</span>`).join(''):'<span class="tag warn">Κανένας διαχειριστής</span>'}<button class="btn sm ghost" data-act="pmday" data-p="${p.id}" data-d="${d}">Αλλαγή</button></div>
       ${pj.length?pj.map(j=>`<div class="job"><div class="t"><b>${h(j.task.title)}</b><span class="tag mute">${h(SP(j.task.specialtyId)?.name)}</span><span class="note mono">μέρα ${j.dayNo}/${j.task.days}</span>
-        ${j.sub?'<span class="tag warn">Αναπληρωτής υπεύθυνος</span>':''}${!j.lead?'<span class="tag bad">Χωρίς υπεύθυνο</span>':''}${j.short?'<span class="tag bad">Λείπουν βοηθοί</span>':''}</div>
+        ${j.sub?'<span class="tag warn">Αναπληρωτής υπεύθυνος</span>':''}${!j.lead?'<span class="tag bad">Χωρίς υπεύθυνο</span>':''}${j.short?'<span class="tag bad">Λείπουν βοηθοί</span>':''}${j.rain?`<span class="tag rain">${ico('rain')}Βροχή, αλλά το όρισες εσύ</span>`:''}</div>
         <div class="chips">${[j.lead,...j.helpers].filter(Boolean).map(w=>crewChip(j,w)).join('')}</div></div>`).join('')
-        :'<div class="empty">Καμία εργασία αυτή τη μέρα.</div>'}
+        :(pw.length?'':'<div class="empty">Καμία εργασία αυτή τη μέρα.</div>')}
+      ${pw.map(t=>{const n=nextOn(R,t.id,d);return `<div class="job wet"><div class="t"><b>${h(t.title)}</b><span class="tag rain">${ico('rain')}Αναβάλλεται λόγω βροχής</span></div><span class="note">${n?'Συνεχίζει '+fmt(n)+'. ':''}Το συνεργείο της πάει σε άλλη δουλειά.</span></div>`}).join('')}
       ${pd_.length?`<div class="job"><span class="lbl">Επισκέψεις γραφείου</span>${pd_.map(x=>`<div class="note">${h(W(x.workerId)?.name)}: ${h(x.title)}</div>`).join('')}</div>`:''}</article>`}).join('');
   const offices=S.workers.filter(w=>isOffice(w)||dutiesFor(w.id,d).length);
   const officeCard=`<article class="pcard wide" style="--pc:var(--muted)"><div class="ph"><h3>Γραφείο και γενικά καθήκοντα</h3></div>
@@ -1044,6 +1273,7 @@ function vToday(R){
     <button class="btn" data-act="copyday">Αντιγραφή για Viber</button>
     <button class="btn pri" data-act="sendnext">${ico('send')}Αποστολή σε όλους για ${fmt(nextDay())}</button></div>
   <textarea id="daytext" rows="8" hidden readonly>${h(viber)}</textarea>
+  ${chgBanner()}
   <div class="kpis">
     <div class="kpi"><span class="lbl">Στη δουλειά</span><span class="v">${staff.filter(w=>working.has(w.id)).length}<span class="sub"> / ${staff.length}</span></span><span class="s">${extOn?'+ '+extOn+(extOn==1?' συνεργάτης · ':' συνεργάτες · '):''}${off.length} σε άδεια${idle.length?', '+idle.length+' χωρίς ανάθεση':''}</span></div>
     <div class="kpi"><span class="lbl">Μεροκάματα ημέρας</span><span class="v">${eur(cost)}</span><span class="s">${nf(md(A))} μεροκάματα</span></div>
@@ -1073,6 +1303,24 @@ function dayText(d,R){
 }
 
 /* Εβδομάδα */
+// ο καιρός κάτω από κάθε ημερομηνία· με πάτημα ορίζεις εσύ αν η μέρα είναι βροχερή
+function wxHead(d,pid=''){
+  const f=wxDay(pid,d),m=S.wxMark[d],wet=rainy(pid,d);
+  const inner=f?wxChip(f,wet):m?`<span class="wx${wet?' wet':''}">${ico(wet?'rain':'sun')}</span>`:`<span class="wx none">${ico('umb')}</span>`;
+  return `<button class="wxb${wet?' wet':''}${m?' mark':''}" data-act="wxday" data-d="${d}" title="${h((f?wxText(f):'Χωρίς πρόγνωση')+(m?(m==='rain'?' · ορίστηκε βροχερή':' · ορίστηκε στεγνή'):''))}" aria-label="Καιρός ${fmt(d)}">${inner}</button>`;
+}
+// εξωτερικές εργασίες που μετατέθηκαν τη βδομάδα λόγω βροχής
+function rainPanel(R,days){
+  const by={};days.forEach(d=>((R.byDay[d]||{}).wet||[]).forEach(t=>(by[t.id]=by[t.id]||{t,days:[]}).days.push(d)));
+  const xs=Object.values(by);
+  if(!xs.length)return '';
+  const rd=[...new Set(xs.flatMap(x=>x.days))].sort();
+  return `<section class="panel rainb"><h2>${ico('rain')}Βροχή ${rd.map(d=>fmt(d)).join(', ')}: ${xs.length===1?'μία εξωτερική εργασία μετατέθηκε':xs.length+' εξωτερικές εργασίες μετατέθηκαν'}</h2>
+    <ul>${xs.map(({t,days:dd})=>{const b=R.begin[t.id],f=R.finish[t.id];
+      return `<li><span><i class="dot" style="background:${pc(t.projectId)}"></i> <b>${h(t.title)}</b></span><span class="note">${h(P(t.projectId)?.name)} · δεν γίνεται ${dd.map(d=>fmt(d)).join(', ')} · ${!f?'δεν προγραμματίζεται ακόμη':(b>dd[0]?'ξεκινά '+fmt(b)+', ':'')+'τελειώνει '+fmt(f)}</span></li>`}).join('')}</ul>
+    <p class="note">Το πρόγραμμα ακολουθεί μόνο του την πρόγνωση και τα συνεργεία πάνε σε άλλη δουλειά. Πάτα τον καιρό μιας μέρας για να την ορίσεις εσύ βροχερή ή στεγνή.</p></section>`;
+}
+const wxNote=()=>!getWeather()&&UI.wxErr&&wxCfg().on!==false?`<p class="note">${ico('umb','pin')}Η πρόγνωση καιρού δεν φορτώθηκε ακόμη (${h(UI.wxErr)}). Μπορείς να ορίσεις εσύ μια μέρα βροχερή πατώντας το ομπρελάκι κάτω από την ημερομηνία.</p>`:'';
 function vWeek(R){
   if(!UI.week)UI.week=weekStart(UI.day||TODAY);
   const days=weekDays(UI.week);
@@ -1088,12 +1336,13 @@ function vWeek(R){
         let inner='';
         if(pid==='gen')inner=day.gen.map(g=>`<div>${h(short(g.w.name))}</div>`).join('');
         else if(pid==='office')inner=S.workers.filter(w=>isOffice(w)&&!isOff(w,d)&&!pmProjects(w.id,d).length).map(w=>`<div>${h(short(w.name))}</div>`).join('');
-        else inner=(managersOf(pid,d).length?`<div class="pj"><small>Διαχείριση</small><b>${managersOf(pid,d).map(w=>h(short(w.name))).join(', ')}</b></div>`:'')+day.jobs.filter(j=>j.task.projectId===pid).map(j=>`<div class="pj"><small>${h(j.task.title)}</small>${[j.lead,...j.helpers].filter(Boolean).map(w=>j.lead===w?`<b>${h(short(w.name))}</b>`:h(short(w.name))).join(', ')}</div>`).join('');
+        else inner=(managersOf(pid,d).length?`<div class="pj"><small>Διαχείριση</small><b>${managersOf(pid,d).map(w=>h(short(w.name))).join(', ')}</b></div>`:'')+day.jobs.filter(j=>j.task.projectId===pid).map(j=>`<div class="pj"><small>${h(j.task.title)}</small>${[j.lead,...j.helpers].filter(Boolean).map(w=>j.lead===w?`<b>${h(short(w.name))}</b>`:h(short(w.name))).join(', ')}</div>`).join('')
+          +(day.wet||[]).filter(t=>t.projectId===pid).map(t=>`<div class="pj"><small>${h(t.title)}</small><span class="wx wet">${ico('rain')}αναβάλλεται</span></div>`).join('');
         const n=new Set(R.asg.filter(a=>a.date===d&&a.projectId===pid).map(a=>a.workerId)).size;
         return `<td class="pc${d===TODAY?' today':''}">${inner?`<div class="cell" style="--pc:${pc(pid)}">${inner}</div><div class="note mono">${n} άτομα</div>`:'<div class="cell idle">—</div>'}</td>`}).join('');
       const tot=R.asg.filter(a=>days.includes(a.date)&&a.projectId===pid);
       return `<tr><td class="w"><b>${h(pname(pid))}</b></td>${cells}<td class="n mono">${nf(md(tot))}<div class="note">${eur(tot.reduce((s,a)=>s+a.wage,0))}</div></td></tr>`}).join('');
-    return nav+legend+`<section class="panel scroll"><table class="sched"><thead><tr><th>Έργο</th>${days.map(d=>`<th class="${d===TODAY?'today':''}">${fmt(d)}</th>`).join('')}<th class="n">Μεροκ.</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+    return nav+legend+rainPanel(R,days)+wxNote()+`<section class="panel scroll"><table class="sched"><thead><tr><th>Έργο</th>${days.map(d=>`<th class="${d===TODAY?'today':''}">${fmt(d)}${wxHead(d)}</th>`).join('')}<th class="n">Μεροκ.</th></tr></thead><tbody>${rows}</tbody></table></section>`;
   }
   const rows=[...S.specialties,{id:'__ext',name:'Εξωτερικοί συνεργάτες'}].map(sp=>{
     const ws=sp.id==='__ext'?S.workers.filter(isExt):S.workers.filter(w=>w.specialtyId===sp.id&&!isExt(w));if(!ws.length)return '';
@@ -1102,6 +1351,8 @@ function vWeek(R){
       const cells=days.map(d=>{
         const x=whatDoes(R,w.id,d);R.asg.filter(a=>a.date===d&&a.workerId===w.id).forEach(a=>{n+=a.share||1;c+=a.wage})
         const pin=x.forced?ico('pin','pin'):'';
+        const wt=((R.byDay[d]||{}).wet||[]).filter(t=>t.responsibleId===w.id);
+        const rn=wt.length&&!x.off?`<small class="rn" title="Λόγω βροχής δεν γίνεται: ${h(wt.map(t=>t.title).join(', '))}">${ico('rain')}λόγω βροχής</small>`:'';
         let inner;
         if(x.off)inner='<div class="cell off">Άδεια</div>';
         else if(x.jobs.length)inner=x.jobs.map(({job,lead})=>`<div class="cell" style="--pc:${pc(job.task.projectId)}">${pin}${lead?'<b>':''}${h(job.task.title)}${lead?'</b>':''}<small>${h(P(job.task.projectId)?.name)}${job.extra.has(w.id)?' · ενίσχυση':''}${x.jobs.length>1?' · 1/'+x.jobs.length+' μεροκ.':''}</small></div>`).join('');
@@ -1109,12 +1360,24 @@ function vWeek(R){
         else if(x.pm.length)inner=`<div class="cell" style="--pc:${pc(x.pm[0])}">${pin}${x.pm.map(pid=>`<div><i class="dot" style="background:${pc(pid)}"></i> ${h(P(pid).name)}</div>`).join('')}<small>διαχείριση</small></div>`;
         else if(isOffice(w))inner=`<div class="cell" style="--pc:var(--muted)">${x.duties.length?h(x.duties[0].title)+(x.duties.length>1?`<small>+${x.duties.length-1} ακόμη</small>`:''):'Γραφείο'}</div>`;
         else inner='<div class="cell idle">—</div>';
+        if(rn)inner=inner.replace(/<\/div>$/,rn+'</div>');
         return `<td class="c${d===TODAY?' today':''}" data-act="assign" data-w="${w.id}" data-d="${d}" title="Πάτα για να ορίσεις πού δουλεύει">${inner}</td>`}).join('');
       return `<tr><td class="w"><b>${h(w.name)}</b><div class="note">${isExt(w)?h((w.company?w.company+' · ':'')+(SP(w.specialtyId)?.name||'')):ROLES[w.role]+' · '+eur(w.wage)}</div></td>${cells}<td class="n mono">${nf(n)}<div class="note">${eur(c)}</div></td></tr>`}).join('')}).join('');
   const dayCost=days.map(d=>R.asg.filter(a=>a.date===d).reduce((s,a)=>s+a.wage,0));
-  return nav+legend+`<p class="note">Πάτα ένα κελί για να ορίσεις εσύ σε ποιο έργο δουλεύει ο εργαζόμενος ή να του δώσεις άδεια. Τα υπόλοιπα προσαρμόζονται μόνα τους.</p>
-  <section class="panel scroll"><table class="sched"><thead><tr><th>Εργαζόμενος</th>${days.map(d=>`<th class="${d===TODAY?'today':''}">${fmt(d)}</th>`).join('')}<th class="n">Μεροκ.</th></tr></thead>
+  return nav+legend+rainPanel(R,days)+wxNote()+`<p class="note">Πάτα ένα κελί για να ορίσεις εσύ σε ποιο έργο δουλεύει ο εργαζόμενος ή να του δώσεις άδεια. Τα υπόλοιπα προσαρμόζονται μόνα τους.</p>
+  <section class="panel scroll"><table class="sched"><thead><tr><th>Εργαζόμενος</th>${days.map(d=>`<th class="${d===TODAY?'today':''}">${fmt(d)}${wxHead(d)}</th>`).join('')}<th class="n">Μεροκ.</th></tr></thead>
   <tbody>${rows}<tr class="total"><td>Κόστος ημέρας</td>${dayCost.map(c=>`<td class="n mono">${eur(c)}</td>`).join('')}<td class="n mono">${eur(dayCost.reduce((a,b)=>a+b,0))}</td></tr></tbody></table></section>`;
+}
+function wxDayForm(d){
+  const m=S.wxMark[d]||'auto',c=wxCfg();
+  const pts=[{n:'Έδρα · '+(c.place||'—'),pid:''},...S.projects.filter(p=>hasLL(p)&&S.tasks.some(t=>t.projectId===p.id&&t.status!=='done')).map(p=>({n:p.name+(p.place?' · '+p.place:''),pid:p.id}))];
+  const rows=pts.map(x=>{const f=wxDay(x.pid,d);return `<tr><td>${h(x.n)}</td><td>${f?`${wxChip(f,isWet(f,c))} <span class="note">${h(wxText(f))}${f.mm!=null?', '+String(Math.round(f.mm*10)/10).replace('.',',')+' mm':''}</span>`:'<span class="note">Χωρίς πρόγνωση για αυτή τη μέρα</span>'}</td></tr>`}).join('');
+  const auto=c.on===false?'η πρόγνωση είναι κλειστή στις Ρυθμίσεις':!pts.some(x=>wxDay(x.pid,d))?'δεν υπάρχει ακόμη πρόγνωση':pts.some(x=>isWet(wxDay(x.pid,d),c))?'δίνει βροχή':'δίνει στεγνή μέρα';
+  openModal(`<h2>Καιρός ${fmt(d)}</h2>
+  <div class="scroll"><table><tbody>${rows}</tbody></table></div>
+  <form id="wxf" data-d="${d}" style="margin-top:14px"><div class="lbl" style="margin-bottom:8px">Οι εργασίες που θέλουν στεγνή μέρα</div><div class="radios">
+    ${radio('auto','Ακολουθούν την πρόγνωση ('+auto+')',m)}${radio('rain','Σταματούν: η μέρα είναι βροχερή',m)}${radio('dry','Γίνονται κανονικά: η μέρα είναι στεγνή',m)}</div></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savewx">Αποθήκευση</button></div>`);
 }
 function pmForm(wid,d){
   const w=W(wid);const o=ov(d,wid);const cur=(w.off||[]).includes(d)||o?.type==='off'?'off':o?.type==='pm'?'custom':'auto';
@@ -1206,7 +1469,7 @@ function taskTable(R,list,withProj){
   const resp=t=>{const w=W(t.responsibleId);if(!w)return '—';return isExt(w)?`${h(w.company||w.name)} <span class="tag mute">συνεργάτης</span>`:h(w.name)};
   return `<table class="tt"><thead><tr><th>Εργασία</th><th>Ειδικότητα</th><th>Υπεύθυνος</th><th class="n">Συνεργείο</th><th class="n">Μέρες</th><th>Διάστημα</th><th class="n">Κόστος</th><th>Κατάσταση</th><th></th></tr></thead><tbody>
   ${list.map(t=>{const p=P(t.projectId);const dep=T(t.after);const w=W(t.responsibleId);const job=isExt(w)&&w.pay==='job';return `<tr>
-    <td class="tt-main"><div style="display:flex;gap:6px;align-items:center">${withProj?`<i class="dot" style="background:${pc(p)}"></i>`:''}<b>${h(t.title)}</b></div><div class="note">${withProj?h(p?.name):''}${dep?(withProj?' · ':'')+'μετά από «'+h(dep.title)+'»':''}${t.priority==1?' · <span class="tag warn">Υψηλή</span>':''}</div></td>
+    <td class="tt-main"><div style="display:flex;gap:6px;align-items:center">${withProj?`<i class="dot" style="background:${pc(p)}"></i>`:''}<b>${h(t.title)}</b></div><div class="note">${withProj?h(p?.name):''}${dep?(withProj?' · ':'')+'μετά από «'+h(dep.title)+'»':''}${t.priority==1?' · <span class="tag warn">Υψηλή</span>':''}${t.dry?` <span class="tag rain" title="Δεν μπαίνει στο πρόγραμμα όταν βρέχει">${ico('umb')}Στεγνή μέρα</span>`:''}</div></td>
     <td data-l="Ειδικότητα">${h(SP(t.specialtyId)?.name)}</td><td data-l="Υπεύθυνος">${resp(t)}</td>
     <td class="n mono" data-l="Συνεργείο">1+${+t.helpers||0}</td><td class="n mono" data-l="Μέρες">${t.days}</td>
     <td class="mono" data-l="Διάστημα">${t.status==='done'?'—':fmt(R.begin[t.id])+'<div class="note">έως '+fmt(R.finish[t.id])+'</div>'}</td>
@@ -1252,12 +1515,13 @@ function taskForm(t,pid){
     <label>Ξεκινά μετά από${sel('f_after',[['','Καμία προϋπόθεση'],...deps.map(x=>[x.id,x.title])],t.after)}</label>
     <label>Όχι νωρίτερα από<input id="f_earliest" type="date" value="${h(t.earliest)}"></label>
     <label>Τιμή συνεργάτη κατ' αποκοπή (€)<input id="f_price" type="number" min="0" step="50" value="${+t.price||''}" placeholder="μόνο αν την κάνει συνεργάτης"></label>
+    <label class="full ck"><input type="checkbox" id="f_dry"${t.dry?' checked':''}> <span><b>Θέλει στεγνή μέρα.</b> Εξωτερική εργασία, όπως σκυροδέτηση, μόνωση ταράτσας ή σοβάς όψης: δεν μπαίνει στο πρόγραμμα τις μέρες που η πρόγνωση δίνει βροχή στο έργο.</span></label>
   </form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="deltask" data-id="${t.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savetask">Αποθήκευση</button></div>`);
 }
 function readTaskForm(){
   const f=document.getElementById('tf');const g=id=>document.getElementById(id).value;
-  return {id:f.dataset.id,isNew:f.dataset.new==='1',projectId:g('f_project'),title:g('f_title').trim(),specialtyId:g('f_spec'),responsibleId:g('f_resp'),helpers:+g('f_help')||0,days:Math.max(1,+g('f_days')||1),priority:+g('f_prio'),after:g('f_after'),earliest:g('f_earliest'),price:+g('f_price')||0};
+  return {id:f.dataset.id,isNew:f.dataset.new==='1',projectId:g('f_project'),title:g('f_title').trim(),specialtyId:g('f_spec'),responsibleId:g('f_resp'),helpers:+g('f_help')||0,days:Math.max(1,+g('f_days')||1),priority:+g('f_prio'),after:g('f_after'),earliest:g('f_earliest'),price:+g('f_price')||0,dry:document.getElementById('f_dry').checked};
 }
 function dutyForm(x){
   const isNew=!x;x=x||{id:uid('d'),title:'',workerId:S.workers.find(isOffice)?.id||S.workers[0]?.id,freq:'daily',days:[],date:TODAY,projectId:''};
@@ -1333,6 +1597,7 @@ function projForm(p){
   openModal(`<h2>${isNew?'Νέο έργο':'Επεξεργασία έργου'}</h2><form class="form" id="pf" data-id="${p.id}" data-new="${isNew?1:0}">
   <label class="full">Όνομα έργου<input id="g_name" value="${h(p.name)}" placeholder="π.χ. Ανακαίνιση γραφείων Πυλαίας"></label>
   <label class="full">Διεύθυνση<input id="g_loc" value="${h(p.location)}"></label>
+  <label class="full">Περιοχή για τον καιρό<span class="inl"><input id="g_place" value="${h(p.place||'')}" placeholder="π.χ. Καλαμαριά · κενό = η έδρα (${h(wxCfg().place||'')})" data-lat="${hasLL(p)?p.lat:''}" data-lon="${hasLL(p)?p.lon:''}" data-q="${h(p.place||'')}"><button type="button" class="btn" data-act="geo" data-t="g">Εύρεση</button></span><span class="note" id="g_geo">${hasLL(p)?h(geoNote(p)):''}</span></label>
   <label>Προϋπολογισμός εργατικών (€)<input id="g_budget" type="number" min="0" step="100" value="${+p.budget||0}"></label>
   <label class="full">Διαχειριστές έργου<div class="wd">${S.workers.filter(isPM).map(w=>`<label><input type="checkbox" data-mgr="${w.id}"${(p.managers||[]).includes(w.id)?' checked':''}> ${h(w.name)}</label>`).join('')||'<span class="note">Δεν υπάρχει κανείς με ειδικότητα διαχείρισης έργων.</span>'}</div></label>
   <label>Χρώμα${sel('g_color',[['p1','Μπλε'],['p2','Πορτοκαλί'],['p3','Πράσινο'],['p4','Μωβ'],['p5','Κόκκινο'],['p6','Πετρόλ']],p.color)}</label></form>
@@ -1520,6 +1785,7 @@ function vSettings(){
     <label>Έναρξη προγραμματισμού<input type="date" id="s_start" value="${h(S.settings.start)}"></label>
     <label class="full">Εργάσιμες μέρες<div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-wd="${d}"${S.settings.workdays.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></label>
     <label class="full ck"><input type="checkbox" id="s_fill"${S.settings.fillIdle?' checked':''}> <span>Δουλειά για όλους κάθε μέρα: όσοι περισσεύουν ενισχύουν συνεργεία της ειδικότητάς τους ή πάνε στην αποθήκη</span></label></div></section>
+  ${wxSettings()}
   <section class="panel"><h2>Αυτόματη αποστολή στο Viber</h2>
     <p class="note">Κάθε εργάσιμη μέρα, την ώρα που ορίζεις, ο server στέλνει σε κάθε εργαζόμενο το πρόγραμμα της ημέρας του μέσω Viber Business.${SERVER?'':' Λειτουργεί μόνο όταν η εφαρμογή τρέχει από τον server της εταιρείας. Εδώ μπορείς να δεις πώς θα είναι τα μηνύματα.'}</p>
     <div class="form" style="margin-top:8px">
@@ -1534,7 +1800,7 @@ function vSettings(){
   <section class="panel"><h2>Αντίγραφο δεδομένων</h2><p class="note">${SERVER?'Τα δεδομένα αποθηκεύονται στον server και τα βλέπουν όλοι. Ο server κρατά και ένα αντίγραφο ασφαλείας κάθε μέρα.':'Τα δεδομένα μένουν σε αυτόν τον browser. Αντέγραψε το αντίγραφο για να το φυλάξεις ή να το μεταφέρεις σε άλλον υπολογιστή.'}</p>
     <div class="bar" style="margin-block:8px"><button class="btn" data-act="export">Αντιγραφή αντιγράφου</button><button class="btn" data-act="import">Επαναφορά από επικολλημένο κείμενο</button></div>
     <textarea id="io" rows="6" placeholder="Επικόλλησε εδώ ένα αντίγραφο για επαναφορά"></textarea></section>
-  <section class="panel"><h2>Demo δεδομένα</h2><p class="note">Σβήνει ό,τι έχεις αλλάξει και φορτώνει ξανά τα παραδείγματα (3 έργα, 21 εργαζόμενοι, 16 εργασίες, 10 καθήκοντα).</p>
+  <section class="panel"><h2>Demo δεδομένα</h2><p class="note">Σβήνει ό,τι έχεις αλλάξει και φορτώνει ξανά τα παραδείγματα (${(D=>`${D.projects.length} έργα, ${D.workers.length} άτομα, ${D.tasks.length} εργασίες, ${D.duties.length} καθήκοντα`)(demo())}).</p>
     <div class="bar" style="margin-top:8px" id="resetbox"><button class="btn danger" data-act="reset1">Επαναφορά demo</button></div></section>`;
 }
 
@@ -1591,7 +1857,7 @@ function sendForm(d,week){
   ${SERVER?'':'<div class="acts"><span class="grow"></span><button class="btn" data-act="close">Κλείσιμο</button></div>'}`);
 }
 function openModal(html){document.getElementById('modal').innerHTML=`<div class="modal-bg" data-act="bg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;const f=document.querySelector('.modal input:not([type=radio]):not([type=checkbox]):not([hidden]),.modal select,.modal input:checked');f&&f.focus()}
-function closeModal(){document.getElementById('modal').innerHTML=''}
+function closeModal(){document.getElementById('modal').innerHTML='';if(UI.wxDirty&&UI.tab!=='settings'){UI.wxDirty=false;render()}}
 
 /* ---------- Ενέργειες ---------- */
 function commit(msg){save();closeModal();render();if(msg)toast(msg)}
@@ -1656,6 +1922,16 @@ document.addEventListener('click',e=>{
       days.forEach(x=>{w.off=(w.off||[]).filter(o=>o!==x);const k=x+'|'+wid;
         if(v==='auto')delete S.overrides[k];else if(v==='tasks')S.overrides[k]={type:'tasks',taskIds:ids};else S.overrides[k]={type:v}});
       commit(v==='tasks'&&ids.length>1?w.name+': '+ids.length+' εργασίες την ίδια μέρα. Το μεροκάματο μοιράστηκε.':v==='auto'?'Επέστρεψε στο αυτόματο πρόγραμμα.':v==='off'?w.name+': άδεια. Το πρόγραμμα ξαναστήθηκε.':w.name+': η ανάθεση ορίστηκε. Τα υπόλοιπα προσαρμόστηκαν.');break}
+    case 'wxday':wxDayForm(el.dataset.d);break;
+    case 'savewx':{const f=document.getElementById('wxf'),d=f.dataset.d,v=(f.querySelector('input[name=asg]:checked')||{}).value||'auto';
+      if(v==='auto')delete S.wxMark[d];else S.wxMark[d]=v;
+      Object.keys(S.wxMark).forEach(k=>{if(k<add(TODAY,-60))delete S.wxMark[k]});   // κρατά μόνο τους τελευταίους δύο μήνες
+      commit(fmt(d)+(v==='rain'?': βροχερή. Οι εργασίες που θέλουν στεγνή μέρα μετατέθηκαν.':v==='dry'?': στεγνή. Οι εργασίες γίνονται κανονικά.':': ακολουθεί την πρόγνωση.'));break}
+    case 'geo':el.dataset.t==='s'?saveBase():geoField(el.dataset.t);break;
+    case 'wxnow':wxRefresh(true);break;
+    case 'sendchg':{if(!el.dataset.sure){el.dataset.sure=1;el.lastChild.textContent='Σίγουρα; Πάτα ξανά';break}
+      el.disabled=true;api('viber/send',{date:el.dataset.d,changed:true}).then(r=>{toast(r.message||'Στάλθηκαν οι αλλαγές.');loadChanges(true)})
+        .catch(x=>{el.disabled=false;el.dataset.sure='';el.lastChild.textContent='Στείλε τους την αλλαγή';toast(x.message)});break}
     case 'newtask':taskForm(null,el.dataset.p);break;
     case 'edittask':taskForm(T(id));break;
     case 'donetask':{const t=T(id);t.status=t.status==='done'?'todo':'done';commit(t.status==='done'?'Η εργασία ολοκληρώθηκε και βγήκε από το πρόγραμμα.':'Η εργασία άνοιξε ξανά.');break}
@@ -1677,7 +1953,12 @@ document.addEventListener('click',e=>{
     case 'editproj':projForm(P(id));break;
     case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color'),managers:[...f.querySelectorAll('[data-mgr]:checked')].map(x=>x.dataset.mgr)};
       if(!v.name){toast('Γράψε όνομα έργου.');break}
-      if(f.dataset.new==='1')S.projects.push(v);else Object.assign(P(v.id),v);commit('Το έργο αποθηκεύτηκε.');break}
+      el.disabled=true;
+      // η περιοχή για τον καιρό: αν άλλαξε και δεν πατήθηκε «Εύρεση», τη βρίσκει τώρα
+      geoField('g').then(geo=>{
+        Object.assign(v,geo?{place:geo.place,lat:geo.lat,lon:geo.lon}:{place:'',lat:null,lon:null});
+        if(f.dataset.new==='1')S.projects.push(v);else Object.assign(P(v.id),v);
+        commit('Το έργο αποθηκεύτηκε.'+(g('g_place').trim()&&!geo?' Η περιοχή δεν βρέθηκε, ο καιρός παίρνεται από την έδρα.':''));wxRefresh()}).finally(()=>{el.disabled=false});break}
     case 'delproj':if(el.dataset.sure){S.projects=S.projects.filter(p=>p.id!==id);S.tasks=S.tasks.filter(t=>t.projectId!==id);S.duties.forEach(x=>{if(x.projectId===id)x.projectId=''});commit('Το έργο και οι εργασίες του διαγράφηκαν.')}else{el.dataset.sure=1;el.textContent='Διαγράφει και τις εργασίες. Πάτα ξανά'}break;
     case 'newworker':workerForm(null);break;
     case 'newpartner':partnerForm(null);break;
@@ -1736,6 +2017,9 @@ document.addEventListener('change',e=>{
   else if(t.id==='s_auto'){S.settings.autoSend=t.checked;commit(t.checked?'Η αυτόματη αποστολή ενεργοποιήθηκε στις '+(S.settings.sendTime||'06:30')+'.':'Η αυτόματη αποστολή σταμάτησε.')}
   else if(t.id==='s_time'){S.settings.sendTime=t.value||'06:30';commit('Η ώρα αποστολής έγινε '+S.settings.sendTime+'.')}
   else if(t.dataset.viber){W(t.dataset.viber).viber=t.checked;save();toast(t.checked?'Θα λαμβάνει το πρόγραμμα στο Viber.':'Δεν θα λαμβάνει το πρόγραμμα στο Viber.')}
+  else if(t.id==='s_wx'){S.settings.wx=Object.assign(wxCfg(),{on:t.checked});commit(t.checked?'Το πρόγραμμα ακολουθεί την πρόγνωση καιρού.':'Το πρόγραμμα δεν λαμβάνει υπόψη τον καιρό.');if(t.checked)wxRefresh()}
+  else if(t.id==='s_wprob'||t.id==='s_wmm'){const v=Math.max(0,+String(t.value).replace(',','.')||0);S.settings.wx=Object.assign(wxCfg(),t.id==='s_wprob'?{minProb:Math.min(100,v)}:{minMm:v});commit('Το όριο για βροχερή μέρα άλλαξε. Το πρόγραμμα ξαναστήθηκε.')}
+  else if(t.id==='s_place')saveBase();
   else if(t.id==='s_fill'){S.settings.fillIdle=t.checked;commit(t.checked?'Όλοι έχουν δουλειά κάθε μέρα.':'Όσοι περισσεύουν μένουν χωρίς ανάθεση.')}
   else if(t.dataset.wd!=null){const d=+t.dataset.wd;const s=new Set(S.settings.workdays);t.checked?s.add(d):s.delete(d);if(!s.size){t.checked=true;toast('Χρειάζεται τουλάχιστον μία εργάσιμη μέρα.');return}S.settings.workdays=[...s].sort();commit('Οι εργάσιμες μέρες άλλαξαν.')}
   else if(t.dataset.re){
@@ -1778,7 +2062,9 @@ async function boot(){
   else showAuth(a.setup?'setup':'login',a.msg||'');
 }
 window.addEventListener('focus',()=>{if(!SERVER||!AUTH.user||document.querySelector('.modal'))return;
-  if(isWorker()){Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});if(UI.tab==='mine')render()}else pull().then(ok=>ok&&render())});
+  if(isWorker()){Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});if(UI.tab==='mine')render()}else pull().then(ok=>{ok&&render();wxRefresh()})});
+// η πρόγνωση ελέγχεται τακτικά· ξαναζητείται μόνο όταν παλιώσει
+setInterval(()=>wxRefresh(),(SERVER?5:10)*60e3);
 boot();
 })();
 </script>
