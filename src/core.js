@@ -267,8 +267,9 @@ const isExt=w=>!!w&&w.role==='ext';
 // people: άτομα στα έργα (γραφείο και εργολάβος δεν μετράνε), office: χρήστες γραφείου (0 = χωρίς όριο). Τα όρια μόνο προειδοποιούν.
 const PLANS=[{id:'mastoras',name:'Μάστορας',gen:'Μάστορα',price:9.99,people:5,office:1},{id:'synergeio',name:'Συνεργείο',gen:'Συνεργείου',price:19.99,people:15,office:3},{id:'ergotaxio',name:'Εργοτάξιο',gen:'Εργοταξίου',price:39.99,people:40,office:0}];
 const FEATS={wx:['synergeio','Πρόγραμμα με τον καιρό'],partners:['synergeio','Συνεργάτες'],appts:['synergeio','Ραντεβού με πελάτες'],pm:['synergeio','Διαχειριστές έργων'],
+  gaps:['synergeio','Τι λείπει: κενά στο πρόγραμμα'],deadline:['synergeio','Προθεσμία παράδοσης ανά έργο'],avail:['synergeio','Διαθεσιμότητα και δεύτερη ειδικότητα'],search:['synergeio','Αναζήτηση σε όλη την εφαρμογή'],weekly:['synergeio','Εβδομαδιαία σύνοψη για τον εργολάβο'],setup:['synergeio','Οδηγός πρώτης ρύθμισης'],
   progress:['synergeio','Πρόοδος από το εργοτάξιο'],leave:['synergeio','Άδειες από το κινητό'],acc:['synergeio','Κατάσταση για τον λογιστή'],export:['synergeio','Εξαγωγή σε Excel και PDF'],push:['synergeio','Ειδοποιήσεις στο κινητό'],
-  rating:['ergotaxio','Βαθμός εργαζομένου και δυσκολία εργασίας'],profit:['ergotaxio','Κέρδος ανά έργο'],gps:['ergotaxio','Παρουσίες με GPS'],materials:['ergotaxio','Υλικά πριν την εργασία'],equip:['ergotaxio','Μηχανήματα, οχήματα και λήξεις'],diary:['ergotaxio','Ημερολόγιο έργου με φωτογραφίες'],client:['ergotaxio','Σελίδα προόδου για τον πελάτη']};
+  rating:['ergotaxio','Βαθμός εργαζομένου και δυσκολία εργασίας'],history:['ergotaxio','Ιστορικό αλλαγών με αναίρεση'],profit:['ergotaxio','Κέρδος ανά έργο'],gps:['ergotaxio','Παρουσίες με GPS'],materials:['ergotaxio','Υλικά πριν την εργασία'],equip:['ergotaxio','Μηχανήματα, οχήματα και λήξεις'],diary:['ergotaxio','Ημερολόγιο έργου με φωτογραφίες'],client:['ergotaxio','Σελίδα προόδου για τον πελάτη']};
 const planIx=id=>{const i=PLANS.findIndex(p=>p.id===id);return i<0?PLANS.length-1:i};   // χωρίς ρύθμιση: το ανώτερο
 const planOf=st=>PLANS[planIx(((st||S&&S.settings)||{}).plan)];
 const hasF=(f,st)=>!FEATS[f]||planIx(planOf(st).id)>=planIx(FEATS[f][0]);
