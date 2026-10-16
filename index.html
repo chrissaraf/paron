@@ -1,291 +1,422 @@
 <!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>ERGODO · Get the job Done</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='28' fill='%23f0b400'/%3E%3Cpath d='M17 31l9 9 18-19' fill='none' stroke='%2317212b' stroke-width='7.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='28' fill='%23f5b800'/%3E%3Cpath d='M17 31l9 9 18-19' fill='none' stroke='%231d2328' stroke-width='7.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@500;700;800&family=Fira+Sans:wght@400;500;600&family=Fira+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400..800&family=Fira+Sans+Condensed:wght@700;800&display=swap">
 <style>
-/* Layout: εργαλείο εργοταξίου — σταθερή μπάρα με καρτέλες, μία στήλη περιεχομένου, πίνακες σε δικά τους scroll boxes */
+/* Εργαλείο εργοταξίου: μπετό, άσφαλτος και κίτρινο ασφαλείας.
+   Το κίτρινο σημαίνει μόνο δύο πράγματα: «εδώ είσαι» και «αυτό πατάς». Τα υπόλοιπα μένουν ήσυχα. */
 :root{
-  --bg:#eceff1; --surface:#ffffff; --sunk:#f5f7f8; --ink:#17212b; --muted:#5a6672; --line:#d3d9de;
-  --brand:#1f4466; --brand-ink:#ffffff; --hivis:#f0b400; --hivis-ink:#4a3700;
-  --ok:#2d7a4b; --warn:#a96400; --bad:#b0281f; --ok-bg:#e3f2e8; --warn-bg:#fdf0db; --bad-bg:#fbe5e3;
-  --p1:#2f6db0; --p2:#c0602a; --p3:#3c8a5a; --p4:#8a4fb0; --p5:#b03a5b; --p6:#4f7f8a;
-  --f-display:"Fira Sans Condensed","Arial Narrow",system-ui,sans-serif;
-  --f-body:"Fira Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"Fira Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:6px; --logo-bg:#17212b; --auth-bg:#17212b;
+  --bg:#eef0ed; --surface:#ffffff; --sunk:#f5f6f4; --hover:#e6e9e5; --ink:#1d2328; --ink-2:#39424a; --muted:#5f6971; --line:#e1e4e0; --line-2:#cbd0ca;
+  --hivis:#f5b800; --hivis-2:#e2a800; --hivis-ink:#1d2328; --hivis-soft:#fdf2cc;
+  --ok:#23824f; --warn:#965700; --bad:#c0362c; --ok-bg:#e2f3e8; --warn-bg:#fcefd6; --bad-bg:#fce5e2;
+  --p1:#2f6db0; --p2:#c9622a; --p3:#2f8a57; --p4:#8a4fb0; --p5:#b8395c; --p6:#3f7f8c;
+  --f-ui:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-display:var(--f-ui);
+  --f-logo:"Fira Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --r-sm:8px; --r:10px; --r-lg:16px;
+  --pop:0 18px 44px -14px rgba(18,24,29,.30),0 2px 6px rgba(18,24,29,.08);
+  --auth-bg:#161b1f; --scrim:rgba(14,18,22,.46); --edge:rgba(20,26,31,.16);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6971' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#10161c; --surface:#18212a; --sunk:#141b22; --ink:#e4e9ee; --muted:#98a4b0; --line:#2b3743;
-  --brand:#6fa3d6; --brand-ink:#0d1620; --hivis:#f2bd2a; --hivis-ink:#2a1f00;
-  --ok:#6cc48f; --warn:#e8a64a; --bad:#ef7a70; --ok-bg:#1b3326; --warn-bg:#3a2a12; --bad-bg:#3d1c1a;
-  --p1:#6aa2e0; --p2:#e38a55; --p3:#6cbf8a; --p4:#b88ae0; --p5:#e07a98; --p6:#7fb5c0; --auth-bg:#0b1016; color-scheme:dark}}
+  --bg:#121518; --surface:#1b1f23; --sunk:#171a1e; --hover:#262b30; --ink:#e9ecee; --ink-2:#cdd3d8; --muted:#98a2ab; --line:#2a3036; --line-2:#3b4249;
+  --hivis:#f7c21e; --hivis-2:#ffd24d; --hivis-ink:#15191c; --hivis-soft:#3a3214;
+  --ok:#5cc58a; --warn:#e9a84c; --bad:#f07a6f; --ok-bg:#173123; --warn-bg:#35290f; --bad-bg:#3c1d1a;
+  --p1:#6aa2e0; --p2:#e38a55; --p3:#5fbf86; --p4:#b88ae0; --p5:#e07a98; --p6:#78b3bf;
+  --pop:0 18px 44px -14px rgba(0,0,0,.65),0 2px 6px rgba(0,0,0,.3); --auth-bg:#0d1013; --scrim:rgba(0,0,0,.6); --edge:rgba(0,0,0,.6);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a2ab' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#10161c; --surface:#18212a; --sunk:#141b22; --ink:#e4e9ee; --muted:#98a4b0; --line:#2b3743;
-  --brand:#6fa3d6; --brand-ink:#0d1620; --hivis:#f2bd2a; --hivis-ink:#2a1f00;
-  --ok:#6cc48f; --warn:#e8a64a; --bad:#ef7a70; --ok-bg:#1b3326; --warn-bg:#3a2a12; --bad-bg:#3d1c1a;
-  --p1:#6aa2e0; --p2:#e38a55; --p3:#6cbf8a; --p4:#b88ae0; --p5:#e07a98; --p6:#7fb5c0; --auth-bg:#0b1016; color-scheme:dark}
+  --bg:#121518; --surface:#1b1f23; --sunk:#171a1e; --hover:#262b30; --ink:#e9ecee; --ink-2:#cdd3d8; --muted:#98a2ab; --line:#2a3036; --line-2:#3b4249;
+  --hivis:#f7c21e; --hivis-2:#ffd24d; --hivis-ink:#15191c; --hivis-soft:#3a3214;
+  --ok:#5cc58a; --warn:#e9a84c; --bad:#f07a6f; --ok-bg:#173123; --warn-bg:#35290f; --bad-bg:#3c1d1a;
+  --p1:#6aa2e0; --p2:#e38a55; --p3:#5fbf86; --p4:#b88ae0; --p5:#e07a98; --p6:#78b3bf;
+  --pop:0 18px 44px -14px rgba(0,0,0,.65),0 2px 6px rgba(0,0,0,.3); --auth-bg:#0d1013; --scrim:rgba(0,0,0,.6); --edge:rgba(0,0,0,.6);
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a2ab' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
-.num,td.n,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.num,td.n,.mono,.kpi .v{font-variant-numeric:tabular-nums}
+button{-webkit-tap-highlight-color:transparent}
 
+/* λογότυπο (σχέδιο Β, όπως το διάλεξε ο Χρήστος) */
 .logo{display:flex;align-items:center;color:var(--ink)}
 .logo .wm{display:inline-grid;gap:5px;line-height:1;justify-items:start}
-.logo .wm b{font-family:var(--f-display);font-weight:800;font-size:34px;letter-spacing:0;display:flex;align-items:center}
+.logo .wm b{font-family:var(--f-logo);font-weight:800;font-size:32px;letter-spacing:0;display:flex;align-items:center}
 .seal{width:.86em;height:.86em;margin-left:.05em;flex:none}
-.logo .wm small{font-family:var(--f-display);font-weight:700;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-.logo .hz{display:block;width:100%;height:6px;margin-top:3px;background:repeating-linear-gradient(-45deg,var(--hivis) 0 6px,transparent 6px 12px)}
-.sub{color:var(--muted);font-size:13px}
+.logo .wm small{font-family:var(--f-logo);font-weight:700;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.logo .hz{display:block;width:100%;height:5px;margin-top:3px;background:repeating-linear-gradient(-45deg,var(--hivis) 0 5px,transparent 5px 10px)}
+.sub{color:var(--muted)}
 
-
-
-
-main{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px;display:grid;gap:20px}
-h1,h2,h3{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:balance}
-h1{font-size:26px} h2{font-size:19px} h3{font-size:16px}
+/* σελίδα */
+main{max-width:1240px;width:100%;margin:0 auto;padding:28px max(28px,env(safe-area-inset-right,0px)) 64px max(28px,env(safe-area-inset-left,0px));display:grid;gap:20px;min-width:0}
+main>p.note{margin:0;max-width:85ch}
+h1,h2,h3{font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.012em;line-height:1.2}
+h1{font-size:28px;font-weight:760;letter-spacing:-.02em}
+h2{font-size:17px}
+h3{font-size:16px;font-weight:660}
 .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .bar .grow{flex:1}
-@media (max-width:640px){.bar>h1.grow{flex:1 1 100%}}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
-.panel>h2{margin-bottom:12px}
-.lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:4px}
-.kpi .v{font-family:var(--f-display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
-.kpi .s{color:var(--muted);font-size:13px}
-@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--r);padding:7px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.btn:hover{border-color:var(--muted)}
-.btn.pri{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
-.btn.danger{color:var(--bad);border-color:var(--bad)}
-.btn.sm{padding:3px 8px;font-size:13px}
-table.tt .lbl{display:none}
-table.tt td.tt-acts .btn{min-width:32px;justify-content:center}
-.btn.ghost{border-color:transparent;background:none}
-:focus-visible{outline:2px solid var(--hivis);outline-offset:2px}
+.bar h1{min-height:42px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bar h1.ptitle{flex-wrap:nowrap}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;min-width:0}
+.panel>h2{margin-bottom:14px}
+.lbl{font-size:12.5px;color:var(--muted);font-weight:560}
+.note{font-size:13.5px;color:var(--muted)}
+.empty{color:var(--muted);padding:16px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
-.projgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
-@media (max-width:420px){.projgrid{grid-template-columns:1fr}}
-.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}
-.pcard .ph{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:8px;row-gap:2px;padding:12px 14px;border-bottom:1px solid var(--line);border-top:4px solid var(--pc)}
-.pcard .ph h3{min-width:0}
-.pcard .ph>.note{grid-column:1/-1;grid-row:2}
-.pcard.wide{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-.pcard.wide>.ph{grid-column:1/-1}
-.pcard.wide>.job{border-bottom:0;border-right:1px solid var(--line)}
-.job .t>.note.mono{margin-left:auto;white-space:nowrap}
-.mgr>[data-act=pmday]{margin-left:auto}
-.bgrp{display:inline-flex}
-.bgrp>.btn{border-radius:0;margin-left:-1px;white-space:nowrap}
-.bgrp>.btn:first-child{border-radius:var(--r) 0 0 var(--r);margin-left:0}
-.bgrp>.btn:last-child{border-radius:0 var(--r) var(--r) 0}
-.bgrp>.btn:hover{position:relative;z-index:1}
-.bar h1{min-height:38px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-@media (max-width:640px){.bar>h1{flex-basis:100%}.bar>.btn.pri{flex:1 1 100%;justify-content:center}.bar>.bgrp{flex:1}.bar>.bgrp>.btn{flex:1;justify-content:center}}
-.job{padding:10px 14px;border-bottom:1px solid var(--line);display:grid;gap:6px}
-.job:last-child{border-bottom:0}
-.job .t{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-.job .t b{font-weight:600}
-.chips{display:flex;flex-wrap:wrap;gap:4px}
-.chip{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:2px 8px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);white-space:nowrap}
-.chip.lead{font-weight:600;border-color:var(--ink)}
-.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:4px;letter-spacing:.02em;white-space:nowrap}
+.dot.lg{width:14px;height:14px}
+.lnk{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.lnk:hover{text-decoration:underline;text-underline-offset:3px}
+a.btn{text-decoration:none}
+:focus-visible{outline:2.5px solid var(--hivis);outline-offset:2px}
+
+/* αριθμοί της ημέρας: μία λωρίδα, όχι τέσσερις κάρτες */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.kpi{padding:16px 20px 18px;display:grid;gap:2px;align-content:start;min-width:0;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0}
+.kpi .v{font-size:30px;font-weight:760;letter-spacing:-.025em;line-height:1.15}
+.kpi .v .sub{font-size:16px;font-weight:560;letter-spacing:0}
+.kpi .s{color:var(--muted);font-size:13px}
+.kpi .meter{margin:8px 0 4px}
+.kpi .note .bar{gap:12px}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{padding:14px 16px}.kpi:nth-child(odd){border-left:0}.kpi:nth-child(n+3){border-top:1px solid var(--line)}.kpi .v{font-size:24px}}
+
+/* κουμπιά */
+.btn{font:inherit;font-size:14.5px;font-weight:560;line-height:1.2;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:var(--r);min-height:40px;padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background-color .12s,border-color .12s}
+.btn:hover{background:var(--sunk);border-color:var(--muted)}
+.btn svg{width:18px;height:18px;flex:none}
+.btn.pri{background:var(--hivis);border-color:var(--hivis);color:var(--hivis-ink);font-weight:660}
+.btn.pri:hover{background:var(--hivis-2);border-color:var(--hivis-2)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn.danger:hover{background:var(--bad-bg);border-color:var(--bad)}
+.btn.ghost{border-color:transparent;background:none}
+.btn.ghost:hover{background:var(--hover)}
+.btn.sm{min-height:32px;padding:5px 10px;font-size:13.5px;border-radius:var(--r-sm);gap:6px}
+.btn.sm svg{width:16px;height:16px}
+/* μέσα σε πίνακες και κάρτες το κύριο κουμπί είναι σκούρο: το κίτρινο μένει για την κύρια ενέργεια της σελίδας */
+.btn.sm.pri{background:var(--surface);border:1.5px solid var(--ink);color:var(--ink);font-weight:650}
+.btn.sm.pri:hover{background:var(--ink);color:var(--surface)}
+.btn:disabled{opacity:.55;cursor:default}
+.bgrp{display:inline-flex;background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden}
+.bgrp>.btn{border:0;border-radius:0;min-height:38px;white-space:nowrap;padding-inline:12px}
+.bgrp>.btn+.btn{border-left:1px solid var(--line)}
+.bgrp>.btn:hover{background:var(--sunk)}
+.seg{display:inline-flex;background:var(--hover);border-radius:var(--r);padding:3px;gap:2px}
+.seg button{font:inherit;font-size:14px;font-weight:560;border:0;background:none;color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;min-height:34px}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08),0 0 0 1px var(--line)}
+.iconbtn{display:inline-grid;place-items:center;width:40px;height:40px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);cursor:pointer;flex:none}
+.iconbtn:hover{background:var(--sunk)}
+.iconbtn svg{width:20px;height:20px}
+
+/* ονόματα και ετικέτες */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;line-height:1.3;padding:4px 11px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);white-space:nowrap;color:var(--ink)}
+.chip.lead{background:var(--ink);border-color:var(--ink);color:var(--surface);font-weight:600}
+.chip.fx{box-shadow:0 0 0 2px var(--hivis);border-color:var(--hivis)}
+.chip.x{border-style:dashed;border-color:var(--line-2);background:none}
+.chip .mx{font-size:11px;opacity:.7;margin-left:2px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:620;line-height:1.5;padding:1px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.005em}
+.tag svg{width:12px;height:12px}
 .tag.ok{background:var(--ok-bg);color:var(--ok)} .tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.bad{background:var(--bad-bg);color:var(--bad)}
-.tag.mute{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
+.tag.mute{background:var(--sunk);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
 .tag.hv{background:var(--hivis);color:var(--hivis-ink)}
-.empty{color:var(--muted);padding:14px}
+.legend{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}
+.legend>span{display:inline-flex;gap:6px;align-items:center}
+.legend svg{width:14px;height:14px}
+.legend-d{font-size:13px;color:var(--muted)}
+.legend-d>summary{display:inline-flex;align-items:center;gap:6px;cursor:pointer;list-style:none;padding:4px 2px;border-radius:6px;font-weight:540}
+.legend-d>summary::-webkit-details-marker{display:none}
+.legend-d>summary:hover{color:var(--ink)}
+.legend-d>summary svg{width:16px;height:16px}
+.legend-d[open]>summary{margin-bottom:8px;color:var(--ink)}
+.pin{width:12px;height:12px;vertical-align:-1px;margin-right:2px;color:var(--ink)}
+
+/* πίνακες */
 .scroll{overflow-x:auto;max-width:100%}
 table{border-collapse:collapse;width:100%;font-size:14px}
-th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{text-align:left;font-size:12.5px;color:var(--muted);font-weight:560;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
 td.n,th.n{text-align:right;white-space:nowrap}
-tr.total td{font-weight:600;border-top:2px solid var(--ink);border-bottom:0}
-tr.grp td{background:var(--sunk);font-family:var(--f-display);font-weight:700;font-size:14px;padding:6px 8px}
-.sched td,.sched th{padding:4px;border:1px solid var(--line)}
-.sched th{text-align:center}
-.sched td.w{white-space:nowrap;padding:6px 8px;min-width:150px}
-.sched td.c{min-width:120px;cursor:pointer;height:46px}
-.sched td.c:hover{outline:2px solid var(--hivis);outline-offset:-2px}
-.sched td.today,.sched th.today{background:color-mix(in srgb,var(--hivis) 10%,transparent)}
-.cell{border-left:4px solid var(--pc);background:color-mix(in srgb,var(--pc) 13%,var(--surface));padding:3px 6px;border-radius:3px;font-size:12.5px;line-height:1.25}
-.cell small{color:var(--muted);display:block}
-.cell.off{border-left-color:var(--muted);background:repeating-linear-gradient(-45deg,var(--sunk) 0 6px,transparent 6px 12px);color:var(--muted);font-weight:600}
-.cell.idle{border-left-color:transparent;background:none;color:var(--muted)}
-.meter{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
-.meter>i{display:block;height:100%;background:var(--brand)}
+td.mono{white-space:nowrap}
+tr.total td{font-weight:700;border-top:1.5px solid var(--ink);border-bottom:0}
+tr.grp td{background:var(--sunk);font-weight:660;font-size:13.5px;padding:8px 12px;color:var(--ink-2)}
+table.tt tbody tr:hover td{background:color-mix(in srgb,var(--sunk) 75%,transparent)}
+table.tt .lbl{display:none}
+table.tt td.tt-acts{text-align:right}
+table.tt td.tt-main{width:26%;min-width:180px}
+table.tt td,table.tt th{padding-inline:8px}
+table.tt td.tt-acts .btn+.btn{margin-left:2px}
+table.tt td.tt-acts .btn{min-width:34px;padding-inline:8px}
+.panel.scroll:has(>table.tt){container-type:inline-size}
+/* όταν ο πίνακας εργασιών δεν χωράει, κάθε εργασία γίνεται κάρτα */
+@container (max-width:980px){
+  table.tt thead{display:none}
+  table.tt,table.tt tbody,table.tt tr,table.tt td{display:block;width:100%}
+  table.tt tr{padding:14px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px 16px}
+  table.tt tr:last-child{border-bottom:0}
+  table.tt tbody tr:hover td{background:none}
+  table.tt td{border:0;padding:0;text-align:left!important}
+  table.tt td[data-l]::before{content:attr(data-l);display:block;font-size:12px;color:var(--muted);font-weight:560;margin-bottom:1px}
+  table.tt td.tt-main,table.tt td.tt-acts{grid-column:1/-1}
+  table.tt td.tt-acts{display:flex;gap:8px;margin-top:4px}
+  table.tt td.tt-acts .btn{flex:1;max-width:220px;min-height:42px}
+  table.tt td.tt-acts .btn+.btn{margin-left:0}
+  table.tt .lbl{display:inline;color:inherit;font-size:inherit;font-weight:inherit}
+}
+
+/* εβδομάδα */
+.sched{border-collapse:separate;border-spacing:0}
+.sched td,.sched th{padding:5px;border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line)}
+.sched th:first-child,.sched td:first-child{border-left:0}
+.sched th{text-align:center;padding:10px 6px;position:relative}
+.sched th:first-child{text-align:left;padding-left:4px}
+.sched td.w{white-space:nowrap;padding:8px 12px 8px 4px;min-width:164px}
+.sched td.c{min-width:126px;cursor:pointer;height:52px;transition:background-color .1s}
+.sched td.c:hover{background:var(--sunk)}
+.sched td.c:hover .cell:not(.idle){filter:saturate(1.15)}
+.sched td.pc{min-width:140px}
+.sched td.today{background:color-mix(in srgb,var(--hivis) 7%,transparent)}
+.sched th.today{color:var(--ink);font-weight:700}
+/* σήμερα: η λωρίδα σήμανσης από το λογότυπο */
+.sched th.today::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:4px;border-radius:2px;background:repeating-linear-gradient(-45deg,var(--hivis) 0 4px,#1d2328 4px 8px)}
+.sched tr.grp td{border-left:0}
+.cell{background:color-mix(in srgb,var(--pc) 13%,var(--surface));box-shadow:inset 3px 0 0 var(--pc);padding:5px 8px 6px 11px;border-radius:7px;font-size:12.5px;line-height:1.3;color:var(--ink)}
+.cell small{color:var(--muted);display:block;font-size:11.5px;margin-top:1px}
+.cell.off{box-shadow:inset 3px 0 0 var(--muted);background:repeating-linear-gradient(-45deg,var(--sunk) 0 6px,transparent 6px 12px);color:var(--muted);font-weight:600}
+.cell.idle{box-shadow:none;background:none;color:var(--muted);text-align:center}
+.cell+.cell{margin-top:4px}
+.cell .pj+.pj{margin-top:5px;padding-top:5px;border-top:1px solid color-mix(in srgb,var(--pc) 28%,transparent)}
+.meter{height:8px;background:var(--hover);border-radius:999px;overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--ink);border-radius:999px}
 .meter>i.over{background:var(--bad)}
 .hbar{display:flex;align-items:center;gap:8px}
 .hbar .meter{flex:1;min-width:60px}
-.gantt{border-collapse:separate;border-spacing:0;font-size:12.5px}
+.gantt{border-collapse:separate;border-spacing:0;font-size:13px}
 .gantt td,.gantt th{padding:0;border:0;border-bottom:1px solid var(--line)}
-.gantt td.lab{padding:5px 10px 5px 0;white-space:nowrap;position:sticky;left:0;background:var(--surface);min-width:210px}
-.gantt th.d{font-family:var(--f-mono);font-size:10px;color:var(--muted);text-align:center;min-width:22px;padding:4px 0;letter-spacing:0;text-transform:none;font-weight:400}
-.gantt td.g{min-width:22px;height:26px}
-.gantt td.g i{display:block;height:14px;margin:0 1px;border-radius:2px;background:var(--pc)}
+.gantt td.lab{padding:6px 12px 6px 0;white-space:nowrap;position:sticky;left:0;background:var(--surface);min-width:220px;z-index:1}
+.gantt th.d{font-size:10.5px;color:var(--muted);text-align:center;min-width:22px;padding:4px 0 6px;font-weight:520;line-height:1.3}
+.gantt td.g{min-width:22px;height:30px}
+.gantt td.g i{display:block;height:14px;margin:0 1px;border-radius:4px;background:var(--pc)}
 .gantt td.g.we{background:var(--sunk)}
-.gantt th.mon{border-left:1px solid var(--line)}
-.filters{display:flex;gap:8px;flex-wrap:wrap}
-select,input,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:6px 8px;max-width:100%}
-textarea{width:100%;font-family:var(--f-mono);font-size:12px}
-.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.form label{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
+.gantt th.mon{border-left:1px solid var(--line-2)}
+
+/* φόρμες */
+select,input,textarea{font:inherit;font-size:15px;color:var(--ink);background-color:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);padding:8px 12px;min-height:42px;max-width:100%;transition:border-color .12s,box-shadow .12s}
+select{appearance:none;-webkit-appearance:none;background-image:var(--chev);background-repeat:no-repeat;background-position:right 10px center;background-size:18px;padding-right:38px;cursor:pointer}
+select:hover,input:hover,textarea:hover{border-color:var(--muted)}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--hivis) 50%,transparent)}
+textarea{width:100%;font-size:13.5px;line-height:1.5;min-height:0}
+::placeholder{color:color-mix(in srgb,var(--muted) 80%,transparent)}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.form label{display:grid;gap:6px;font-size:13px;color:var(--ink-2);font-weight:560}
 .form label.full{grid-column:1/-1}
 .form input,.form select{width:100%}
-input[type=checkbox],input[type=radio],.form input[type=checkbox],.form input[type=radio]{width:18px;height:18px;min-width:18px;padding:0;margin:0;flex:none;accent-color:var(--brand);cursor:pointer}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;min-width:20px;min-height:0;padding:0;margin:0;flex:none;accent-color:var(--hivis);cursor:pointer;box-shadow:none}
 @media (max-width:520px){.form{grid-template-columns:1fr}}
-.modal-bg{position:fixed;inset:0;background:rgba(10,15,20,.5);z-index:50;display:grid;place-items:center;padding:16px}
-.modal{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);width:min(620px,100%);max-height:90vh;overflow:auto;padding:18px;display:grid;gap:14px}
-.modal .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.modal .acts .grow{flex:1}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r);z-index:60;font-size:14px;max-width:calc(100% - 32px)}
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
-.legend span{display:inline-flex;gap:6px;align-items:center}
-.note{font-size:13px;color:var(--muted)}
-.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
-@media (max-width:900px){.two{grid-template-columns:1fr}}
 .wd{display:flex;gap:6px;flex-wrap:wrap}
-.wd label{display:inline-flex;gap:6px;align-items:center;white-space:nowrap;cursor:pointer;border:1px solid var(--line);padding:4px 8px;border-radius:var(--r)}
-.chip.fx{border-color:var(--hivis);box-shadow:inset 0 0 0 1px var(--hivis)}
-.chip.x{border-style:dashed}
-.chip .mx{font-size:11px;color:var(--muted);margin-left:3px}
-.cell+.cell{margin-top:4px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.seg button{font:inherit;font-size:14px;border:0;background:var(--surface);color:var(--muted);padding:7px 12px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.checks{display:grid;gap:4px}
-.ck{display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:14px;color:var(--ink)}
-.ck input{margin-top:3px}
-.radios{display:grid;gap:6px;max-height:55vh;overflow:auto}
-.sched td.pc{min-width:140px;vertical-align:top}
-.cell .pj+.pj{margin-top:4px;padding-top:4px;border-top:1px solid var(--line)}
-.pdays{display:grid}
-.pday{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-.pday:last-child{border-bottom:0}
-.pday.is-today .dl{color:var(--ink);background:var(--hivis);color:var(--hivis-ink);border-radius:4px;padding:0 6px;align-self:start;justify-self:start}
-.pday .dl{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
-.pday .db{display:grid;gap:5px;min-width:0}
-.pday .t{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-a.btn{text-decoration:none}
-.mgr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--sunk)}
-.form label.ck{display:flex;color:var(--ink)}
-.vprev{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:8px}
-.vprev pre{white-space:pre-wrap;font-family:var(--f-mono);font-size:12px;background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);padding:8px;margin:4px 0 0}
-@media (prefers-reduced-motion:no-preference){.toast{animation:up .18s ease-out}@keyframes up{from{transform:translate(-50%,8px)}}}
-td.mono{white-space:nowrap}
-.bar h1.ptitle{flex-wrap:nowrap;align-items:center}
-.bar h1.ptitle .dot{flex:none}
-/* πίνακας εργασιών σε κάρτες στο κινητό */
+.wd label,.form .wd label{display:inline-flex;gap:8px;align-items:center;white-space:nowrap;cursor:pointer;border:1px solid var(--line-2);padding:6px 12px 6px 8px;border-radius:999px;font-size:14px;color:var(--ink);font-weight:500;background:var(--surface)}
+.wd label:has(input:checked){background:var(--hivis-soft);border-color:var(--hivis)}
+.wd label:has(input:disabled){opacity:.5;cursor:default}
+.checks{display:grid;gap:10px}
+.ck,.form label.ck{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:14.5px;color:var(--ink);font-weight:450;line-height:1.4}
+.ck input{margin-top:0}
+.radios{display:grid;gap:8px;max-height:55vh;overflow:auto;padding:2px}
+.radios>.ck:has(input[type=radio]){padding:11px 12px;border:1px solid var(--line);border-radius:var(--r)}
+.radios>.ck:has(input[type=radio]:checked){border-color:var(--ink);background:var(--sunk)}
+.atasks{display:grid;gap:8px;padding:4px 2px 0 32px}
+.vprev{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:8px}
+.vprev pre{white-space:pre-wrap;font-family:var(--f-ui);font-size:12.5px;background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:4px 0 0}
+
+/* παράθυρα: στο κινητό ανεβαίνουν από κάτω */
+.modal-bg{position:fixed;inset:0;background:var(--scrim);z-index:50;display:grid;place-items:center;padding:24px 16px}
+.modal{background:var(--surface);border-radius:20px;width:min(640px,100%);max-height:min(90vh,920px);max-height:min(90dvh,920px);overflow:auto;overscroll-behavior:contain;padding:24px 24px 0;display:grid;gap:16px;box-shadow:var(--pop)}
+.modal>h2{font-size:21px;font-weight:760}
+.modal>h2+.note,.modal>h2+p{margin-top:-8px}
+.modal>p{margin:0}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:0;margin:0 -24px;padding:14px 24px calc(14px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line);z-index:1}
+.modal .acts .grow{flex:1}
+.modal>:last-child:not(.acts){margin-bottom:24px}
+@media (prefers-reduced-motion:no-preference){.modal{animation:pop .16s ease-out}@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.985)}}}
 @media (max-width:640px){
-  table.tt thead{display:none}
-  table.tt,table.tt tbody,table.tt tr,table.tt td{display:block;width:100%}
-  table.tt tr{padding:12px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
-  table.tt td{border:0;padding:0;text-align:left!important}
-  table.tt td[data-l]::before{content:attr(data-l);display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  table.tt td.tt-main,table.tt td.tt-acts{grid-column:1/-1}
-  table.tt td.tt-acts{display:flex;gap:8px;margin-top:4px}
-  table.tt td.tt-acts .btn{flex:1;justify-content:center;min-height:40px}
-  table.tt .lbl{display:inline}
+  .modal-bg{place-items:end stretch;padding:0}
+  .modal{width:100%;border-radius:20px 20px 0 0;max-height:92vh;max-height:92dvh;padding:10px 18px 0;gap:14px}
+  .modal::before{content:"";justify-self:center;width:40px;height:5px;border-radius:3px;background:var(--line-2);margin-bottom:2px}
+  .modal .acts{margin:0 -18px;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px))}
+  .modal .acts .grow{display:none}
+  .modal .acts .btn{flex:1 1 auto;min-height:46px}
+  .modal>:last-child:not(.acts){margin-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+  @media (prefers-reduced-motion:no-preference){.modal{animation:sheet .22s cubic-bezier(.2,.8,.2,1)}@keyframes sheet{from{transform:translateY(40px);opacity:.4}}}
 }
-/* ---------- πλαϊνό μενού ---------- */
-.app{display:grid;grid-template-columns:256px minmax(0,1fr);min-height:100vh;min-height:100dvh}
-.side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow:hidden;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(12px,env(safe-area-inset-left,0px))}
-.side-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 8px 18px;margin-bottom:8px;border-bottom:1px solid var(--line)}
-.nav{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin}
-.ng{display:grid;gap:1px}
-.gh{display:flex;align-items:center;gap:10px;width:100%;font:inherit;font-family:var(--f-display);font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);background:none;border:0;border-radius:var(--r);padding:9px 10px 6px;cursor:pointer;text-align:left}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:14px;z-index:70;font-size:14.5px;font-weight:500;max-width:min(520px,calc(100% - 32px));box-shadow:var(--pop)}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .18s ease-out}@keyframes up{from{transform:translate(-50%,8px);opacity:0}}}
+
+/* κάρτες έργων */
+.projgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+@media (max-width:420px){.projgrid{grid-template-columns:1fr}}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;min-width:0}
+.pcard .ph{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;row-gap:2px;padding:14px 16px 12px;background:color-mix(in srgb,var(--pc) 9%,var(--surface));border-bottom:1px solid color-mix(in srgb,var(--pc) 20%,var(--line))}
+.pcard .ph h3{min-width:0;display:flex;align-items:center;gap:9px}
+.pcard .ph h3::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--pc);flex:none}
+.pcard .ph>.note{grid-column:1/-1;grid-row:2;padding-left:19px}
+.pcard.wide{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.pcard.wide>.ph{grid-column:1/-1}
+.pcard.wide>.job{border-bottom:0;border-right:1px solid var(--line)}
+.job{padding:12px 16px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.job:last-child{border-bottom:0}
+.job .t{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.job .t b{font-weight:640}
+.job .t>.note.mono{margin-left:auto;white-space:nowrap}
+.mgr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+.mgr>.lbl{margin-right:4px}
+.mgr>[data-act=pmday]{margin-left:auto}
+
+/* πρόγραμμα ενός ανθρώπου */
+.pdays{display:grid}
+.pday{display:grid;grid-template-columns:100px minmax(0,1fr);gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.pday:last-child{border-bottom:0}
+.pday .dl{font-size:13.5px;color:var(--muted);font-weight:560;font-variant-numeric:tabular-nums;padding-top:1px}
+.pday.is-today .dl{background:var(--hivis);color:var(--hivis-ink);border-radius:999px;padding:1px 10px;align-self:start;justify-self:start}
+.pday .db{display:grid;gap:6px;min-width:0}
+.pday .t{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* «Το πρόγραμμά μου»: η σημερινή δουλειά ξεχωρίζει, για να τη βρίσκει κανείς με μια ματιά στο εργοτάξιο */
+.hero{background:var(--ink);color:var(--surface);border-color:var(--ink);padding:22px}
+.hero .when{display:inline-block;font-size:13px;font-weight:660;background:var(--hivis);color:var(--hivis-ink);padding:2px 11px;border-radius:999px;margin-bottom:14px}
+.hero .note{color:color-mix(in srgb,var(--surface) 70%,var(--ink))}
+.hero .chip{background:color-mix(in srgb,var(--surface) 13%,var(--ink));border-color:transparent;color:var(--surface)}
+.hero .mi .t b,.hero .mi>b{font-size:21px;letter-spacing:-.015em}
+.hero .mi+.mi{border-top-color:color-mix(in srgb,var(--surface) 22%,var(--ink))}
+.hero .btn{background:var(--hivis);border-color:var(--hivis);color:var(--hivis-ink);min-height:42px;font-size:14.5px;font-weight:660;padding-inline:14px}
+.mi{display:grid;gap:6px}
+.mi+.mi{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.mi .t{display:flex;gap:8px;align-items:center}
+.mi .chips{margin-top:2px}
+.mi .btn{justify-self:start;margin-top:6px}
+.mduties{margin:8px 0 0;padding-left:18px}
+
+/* μενού */
+.app{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh;min-height:100dvh}
+.content{min-width:0}
+.side{--side-bg:var(--bg);position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow:hidden;background:var(--side-bg);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.side-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 10px 20px}
+/* όταν το μενού δεν χωράει, μια σκιά πάνω/κάτω δείχνει ότι κυλάει */
+.nav{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;margin:0 -6px;padding:0 6px 8px;
+  background:linear-gradient(var(--side-bg) 30%,transparent) center top/100% 28px no-repeat local,linear-gradient(transparent,var(--side-bg) 70%) center bottom/100% 28px no-repeat local,
+  radial-gradient(farthest-side at 50% 0,var(--edge),transparent) center top/100% 10px no-repeat scroll,radial-gradient(farthest-side at 50% 100%,var(--edge),transparent) center bottom/100% 10px no-repeat scroll}
+.ng{display:grid;gap:2px}
+.gh{display:flex;align-items:center;gap:8px;width:100%;font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);background:none;border:0;border-radius:var(--r-sm);padding:2px 10px 4px;cursor:pointer;text-align:left}
 .gh:hover{color:var(--ink)}
-.gh>svg{width:18px;height:18px;flex:none}
-.gh .chev{width:14px;height:14px;margin-left:auto;transition:transform .15s}
+.gh .chev{width:14px;height:14px;margin-left:auto;transition:transform .15s,opacity .15s;opacity:0}
+.gh:hover .chev,.gh:focus-visible .chev,.ng.closed .chev{opacity:1}
 .ng.closed .chev{transform:rotate(-90deg)}
 .ng.closed .items{display:none}
-.items{display:grid;gap:1px}
-.ni{display:flex;align-items:center;gap:8px;width:100%;min-height:36px;text-align:left;font:inherit;font-size:14.5px;color:var(--ink);background:none;border:0;border-radius:var(--r);padding:6px 10px 6px 38px;cursor:pointer;position:relative}
-.ni:hover{background:var(--sunk)}
-.ni[aria-current="page"]{background:var(--sunk);font-weight:600}
-.ni[aria-current="page"]::before{content:"";position:absolute;left:22px;top:9px;bottom:9px;width:3px;border-radius:2px;background:var(--hivis)}
-.ni.sub{padding-left:48px;font-size:13.5px;color:var(--muted);min-height:32px}
-.ni.sub[aria-current="page"]{color:var(--ink)}
-.ni.sub[aria-current="page"]::before{left:32px}
+.items{display:grid;gap:2px}
+.ni{display:flex;align-items:center;gap:12px;width:100%;min-height:38px;text-align:left;font:inherit;font-size:14.5px;font-weight:520;color:var(--ink-2);background:none;border:0;border-radius:var(--r);padding:7px 10px;cursor:pointer;min-width:0}
+.ni>span{min-width:0}
+.ni>svg{width:20px;height:20px;flex:none;color:var(--muted)}
+.ni:hover{background:var(--hover);color:var(--ink)}
+.ni:hover>svg{color:var(--ink)}
+.ni[aria-current="page"]{background:var(--hivis);color:var(--hivis-ink);font-weight:660}
+.ni[aria-current="page"]>svg{color:currentColor}
+.ni.sub{padding:5px 10px 5px 42px;font-size:14px;min-height:32px;color:var(--muted);gap:10px}
+.ni.sub:hover{color:var(--ink)}
+.ni.sub[aria-current="page"]{color:var(--hivis-ink)}
 .ni.sub span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ni.top{padding-left:10px;gap:10px;font-family:var(--f-display);font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-.ni.top svg{width:18px;height:18px}
-.ni.top[aria-current="page"]::before{display:none}
-.nav-bottom{margin-top:auto;border-top:1px solid var(--line);padding-top:8px;position:sticky;bottom:0;background:var(--surface)}
-.iconbtn{display:inline-grid;place-items:center;width:40px;height:40px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink);cursor:pointer;flex:none}
-.iconbtn svg{width:20px;height:20px}
-.mbar,.scrim{display:none}
-.mlogo b{display:flex;align-items:center;font-family:var(--f-display);font-weight:800;font-size:25px;letter-spacing:0;line-height:1}
-.mark.sm{width:28px;height:28px}
-.mtitle{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
-.lnk{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
-.lnk:hover{text-decoration:underline}
-.dot.lg{width:12px;height:12px}
-@media (min-width:901px){.only-m{display:none}}
-@media (max-width:900px){
-  .app{grid-template-columns:minmax(0,1fr)}
-  .side{position:fixed;left:0;top:0;bottom:0;width:min(300px,86vw);z-index:45;transform:translateX(-102%);transition:transform .2s ease;box-shadow:0 10px 40px rgba(0,0,0,.25)}
-  body.nav-open .side{transform:none}
-  body.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(10,15,20,.45);z-index:44}
-  body.nav-open{overflow:hidden}
-  .mbar{display:flex;position:sticky;top:0;z-index:20;align-items:center;gap:12px;background:var(--surface);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
-}
-@media (prefers-reduced-motion:reduce){.side,.gh .chev{transition:none}}
-/* σύνδεση */
-body:not(.in) .app{display:none}
-.auth{position:fixed;inset:0;z-index:60;overflow:auto;background:var(--auth-bg);display:grid;place-items:center;padding:max(28px,env(safe-area-inset-top,0px)) 16px 28px}
-.auth[hidden]{display:none}
-.auth-in{width:min(400px,100%);display:grid;gap:24px;justify-items:center}
-.auth .logo .wm b{font-size:56px;color:#fff}
-.auth .logo .wm small{font-size:13px;color:#aab6c2}
-.auth .logo .hz{height:9px;margin-top:6px;background:repeating-linear-gradient(-45deg,#f0b400 0 9px,transparent 9px 18px)}
-.auth-card{width:100%;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
-.auth-card h1{font-size:24px}
-.auth-card>p{margin:0}
-.auth-card label{display:grid;gap:5px;font-size:13px;font-weight:500;color:var(--muted)}
-.auth-card label.ck{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:14px}
-.auth-card input:not([type=checkbox]){width:100%;font-size:16px;padding:11px 12px}
-.pw{position:relative;display:block}
-.pw input{padding-right:100px!important}
-.pwt{position:absolute;right:4px;top:50%;transform:translateY(-50%);font:inherit;font-size:13px;font-weight:600;border:0;background:none;color:var(--brand);cursor:pointer;padding:8px 10px}
-.auth-err{color:var(--bad);font-size:14px}
-.auth-err:empty{display:none}
-.auth-go{justify-content:center;background:var(--hivis);border-color:var(--hivis);color:#17212b;font-weight:700;font-size:16px;padding:12px;min-height:46px}
-.auth-go:disabled{opacity:.6;cursor:wait}
-.auth-help{text-align:center;font-size:13px}
-.auth-foot{margin:0;font-size:12.5px;color:#98a4b0;text-align:center;max-width:340px}
-.me{display:flex;align-items:center;gap:10px;padding:8px 10px 10px;margin-bottom:6px;border-bottom:1px solid var(--line)}
-.av{width:34px;height:34px;border-radius:50%;background:var(--hivis);color:#17212b;display:grid;place-items:center;font:700 13px/1 var(--f-display);letter-spacing:.04em;flex:none}
+.nav-bottom{margin-top:auto;padding-top:10px;display:grid;gap:2px}
+.me{display:flex;align-items:center;gap:10px;padding:8px 6px 8px 10px;margin-bottom:6px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font:650 13px/1 var(--f-ui);letter-spacing:.02em;flex:none;border:0;padding:0}
 .me-t{display:grid;min-width:0;flex:1;line-height:1.25}
-.me-t b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me-t b{font-size:14px;font-weight:620;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .me-t small{font-size:12px;color:var(--muted)}
-.me .iconbtn{width:34px;height:34px}
-.me .iconbtn svg{width:18px;height:18px}
-/* το πρόγραμμά μου */
-.hero{border-top:4px solid var(--hivis)}
-.hero .when{font-family:var(--f-display);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.mi{display:grid;gap:4px}
-.mi+.mi{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
-.mi .t{display:flex;gap:8px;align-items:center}
-.hero .mi .t b{font-size:18px}
-.mi .chips{margin-top:2px}
-.mi .btn{justify-self:start;margin-top:4px}
-.mduties{margin:8px 0 0;padding-left:18px}
+.me .iconbtn{width:36px;height:36px;border-color:transparent;background:none;color:var(--muted)}
+.me .iconbtn:hover{background:var(--hover);color:var(--ink)}
+.me .iconbtn svg{width:19px;height:19px}
+.mbar,.scrim,.tabbar,.mtitle{display:none}
+.mlogo b{display:flex;align-items:center;font-family:var(--f-logo);font-weight:800;font-size:25px;letter-spacing:0;line-height:1}
+@media (min-width:1101px){.only-m{display:none}}
+/* tablet και κινητό: το μενού ανοίγει από την κάτω μπάρα */
+@media (max-width:1100px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{--side-bg:var(--surface);position:fixed;left:0;top:0;bottom:0;width:min(320px,86vw);z-index:45;transform:translateX(-102%);transition:transform .24s cubic-bezier(.2,.8,.2,1);box-shadow:var(--pop);border-right:0;padding-top:max(20px,env(safe-area-inset-top,0px))}
+  .ni{min-height:42px}
+  .me{background:var(--sunk)}
+  body.nav-open .side{transform:none}
+  body.nav-open .scrim{display:block;position:fixed;inset:0;background:var(--scrim);z-index:44}
+  body.nav-open{overflow:hidden}
+  .mbar{display:flex;position:sticky;top:0;z-index:20;align-items:center;justify-content:space-between;gap:12px;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+  .mbar .av{cursor:pointer;width:36px;height:36px}
+  main{padding:20px max(16px,env(safe-area-inset-right,0px)) calc(104px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));gap:16px}
+  /* κάτω μπάρα: ό,τι ανοίγει κάθε μέρα, κοντά στον αντίχειρα */
+  .tabbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 92%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  .tb{display:grid;justify-items:center;align-content:center;gap:4px;font:inherit;font-size:11.5px;font-weight:560;color:var(--muted);background:none;border:0;padding:4px 2px;min-height:56px;cursor:pointer;min-width:0}
+  .tb span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb svg{width:22px;height:22px;padding:4px 16px;box-sizing:content-box;border-radius:999px;transition:background-color .15s}
+  .tb[aria-current="page"],.tb.on{color:var(--ink);font-weight:660}
+  .tb[aria-current="page"] svg{background:var(--hivis);color:var(--hivis-ink)}
+  .tb.on svg{background:var(--hover)}
+  .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:640px){
+  h1{font-size:24px}
+  .bar>h1,.bar>h1.grow{flex:1 1 100%}
+  .bar>.btn.pri{flex:1 1 100%;min-height:46px}
+  .bar>.bgrp{flex:1}
+  .bar>.bgrp>.btn{flex:1}
+  .bar>.seg{flex:1 1 100%}.bar>.seg>button{flex:1}
+  .panel{padding:16px;border-radius:14px}
+  .pcard,.kpis{border-radius:14px}
+  .pday{grid-template-columns:84px minmax(0,1fr);gap:10px}
+}
+@media (prefers-reduced-motion:reduce){.side,.gh .chev,.btn,.tb svg{transition:none}}
+
+/* σύνδεση: σκούρο φόντο με κάνναβο σχεδίου */
+body:not(.in) .app{display:none}
+.auth{position:fixed;inset:0;z-index:60;overflow:auto;background-color:var(--auth-bg);background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px;background-position:center;display:grid;place-items:center;padding:max(32px,env(safe-area-inset-top,0px)) 16px 32px}
+.auth[hidden]{display:none}
+.auth-in{width:min(420px,100%);display:grid;gap:28px;justify-items:center}
+.auth .logo .wm b{font-size:58px;color:#fff}
+.auth .logo .wm small{font-size:13px;color:#aeb7bf}
+.auth .logo .hz{height:9px;margin-top:6px;background:repeating-linear-gradient(-45deg,#f5b800 0 9px,transparent 9px 18px)}
+.auth-card{width:100%;background:var(--surface);color:var(--ink);border-radius:20px;padding:28px;display:grid;gap:16px;box-shadow:0 30px 70px -20px rgba(0,0,0,.6)}
+.auth-card h1{font-size:26px}
+.auth-card>p{margin:0}
+.auth-card label{display:grid;gap:6px;font-size:13px;font-weight:560;color:var(--ink-2)}
+.auth-card label.ck{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:14.5px;font-weight:450}
+.auth-card input:not([type=checkbox]){width:100%;font-size:16px;min-height:48px;padding:12px 14px}
+.pw{position:relative;display:block}
+.pw input{padding-right:104px!important}
+.pwt{position:absolute;right:6px;top:50%;transform:translateY(-50%);font:inherit;font-size:13.5px;font-weight:600;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:8px 10px;border-radius:8px;text-decoration:underline;text-underline-offset:3px}
+.auth-err{color:var(--bad);background:var(--bad-bg);font-size:14px;margin:0;padding:10px 12px;border-radius:var(--r)}
+.auth-err:empty{display:none}
+.auth-go{background:var(--hivis);border-color:var(--hivis);color:#1d2328;font-weight:700;font-size:16px;min-height:50px}
+.auth-go:hover{background:var(--hivis-2);border-color:var(--hivis-2)}
+.auth-go:disabled{opacity:.6;cursor:wait}
+.auth-help{text-align:center;font-size:13.5px;margin:0}
+.auth-foot{margin:0;font-size:12.5px;color:#98a2ab;text-align:center;max-width:340px}
 </style>
 
 <div id="auth" class="auth" hidden></div>
 <div class="app">
 <aside class="side" id="side" aria-label="Μενού">
-  <div class="side-top"><div class="logo" aria-label="ERGODO, Get the job Done"><span class="wm"><b>ERGOD<svg class="seal" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28" fill="#f0b400"/><path d="M17 31l9 9 18-19" fill="none" stroke="#17212b" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></b><small>Get the job done</small><i class="hz"></i></span></div><button class="iconbtn only-m" data-act="navclose" aria-label="Κλείσιμο μενού"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="side-top"><div class="logo" aria-label="ERGODO, Get the job Done"><span class="wm"><b>ERGOD<svg class="seal" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28" fill="#f5b800"/><path d="M17 31l9 9 18-19" fill="none" stroke="#1d2328" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></b><small>Get the job done</small><i class="hz"></i></span></div><button class="iconbtn only-m" data-act="navclose" aria-label="Κλείσιμο μενού"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <nav class="nav" id="nav"></nav>
+  <div class="nav-bottom" id="navb"></div>
 </aside>
 <div class="scrim" data-act="navclose"></div>
 <div class="content">
-  <header class="mbar"><button class="iconbtn" data-act="navopen" aria-label="Άνοιγμα μενού"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="mlogo" aria-label="ERGODO"><b>ERGOD<svg class="seal" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28" fill="#f0b400"/><path d="M17 31l9 9 18-19" fill="none" stroke="#17212b" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></b></div><span class="mtitle" id="mtitle"></span></header>
+  <header class="mbar"><div class="mlogo" aria-label="ERGODO"><b>ERGOD<svg class="seal" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28" fill="#f5b800"/><path d="M17 31l9 9 18-19" fill="none" stroke="#1d2328" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></b></div><span class="mtitle" id="mtitle"></span><button class="av" id="mav" data-tab="settings" aria-label="Ο λογαριασμός μου"></button></header>
   <main id="main"></main>
 </div>
+<nav class="tabbar" id="tabbar" aria-label="Γρήγορη πλοήγηση"></nav>
 </div>
 <div id="modal"></div>
 <div id="toast" hidden class="toast"></div>
@@ -784,8 +915,30 @@ const ICONS={cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="
   eur:'<circle cx="12" cy="12" r="9"/><path d="M15.6 8.6a4.6 4.6 0 1 0 0 6.8M7.5 10.6h6M7.5 13.4h6"/>',
   out:'<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M9 16l-4-4 4-4M5 12h10"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.2-6 8-6s7 2 8 6"/>',
-  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>'};
-const ico=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  day:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><rect x="7" y="13" width="4.5" height="4.5" rx="1"/>',
+  week:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M9 9.5V21M15 9.5V21"/>',
+  bld:'<path d="M3.5 21h17"/><path d="M5.5 21V4.5h9V21"/><path d="M14.5 9.5h4V21"/><path d="M8.5 8h3M8.5 11.5h3M8.5 15h3"/>',
+  list:'<path d="M10.5 6.5H20M10.5 12H20M10.5 17.5H20"/><path d="M3.8 6.4l1.5 1.5 2.5-2.7M3.8 11.9l1.5 1.5 2.5-2.7"/><circle cx="5.6" cy="17.5" r="1.3"/>',
+  gantt:'<path d="M3 3.5v17h18"/><rect x="6.5" y="6" width="8" height="3" rx="1.2"/><rect x="10.5" y="11" width="8.5" height="3" rx="1.2"/><rect x="7.5" y="16" width="6" height="3" rx="1.2"/>',
+  hat:'<path d="M2.5 18h19"/><path d="M4.5 18v-1.5a7.5 7.5 0 0 1 15 0V18"/><path d="M9.5 9.6V6.2h5v3.4"/><path d="M12 9v4"/>',
+  brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8.5 7V5.2c0-.9.7-1.7 1.6-1.7h3.8c.9 0 1.6.8 1.6 1.7V7M3 12.5h18"/>',
+  clip:'<path d="M9 4.5H6.5A1.5 1.5 0 0 0 5 6v13.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H15"/><rect x="9" y="3" width="6" height="3" rx="1"/><path d="M8.5 11h7M8.5 15h4.5"/>',
+  cash:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/>',
+  chart:'<path d="M3 20.5h18M6.5 20.5v-6M11.5 20.5V6.5M16.5 20.5v-10"/>',
+  send:'<path d="M20.5 3.5 10.6 13.4"/><path d="M20.5 3.5 14.4 20.5l-3.8-7.1-7.1-3.8z"/>',
+  pin:'<path d="M9 3.5h6M10 3.5V9l-3.2 3.6h10.4L14 9V3.5M12 12.6V21"/>',
+  edit:'<path d="M4 20h4L19.2 8.8a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  undo:'<path d="M8.5 5 4 9.5 8.5 14"/><path d="M4 9.5h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  cl:'<path d="M14.5 5.5 8 12l6.5 6.5"/>',
+  cr:'<path d="M9.5 5.5 16 12l-6.5 6.5"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.3"/>'};
+const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+// εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
+const NAVI={mine:'day',today:'day',week:'week',person:'user',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'clip',pay:'cash',costs:'chart'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
 const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
   {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα']]},
@@ -797,11 +950,16 @@ function renderNav(){
   const chev='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
   document.getElementById('nav').innerHTML=navGroups().map(g=>{
     const closed=UI.closed.includes(g.k)&&!g.items.some(([k,,p])=>isCur(k,p));
-    return `<div class="ng${closed?' closed':''}"><button class="gh" data-act="navgroup" data-g="${g.k}" aria-expanded="${!closed}">${ico(g.i)}<span>${g.l}</span>${chev}</button><div class="items">${g.items.map(([k,l,p])=>p
+    return `<div class="ng${closed?' closed':''}"><button class="gh" data-act="navgroup" data-g="${g.k}" aria-expanded="${!closed}"><span>${g.l}</span>${chev}</button><div class="items">${g.items.map(([k,l,p])=>p
       ?`<button class="ni sub" data-tab="project" data-p="${p.id}"${isCur(k,p)?' aria-current="page"':''}><i class="dot" style="background:${pc(p)}"></i><span>${h(l)}</span></button>`
-      :`<button class="ni" data-tab="${k}"${isCur(k)?' aria-current="page"':''}>${l}</button>`).join('')}</div></div>`}).join('')
-    +`<div class="nav-bottom">${AUTH.user?`<div class="me"><span class="av" aria-hidden="true">${h(initials(AUTH.user.name))}</span><span class="me-t"><b>${h(AUTH.user.name)}</b><small>${ROLE_L[AUTH.user.role]||''}</small></span><button class="iconbtn" data-act="logout" title="Αποσύνδεση" aria-label="Αποσύνδεση">${ico('out')}</button></div>`:''}
-      <button class="ni top" data-tab="settings"${UI.tab==='settings'?' aria-current="page"':''}>${ico(isWorker()?'user':'gear')}<span>${isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'}</span></button></div>`;
+      :`<button class="ni" data-tab="${k}"${isCur(k)?' aria-current="page"':''}>${ico(NAVI[k]||'day')}<span>${l}</span></button>`).join('')}</div></div>`}).join('');
+  document.getElementById('navb').innerHTML=`${AUTH.user?`<div class="me"><span class="av" aria-hidden="true">${h(initials(AUTH.user.name))}</span><span class="me-t"><b>${h(AUTH.user.name)}</b><small>${ROLE_L[AUTH.user.role]||''}</small></span><button class="iconbtn" data-act="logout" title="Αποσύνδεση" aria-label="Αποσύνδεση">${ico('out')}</button></div>`:''}
+      <button class="ni top" data-tab="settings"${UI.tab==='settings'?' aria-current="page"':''}>${ico(isWorker()?'user':'gear')}<span>${isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'}</span></button>`;
+  const tabs=isWorker()?[['mine','Πρόγραμμα','day'],['settings','Λογαριασμός','user']]:[['today','Σήμερα','day'],['week','Εβδομάδα','week'],['projects','Έργα','bld'],['tasks','Εργασίες','list']];
+  const onTab=k=>UI.tab===k||(k==='projects'&&UI.tab==='project');
+  document.getElementById('tabbar').innerHTML=tabs.map(([k,l,i])=>`<button class="tb" data-tab="${k}"${onTab(k)?' aria-current="page"':''}>${ico(i)}<span>${l}</span></button>`).join('')
+    +(isWorker()?'':`<button class="tb${tabs.some(([k])=>onTab(k))?'':' on'}" data-act="navopen" aria-label="Όλο το μενού">${ico('menu')}<span>Μενού</span></button>`);
+  const mav=document.getElementById('mav');if(mav)mav.textContent=AUTH.user?initials(AUTH.user.name):'';
   const g=navGroups().find(g=>g.items.some(([k,,p])=>isCur(k,p)));
   document.getElementById('mtitle').textContent=UI.tab==='project'?P(UI.proj)?.name||'':UI.tab==='settings'?(isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'):(g?g.items.find(([k,,p])=>isCur(k,p))[1]:'');
 }
@@ -833,7 +991,7 @@ function myData(ws){
 function vMine(){
   if(!UI.week)UI.week=weekStart(TODAY);
   const ws=UI.week,o=myData(ws);
-  const head=`<div class="bar"><h1 class="grow">Το πρόγραμμά μου</h1><div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">‹</button><button class="btn" data-act="week" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">›</button></div></div>`;
+  const head=`<div class="bar"><h1 class="grow">Το πρόγραμμά μου</h1><div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div></div>`;
   if(!o)return head+'<section class="panel"><p class="note">Φόρτωση προγράμματος…</p></section>';
   if(o.unlinked)return head+'<section class="panel"><p>Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο. Ζήτα από το γραφείο να το κάνει.</p></section>';
   if(o.error||!o.days)return head+`<section class="panel"><p>${h(o.error||'Δεν φορτώθηκε το πρόγραμμα.')}</p></section>`;
@@ -882,9 +1040,9 @@ function vToday(R){
     ${day.gen.length?`<div class="job"><div class="t"><b>Αποθήκη και συντήρηση εξοπλισμού</b></div><div class="chips">${day.gen.map(g=>`<span class="chip${g.forced?' fx':''}">${h(g.w.name)}</span>`).join('')}</div></div>`:''}</article>`;
   const viber=dayText(d,R);
   return `<div class="bar"><h1 class="grow">Πρόγραμμα ${fmt(d)}${d===TODAY?' <span class="tag hv">σήμερα</span>':''}</h1>
-    <div class="bgrp"><button class="btn" data-act="day" data-dir="-1" aria-label="Προηγούμενη μέρα">‹</button><button class="btn" data-act="day" data-dir="0">Σήμερα</button><button class="btn" data-act="day" data-dir="1" aria-label="Επόμενη μέρα">›</button></div>
+    <div class="bgrp"><button class="btn" data-act="day" data-dir="-1" aria-label="Προηγούμενη μέρα">${ico('cl')}</button><button class="btn" data-act="day" data-dir="0">Σήμερα</button><button class="btn" data-act="day" data-dir="1" aria-label="Επόμενη μέρα">${ico('cr')}</button></div>
     <button class="btn" data-act="copyday">Αντιγραφή για Viber</button>
-    <button class="btn pri" data-act="sendnext">📨 Αποστολή σε όλους για ${fmt(nextDay())}</button></div>
+    <button class="btn pri" data-act="sendnext">${ico('send')}Αποστολή σε όλους για ${fmt(nextDay())}</button></div>
   <textarea id="daytext" rows="8" hidden readonly>${h(viber)}</textarea>
   <div class="kpis">
     <div class="kpi"><span class="lbl">Στη δουλειά</span><span class="v">${staff.filter(w=>working.has(w.id)).length}<span class="sub"> / ${staff.length}</span></span><span class="s">${extOn?'+ '+extOn+(extOn==1?' συνεργάτης · ':' συνεργάτες · '):''}${off.length} σε άδεια${idle.length?', '+idle.length+' χωρίς ανάθεση':''}</span></div>
@@ -892,7 +1050,7 @@ function vToday(R){
     <div class="kpi"><span class="lbl">Ανοιχτές εργασίες</span><span class="v">${openN}</span><span class="s">σε ${S.projects.length} έργα</span></div>
     <div class="kpi"><span class="lbl">Τέλος όλων των εργασιών</span><span class="v">${fmtS(R.end)}</span><span class="s">${R.unplanned.length?R.unplanned.length+' δεν προγραμματίζονται':'με το τρέχον προσωπικό'}</span></div>
   </div>
-  <div class="legend"><span><span class="chip lead">Όνομα</span> υπεύθυνος</span><span><span class="chip fx">Όνομα</span> το όρισες εσύ</span><span><span class="chip x">Όνομα</span> ενίσχυση συνεργείου</span><span><span class="chip">Όνομα<span class="mx">⇄</span></span> και σε άλλη εργασία την ίδια μέρα</span></div>
+  <details class="legend-d"><summary>${ico('info')}Τι σημαίνει η εμφάνιση κάθε ονόματος</summary><div class="legend"><span><span class="chip lead">Όνομα</span> υπεύθυνος</span><span><span class="chip fx">Όνομα</span> το όρισες εσύ</span><span><span class="chip x">Όνομα</span> ενίσχυση συνεργείου</span><span><span class="chip">Όνομα<span class="mx">⇄</span></span> και σε άλλη εργασία την ίδια μέρα</span></div></details>
   <div class="projgrid">${cards}${officeCard}</div>
   ${(idle.length||off.length||wait.length)?`<div class="two">
     <section class="panel"><h2>Χωρίς ανάθεση</h2>${idle.length?`<div class="chips">${idle.map(w=>`<span class="chip">${h(w.name)} · ${h(SP(w.specialtyId)?.name)}</span>`).join('')}</div>`:'<p class="note">Όλοι έχουν δουλειά σήμερα.</p>'}</section>
@@ -920,9 +1078,9 @@ function vWeek(R){
   const days=weekDays(UI.week);
   const nav=`<div class="bar"><h1 class="grow">Εβδομάδα ${fmtS(UI.week)} – ${fmtS(add(UI.week,6))}</h1>
     <div class="seg"><button data-act="wmode" data-m="workers"${UI.weekMode==='workers'?' aria-pressed="true"':''}>Ανά εργαζόμενο</button><button data-act="wmode" data-m="projects"${UI.weekMode==='projects'?' aria-pressed="true"':''}>Ανά έργο</button></div>
-    <div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">‹</button><button class="btn" data-act="week" data-dir="0">Τρέχουσα</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">›</button></div>
-    <button class="btn pri" data-act="sendweek">📨 Εβδομαδιαίο σε όλους</button></div>`;
-  const legend=`<div class="legend">${S.projects.map(p=>`<span><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</span>`).join('')}<span><i class="dot" style="background:var(--hivis)"></i>Αποθήκη</span><span><b>Έντονα</b> = υπεύθυνος</span><span>📌 = το όρισες εσύ</span></div>`;
+    <div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">Τρέχουσα</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>
+    <button class="btn pri" data-act="sendweek">${ico('send')}Εβδομαδιαίο σε όλους</button></div>`;
+  const legend=`<div class="legend">${S.projects.map(p=>`<span><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</span>`).join('')}<span><i class="dot" style="background:var(--hivis)"></i>Αποθήκη</span><span><b>Έντονα</b> = υπεύθυνος</span><span>${ico('pin')}το όρισες εσύ</span></div>`;
   if(UI.weekMode==='projects'){
     const rows=[...S.projects.map(p=>p.id),'gen','office'].map(pid=>{
       const cells=days.map(d=>{
@@ -943,7 +1101,7 @@ function vWeek(R){
       let n=0,c=0;
       const cells=days.map(d=>{
         const x=whatDoes(R,w.id,d);R.asg.filter(a=>a.date===d&&a.workerId===w.id).forEach(a=>{n+=a.share||1;c+=a.wage})
-        const pin=x.forced?'📌 ':'';
+        const pin=x.forced?ico('pin','pin'):'';
         let inner;
         if(x.off)inner='<div class="cell off">Άδεια</div>';
         else if(x.jobs.length)inner=x.jobs.map(({job,lead})=>`<div class="cell" style="--pc:${pc(job.task.projectId)}">${pin}${lead?'<b>':''}${h(job.task.title)}${lead?'</b>':''}<small>${h(P(job.task.projectId)?.name)}${job.extra.has(w.id)?' · ενίσχυση':''}${x.jobs.length>1?' · 1/'+x.jobs.length+' μεροκ.':''}</small></div>`).join('');
@@ -1014,7 +1172,7 @@ function vPerson(R){
     let body;
     if(x.off)body='<span class="tag warn">Άδεια</span>';
     else if(x.jobs.length)body=x.jobs.map(({job,lead},i)=>{const p=P(job.task.projectId);return `<div${i?' style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)"':''}><div class="t"><i class="dot" style="background:${pc(p)}"></i><b>${h(p.name)}</b><span class="note">${h(p.location)}</span></div>
-      <div>${h(job.task.title)} ${lead?'<span class="tag hv">Υπεύθυνος</span>':''}${x.forced?' <span class="tag mute">📌 ορισμένο</span>':''}${job.extra.has(w.id)?' <span class="tag mute">ενίσχυση</span>':''}</div>
+      <div>${h(job.task.title)} ${lead?'<span class="tag hv">Υπεύθυνος</span>':''}${x.forced?' <span class="tag mute">'+ico('pin')+'ορισμένο</span>':''}${job.extra.has(w.id)?' <span class="tag mute">ενίσχυση</span>':''}</div>
       <div class="chips">${[job.lead,...job.helpers].filter(o=>o&&o.id!==w.id).map(o=>`<span class="chip">${h(o.name)}</span>`).join('')}</div></div>`}).join('');
     else if(x.gen)body='<b>Αποθήκη και συντήρηση εξοπλισμού</b>';
     else if(isOffice(w))body='<b>Γραφείο</b>';
@@ -1024,8 +1182,8 @@ function vPerson(R){
     <td style="white-space:nowrap"><button class="btn sm" data-act="pcopy" data-id="${o.id}">Αντιγραφή</button> <button class="btn sm" data-act="viber" data-id="${o.id}">Viber</button> <button class="btn sm ghost" data-act="pview" data-id="${o.id}">Προβολή</button></td></tr>`).join('');
   return `<div class="bar"><h1 class="grow">Ατομικό πρόγραμμα</h1>
     ${sel('person',S.workers.map(o=>[o.id,o.name+' · '+(SP(o.specialtyId)?.name||'')]),UI.person)}
-    <div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">‹</button><button class="btn" data-act="week" data-dir="0">${fmtS(UI.week)} – ${fmtS(add(UI.week,6))}</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">›</button></div>
-    <button class="btn pri" data-act="sendweek">📨 Εβδομαδιαίο σε όλους</button></div>
+    <div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">${fmtS(UI.week)} – ${fmtS(add(UI.week,6))}</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>
+    <button class="btn pri" data-act="sendweek">${ico('send')}Εβδομαδιαίο σε όλους</button></div>
   <div class="two">
     <section class="panel"><h2>${h(w.name)}</h2><p class="note" style="margin:0 0 10px">${h(SP(w.specialtyId)?.name)} · ${ROLES[w.role]} · ${h(w.phone||'')}</p><div class="pdays">${daysHtml}</div></section>
     <section class="panel"><h2>Μήνυμα για Viber</h2>
@@ -1053,7 +1211,7 @@ function taskTable(R,list,withProj){
     <td class="n mono" data-l="Συνεργείο">1+${+t.helpers||0}</td><td class="n mono" data-l="Μέρες">${t.days}</td>
     <td class="mono" data-l="Διάστημα">${t.status==='done'?'—':fmt(R.begin[t.id])+'<div class="note">έως '+fmt(R.finish[t.id])+'</div>'}</td>
     <td class="n mono" data-l="Κόστος">${job?eur(t.price)+'<div class="note">κατ\' αποκοπή</div>':t.status==='done'?'—':eur(costOf[t.id])}</td><td data-l="Κατάσταση">${status(t)}</td>
-    <td class="tt-acts" style="white-space:nowrap"><button class="btn sm" data-act="edittask" data-id="${t.id}" title="Επεξεργασία">✎<span class="lbl"> Επεξεργασία</span></button> <button class="btn sm ghost" data-act="donetask" data-id="${t.id}" title="${t.status==='done'?'Άνοιγμα ξανά':'Ολοκληρώθηκε'}">${t.status==='done'?'↺<span class="lbl"> Άνοιγμα</span>':'✓<span class="lbl"> Τέλος</span>'}</button></td></tr>`}).join('')||'<tr><td colspan="9" class="empty">Δεν βρέθηκαν εργασίες.</td></tr>'}
+    <td class="tt-acts" style="white-space:nowrap"><button class="btn sm" data-act="edittask" data-id="${t.id}" title="Επεξεργασία" aria-label="Επεξεργασία">${ico('edit')}<span class="lbl">Επεξεργασία</span></button> <button class="btn sm ghost" data-act="donetask" data-id="${t.id}" title="${t.status==='done'?'Άνοιγμα ξανά':'Ολοκληρώθηκε'}">${t.status==='done'?ico('undo')+'<span class="lbl">Άνοιγμα</span>':ico('check')+'<span class="lbl">Τέλος</span>'}</button></td></tr>`}).join('')||'<tr><td colspan="9" class="empty">Δεν βρέθηκαν εργασίες.</td></tr>'}
   </tbody></table>`;
 }
 const taskSort=R=>(a,b)=>((a.status==='done')-(b.status==='done'))||(R.begin[a.id]||'9').localeCompare(R.begin[b.id]||'9')||a.priority-b.priority;
@@ -1064,7 +1222,7 @@ function vTasks(R){
   if(UI.fStat==='open')list=list.filter(t=>t.status!=='done');
   if(UI.fStat==='done')list=list.filter(t=>t.status==='done');
   list.sort(taskSort(R));
-  return `<div class="bar"><h1 class="grow">Όλες οι εργασίες</h1><button class="btn pri" data-act="newtask">+ Νέα εργασία</button></div>
+  return `<div class="bar"><h1 class="grow">Όλες οι εργασίες</h1><button class="btn pri" data-act="newtask">${ico('plus')}Νέα εργασία</button></div>
   <div class="filters">${sel('fProj',[['','Όλα τα έργα'],...projOpts()],UI.fProj)}${sel('fSpec',[['','Όλες οι ειδικότητες'],...specOpts()],UI.fSpec)}${sel('fStat',[['open','Ανοιχτές'],['done','Ολοκληρωμένες'],['all','Όλες']],UI.fStat)}</div>
   <section class="panel scroll">${taskTable(R,list,true)}</section>
   <p class="note">Εδώ βλέπεις τις εργασίες όλων των έργων μαζί, π.χ. τι εκκρεμεί για κάθε ειδικότητα. Κάθε έργο έχει και δική του σελίδα από το μενού. Το συνεργείο «1+2» σημαίνει υπεύθυνος και δύο βοηθοί.</p>`;
@@ -1072,7 +1230,7 @@ function vTasks(R){
 function vDuties(){
   const rows=S.workers.filter(w=>S.duties.some(x=>x.workerId===w.id)).map(w=>`<tr class="grp"><td colspan="4">${h(w.name)} <span class="note">· ${h(SP(w.specialtyId)?.name)}</span></td></tr>`+
     S.duties.filter(x=>x.workerId===w.id).map(x=>`<tr><td><b>${h(x.title)}</b></td><td>${h(freqText(x))}</td><td>${x.projectId?h(P(x.projectId)?.name):'<span class="note">Γενικό</span>'}</td><td><button class="btn sm" data-act="editduty" data-id="${x.id}">Επεξεργασία</button></td></tr>`).join('')).join('');
-  return `<div class="bar"><h1 class="grow">Καθήκοντα γραφείου</h1><button class="btn pri" data-act="newduty">+ Νέο καθήκον</button></div>
+  return `<div class="bar"><h1 class="grow">Καθήκοντα γραφείου</h1><button class="btn pri" data-act="newduty">${ico('plus')}Νέο καθήκον</button></div>
   <section class="panel scroll"><table><thead><tr><th>Καθήκον</th><th>Πότε</th><th>Έργο</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="empty">Δεν υπάρχουν καθήκοντα.</td></tr>'}</tbody></table></section>
   <p class="note">Τα καθήκοντα είναι επαναλαμβανόμενες δουλειές ανά άτομο, όπως η ΕΡΓΑΝΗ ή η πληρωμή μεροκαμάτων. Εμφανίζονται στο «Σήμερα» και στο ατομικό πρόγραμμα με κουτάκι για «έγινε».</p>`;
 }
@@ -1130,7 +1288,7 @@ function gantt(R,projs){
   const work={};R.asg.forEach(a=>{if(a.taskId)work[a.taskId+'|'+a.date]=1});
   const one=projs.length===1;
   const rows=projs.map(p=>{const ts=open.filter(t=>t.projectId===p.id);if(!ts.length)return '';
-    return (one?'':`<tr><td class="lab" style="font-family:var(--f-display);font-weight:700;padding-top:10px">${h(p.name)}</td>${span.map(()=>'<td></td>').join('')}</tr>`)+
+    return (one?'':`<tr><td class="lab" style="font-weight:700;padding-top:12px">${h(p.name)}</td>${span.map(()=>'<td></td>').join('')}</tr>`)+
     ts.map(t=>`<tr style="--pc:${pc(p)}"><td class="lab">${h(t.title)}<span class="note"> · ${h(short(isExt(W(t.responsibleId))?W(t.responsibleId).company||W(t.responsibleId).name:W(t.responsibleId)?.name||''))}</span></td>${span.map(d=>`<td class="g${isWork(d)?'':' we'}">${work[t.id+'|'+d]?'<i></i>':''}</td>`).join('')}</tr>`).join('')}).join('');
   if(!rows)return '<p class="empty">Δεν υπάρχουν ανοιχτές εργασίες.</p>';
   return `<div class="scroll"><table class="gantt"><thead><tr><th></th>${span.map(d=>`<th class="d${pd(d).getDate()===1?' mon':''}">${pd(d).getDate()}<br>${DAYS[dow(d)][0]}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
@@ -1138,7 +1296,7 @@ function gantt(R,projs){
 }
 function vProjects(R){
   const cards=S.projects.map(p=>{const st=projStats(R,p);
-    return `<article class="pcard" style="--pc:${pc(p)}"><div class="ph"><h3><button class="lnk" data-tab="project" data-p="${p.id}">${h(p.name)}</button></h3><button class="btn sm pri" data-tab="project" data-p="${p.id}">Άνοιγμα ›</button><span class="note">${h(p.location)}</span></div>
+    return `<article class="pcard" style="--pc:${pc(p)}"><div class="ph"><h3><button class="lnk" data-tab="project" data-p="${p.id}">${h(p.name)}</button></h3><button class="btn sm pri" data-tab="project" data-p="${p.id}">Άνοιγμα${ico('cr')}</button><span class="note">${h(p.location)}</span></div>
     <div class="job">
       <div class="bar"><span class="lbl grow">Εργατικά σε πρόγραμμα</span><b class="mono">${eur(st.cost)}</b></div>
       <div class="meter"><i class="${st.over?'over':''}" style="width:${st.pct}%"></i></div>
@@ -1148,7 +1306,7 @@ function vProjects(R){
     <div class="bar"><span class="grow">Μεροκάματα σε πρόγραμμα</span><b class="mono">${nf(md(st.A))}</b></div>
     <div class="bar"><span class="grow">Εκτιμώμενο τέλος</span><b class="mono">${fmt(st.fin)}</b></div>
     <div class="bar"><span class="grow">Διαχειριστές</span><b>${mgrNames(p)||'<span class="tag warn">κανένας</span>'}</b></div></div></article>`}).join('');
-  return `<div class="bar"><h1 class="grow">Όλα τα έργα</h1><button class="btn pri" data-act="newproj">+ Νέο έργο</button></div>
+  return `<div class="bar"><h1 class="grow">Όλα τα έργα</h1><button class="btn pri" data-act="newproj">${ico('plus')}Νέο έργο</button></div>
   <div class="projgrid">${cards||'<p class="empty">Δεν υπάρχουν έργα ακόμη.</p>'}</div>`;
 }
 function vProject(R){
@@ -1156,7 +1314,7 @@ function vProject(R){
   const list=st.ts.slice().sort(taskSort(R));
   const open=st.ts.filter(t=>t.status!=='done').length;
   const ext=new Set(st.ts.map(t=>W(t.responsibleId)).filter(isExt));
-  return `<div class="bar"><h1 class="grow ptitle"><i class="dot lg" style="background:${pc(p)}"></i><span>${h(p.name)}</span></h1><button class="btn" data-act="editproj" data-id="${p.id}">Επεξεργασία έργου</button><button class="btn pri" data-act="newtask" data-p="${p.id}">+ Νέα εργασία</button></div>
+  return `<div class="bar"><h1 class="grow ptitle"><i class="dot lg" style="background:${pc(p)}"></i><span>${h(p.name)}</span></h1><button class="btn" data-act="editproj" data-id="${p.id}">Επεξεργασία έργου</button><button class="btn pri" data-act="newtask" data-p="${p.id}">${ico('plus')}Νέα εργασία</button></div>
   <p class="note" style="margin-top:-12px">${h(p.location)} · Διαχειριστές: ${mgrNames(p)||'κανένας'}${ext.size?' · Συνεργάτες: '+[...ext].map(w=>h(w.company||w.name)).join(', '):''}</p>
   <div class="kpis">
     <div class="kpi"><span class="lbl">Εργατικά σε πρόγραμμα</span><span class="v">${eur(st.cost)}</span><div class="meter"><i class="${st.over?'over':''}" style="width:${st.pct}%"></i></div><span class="s">${st.over?'Υπέρβαση '+eur(st.cost-p.budget):'από '+eur(p.budget)+' προϋπολογισμό'}</span></div>
@@ -1189,7 +1347,7 @@ function vWorkers(R){
   const rows=S.specialties.map(sp=>{const ws=S.workers.filter(w=>w.specialtyId===sp.id&&!isExt(w));if(!ws.length&&S.workers.some(w=>w.specialtyId===sp.id))return '';
     return `<tr class="grp"><td colspan="6">${h(sp.name)} <span class="note">· ${ws.length}${sp.office?' · γραφείο':''}</span></td></tr>`+(ws.length?ws.map(w=>`<tr><td><b>${h(w.name)}</b>${isPM(w)?`<div class="note">${S.projects.filter(p=>(p.managers||[]).includes(w.id)).map(p=>h(p.name)).join(', ')||'Χωρίς έργο'}</div>`:''}</td><td>${roleTag(w.role)}</td><td class="n mono">${eur(w.wage)}${rateInfo(w)}</td><td class="mono">${h(w.phone||'')}</td><td class="n mono">${nf(mdw[w.id]||0)}</td>
       <td style="white-space:nowrap"><button class="btn sm" data-act="editworker" data-id="${w.id}">Επεξεργασία</button>${isPM(w)?` <button class="btn sm" data-act="pmw" data-id="${w.id}">Έργα</button>`:isOffice(w)?'':` <button class="btn sm" data-act="rates" data-id="${w.id}">Μεροκάματο ανά έργο</button>`}</td></tr>`).join(''):'<tr><td colspan="6" class="note">Κανένας εργαζόμενος.</td></tr>')}).join('');
-  return `<div class="bar"><h1 class="grow">Προσωπικό</h1><button class="btn" data-act="newspec">+ Ειδικότητα</button><button class="btn pri" data-act="newworker">+ Νέος εργαζόμενος</button></div>
+  return `<div class="bar"><h1 class="grow">Προσωπικό</h1><button class="btn" data-act="newspec">${ico('plus')}Ειδικότητα</button><button class="btn pri" data-act="newworker">${ico('plus')}Νέος εργαζόμενος</button></div>
   <section class="panel scroll"><table><thead><tr><th>Όνομα</th><th>Ρόλος</th><th class="n">Μεροκάματο</th><th>Τηλέφωνο</th><th class="n">Μεροκ. εβδ.</th><th></th></tr></thead><tbody>${rows}</tbody></table></section>
   <p class="note">Οι εξωτερικοί συνεργάτες είναι στη σελίδα «Συνεργάτες». Αρχιεργάτες και τεχνίτες μπορούν να είναι υπεύθυνοι εργασίας. Οι ειδικότητες γραφείου δεν μπαίνουν σε συνεργεία έργων, έχουν δικά τους καθήκοντα κάθε μέρα.</p>`;
 }
@@ -1228,7 +1386,7 @@ function vPartners(R){
     <td>${w.pay==='job'?'<span class="tag hv">Κατ\' αποκοπή</span>':'<span class="tag mute">Μεροκάματο '+eur(w.wage)+'</span>'}</td><td class="mono">${h(w.phone||'—')}</td>
     <td>${open.map(t=>`<div class="note"><i class="dot" style="background:${pc(t.projectId)}"></i> ${h(t.title)} · ${R.begin[t.id]?fmtS(R.begin[t.id])+' – '+fmtS(R.finish[t.id]):'δεν προγραμματίζεται'}${w.pay==='job'?' · '+eur(t.price):''}</div>`).join('')||'<span class="note">Καμία ανοιχτή εργασία</span>'}</td>
     <td class="n mono">${acc?(acc.due<0?'προκαταβολή '+eur(-acc.due):eur(acc.due)):'—'}</td><td style="white-space:nowrap"><button class="btn sm" data-act="editpartner" data-id="${w.id}">Επεξεργασία</button></td></tr>`}).join('');
-  return `<div class="bar"><h1 class="grow">Συνεργάτες</h1><button class="btn" data-act="newspec">+ Ειδικότητα</button><button class="btn pri" data-act="newpartner">+ Νέος συνεργάτης</button></div>
+  return `<div class="bar"><h1 class="grow">Συνεργάτες</h1><button class="btn" data-act="newspec">${ico('plus')}Ειδικότητα</button><button class="btn pri" data-act="newpartner">${ico('plus')}Νέος συνεργάτης</button></div>
   <section class="panel scroll"><table><thead><tr><th>Συνεργάτης</th><th>Ειδικότητα</th><th>Πληρωμή</th><th>Τηλέφωνο</th><th>Ανοιχτές εργασίες</th><th class="n">Οφείλεται</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="empty">Δεν υπάρχουν συνεργάτες ακόμη.</td></tr>'}</tbody></table></section>
   <p class="note">Οι συνεργάτες δεν είναι στη μισθοδοσία. Τους ορίζεις υπεύθυνους σε μια εργασία και μπαίνουν στο πρόγραμμα και στο Viber μόνο τις μέρες που δουλεύουν για εσένα. Όσοι πληρώνονται κατ' αποκοπή παίρνουν την τιμή της εργασίας, μοιρασμένη στις μέρες της για το κόστος του έργου. Οι πληρωμές τους γίνονται από τα Οικονομικά.</p>`;
 }
@@ -1287,7 +1445,7 @@ function vPay(R){
     <td style="white-space:nowrap">${r.paid?`<span class="tag ok">Πληρώθηκε ${fmt(r.paid.date)}</span> <button class="btn sm ghost" data-act="unpay" data-id="${r.w.id}">Αναίρεση</button>`:`<button class="btn sm pri" data-act="pay" data-id="${r.w.id}">Πληρωμή</button>`}</td></tr>`).join('');
   const txt='ΜΕΡΟΚΑΜΑΤΑ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n'+rows.map(r=>r.w.name+': '+r.days+' μέρες, '+eur(r.amount)+(r.paid?' (πληρώθηκε)':'')).join('\n')+'\n\nΣύνολο: '+eur(total);
   return `<div class="bar"><h1 class="grow">Πληρωμές εβδομάδας</h1>
-    <div class="bgrp"><button class="btn" data-act="pweek" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">‹</button><button class="btn" data-act="pweek" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="pweek" data-dir="1" aria-label="Επόμενη εβδομάδα">›</button></div>
+    <div class="bgrp"><button class="btn" data-act="pweek" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="pweek" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="pweek" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>
     <button class="btn" data-act="copypay">Αντιγραφή κατάστασης</button><button class="btn pri" data-act="payall">Πληρωμή όλων</button></div>
   <textarea id="paytext" rows="8" hidden readonly>${h(txt)}</textarea>
   <div class="kpis">
@@ -1351,7 +1509,7 @@ function vAccount(){const u=AUTH.user;
     <div class="me" style="border:0;padding:0 0 12px;margin:0"><span class="av" aria-hidden="true">${h(initials(u.name))}</span><span class="me-t"><b>${h(u.name)}</b><small>Όνομα χρήστη: ${h(u.username)} · ${ROLE_L[u.role]||''}, ${ROLE_D[u.role]||''}</small></span></div>
     <div class="bar"><button class="btn" data-act="pwform">Αλλαγή κωδικού</button><button class="btn" data-act="logout">Αποσύνδεση</button></div>
     ${SERVER?'':'<p class="note" style="margin-top:10px">Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Όταν η εφαρμογή τρέχει από τον server της εταιρείας, φυλάγονται κεντρικά και ο κάθε εργαζόμενος μπαίνει από το κινητό του.</p>'}</section>
-  ${isAdmin()?`<section class="panel"><div class="bar" style="margin-bottom:8px"><h2 class="grow" style="margin:0">Χρήστες</h2><button class="btn pri" data-act="newuser">+ Νέος χρήστης</button></div>
+  ${isAdmin()?`<section class="panel"><div class="bar" style="margin-bottom:8px"><h2 class="grow" style="margin:0">Χρήστες</h2><button class="btn pri" data-act="newuser">${ico('plus')}Νέος χρήστης</button></div>
     <p class="note" style="margin:0 0 10px">Ο εργαζόμενος βλέπει μόνο το δικό του πρόγραμμα, χωρίς αλλαγές, έργα, προσωπικό ή οικονομικά. Το γραφείο (γραμματεία, ταμείο, λογιστήριο, διαχειριστές έργων) έχει πρόσβαση σε όλα.</p>
     <div id="users" class="scroll"><p class="note">Φόρτωση χρηστών…</p></div></section>`:''}`;
 }
@@ -1423,7 +1581,7 @@ function sendForm(d,week){
   const R=schedule();const key=(week?'w':'d')+d;UI.sent=UI.sent&&UI.sent.key===key?UI.sent:{key,ids:[]};const msg=w=>week?personText(R,w,d):personDayText(R,w,d);const wk=week?' data-week="1"':'';
   const ws=vRecipients().filter(w=>!isExt(w)||hasJob(R,w.id,week?weekDays(d):[d]));const left=ws.filter(w=>!UI.sent.ids.includes(w.id));
   const rows=ws.map(w=>{const ok=UI.sent.ids.includes(w.id);return `<tr><td><b>${h(w.name)}</b><div class="note">${h(week?SP(w.specialtyId)?.name||'':msg(w).split('\n').slice(2,4).filter(Boolean).join(' · '))}</div></td><td class="mono" style="white-space:nowrap">${h(w.phone||'—')}</td>
-    <td style="white-space:nowrap">${ok?'<span class="tag ok">✓ Στάλθηκε</span> ':''}<button class="btn sm${ok?' ghost':''}" data-act="sendone" data-id="${w.id}" data-d="${d}"${wk}>${ok?'Ξανά':'Viber'}</button></td></tr>`}).join('');
+    <td style="white-space:nowrap">${ok?'<span class="tag ok">'+ico('check')+'Στάλθηκε</span> ':''}<button class="btn sm${ok?' ghost':''}" data-act="sendone" data-id="${w.id}" data-d="${d}"${wk}>${ok?'Ξανά':'Viber'}</button></td></tr>`}).join('');
   openModal(`<h2>${week?'Εβδομαδιαίο πρόγραμμα '+fmtS(d)+' – '+fmtS(add(d,6)):'Αποστολή προγράμματος για '+fmt(d)}</h2>
   ${SERVER?`<p>Θα σταλεί σε ${ws.length} άτομα, στον λογαριασμό Viber του καθενός, με ένα πάτημα.</p>
     <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="sendall" data-d="${d}"${wk}>Αποστολή σε όλους</button></div>`
