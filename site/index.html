@@ -6,7 +6,7 @@
 <!--BODY-START-->
 <title>ERGODO · Πρόγραμμα συνεργείων και μεροκάματα</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Το ERGODO βγάζει μόνο του το πρόγραμμα των συνεργείων σας, το στέλνει σε κάθε εργάτη στο Viber και κρατάει τα μεροκάματα κάθε έργου. Για εργολάβους και κατασκευαστικές. 30 μέρες δωρεάν, πακέτα από 29 € τον μήνα.">
+<meta name="description" content="Το ERGODO βγάζει μόνο του το πρόγραμμα των συνεργείων σας, το στέλνει σε κάθε εργάτη στο Viber και κρατάει τα μεροκάματα κάθε έργου. Για εργολάβους και κατασκευαστικές. 30 μέρες δωρεάν, πακέτα από 9,90 € τον μήνα.">
 <meta name="theme-color" content="#161b1f">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="el_GR">
@@ -22,9 +22,9 @@
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"ERGODO","applicationCategory":"BusinessApplication","operatingSystem":"Web, Android, iOS","inLanguage":"el","url":"https://ergodo.gr/",
  "description":"Πρόγραμμα συνεργείων, αποστολή προγράμματος στο Viber και μεροκάματα ανά έργο για κατασκευαστικές εταιρείες.",
  "offers":[
-  {"@type":"Offer","name":"Συνεργείο","description":"Έως 10 άτομα","price":"29","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"29","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
-  {"@type":"Offer","name":"Εργοτάξιο","description":"Έως 30 άτομα","price":"59","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"59","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
-  {"@type":"Offer","name":"Εργοληπτική","description":"Έως 75 άτομα","price":"119","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"119","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}}
+  {"@type":"Offer","name":"Μάστορας","description":"Έως 5 άτομα","price":"9.90","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"9.90","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Συνεργείο","description":"Έως 15 άτομα","price":"19.90","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"19.90","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Εργοτάξιο","description":"Έως 40 άτομα","price":"39.90","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"39.90","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}}
  ]}
 </script>
 <style>
@@ -365,7 +365,7 @@ footer a:hover{color:var(--on-asphalt)}
         <a class="btn pri" href="#start">Ξεκινήστε 30 μέρες δωρεάν <svg><use href="#i-arrow"/></svg></a>
         <a class="btn ghost-d" href="#pricing">Δείτε τις τιμές</a>
       </div>
-      <p class="fine">Χωρίς κάρτα. <b>Πακέτα από 29 € τον μήνα</b> για όλη την εταιρεία.</p>
+      <p class="fine">Χωρίς κάρτα. <b>Πακέτα από 9,90 € τον μήνα</b> για όλη την εταιρεία.</p>
       <ul class="trust">
         <li><svg><use href="#i-flag"/></svg>Ελληνικά σε κάθε οθόνη</li>
         <li><svg><use href="#i-phone"/></svg>Στο Viber που ήδη έχουν</li>
@@ -537,8 +537,8 @@ footer a:hover{color:var(--on-asphalt)}
     <div class="calc">
       <form id="calcForm" onsubmit="return false">
         <div class="field">
-          <label for="cWorkers">Άτομα στα έργα <output id="oWorkers" for="cWorkers">20</output></label>
-          <input id="cWorkers" type="range" min="3" max="75" step="1" value="20">
+          <label for="cWorkers">Άτομα στα έργα <output id="oWorkers" for="cWorkers">12</output></label>
+          <input id="cWorkers" type="range" min="2" max="40" step="1" value="12">
         </div>
         <div class="field">
           <label for="cMins">Λεπτά την ημέρα για πρόγραμμα και τηλέφωνα <output id="oMins" for="cMins">45</output></label>
@@ -551,7 +551,7 @@ footer a:hover{color:var(--on-asphalt)}
         <div class="field">
           <label for="cErr">Μεροκάματα τον μήνα σε λάθος έργο ή πληρωμένα δύο φορές <output id="oErr" for="cErr">1</output></label>
           <input id="cErr" type="range" min="0" max="8" step="1" value="1">
-          <span class="hint">Υπολογίζεται με 70 € το μεροκάματο.</span>
+          <span class="hint">Υπολογίζεται με 50 € το μεροκάματο.</span>
         </div>
         <div class="field">
           <label for="cRate">Κόστος μιας ώρας γραφείου <output id="oRate" for="cRate">10 €</output></label>
@@ -565,8 +565,8 @@ footer a:hover{color:var(--on-asphalt)}
           <p class="big"><span id="rHours">17,5</span><small>ώρες τον μήνα</small></p>
         </div>
         <div class="row">
-          <div><b id="rEuro">245 €</b><span>αξία τον μήνα, με τα λάθη που δεν γίνονται</span></div>
-          <div><b id="rRoi">4,2×</b><span>την τιμή του πακέτου <span id="rPlan">Εργοτάξιο</span></span></div>
+          <div><b id="rEuro">225 €</b><span>αξία τον μήνα, με τα λάθη που δεν γίνονται</span></div>
+          <div><b id="rRoi">11×</b><span>την τιμή του πακέτου <span id="rPlan">Συνεργείο</span></span></div>
         </div>
         <p class="note">Εκτίμηση με 22 εργάσιμες τον μήνα. Δεν μετράει τον χρόνο του εργοδηγού ούτε τις χαμένες ώρες όταν κάποιος πάει σε λάθος εργοτάξιο.</p>
       </div>
@@ -579,7 +579,7 @@ footer a:hover{color:var(--on-asphalt)}
     <div class="sec-head">
       <p class="eyebrow">ΤΙΜΕΣ</p>
       <h2>Μία συνδρομή για όλη την εταιρεία.</h2>
-      <p class="lead">Όλες οι λειτουργίες σε κάθε πακέτο. Αλλάζει μόνο πόσα άτομα χωράνε και πόση βοήθεια θέλετε στο ξεκίνημα. Το γραφείο και ο ιδιοκτήτης δεν μετράνε στα άτομα.</p>
+      <p class="lead">Όλες οι λειτουργίες σε κάθε πακέτο. Αλλάζει μόνο πόσα άτομα χωράνε και πόση βοήθεια θέλετε στο ξεκίνημα. Το γραφείο και ο ιδιοκτήτης δεν μετράνε στα άτομα, και το Συνεργείο κοστίζει λιγότερο από μισό μεροκάματο τον μήνα.</p>
     </div>
     <div class="bill" role="group" aria-label="Τρόπος χρέωσης">
       <button type="button" id="bMonth" aria-pressed="true">Μηνιαία</button>
@@ -587,8 +587,8 @@ footer a:hover{color:var(--on-asphalt)}
     </div>
     <div class="plans">
       <article class="plan">
-        <div><h3>Συνεργείο</h3><p class="who">Έως 10 άτομα στα έργα</p></div>
-        <p class="price"><b data-m="29" data-n="10">29</b><span>€ / μήνα + ΦΠΑ</span></p>
+        <div><h3>Μάστορας</h3><p class="who">Έως 5 άτομα στα έργα</p></div>
+        <p class="price"><b data-m="9.9" data-n="5">9,90</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
         <p class="per" data-per></p>
         <ul>
           <li><svg><use href="#i-ok"/></svg>Όλες οι λειτουργίες</li>
@@ -600,8 +600,8 @@ footer a:hover{color:var(--on-asphalt)}
       </article>
       <article class="plan top-pick">
         <span class="flag">ΠΡΟΤΕΙΝΟΥΜΕ</span>
-        <div><h3>Εργοτάξιο</h3><p class="who">Έως 30 άτομα στα έργα</p></div>
-        <p class="price"><b data-m="59" data-n="30">59</b><span>€ / μήνα + ΦΠΑ</span></p>
+        <div><h3>Συνεργείο</h3><p class="who">Έως 15 άτομα στα έργα</p></div>
+        <p class="price"><b data-m="19.9" data-n="15">19,90</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
         <p class="per" data-per></p>
         <ul>
           <li><svg><use href="#i-ok"/></svg>Όλες οι λειτουργίες</li>
@@ -612,13 +612,13 @@ footer a:hover{color:var(--on-asphalt)}
         <a class="btn pri" href="#start" data-plan="1">Δοκιμή 30 ημερών</a>
       </article>
       <article class="plan">
-        <div><h3>Εργοληπτική</h3><p class="who">Έως 75 άτομα στα έργα</p></div>
-        <p class="price"><b data-m="119" data-n="75">119</b><span>€ / μήνα + ΦΠΑ</span></p>
+        <div><h3>Εργοτάξιο</h3><p class="who">Έως 40 άτομα στα έργα</p></div>
+        <p class="price"><b data-m="39.9" data-n="40">39,90</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
         <p class="per" data-per></p>
         <ul>
-          <li><svg><use href="#i-ok"/></svg>Όλα του Εργοταξίου</li>
+          <li><svg><use href="#i-ok"/></svg>Όλα του Συνεργείου</li>
           <li><svg><use href="#i-ok"/></svg>Μεταφορά των δεδομένων σας από Excel</li>
-          <li><svg><use href="#i-ok"/></svg>Δικός σας άνθρωπος στην ERGODO</li>
+          <li><svg><use href="#i-ok"/></svg>Εκπαίδευση και για τους εργοδηγούς</li>
           <li><svg><use href="#i-ok"/></svg>Προτεραιότητα στη βοήθεια</li>
         </ul>
         <a class="btn ghost" href="#start" data-plan="2">Δοκιμή 30 ημερών</a>
@@ -626,7 +626,7 @@ footer a:hover{color:var(--on-asphalt)}
     </div>
     <div class="plans-foot">
       <span>30 μέρες δωρεάν σε κάθε πακέτο, χωρίς κάρτα. Ακυρώνετε όποτε θέλετε.</span>
-      <span>Πάνω από 75 άτομα; <a href="#start" data-plan="3">Ζητήστε προσφορά</a></span>
+      <span>Πάνω από 40 άτομα; <a href="#start" data-plan="3">Ζητήστε προσφορά</a></span>
     </div>
 
     <div class="launch">
@@ -661,7 +661,7 @@ footer a:hover{color:var(--on-asphalt)}
     <div class="faq">
       <details><summary>Πρέπει οι εργάτες να κατεβάσουν εφαρμογή;</summary><p>Όχι. Το πρόγραμμά τους έρχεται στο Viber που ήδη έχουν. Όποιος θέλει, ανοίγει το ERGODO από το κινητό του και το βάζει στην αρχική οθόνη σαν εφαρμογή, χωρίς κατέβασμα από store.</p></details>
       <details><summary>Κι αν αλλάξει κάτι το πρωί;</summary><p>Αλλάζετε το άτομο ή την εργασία και το ERGODO προσαρμόζει τα υπόλοιπα γύρω από την επιλογή σας. Νέο μήνυμα στέλνεται μόνο σε όσους άλλαξε η μέρα τους.</p></details>
-      <details><summary>Πόσο χρόνο θέλει για να ξεκινήσουμε;</summary><p>Λίγες ώρες. Περνάτε έργα, εργασίες και προσωπικό, και από την επόμενη μέρα το πρόγραμμα βγαίνει μόνο του. Στα πακέτα Εργοτάξιο και Εργοληπτική το στήσιμο το κάνουμε εμείς μαζί σας.</p></details>
+      <details><summary>Πόσο χρόνο θέλει για να ξεκινήσουμε;</summary><p>Λίγες ώρες. Περνάτε έργα, εργασίες και προσωπικό, και από την επόμενη μέρα το πρόγραμμα βγαίνει μόνο του. Στα πακέτα Συνεργείο και Εργοτάξιο το στήσιμο το κάνουμε εμείς μαζί σας.</p></details>
       <details><summary>Μπορώ να βάλω και εξωτερικά συνεργεία;</summary><p>Ναι. Οι συνεργάτες μπαίνουν με μεροκάματο ή κατ' αποκοπή, παίρνουν το πρόγραμμά τους στο Viber, και βλέπετε υπόλοιπο και προκαταβολές για τον καθένα.</p></details>
       <details><summary>Ποιος βλέπει τα μεροκάματα;</summary><p>Μόνο όσοι ορίσετε, συνήθως ο διαχειριστής και το γραφείο. Ο εργάτης βλέπει μόνο το δικό του πρόγραμμα.</p></details>
       <details><summary>Τι γίνεται αν ξεπεράσουμε τα άτομα του πακέτου;</summary><p>Δεν κόβεται τίποτα. Σας ειδοποιούμε και περνάτε στο επόμενο πακέτο από τον επόμενο μήνα.</p></details>
@@ -689,7 +689,7 @@ footer a:hover{color:var(--on-asphalt)}
           <label>Τηλέφωνο<input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
           <label>Άτομα στα έργα
             <select id="fSize" name="size">
-              <option>Έως 10</option><option selected>11 έως 30</option><option>31 έως 75</option><option>Πάνω από 75</option>
+              <option>Έως 5</option><option selected>6 έως 15</option><option>16 έως 40</option><option>Πάνω από 40</option>
             </select>
           </label>
           <label class="full">Email <span class="small">(προαιρετικό)</span><input id="fEmail" name="email" type="email" autocomplete="email"></label>
@@ -736,14 +736,15 @@ footer a:hover{color:var(--on-asphalt)}
   var nf=function(n,d){return n.toLocaleString('el-GR',{minimumFractionDigits:d||0,maximumFractionDigits:d||0})};
 
   // Plans: monthly price per plan and the people it fits. Yearly = 10 months.
-  var PLANS=[['Συνεργείο',29,10],['Εργοτάξιο',59,30],['Εργοληπτική',119,75]];
+  var PLANS=[['Μάστορας',9.9,5],['Συνεργείο',19.9,15],['Εργοτάξιο',39.9,40]];
   var yearly=false;
   function monthly(m){return yearly?m*10/12:m}
   function renderPrices(){
     document.querySelectorAll('[data-m]').forEach(function(b){
-      var m=+b.dataset.m,n=+b.dataset.n,pm=monthly(m);b.textContent=nf(Math.round(pm));
-      var per=b.closest('.plan').querySelector('[data-per]');
-      per.innerHTML=(yearly?'Χρέωση '+nf(m*10)+' € τον χρόνο':'Χρέωση κάθε μήνα')+'<strong>Από '+nf(pm/n,2)+' € ανά άτομο</strong>';
+      var m=+b.dataset.m,n=+b.dataset.n,pm=monthly(m),plan=b.closest('.plan');
+      b.textContent=yearly?nf(Math.round(m*10)):nf(m,2);
+      plan.querySelector('[data-unit]').textContent=yearly?'€ / χρόνο + ΦΠΑ':'€ / μήνα + ΦΠΑ';
+      plan.querySelector('[data-per]').innerHTML=(yearly?'Ίσο με '+nf(pm,2)+' € τον μήνα':'Χρέωση κάθε μήνα')+'<strong>Από '+nf(pm/n,2)+' € ανά άτομο τον μήνα</strong>';
     });
     $('bMonth').setAttribute('aria-pressed',!yearly);
     $('bYear').setAttribute('aria-pressed',yearly);
@@ -753,13 +754,13 @@ footer a:hover{color:var(--on-asphalt)}
   $('bYear').onclick=function(){yearly=true;renderPrices()};
 
   // Savings estimate, kept conservative: scheduling still takes 15 minutes a day, payroll half its time.
-  var WAGE=70,DAYS=22,WEEKS=52/12;
+  var WAGE=50,DAYS=22,WEEKS=52/12;
   function calc(){
     var w=+$('cWorkers').value,mins=+$('cMins').value,pay=+$('cPay').value,err=+$('cErr').value,rate=+$('cRate').value;
     $('oWorkers').textContent=w;$('oMins').textContent=mins;$('oPay').textContent=pay;$('oErr').textContent=err;$('oRate').textContent=rate+' €';
     var hours=Math.max(0,mins-15)*DAYS/60+pay*0.5*WEEKS;
     var euro=hours*rate+err*WAGE;
-    var p=PLANS[w<=10?0:w<=30?1:2],price=monthly(p[1]);
+    var p=PLANS[w<=5?0:w<=15?1:2],price=monthly(p[1]);
     var hr=Math.round(hours*2)/2;$('rHours').textContent=nf(hr,hr%1?1:0);
     $('rEuro').textContent=nf(Math.round(euro))+' €';
     $('rPlan').textContent=p[0];
