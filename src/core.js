@@ -67,6 +67,9 @@ const WX_DEMO={
     t('t18','p2','Μόνωση και στεγάνωση ταράτσας','s1','w2',1,2,2),
     t('t19','p1','Εξωτερικοί σοβάδες όψης','s2','w5',2,5,3,'t4'),
   ]};
+// demo βαθμοί εργαζομένων και δυσκολία εργασιών
+const RATE_DEMO={w:{w1:5,w2:4,w3:3,w4:2,w5:4,w6:4,w7:2,w8:5,w9:3,w10:4,w11:3,w12:5,w13:3,w14:4,w15:3,w16:3,w17:2},
+  t:{t0:5,t1:4,t3:3,t4:3,t5:4,t6:3,t7:4,t9:4,t11:2,t12:2,t13:5,t14:2,t15:2,t18:5,t19:4}};
 function officeDemo(){
   return {
     specialties:[{id:'o1',name:'Γραμματεία',office:true},{id:'o2',name:'Διαχείριση έργων',office:true,pm:true},{id:'o3',name:'Ταμείο και λογιστήριο',office:true},{id:'o4',name:'Εξωτερικός υπάλληλος',office:true}],
@@ -155,7 +158,8 @@ function demo(){
   ];
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
-  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id]});
+  return {v:2,extDemo:true,rateDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 function migrate(o){
   if(o.v===1){
@@ -170,6 +174,12 @@ function migrate(o){
     const o2=(o.specialties||[]).find(s=>s.id==='o2');if(o2&&o2.pm==null)o2.pm=true;
     const pms=(o.workers||[]).filter(w=>(o.specialties||[]).some(s=>s.pm&&s.id===w.specialtyId)).map(w=>w.id);
     o.projects.forEach(p=>{if(!Array.isArray(p.managers))p.managers=pms.slice(0,1)});
+  }
+  // μία φορά: demo βαθμοί και δυσκολίες σε demo δεδομένα (μόνο όπου όνομα και τίτλος είναι του demo)
+  if(o&&Array.isArray(o.workers)&&Array.isArray(o.tasks)&&!o.rateDemo){
+    o.rateDemo=true;const d=demo();
+    o.workers.forEach(w=>{const x=d.workers.find(y=>y.id===w.id);if(x&&x.rating&&w.rating==null&&x.name===w.name)w.rating=x.rating});
+    o.tasks.forEach(t=>{const x=d.tasks.find(y=>y.id===t.id);if(x&&x.diff&&t.diff==null&&x.title===t.title)t.diff=x.diff});
   }
   // μία φορά: προσθέτει τους demo συνεργάτες σε demo δεδομένα
   if(o&&Array.isArray(o.workers)&&!o.extDemo){
@@ -258,12 +268,21 @@ const isExt=w=>!!w&&w.role==='ext';
 const PLANS=[{id:'mastoras',name:'Μάστορας',gen:'Μάστορα',price:9.99,people:5,office:1},{id:'synergeio',name:'Συνεργείο',gen:'Συνεργείου',price:19.99,people:15,office:3},{id:'ergotaxio',name:'Εργοτάξιο',gen:'Εργοταξίου',price:39.99,people:40,office:0}];
 const FEATS={wx:['synergeio','Πρόγραμμα με τον καιρό'],partners:['synergeio','Συνεργάτες'],appts:['synergeio','Ραντεβού με πελάτες'],pm:['synergeio','Διαχειριστές έργων'],
   progress:['synergeio','Πρόοδος από το εργοτάξιο'],leave:['synergeio','Άδειες από το κινητό'],acc:['synergeio','Κατάσταση για τον λογιστή'],export:['synergeio','Εξαγωγή σε Excel και PDF'],push:['synergeio','Ειδοποιήσεις στο κινητό'],
-  profit:['ergotaxio','Κέρδος ανά έργο'],gps:['ergotaxio','Παρουσίες με GPS'],materials:['ergotaxio','Υλικά πριν την εργασία'],equip:['ergotaxio','Μηχανήματα, οχήματα και λήξεις'],diary:['ergotaxio','Ημερολόγιο έργου με φωτογραφίες'],client:['ergotaxio','Σελίδα προόδου για τον πελάτη']};
+  rating:['ergotaxio','Βαθμός εργαζομένου και δυσκολία εργασίας'],profit:['ergotaxio','Κέρδος ανά έργο'],gps:['ergotaxio','Παρουσίες με GPS'],materials:['ergotaxio','Υλικά πριν την εργασία'],equip:['ergotaxio','Μηχανήματα, οχήματα και λήξεις'],diary:['ergotaxio','Ημερολόγιο έργου με φωτογραφίες'],client:['ergotaxio','Σελίδα προόδου για τον πελάτη']};
 const planIx=id=>{const i=PLANS.findIndex(p=>p.id===id);return i<0?PLANS.length-1:i};   // χωρίς ρύθμιση: το ανώτερο
 const planOf=st=>PLANS[planIx(((st||S&&S.settings)||{}).plan)];
 const hasF=(f,st)=>!FEATS[f]||planIx(planOf(st).id)>=planIx(FEATS[f][0]);
 const needPlan=f=>FEATS[f]?PLANS[planIx(FEATS[f][0])]:PLANS[0];
 const planPeople=()=>S.workers.filter(w=>!isOffice(w)).length;
+// Βαθμός εργαζομένου (1-5, τον βλέπει μόνο το γραφείο) και δυσκολία εργασίας (1-5).
+// Οι καλύτεροι μπαίνουν στις δύσκολες, αλλά μετά από `streak` συνεχόμενες μέρες σε δύσκολη εργασία πάνε σε πιο ελαφριά.
+// bonus: % του μεροκάματου ανά μέρα σε δύσκολη εργασία, μόνο ως πρόταση στις Πληρωμές.
+const RATE_D={on:true,hard:4,streak:2,bonus:10};
+const rateCfg=()=>Object.assign({},RATE_D,(S&&S.settings&&S.settings.rate)||{});
+const rateOn=()=>hasF('rating')&&rateCfg().on!==false;
+const wRate=w=>Math.min(5,Math.max(1,Math.round(+(w&&w.rating)||3)));
+const tDiff=t=>Math.min(5,Math.max(1,Math.round(+(t&&t.diff)||3)));
+const isHard=t=>tDiff(t)>=+rateCfg().hard;
 // τι κοστίζει μια μέρα ενός ατόμου σε μια εργασία: κατ' αποκοπή συνεργάτης = τιμή εργασίας / μέρες
 const dayCost=(w,t)=>isExt(w)&&w.pay==='job'?(t&&t.responsibleId===w.id?(+t.price||0)/Math.max(1,+t.days||1):0):rate(w,t?t.projectId:'gen');
 // σε ποια έργα είναι ένας διαχειριστής μια μέρα (ανάθεση του έργου ή αλλαγή της ημέρας)
@@ -394,6 +413,11 @@ function schedule(){
   let left=open.length,day=start,idleStreak=0,guard=0;
   const depOk=(t,d)=>{if(!t.after||done.has(t.after)||!T(t.after))return true;return finish[t.after]&&finish[t.after]<d};
   const lastEnd={v:start};
+  // συνεχόμενες εργάσιμες μέρες κάθε εργαζόμενου σε δύσκολη εργασία
+  const RO=rateOn(),RC=rateCfg(),hardRun={};
+  const tired=(w,t)=>RO&&isHard(t)&&(hardRun[w.id]||0)>=+RC.streak;
+  // ταίριασμα βαθμού και δυσκολίας: στις δύσκολες οι καλύτεροι, στις εύκολες φυλάγονται
+  const fit=(w,t)=>!RO?0:(tired(w,t)?100:0)+(isHard(t)?-(wRate(w)-3)*0.5:tDiff(t)<=2?(wRate(w)-3)*0.3:0);
   while(guard<500&&((left>0&&idleStreak<40)||day<=minEnd)){
     guard++;
     if(!isWork(day)){day=add(day,1);continue}
@@ -410,7 +434,7 @@ function schedule(){
       if(!((!t.earliest||t.earliest<=day)&&depOk(t,day)))return false;
       if(t.dry&&rainy(t.projectId,day)){wet.push(t);(waiting[day]=waiting[day]||[]).push({task:t,reason:'Βροχή: θέλει στεγνή μέρα',rain:true});return false}
       return true})
-      .sort((a,b)=>(a.priority-b.priority)||((begin[a.id]?0:1)-(begin[b.id]?0:1))||((a.earliest||'').localeCompare(b.earliest||''))||S.tasks.indexOf(a)-S.tasks.indexOf(b));
+      .sort((a,b)=>(a.priority-b.priority)||((begin[a.id]?0:1)-(begin[b.id]?0:1))||(RO?tDiff(b)-tDiff(a):0)||((a.earliest||'').localeCompare(b.earliest||''))||S.tasks.indexOf(a)-S.tasks.indexOf(b));
     for(const t of ready){
       const fx=forced[t.id]||[];
       let lead=fx.find(w=>w.id===t.responsibleId)||fx.find(w=>w.role!=='voith'&&w.specialtyId===t.specialtyId)||null,sub=false;
@@ -419,7 +443,7 @@ function schedule(){
         const r=W(t.responsibleId);
         if(r&&!busy.has(r.id))lead=r;
         else if(isExt(r))lead=null;   // ο συνεργάτης δεν αντικαθίσταται από το προσωπικό
-        else{lead=S.workers.find(w=>w.specialtyId===t.specialtyId&&w.role!=='voith'&&!isExt(w)&&!busy.has(w.id))||null;sub=!!lead}
+        else{lead=S.workers.filter(w=>w.specialtyId===t.specialtyId&&w.role!=='voith'&&!isExt(w)&&!busy.has(w.id)).sort((a,b)=>fit(a,t)-fit(b,t))[0]||null;sub=!!lead}
         if(lead)busy.add(lead.id);
         else{lead=fx.find(w=>w.role!=='voith')||null;sub=!!lead}
       }
@@ -429,7 +453,7 @@ function schedule(){
       if(lead&&helpers.length<need){
         const prev=prevCrew[t.id]||[];
         const pool=S.workers.filter(w=>w.role==='voith'&&!busy.has(w.id)&&(w.specialtyId===t.specialtyId||w.specialtyId==='gen'))
-          .sort((a,b)=>((prev.includes(a.id)?0:2)+(a.specialtyId===t.specialtyId?0:1))-((prev.includes(b.id)?0:2)+(b.specialtyId===t.specialtyId?0:1)));
+          .sort((a,b)=>((prev.includes(a.id)?0:2)+(a.specialtyId===t.specialtyId?0:1)+fit(a,t))-((prev.includes(b.id)?0:2)+(b.specialtyId===t.specialtyId?0:1)+fit(b,t)));
         pool.slice(0,need-helpers.length).forEach(w=>{helpers.push(w);busy.add(w.id)});
       }
       prevCrew[t.id]=helpers.map(w=>w.id);
@@ -444,11 +468,22 @@ function schedule(){
     if(S.settings.fillIdle&&jobs.length){
       S.workers.filter(w=>!busy.has(w.id)&&!isExt(w)).forEach(w=>{
         const same=jobs.filter(j=>j.task.specialtyId===w.specialtyId);
-        const cand=same.length?same:(w.role==='voith'?jobs.slice():[]);
-        if(cand.length){cand.sort((a,b)=>(a.helpers.length-(+a.task.helpers||0))-(b.helpers.length-(+b.task.helpers||0))||a.helpers.length-b.helpers.length);const j=cand[0];j.helpers.push(w);j.extra.add(w.id)}
+        let cand=same.length?same:(w.role==='voith'?jobs.slice():[]);
+        // κουρασμένος από δύσκολες: πάει σε ελαφριά εργασία ή στην αποθήκη, όχι ξανά σε δύσκολη
+        if(RO&&cand.length&&cand.every(j=>tired(w,j.task))){const lite=jobs.filter(j=>!isHard(j.task)&&(j.task.specialtyId===w.specialtyId||w.role==='voith'));cand=lite}
+        if(cand.length){cand.sort((a,b)=>((tired(w,a.task)?1:0)-(tired(w,b.task)?1:0))||(a.helpers.length-(+a.task.helpers||0))-(b.helpers.length-(+b.task.helpers||0))||a.helpers.length-b.helpers.length);const j=cand[0];j.helpers.push(w);j.extra.add(w.id)}
         else gen.push({w,forced:false});
         busy.add(w.id)});
     }
+    // εναλλαγή: όποιος έχει κουραστεί σε δύσκολη αλλάζει θέση με κάποιον από ελαφριά εργασία που μπορεί να τον αντικαταστήσει
+    if(RO){const ok=(w,t)=>w.specialtyId===t.specialtyId||(w.role==='voith'&&w.specialtyId==='gen');
+      jobs.forEach(j=>{if(!isHard(j.task))return;
+        j.helpers.forEach((w,i)=>{if(j.forced.has(w.id)||!tired(w,j.task))return;
+          for(const k of jobs){if(k===j||isHard(k.task)||!ok(w,k.task))continue;
+            const ix=k.helpers.findIndex(x=>!k.forced.has(x.id)&&!tired(x,j.task)&&ok(x,j.task)&&!j.helpers.includes(x));
+            if(ix<0)continue;const x=k.helpers[ix];k.helpers[ix]=w;j.helpers[i]=x;
+            const we=j.extra.has(w.id),xe=k.extra.has(x.id);j.extra.delete(w.id);k.extra.delete(x.id);if(we)j.extra.add(x.id);if(xe)k.extra.add(w.id);break}})});
+      jobs.forEach(j=>{prevCrew[j.task.id]=j.helpers.filter(w=>!j.extra.has(w.id)).map(w=>w.id)})}
     // όποιος είναι σε πολλές εργασίες την ίδια μέρα μοιράζει το μεροκάματο ισόποσα
     const cnt={};jobs.forEach(j=>{j.multi=new Set();[j.lead,...j.helpers].filter(Boolean).forEach(w=>cnt[w.id]=(cnt[w.id]||0)+1)});
     jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>{const n=cnt[w.id];if(n>1)j.multi.add(w.id);
@@ -458,6 +493,8 @@ function schedule(){
       const pp=pmProjects(w.id,day);
       if(pp.length)pp.forEach(pid=>asg.push({date:day,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
       else asg.push({date:day,taskId:null,projectId:'office',workerId:w.id,wage:+w.wage||0})});
+    if(RO){const hd=new Set();jobs.forEach(j=>{if(isHard(j.task))[j.lead,...j.helpers].filter(Boolean).forEach(w=>hd.add(w.id))});
+      S.workers.forEach(w=>{hardRun[w.id]=hd.has(w.id)?(hardRun[w.id]||0)+1:0})}
     byDay[day]={jobs,gen,wet};
     if(jobs.length)lastEnd.v=day;
     idleStreak=jobs.length?0:idleStreak+1;
@@ -543,7 +580,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
