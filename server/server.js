@@ -129,6 +129,7 @@ async function runSend(date, trigger, week = false, changed = false) {
       if (only) entry.upd = true;
       if (w.viber === false) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Απενεργοποιημένο' }); continue; }
       if (!only && C.isExt(w) && !C.hasJob(R, w.id, days)) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Συνεργάτης χωρίς εργασία' }); continue; }
+      if (!week && !only && w.id !== C.OWNER && C.isRest(w, date) && !C.isLeave(w, date)) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Ρεπό' }); continue; }
       if (w.id === C.OWNER && !days.some(d => C.dayBlock(R, w, d).trim())) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Χωρίς ραντεβού ή υπενθυμίσεις' }); continue; }
       if (!phone) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); continue; }
       const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date, !!only);
