@@ -141,7 +141,7 @@ function demo(){
   ];
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
-  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults()},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  return {v:2,extDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 function migrate(o){
   if(o.v===1){
@@ -173,6 +173,12 @@ function migrate(o){
     if(o.workers.some(w=>w.id==='w19')&&!o.workers.some(w=>w.id==='w24')){o.workers.push(d.workers.find(w=>w.id==='w24'));o.duties=o.duties||[];d.duties.filter(x=>x.workerId==='w24').forEach(x=>{if(!o.duties.some(y=>y.id===x.id))o.duties.push(x)})}
   }
   if(o&&!Array.isArray(o.cpay))o.cpay=[];
+  if(o&&o.settings&&!o.settings.hol)o.settings.hol=holDefaults();
+  if(o&&o.settings&&!Array.isArray(o.settings.closed))o.settings.closed=[];
+  // πληρωμές: από {amount,days,date} (μία πλήρης πληρωμή) σε {earned,days,pays:[…]} που δέχεται μερικά ποσά
+  if(o&&o.payments)Object.keys(o.payments).forEach((k,i)=>{const v=o.payments[k];if(v&&!Array.isArray(v.pays))o.payments[k]={earned:+v.amount||0,days:v.days||0,lock:true,pays:[{id:'p'+i+uid(''),amount:+v.amount||0,date:v.date||'',method:'',note:''}]}});
+  // τα υπόλοιπα μετράνε από την εβδομάδα που μπήκε η δυνατότητα, όχι από παλιές εβδομάδες που πληρώθηκαν εκτός εφαρμογής
+  if(o&&o.settings&&!o.settings.payFrom)o.settings.payFrom=weekStart(ds(new Date()));
   if(o&&o.settings&&!o.settings.wx)o.settings.wx=wxDefaults();
   if(o&&(!o.wxMark||typeof o.wxMark!=='object'))o.wxMark={};
   if(o&&!Array.isArray(o.appts))o.appts=[];
@@ -208,7 +214,27 @@ const byId=(arr,id)=>arr.find(x=>x.id===id);
 const P=id=>byId(S.projects,id), W=id=>byId(S.workers,id), T=id=>byId(S.tasks,id), SP=id=>byId(S.specialties,id);
 const PSEUDO={office:{name:'Γραφείο',color:'muted'},gen:{name:'Αποθήκη και συντήρηση',color:'hivis'}};
 const pname=id=>PSEUDO[id]?.name||P(id)?.name||'—';
-const isWork=s=>S.settings.workdays.includes(dow(s));
+/* ---------- Αργίες ----------
+   Επίσημες αργίες (σταθερές και του Πάσχα) και μέρες που η εταιρεία είναι κλειστή: δεν μπαίνει πρόγραμμα, δεν στέλνεται Viber.
+   settings.hol={on,skip:[id]}: ποιες αργίες δεν τηρούνται· settings.closed=[ΕΕΕΕ-ΜΜ-ΗΗ]. */
+// Ορθόδοξο Πάσχα: υπολογισμός στο ιουλιανό ημερολόγιο + 13 μέρες (ισχύει για 1900-2099)
+function easter(y){const a=y%4,b=y%7,c=y%19,d=(19*c+15)%30,e=(2*a+4*b-d+34)%7,m=Math.floor((d+e+114)/31),day=(d+e+114)%31+1;return add(y+'-'+pad(m)+'-'+pad(day),13)}
+const HOLIDAYS=[['ny','Πρωτοχρονιά',y=>y+'-01-01'],['theo','Θεοφάνεια',y=>y+'-01-06'],['kd','Καθαρά Δευτέρα',y=>add(easter(y),-48)],['25m','25η Μαρτίου',y=>y+'-03-25'],
+  ['mp','Μεγάλη Παρασκευή',y=>add(easter(y),-2)],['dp','Δευτέρα του Πάσχα',y=>add(easter(y),1)],['pm','Πρωτομαγιά',y=>y+'-05-01'],['ap','Αγίου Πνεύματος',y=>add(easter(y),50)],
+  ['dek','Δεκαπενταύγουστος',y=>y+'-08-15'],['28o','28η Οκτωβρίου',y=>y+'-10-28'],['xm','Χριστούγεννα',y=>y+'-12-25'],['sx','Σύναξη της Θεοτόκου',y=>y+'-12-26']];
+const holDefaults=()=>({on:true,skip:['ap']});
+const HC={k:'',y:{}};
+// το όνομα της αργίας ή «Κλειστά» για μια μέρα, αλλιώς ''
+function holName(d){
+  const st=S&&S.settings||{},hol=st.hol||holDefaults(),closed=st.closed||[];
+  const k=JSON.stringify([hol,closed]);if(HC.k!==k){HC.k=k;HC.y={}}
+  if(closed.includes(d))return 'Κλειστά';
+  if(hol.on===false)return '';
+  const y=+d.slice(0,4);
+  if(!HC.y[y]){const m={};HOLIDAYS.forEach(([id,n,f])=>{if(!(hol.skip||[]).includes(id))m[f(y)]=n});HC.y[y]=m}
+  return HC.y[y][d]||'';
+}
+const isWork=s=>S.settings.workdays.includes(dow(s))&&!holName(s);
 const nextWork=(s,dir=1)=>{let d=s;for(let i=0;i<14&&!isWork(d);i++)d=add(d,dir);return d};
 const isOffice=w=>!!SP(w.specialtyId)?.office;
 const isPM=w=>!!SP(w.specialtyId)?.pm;
@@ -453,11 +479,12 @@ const dutyLine=t=>'  • '+(t.time?t.time+' ':'')+t.title+(t.projectId&&P(t.proj
 // ό,τι μετρά για να μάθει ένας εργαζόμενος ότι άλλαξε η μέρα του: πού, τι και με ποιον ρόλο (όχι ποιοι άλλοι είναι στο συνεργείο)
 const dayKey=(R,w,d)=>dayBlock(R,w,d).split('\n').filter(l=>!/^\s+Μαζί:/.test(l)).join('\n');
 // υπογραφή σε κάθε μήνυμα προς το προσωπικό
-const SIGN='\n✅ ERGODO · Get the job Done';
+const SIGN0='\n✅ ERGODO · Get the job Done';
+const sign=()=>(S&&S.settings&&S.settings.company&&S.settings.company.name?'\n'+S.settings.company.name:'')+SIGN0;
 function personText(R,w,ws){
   let s='ΠΡΟΓΡΑΜΜΑ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n'+w.name+'\n';
   weekDays(ws).forEach(d=>{s+='\n'+fmt(d)+': '+(dayBlock(R,w,d)||'—\n')});
-  return s+SIGN;
+  return s+sign();
 }
 // το καθημερινό μήνυμα που φεύγει αυτόματα
 // ο καιρός της μέρας εκεί που δουλεύει (στο πρώτο έργο του, αλλιώς στην έδρα)
@@ -465,7 +492,10 @@ function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)r
 function personDayText(R,w,d,upd){
   const f=wxFor(R,w.id,d);
   const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+String(w.name).split(/\s+/)[0]+'! ';
-  return hi+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+SIGN;
+  // ώρα έναρξης από τις Ρυθμίσεις, μόνο για όσους πάνε σε εργοτάξιο ή αποθήκη
+  const x=whatDoes(R,w.id,d),st=S.settings&&S.settings.startTime;
+  const start=st&&!x.off&&(x.jobs.length||x.gen)?'Έναρξη: '+st+'\n':'';
+  return hi+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+start+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+sign();
 }
 // η εβδομάδα ενός εργαζόμενου σε δεδομένα, για τη σελίδα «Το πρόγραμμά μου».
 // Περιέχει μόνο ό,τι χρειάζεται ο ίδιος: πού, τι και με ποιους. Όχι μεροκάματα ή κόστη.
@@ -489,6 +519,7 @@ function personWeek(R,w,ws){
 }
 root.ErgoCore={setState,today,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
+  easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
 })(typeof window!=='undefined'?window:globalThis);
