@@ -166,7 +166,7 @@ async function runSum(date, trigger) {
   const S = readJSON(F.state, null);
   if (!S || !S.settings) return { ok: false, message: 'Δεν υπάρχουν ακόμη δεδομένα στον server.' };
   C.setState(withPlan(S));
-  if (!C.hasF('weekly')) return { ok: false, message: 'Η σύνοψη εβδομάδας δεν περιλαμβάνεται στο πακέτο.' };
+  if (!C.hasF('weekly')) return { ok: false, message: C.planHas('weekly') ? 'Η σύνοψη εβδομάδας είναι κλειστή στις Ρυθμίσεις.' : 'Η σύνοψη εβδομάδας δεν περιλαμβάνεται στο πακέτο.' };
   const owner = C.ownerW(), phone = normPhone(owner.phone);
   const text = C.weekSumText(C.weekSum(C.schedule(), C.weekStart(date)));
   const entry = { at: now(), date, trigger: trigger + '-sum', kind: 'sum', workerId: C.OWNER, name: owner.name, phone: owner.phone || '' };
