@@ -166,8 +166,8 @@ function demo(){
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   const xw=EXPW_DEMO();workers.forEach(w=>{if(xw[w.id])w.exp=xw[w.id]});
-  profitDemo({projects,tasks});
-  return {v:2,profitDemo:true,eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  profitDemo({projects,tasks});attDemoSites({projects});
+  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 /* ---------- Αρχεία Excel ----------
    Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
@@ -312,14 +312,119 @@ function profitDemo(o){const P0=PROFIT_DEMO;
   (o.projects||[]).forEach(p=>{if(P0.contract[p.id]&&p.contract==null)p.contract=P0.contract[p.id];
     if(P0.costs[p.id]&&!(p.costs||[]).length)p.costs=P0.costs[p.id].map(([d,kind,desc,sup,amount],i)=>({id:'c'+p.id.slice(1)+i,date:add(TODAY,d),kind,desc,sup,amount}))});
   (o.tasks||[]).forEach(t=>{const m=P0.mat[t.id];if(m&&!t.mat)t.mat={...m,ordered:m.ordered!=null?add(TODAY,m.ordered):''}})}
+// --- παρουσίες με GPS (πακέτο Εργοτάξιο) ---
+// S.att = [{id,d,w,p,in,out,by,u,x,note}]: in/out = {t:'07:42',at,lat,lon,acc,m}. Η θέση διαβάζεται μόνο τη στιγμή του «Ήρθα»/«Έφυγα».
+// p.site = {lat,lon,r}: το σημείο του εργοταξίου και πόσα μέτρα γύρω του μετράνε ως «στο εργοτάξιο».
+const ATT_R=150,ATT_GEO=60,ATT_KEEP=400;   // μέτρα· μέρες που κρατιούνται οι συντεταγμένες· μέρες που κρατιούνται οι παρουσίες
+const gpsOn=()=>hasF('gps');
+const siteOf=p=>p&&p.site&&hasLL(p.site)?{lat:+p.site.lat,lon:+p.site.lon,r:+p.site.r>0?+p.site.r:ATT_R}:null;
+// όσοι δεν είναι σε έργο εκείνη τη μέρα (αποθήκη, γενικές εργασίες): το σημείο της αποθήκης από τις Ρυθμίσεις
+const yardOf=()=>siteOf({site:S.settings&&S.settings.yard});
+const siteFor=pid=>pid?siteOf(P(pid)):yardOf();
+function distM(a,b){const R0=6371000,rad=x=>x*Math.PI/180,dLa=rad(b.lat-a.lat),dLo=rad(b.lon-a.lon);
+  const q=Math.sin(dLa/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLo/2)**2;return Math.round(2*R0*Math.asin(Math.min(1,Math.sqrt(q))))}
+const distS=m=>m<1000?Math.round(m/10)*10+' μ.':(Math.round(m/100)/10).toString().replace('.',',')+' χλμ.';
+// «40.58231, 22.95018» ή σύνδεσμος Google Maps (…@40.58,22.95,17z ή ?q=40.58,22.95)
+function parseLL(s){s=String(s||'').trim();const m=/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/.exec(s)||/[?&](?:q|query|ll|destination)=(-?\d+\.\d+)(?:,|%2C)\s*(-?\d+\.\d+)/i.exec(s)||/^(-?\d{1,2}[.,]\d+)\s*[,; ]\s*(-?\d{1,3}[.,]\d+)$/.exec(s);
+  if(!m)return null;const lat=+String(m[1]).replace(',','.'),lon=+String(m[2]).replace(',','.');return lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null}
+const attList=()=>(S.att||[]).filter(r=>!r.x);
+const attOf=(d,wid)=>attList().find(r=>r.d===d&&r.w===wid)||null;
+// σε ποια έργα είναι ο εργαζόμενος εκείνη τη μέρα (με το πρόγραμμα)
+const attProjects=(R,wid,d)=>[...new Set(R.asg.filter(a=>a.date===d&&a.workerId===wid&&a.projectId&&P(a.projectId)).map(a=>a.projectId))];
+// απόσταση ενός σημείου από το εργοτάξιο: από τις συντεταγμένες όσο κρατιούνται, αλλιώς όπως καταγράφηκε
+function attDist(r,pt){if(!pt)return null;const s=siteFor(r.p);if(s&&hasLL(pt))return distM(s,pt);return pt.m!=null?pt.m:null}
+// πού ήταν: ok στο εργοτάξιο · far μακριά · nopos χωρίς θέση · nosite το έργο δεν έχει σημείο
+function attWhere(r,pt){if(!pt)return null;const s=siteFor(r.p),m=attDist(r,pt);
+  if(!hasLL(pt)&&pt.m==null)return {k:'nopos',m:null};if(!s)return {k:'nosite',m:null};return {k:m<=s.r?'ok':'far',m,yard:!r.p}}
+const ATT_W={ok:['ok','στο εργοτάξιο'],far:['warn',''],nopos:['mute','χωρίς θέση'],nosite:['mute','χωρίς σημείο εργοταξίου']};
+const attWS=x=>!x?'':x.k==='far'?distS(x.m)+' μακριά':x.k==='ok'&&x.yard?'στην αποθήκη':ATT_W[x.k][1];
+const toMin=t=>{const m=/^(\d{1,2}):(\d{2})$/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+const attMin=r=>{const a=toMin(r&&r.in&&r.in.t),b=toMin(r&&r.out&&r.out.t);return a!=null&&b!=null&&b>a?b-a:null};
+const hrsS=m=>m==null?'—':Math.floor(m/60)+':'+pad(m%60);
+const hrsL=m=>{const h0=Math.floor(m/60),mm=m%60;return (h0?h0+(h0===1?' ώρα':' ώρες'):'')+(h0&&mm?' ':'')+(mm||!h0?mm+' λεπτά':'')};
+const hmOf=t=>pad(t.getHours())+':'+pad(t.getMinutes());
+const tStr=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+// ο εργαζόμενος πατά «Ήρθα» ή «Έφυγα»· pos = {lat,lon,acc} ή null αν δεν δόθηκε θέση· at = η ώρα του server
+function addAtt(R,w,k,pos,at,why){at=at||new Date();const d=ds(at),t=hmOf(at);S.att=S.att||[];
+  if(!w||isOffice(w)||isExt(w))return {err:'Οι παρουσίες είναι για το προσωπικό των εργοταξίων.'};
+  const pt={t,at:at.toISOString()};
+  if(pos&&isFinite(pos.lat)&&isFinite(pos.lon)&&Math.abs(pos.lat)<=90&&Math.abs(pos.lon)<=180){pt.lat=Math.round(pos.lat*1e5)/1e5;pt.lon=Math.round(pos.lon*1e5)/1e5;if(isFinite(pos.acc))pt.acc=Math.round(Math.min(pos.acc,1e5))}
+  else if(why)pt.why=String(why).slice(0,60);   // γιατί δεν δόθηκε θέση, όπως το είπε το κινητό
+  let r=attOf(d,w.id);
+  if(k==='in'){if(r&&r.in)return {err:'Έχεις ήδη δηλώσει ότι ήρθες στις '+r.in.t+'.'};
+    // σε ποιο έργο: όπου είναι στο πρόγραμμα· με δύο έργα, το πιο κοντινό
+    const ps=attProjects(R,w.id,d),near=xs=>hasLL(pt)?xs.map(id=>({id,s:siteOf(P(id))})).filter(x=>x.s).sort((a,b)=>distM(a.s,pt)-distM(b.s,pt))[0]:null;
+    let p=ps.length>1?(near(ps)||{id:ps[0]}).id:ps[0]||null;
+    if(!p){const n=near(S.projects.filter(x=>!x.closed).map(x=>x.id));if(n&&distM(n.s,pt)<=2000)p=n.id}
+    if(!r){r={id:uid('a'),d,w:w.id,p,in:null,out:null,by:'w'};S.att.push(r)}
+    r.in=pt;if(!r.p)r.p=p}
+  else if(k==='out'){if(!r||!r.in)return {err:'Πάτησε πρώτα «Ήρθα».'};if(r.out)return {err:'Έχεις ήδη δηλώσει ότι έφυγες στις '+r.out.t+'.'};r.out=pt}
+  else return {err:'Άγνωστη ενέργεια.'};
+  const s=siteFor(r.p);if(s&&hasLL(pt))pt.m=distM(s,pt);
+  r.u=stamp();r.n=(r.n||0)+1;attPrune(S);return {r}}
+// το γραφείο καταχωρίζει ή διορθώνει: ώρες χωρίς θέση, με σημείωση
+function setAtt(wid,d,o){S.att=S.att||[];let r=attOf(d,wid);const fix=(old,t)=>!t?null:old&&old.t===t?old:{t,by:'o'};
+  if(!r){r={id:uid('a'),d,w:wid,p:o.p||null,in:null,out:null,by:'o'};S.att.push(r)}
+  r.in=fix(r.in,o.in);r.out=fix(r.out,o.out);if(o.p!==undefined)r.p=o.p||null;r.note=String(o.note||'').trim().slice(0,200);r.u=stamp();r.n=(r.n||0)+1;
+  if(!r.in&&!r.out){r.x=1}
+  // «ήρθε» μετά από «δεν ήρθε»: η απουσία σβήνει
+  const k=d+'|'+wid;if(r.in&&S.overrides[k]&&S.overrides[k].why==='absent')delete S.overrides[k];
+  return r}
+const delAtt=id=>{const r=(S.att||[]).find(x=>x.id===id);if(r){r.x=1;r.u=stamp();r.n=(r.n||0)+1}return r};
+// «Δεν ήρθε»: η μέρα γίνεται απουσία, άρα χωρίς μεροκάματο, και το πρόγραμμα βρίσκει αντικαταστάτη αν είναι σήμερα ή αργότερα
+function markAbsent(wid,d){const r=attOf(d,wid);if(r){r.x=1;r.u=stamp();r.n=(r.n||0)+1}S.overrides[d+'|'+wid]={type:'off',why:'absent'};return true}
+const isAbsent=(wid,d)=>S.overrides[d+'|'+wid]?.why==='absent';
+// οι παρουσίες μιας μέρας για το γραφείο: όσοι είναι στο πρόγραμμα των εργοταξίων και όσοι ήρθαν χωρίς να είναι
+function attDay(R,d){const seen=new Set(),rows=[];
+  R.asg.filter(a=>a.date===d&&!a.job).forEach(a=>{const w=W(a.workerId);if(!w||isOffice(w)||isExt(w)||seen.has(w.id))return;seen.add(w.id);
+    const r=attOf(d,w.id),ps=attProjects(R,w.id,d);rows.push({w,ps,r,st:attSt(r,d)})});
+  attList().filter(r=>r.d===d&&!seen.has(r.w)).forEach(r=>{const w=W(r.w);if(w)rows.push({w,ps:r.p?[r.p]:[],r,st:attSt(r,d),extra:true})});
+  S.workers.filter(w=>isAbsent(w.id,d)&&!seen.has(w.id)&&!rows.some(x=>x.w.id===w.id)).forEach(w=>rows.push({w,ps:[],r:null,st:'absent'}));
+  return rows.sort((a,b)=>ATT_ORD.indexOf(a.st)-ATT_ORD.indexOf(b.st)||a.w.name.localeCompare(b.w.name,'el'))}
+const ATT_ORD=['none','in','out','absent'];
+const attSt=(r,d)=>r&&r.in?(r.out?'out':'in'):'none';
+// για τη σύνοψη και τις πληρωμές: περασμένες μέρες με πρόγραμμα αλλά χωρίς δήλωση και χωρίς απόφαση
+function attMissing(R,from,to){const out=[];if(!gpsOn())return out;
+  const first=(S.att||[]).reduce((m,r)=>!m||r.d<m?r.d:m,'');if(!first)return out;   // πριν από την πρώτη παρουσία δεν μετράει
+  Object.keys(R.byDay).filter(d=>d>=from&&d<=to&&d<TODAY&&d>=first).sort().forEach(d=>attDay(R,d).forEach(x=>{if(x.st==='none')out.push({d,w:x.w})}));
+  return out}
+// ό,τι πέρασε τις 60 μέρες χάνει τις συντεταγμένες (μένουν ώρα και απόσταση)· μετά από 400 μέρες σβήνει
+function attPrune(o){if(!Array.isArray(o.att))return;const g=add(TODAY,-ATT_GEO),k=add(TODAY,-ATT_KEEP);
+  o.att=o.att.filter(r=>r.d>=k&&!(r.x&&r.d<add(TODAY,-30)));
+  o.att.forEach(r=>{if(r.d<g)['in','out'].forEach(x=>{const pt=r[x];if(pt&&hasLL(pt)){delete pt.lat;delete pt.lon;delete pt.acc}})})}
+// ό,τι έγραψαν οι εργαζόμενοι στο μεταξύ μένει όταν αποθηκεύει το γραφείο. Κάθε αλλαγή μιας εγγραφής ανεβάζει το n:
+// κερδίζει όποια έχει τις περισσότερες αλλαγές· με ίσες, του γραφείου, συμπληρωμένη με ό,τι δήλωσε στο μεταξύ ο εργαζόμενος
+function mergeAtt(o,cur){if(!o||!cur||!Array.isArray(cur.att))return o;o.att=Array.isArray(o.att)?o.att:[];
+  const mine=new Map(o.att.map(r=>[r.id,r])),ws=new Set((o.workers||[]).map(w=>w.id));
+  cur.att.forEach(r=>{if(!ws.has(r.w))return;const x=mine.get(r.id);if(!x){o.att.push({...r});return}
+    if((r.n||0)>(x.n||0))Object.assign(x,r);else if((r.n||0)===(x.n||0)&&!x.x){if(!x.in&&r.in)x.in=r.in;if(!x.out&&r.out)x.out=r.out}});
+  return o}
+// για «Το πρόγραμμά μου»: χωρίς συντεταγμένες
+const attPub=r=>{if(!r)return null;const pt=x=>r[x]?{t:r[x].t,where:attWhere(r,r[x])?.k||null,m:attDist(r,r[x]),yard:!r.p}:null;return {in:pt('in'),out:pt('out'),min:attMin(r)}};
+// demo: σημεία εργοταξίων και παρουσίες των τελευταίων ημερών (με σταθερά «τυχαία» από την ημερομηνία)
+const ATT_SITE={p1:{lat:40.58231,lon:22.95018,r:150},p2:{lat:40.58762,lon:23.03311,r:150},p3:{lat:40.63262,lon:22.94401,r:100}};
+function attDemoSites(o){(o.projects||[]).forEach(p=>{if(ATT_SITE[p.id]&&!p.site)p.site={...ATT_SITE[p.id]}});if(o.settings&&!o.settings.yard)o.settings.yard={lat:40.65592,lon:22.86531,r:200}}
+function attDemoFill(R,now){if(!S.attDemo||!gpsOn())return 0;now=now||new Date();S.att=S.att||[];let n=0;
+  const hsh=s=>{let x=2166136261;for(const c of s)x=Math.imul(x^c.charCodeAt(0),16777619);return x>>>0};
+  const days=Object.keys(R.byDay).filter(d=>d<=TODAY&&d>=add(TODAY,-6)).sort();
+  const cut=hmOf(now),off=(s,m,b)=>{const k=m/111320;return {lat:Math.round((s.lat+k*Math.cos(b))*1e5)/1e5,lon:Math.round((s.lon+k*Math.sin(b)/Math.cos(s.lat*Math.PI/180))*1e5)/1e5}};
+  days.forEach(d=>{if(S.att.some(r=>r.d===d))return;
+    attDay(R,d).forEach((x,i)=>{if(x.r||x.st==='absent')return;const h0=hsh(d+x.w.id),p=x.ps[0]||null,s=siteFor(p);
+      if(h0%23===0)return;                                        // κάποιος ξέχασε να το δηλώσει
+      if(d===TODAY&&h0%7===0)return;                              // σήμερα: δεν έχει δηλώσει ακόμη
+      const ti=7*60+15+h0%40,to=15*60+45+(h0>>>8)%45;if(d===TODAY&&tStr(ti)>cut)return;
+      const pt=(t,m)=>{const q={t:tStr(t),at:d+'T'+tStr(t)};if(h0%17===3)return q;if(s){Object.assign(q,off(s,m,(h0%360)*Math.PI/180),{acc:8+h0%25});q.m=distM(s,q)}return q};
+      const far=h0%13===5;const r={id:'a'+d.replace(/-/g,'').slice(2)+x.w.id,d,w:x.w.id,p,in:pt(ti,far?1400:15+h0%90),out:null,by:'w',u:d+'T'+tStr(ti)};
+      if(d<TODAY||tStr(to)<=cut)r.out=pt(to,20+(h0>>>4)%80);S.att.push(r);n++})});
+  return n}
 // demo: ένα αίτημα άδειας που περιμένει και μία «+1 μέρα» από την προηγούμενη μέρα (η επιπλέον μέρα είναι ήδη μέσα στις μέρες της εργασίας)
 function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(weekStart(TODAY),8);
   return [{id:'fd1',k:'more',w:'w1',t:'t1',d:y,note:'Δεν ήρθαν τα τούβλα, συνεχίζουμε αύριο',at:y+'T16:40',st:'ok'},
     {id:'fd2',k:'leave',w:'w3',from:nw,to:add(nw,1),note:'Βάφτιση του ανιψιού',at:stamp(),st:'new'}]}
 function blankState(cur){
   const o=demo(),st=(cur&&cur.settings)||{};
-  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[]});
-  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});
+  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false});
+  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});if(!st.yard)delete o.settings.yard;
   if(cur&&cur.hist)o.hist=cur.hist;
   return o;
 }
@@ -389,6 +494,10 @@ function migrate(o){
   if(o&&Array.isArray(o.projects)&&Array.isArray(o.tasks)&&!o.profitDemo){
     o.profitDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&(x.name||x.title)===(z.name||z.title)};
     if(['p1','p2','p3'].every(k=>same(o.projects,d.projects,k))){const ts=o.tasks.filter(t=>same(o.tasks,d.tasks,t.id));profitDemo({projects:o.projects,tasks:ts})}}
+  // μία φορά: σημεία εργοταξίων του demo για τις παρουσίες· στα δεδομένα του demo γεμίζουν και παρουσίες των τελευταίων ημερών
+  if(o&&Array.isArray(o.projects)&&!o.attSeed){
+    o.attSeed=true;const d=demo(),same=k=>{const x=o.projects.find(y=>y.id===k),z=d.projects.find(y=>y.id===k);return x&&z&&x.name===z.name};
+    if(['p1','p2','p3'].every(same)){attDemoSites(o);o.attDemo=true}}
   // μία φορά: demo αναφορές από το εργοτάξιο, όταν οι εργαζόμενοι και η εργασία είναι του demo
   if(o&&Array.isArray(o.workers)&&Array.isArray(o.tasks)&&!o.fieldDemo){
     o.fieldDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&(x.name||x.title)===(z.name||z.title)};
@@ -525,7 +634,7 @@ const availOn=()=>hasF('avail');
 const isRest=(w,d)=>availOn()&&Array.isArray(w.days)&&w.days.length>0&&!w.days.includes(dow(d));
 const isLeave=(w,d)=>(w.off||[]).includes(d)||ov(d,w.id)?.type==='off';
 const isOff=(w,d)=>isLeave(w,d)||isRest(w,d);
-const offWord=(w,d)=>isLeave(w,d)?'Άδεια':'Ρεπό';
+const offWord=(w,d)=>isLeave(w,d)?(S.overrides[d+'|'+w.id]?.why==='absent'?'Απουσία':'Άδεια'):'Ρεπό';
 // δεύτερη ειδικότητα: μπαίνει βοηθός ή αναπληρωτής υπεύθυνος και σε αυτή
 const sp2=w=>availOn()&&w&&w.spec2&&w.spec2!==w.specialtyId?w.spec2:null;
 const canSpec=(w,sid)=>w.specialtyId===sid||sp2(w)===sid;
@@ -1001,10 +1110,11 @@ function personWeek(R,w,ws){
     return o})};
 }
 // ό,τι βλέπει ο εργαζόμενος στο «Το πρόγραμμά μου»: η εβδομάδα του και τα δικά του αιτήματα άδειας
-function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push')};
+function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push'),gps:hasF('gps')&&!isOffice(w)&&!isExt(w)};
+  o.days.forEach(d=>{if(d.off&&isAbsent(w.id,d.date))d.absent=true;const r=o.feats.gps&&attOf(d.date,w.id);if(r)d.att=attPub(r)});
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,

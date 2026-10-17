@@ -451,15 +451,26 @@ http.createServer(async (req, res) => {
         return send(res, 200, C.myView(C.schedule(), w, C.weekStart(/^\d{4}-\d{2}-\d{2}$/.test(q) ? q : C.ds(new Date()))));
       }
       // ο εργάτης γράφει μόνο δύο πράγματα και μόνο για τον εαυτό του: πρόοδο της εργασίας του σήμερα και αίτημα άδειας
-      const mine = ['/api/my/progress', '/api/my/leave', '/api/my/leave/cancel'];
+      const mine = ['/api/my/progress', '/api/my/leave', '/api/my/leave/cancel', '/api/my/att'];
       if (mine.includes(url.pathname) && req.method === 'POST') {
         if (!w) return send(res, 400, { error: 'Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο.' });
         const b = await body(); C.setState(withPlan(S)); C.today();
-        const feat = url.pathname === '/api/my/progress' ? 'progress' : 'leave';
+        const feat = url.pathname === '/api/my/progress' ? 'progress' : url.pathname === '/api/my/att' ? 'gps' : 'leave';
         if (!C.hasF(feat)) return send(res, 403, { error: 'Αυτή η λειτουργία δεν είναι ανοιχτή για την εταιρεία σου.' });
         if (C.pastPending()) C.freezePast(C.schedule());   // οι μέρες που πέρασαν μένουν όπως έγιναν
         const before = JSON.parse(JSON.stringify(S));
         let out;
+        if (feat === 'gps') {
+          // «Ήρθα» / «Έφυγα»: η ώρα είναι του server· η θέση έρχεται μόνο τη στιγμή που πατά το κουμπί
+          const n = v => (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) && isFinite(v) ? +v : NaN;
+          const pos = isFinite(n(b.lat)) && isFinite(n(b.lon)) ? { lat: n(b.lat), lon: n(b.lon), acc: n(b.acc) } : null;
+          out = C.addAtt(C.schedule(), w, String(b.k || ''), pos, new Date(), typeof b.why === 'string' ? b.why : '');
+          if (out.err) return send(res, 400, { error: out.err });
+          delete S.settings.planLock;
+          saveState(S);
+          console.log(now(), 'παρουσία', me.username, b.k, pos ? 'με θέση' : 'χωρίς θέση');
+          return send(res, 200, { ok: true, att: C.attPub(out.r) });
+        }
         if (feat === 'progress') out = C.addProgress(C.schedule(), w, String(b.task || ''), b.kind, b.note, C.ds(new Date()));
         else if (url.pathname === '/api/my/leave') out = C.addLeave(w, b.from, b.to, b.note);
         else out = C.cancelLeave(w, String(b.id || ''));
@@ -515,7 +526,7 @@ http.createServer(async (req, res) => {
         const fresh = (Array.isArray(o.hist) ? o.hist : []).filter(e => e && e.id && !known.has(e.id));
         fresh.forEach(e => { e.by = me.name; });
         if (cur && fresh.length && !fresh.some(e => e.undo)) saveUndo(fresh.map(e => String(e.id)), cur);
-        if (cur) C.mergeField(o, cur);   // ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι δεν χάνεται
+        if (cur) { C.mergeField(o, cur); C.mergeAtt(o, cur); }   // ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι δεν χάνεται
         // αιτήματα άδειας που μόλις απαντήθηκαν: ειδοποίηση στον εργαζόμενο
         const was = new Map(((cur && cur.field) || []).map(r => [r.id, r.st]));
         const decided = (o.field || []).filter(r => r.k === 'leave' && (r.st === 'ok' || r.st === 'no') && was.get(r.id) === 'new');
@@ -536,7 +547,7 @@ http.createServer(async (req, res) => {
       o.past = cur.past || {};           // και οι μέρες που πέρασαν
       // αναφορές και αιτήματα από το εργοτάξιο που ήρθαν μετά μένουν· αν αναιρείται η ίδια η αναφορά, μένει ως αναιρεμένη
       const fids = new Set((cur.hist || []).filter(e => e && e.fid && u.ids.includes(e.id)).map(e => e.fid));
-      C.mergeField(o, cur, fids, true);
+      C.mergeField(o, cur, fids, true); C.mergeAtt(o, cur);
       if (o.settings) { delete o.settings.planLock; if (CFG.plan) o.settings.plan = CFG.plan; }
       saveState(o); try { fs.unlinkSync(u.file); } catch {}
       console.log(now(), 'αναίρεση', me.username, t.msg);

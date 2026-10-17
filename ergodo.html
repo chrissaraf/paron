@@ -573,6 +573,26 @@ table.pfall td .btn{margin-top:6px}table.pfall .lnk{display:inline-flex;gap:6px;
 .field .undone .grow{opacity:.6}
 @media(max-width:640px){.field .frow{flex-wrap:wrap}.field .facts{width:100%;justify-content:flex-start;padding-left:44px}}
 
+/* Παρουσίες με GPS */
+.matt{display:grid;gap:8px;margin:0 0 16px;padding-bottom:16px;border-bottom:1px solid color-mix(in srgb,var(--surface) 22%,var(--ink))}
+.hero .matt .btn.big{width:100%;min-height:54px;font-size:17px;justify-content:center}
+.hero .matt .btn.big svg{width:20px;height:20px}
+.matt-h{display:flex;align-items:center;gap:8px;font-size:15.5px}
+.matt-h svg{width:18px;height:18px;flex:none;color:var(--accent)}
+.matt .btn.out{justify-self:start}
+.matt-s{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);margin-top:4px}
+.matt-s svg{width:14px;height:14px;flex:none}
+.pchip{display:inline-flex;align-items:baseline;gap:6px;margin-right:10px;max-width:100%}
+.pchip .dot{flex:none;transform:translateY(-1px)}
+.attt td{vertical-align:top}
+.attt .tag{margin-left:4px}
+.sitel .site{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.sitel .site:first-child{border-top:0}
+.sitel .site .grow{display:grid;gap:2px}
+.attmiss{margin:-4px 0 16px}
+.warnline .btn{margin-left:auto;flex:none}
+.sitelnk{text-decoration:underline;text-underline-offset:2px}
+
 /* μενού */
 .app{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh;min-height:100dvh}
 .content{min-width:0}
@@ -861,8 +881,8 @@ function demo(){
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   const xw=EXPW_DEMO();workers.forEach(w=>{if(xw[w.id])w.exp=xw[w.id]});
-  profitDemo({projects,tasks});
-  return {v:2,profitDemo:true,eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  profitDemo({projects,tasks});attDemoSites({projects});
+  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 /* ---------- Αρχεία Excel ----------
    Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
@@ -1007,14 +1027,119 @@ function profitDemo(o){const P0=PROFIT_DEMO;
   (o.projects||[]).forEach(p=>{if(P0.contract[p.id]&&p.contract==null)p.contract=P0.contract[p.id];
     if(P0.costs[p.id]&&!(p.costs||[]).length)p.costs=P0.costs[p.id].map(([d,kind,desc,sup,amount],i)=>({id:'c'+p.id.slice(1)+i,date:add(TODAY,d),kind,desc,sup,amount}))});
   (o.tasks||[]).forEach(t=>{const m=P0.mat[t.id];if(m&&!t.mat)t.mat={...m,ordered:m.ordered!=null?add(TODAY,m.ordered):''}})}
+// --- παρουσίες με GPS (πακέτο Εργοτάξιο) ---
+// S.att = [{id,d,w,p,in,out,by,u,x,note}]: in/out = {t:'07:42',at,lat,lon,acc,m}. Η θέση διαβάζεται μόνο τη στιγμή του «Ήρθα»/«Έφυγα».
+// p.site = {lat,lon,r}: το σημείο του εργοταξίου και πόσα μέτρα γύρω του μετράνε ως «στο εργοτάξιο».
+const ATT_R=150,ATT_GEO=60,ATT_KEEP=400;   // μέτρα· μέρες που κρατιούνται οι συντεταγμένες· μέρες που κρατιούνται οι παρουσίες
+const gpsOn=()=>hasF('gps');
+const siteOf=p=>p&&p.site&&hasLL(p.site)?{lat:+p.site.lat,lon:+p.site.lon,r:+p.site.r>0?+p.site.r:ATT_R}:null;
+// όσοι δεν είναι σε έργο εκείνη τη μέρα (αποθήκη, γενικές εργασίες): το σημείο της αποθήκης από τις Ρυθμίσεις
+const yardOf=()=>siteOf({site:S.settings&&S.settings.yard});
+const siteFor=pid=>pid?siteOf(P(pid)):yardOf();
+function distM(a,b){const R0=6371000,rad=x=>x*Math.PI/180,dLa=rad(b.lat-a.lat),dLo=rad(b.lon-a.lon);
+  const q=Math.sin(dLa/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLo/2)**2;return Math.round(2*R0*Math.asin(Math.min(1,Math.sqrt(q))))}
+const distS=m=>m<1000?Math.round(m/10)*10+' μ.':(Math.round(m/100)/10).toString().replace('.',',')+' χλμ.';
+// «40.58231, 22.95018» ή σύνδεσμος Google Maps (…@40.58,22.95,17z ή ?q=40.58,22.95)
+function parseLL(s){s=String(s||'').trim();const m=/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/.exec(s)||/[?&](?:q|query|ll|destination)=(-?\d+\.\d+)(?:,|%2C)\s*(-?\d+\.\d+)/i.exec(s)||/^(-?\d{1,2}[.,]\d+)\s*[,; ]\s*(-?\d{1,3}[.,]\d+)$/.exec(s);
+  if(!m)return null;const lat=+String(m[1]).replace(',','.'),lon=+String(m[2]).replace(',','.');return lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null}
+const attList=()=>(S.att||[]).filter(r=>!r.x);
+const attOf=(d,wid)=>attList().find(r=>r.d===d&&r.w===wid)||null;
+// σε ποια έργα είναι ο εργαζόμενος εκείνη τη μέρα (με το πρόγραμμα)
+const attProjects=(R,wid,d)=>[...new Set(R.asg.filter(a=>a.date===d&&a.workerId===wid&&a.projectId&&P(a.projectId)).map(a=>a.projectId))];
+// απόσταση ενός σημείου από το εργοτάξιο: από τις συντεταγμένες όσο κρατιούνται, αλλιώς όπως καταγράφηκε
+function attDist(r,pt){if(!pt)return null;const s=siteFor(r.p);if(s&&hasLL(pt))return distM(s,pt);return pt.m!=null?pt.m:null}
+// πού ήταν: ok στο εργοτάξιο · far μακριά · nopos χωρίς θέση · nosite το έργο δεν έχει σημείο
+function attWhere(r,pt){if(!pt)return null;const s=siteFor(r.p),m=attDist(r,pt);
+  if(!hasLL(pt)&&pt.m==null)return {k:'nopos',m:null};if(!s)return {k:'nosite',m:null};return {k:m<=s.r?'ok':'far',m,yard:!r.p}}
+const ATT_W={ok:['ok','στο εργοτάξιο'],far:['warn',''],nopos:['mute','χωρίς θέση'],nosite:['mute','χωρίς σημείο εργοταξίου']};
+const attWS=x=>!x?'':x.k==='far'?distS(x.m)+' μακριά':x.k==='ok'&&x.yard?'στην αποθήκη':ATT_W[x.k][1];
+const toMin=t=>{const m=/^(\d{1,2}):(\d{2})$/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+const attMin=r=>{const a=toMin(r&&r.in&&r.in.t),b=toMin(r&&r.out&&r.out.t);return a!=null&&b!=null&&b>a?b-a:null};
+const hrsS=m=>m==null?'—':Math.floor(m/60)+':'+pad(m%60);
+const hrsL=m=>{const h0=Math.floor(m/60),mm=m%60;return (h0?h0+(h0===1?' ώρα':' ώρες'):'')+(h0&&mm?' ':'')+(mm||!h0?mm+' λεπτά':'')};
+const hmOf=t=>pad(t.getHours())+':'+pad(t.getMinutes());
+const tStr=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+// ο εργαζόμενος πατά «Ήρθα» ή «Έφυγα»· pos = {lat,lon,acc} ή null αν δεν δόθηκε θέση· at = η ώρα του server
+function addAtt(R,w,k,pos,at,why){at=at||new Date();const d=ds(at),t=hmOf(at);S.att=S.att||[];
+  if(!w||isOffice(w)||isExt(w))return {err:'Οι παρουσίες είναι για το προσωπικό των εργοταξίων.'};
+  const pt={t,at:at.toISOString()};
+  if(pos&&isFinite(pos.lat)&&isFinite(pos.lon)&&Math.abs(pos.lat)<=90&&Math.abs(pos.lon)<=180){pt.lat=Math.round(pos.lat*1e5)/1e5;pt.lon=Math.round(pos.lon*1e5)/1e5;if(isFinite(pos.acc))pt.acc=Math.round(Math.min(pos.acc,1e5))}
+  else if(why)pt.why=String(why).slice(0,60);   // γιατί δεν δόθηκε θέση, όπως το είπε το κινητό
+  let r=attOf(d,w.id);
+  if(k==='in'){if(r&&r.in)return {err:'Έχεις ήδη δηλώσει ότι ήρθες στις '+r.in.t+'.'};
+    // σε ποιο έργο: όπου είναι στο πρόγραμμα· με δύο έργα, το πιο κοντινό
+    const ps=attProjects(R,w.id,d),near=xs=>hasLL(pt)?xs.map(id=>({id,s:siteOf(P(id))})).filter(x=>x.s).sort((a,b)=>distM(a.s,pt)-distM(b.s,pt))[0]:null;
+    let p=ps.length>1?(near(ps)||{id:ps[0]}).id:ps[0]||null;
+    if(!p){const n=near(S.projects.filter(x=>!x.closed).map(x=>x.id));if(n&&distM(n.s,pt)<=2000)p=n.id}
+    if(!r){r={id:uid('a'),d,w:w.id,p,in:null,out:null,by:'w'};S.att.push(r)}
+    r.in=pt;if(!r.p)r.p=p}
+  else if(k==='out'){if(!r||!r.in)return {err:'Πάτησε πρώτα «Ήρθα».'};if(r.out)return {err:'Έχεις ήδη δηλώσει ότι έφυγες στις '+r.out.t+'.'};r.out=pt}
+  else return {err:'Άγνωστη ενέργεια.'};
+  const s=siteFor(r.p);if(s&&hasLL(pt))pt.m=distM(s,pt);
+  r.u=stamp();r.n=(r.n||0)+1;attPrune(S);return {r}}
+// το γραφείο καταχωρίζει ή διορθώνει: ώρες χωρίς θέση, με σημείωση
+function setAtt(wid,d,o){S.att=S.att||[];let r=attOf(d,wid);const fix=(old,t)=>!t?null:old&&old.t===t?old:{t,by:'o'};
+  if(!r){r={id:uid('a'),d,w:wid,p:o.p||null,in:null,out:null,by:'o'};S.att.push(r)}
+  r.in=fix(r.in,o.in);r.out=fix(r.out,o.out);if(o.p!==undefined)r.p=o.p||null;r.note=String(o.note||'').trim().slice(0,200);r.u=stamp();r.n=(r.n||0)+1;
+  if(!r.in&&!r.out){r.x=1}
+  // «ήρθε» μετά από «δεν ήρθε»: η απουσία σβήνει
+  const k=d+'|'+wid;if(r.in&&S.overrides[k]&&S.overrides[k].why==='absent')delete S.overrides[k];
+  return r}
+const delAtt=id=>{const r=(S.att||[]).find(x=>x.id===id);if(r){r.x=1;r.u=stamp();r.n=(r.n||0)+1}return r};
+// «Δεν ήρθε»: η μέρα γίνεται απουσία, άρα χωρίς μεροκάματο, και το πρόγραμμα βρίσκει αντικαταστάτη αν είναι σήμερα ή αργότερα
+function markAbsent(wid,d){const r=attOf(d,wid);if(r){r.x=1;r.u=stamp();r.n=(r.n||0)+1}S.overrides[d+'|'+wid]={type:'off',why:'absent'};return true}
+const isAbsent=(wid,d)=>S.overrides[d+'|'+wid]?.why==='absent';
+// οι παρουσίες μιας μέρας για το γραφείο: όσοι είναι στο πρόγραμμα των εργοταξίων και όσοι ήρθαν χωρίς να είναι
+function attDay(R,d){const seen=new Set(),rows=[];
+  R.asg.filter(a=>a.date===d&&!a.job).forEach(a=>{const w=W(a.workerId);if(!w||isOffice(w)||isExt(w)||seen.has(w.id))return;seen.add(w.id);
+    const r=attOf(d,w.id),ps=attProjects(R,w.id,d);rows.push({w,ps,r,st:attSt(r,d)})});
+  attList().filter(r=>r.d===d&&!seen.has(r.w)).forEach(r=>{const w=W(r.w);if(w)rows.push({w,ps:r.p?[r.p]:[],r,st:attSt(r,d),extra:true})});
+  S.workers.filter(w=>isAbsent(w.id,d)&&!seen.has(w.id)&&!rows.some(x=>x.w.id===w.id)).forEach(w=>rows.push({w,ps:[],r:null,st:'absent'}));
+  return rows.sort((a,b)=>ATT_ORD.indexOf(a.st)-ATT_ORD.indexOf(b.st)||a.w.name.localeCompare(b.w.name,'el'))}
+const ATT_ORD=['none','in','out','absent'];
+const attSt=(r,d)=>r&&r.in?(r.out?'out':'in'):'none';
+// για τη σύνοψη και τις πληρωμές: περασμένες μέρες με πρόγραμμα αλλά χωρίς δήλωση και χωρίς απόφαση
+function attMissing(R,from,to){const out=[];if(!gpsOn())return out;
+  const first=(S.att||[]).reduce((m,r)=>!m||r.d<m?r.d:m,'');if(!first)return out;   // πριν από την πρώτη παρουσία δεν μετράει
+  Object.keys(R.byDay).filter(d=>d>=from&&d<=to&&d<TODAY&&d>=first).sort().forEach(d=>attDay(R,d).forEach(x=>{if(x.st==='none')out.push({d,w:x.w})}));
+  return out}
+// ό,τι πέρασε τις 60 μέρες χάνει τις συντεταγμένες (μένουν ώρα και απόσταση)· μετά από 400 μέρες σβήνει
+function attPrune(o){if(!Array.isArray(o.att))return;const g=add(TODAY,-ATT_GEO),k=add(TODAY,-ATT_KEEP);
+  o.att=o.att.filter(r=>r.d>=k&&!(r.x&&r.d<add(TODAY,-30)));
+  o.att.forEach(r=>{if(r.d<g)['in','out'].forEach(x=>{const pt=r[x];if(pt&&hasLL(pt)){delete pt.lat;delete pt.lon;delete pt.acc}})})}
+// ό,τι έγραψαν οι εργαζόμενοι στο μεταξύ μένει όταν αποθηκεύει το γραφείο. Κάθε αλλαγή μιας εγγραφής ανεβάζει το n:
+// κερδίζει όποια έχει τις περισσότερες αλλαγές· με ίσες, του γραφείου, συμπληρωμένη με ό,τι δήλωσε στο μεταξύ ο εργαζόμενος
+function mergeAtt(o,cur){if(!o||!cur||!Array.isArray(cur.att))return o;o.att=Array.isArray(o.att)?o.att:[];
+  const mine=new Map(o.att.map(r=>[r.id,r])),ws=new Set((o.workers||[]).map(w=>w.id));
+  cur.att.forEach(r=>{if(!ws.has(r.w))return;const x=mine.get(r.id);if(!x){o.att.push({...r});return}
+    if((r.n||0)>(x.n||0))Object.assign(x,r);else if((r.n||0)===(x.n||0)&&!x.x){if(!x.in&&r.in)x.in=r.in;if(!x.out&&r.out)x.out=r.out}});
+  return o}
+// για «Το πρόγραμμά μου»: χωρίς συντεταγμένες
+const attPub=r=>{if(!r)return null;const pt=x=>r[x]?{t:r[x].t,where:attWhere(r,r[x])?.k||null,m:attDist(r,r[x]),yard:!r.p}:null;return {in:pt('in'),out:pt('out'),min:attMin(r)}};
+// demo: σημεία εργοταξίων και παρουσίες των τελευταίων ημερών (με σταθερά «τυχαία» από την ημερομηνία)
+const ATT_SITE={p1:{lat:40.58231,lon:22.95018,r:150},p2:{lat:40.58762,lon:23.03311,r:150},p3:{lat:40.63262,lon:22.94401,r:100}};
+function attDemoSites(o){(o.projects||[]).forEach(p=>{if(ATT_SITE[p.id]&&!p.site)p.site={...ATT_SITE[p.id]}});if(o.settings&&!o.settings.yard)o.settings.yard={lat:40.65592,lon:22.86531,r:200}}
+function attDemoFill(R,now){if(!S.attDemo||!gpsOn())return 0;now=now||new Date();S.att=S.att||[];let n=0;
+  const hsh=s=>{let x=2166136261;for(const c of s)x=Math.imul(x^c.charCodeAt(0),16777619);return x>>>0};
+  const days=Object.keys(R.byDay).filter(d=>d<=TODAY&&d>=add(TODAY,-6)).sort();
+  const cut=hmOf(now),off=(s,m,b)=>{const k=m/111320;return {lat:Math.round((s.lat+k*Math.cos(b))*1e5)/1e5,lon:Math.round((s.lon+k*Math.sin(b)/Math.cos(s.lat*Math.PI/180))*1e5)/1e5}};
+  days.forEach(d=>{if(S.att.some(r=>r.d===d))return;
+    attDay(R,d).forEach((x,i)=>{if(x.r||x.st==='absent')return;const h0=hsh(d+x.w.id),p=x.ps[0]||null,s=siteFor(p);
+      if(h0%23===0)return;                                        // κάποιος ξέχασε να το δηλώσει
+      if(d===TODAY&&h0%7===0)return;                              // σήμερα: δεν έχει δηλώσει ακόμη
+      const ti=7*60+15+h0%40,to=15*60+45+(h0>>>8)%45;if(d===TODAY&&tStr(ti)>cut)return;
+      const pt=(t,m)=>{const q={t:tStr(t),at:d+'T'+tStr(t)};if(h0%17===3)return q;if(s){Object.assign(q,off(s,m,(h0%360)*Math.PI/180),{acc:8+h0%25});q.m=distM(s,q)}return q};
+      const far=h0%13===5;const r={id:'a'+d.replace(/-/g,'').slice(2)+x.w.id,d,w:x.w.id,p,in:pt(ti,far?1400:15+h0%90),out:null,by:'w',u:d+'T'+tStr(ti)};
+      if(d<TODAY||tStr(to)<=cut)r.out=pt(to,20+(h0>>>4)%80);S.att.push(r);n++})});
+  return n}
 // demo: ένα αίτημα άδειας που περιμένει και μία «+1 μέρα» από την προηγούμενη μέρα (η επιπλέον μέρα είναι ήδη μέσα στις μέρες της εργασίας)
 function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(weekStart(TODAY),8);
   return [{id:'fd1',k:'more',w:'w1',t:'t1',d:y,note:'Δεν ήρθαν τα τούβλα, συνεχίζουμε αύριο',at:y+'T16:40',st:'ok'},
     {id:'fd2',k:'leave',w:'w3',from:nw,to:add(nw,1),note:'Βάφτιση του ανιψιού',at:stamp(),st:'new'}]}
 function blankState(cur){
   const o=demo(),st=(cur&&cur.settings)||{};
-  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[]});
-  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});
+  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false});
+  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});if(!st.yard)delete o.settings.yard;
   if(cur&&cur.hist)o.hist=cur.hist;
   return o;
 }
@@ -1084,6 +1209,10 @@ function migrate(o){
   if(o&&Array.isArray(o.projects)&&Array.isArray(o.tasks)&&!o.profitDemo){
     o.profitDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&(x.name||x.title)===(z.name||z.title)};
     if(['p1','p2','p3'].every(k=>same(o.projects,d.projects,k))){const ts=o.tasks.filter(t=>same(o.tasks,d.tasks,t.id));profitDemo({projects:o.projects,tasks:ts})}}
+  // μία φορά: σημεία εργοταξίων του demo για τις παρουσίες· στα δεδομένα του demo γεμίζουν και παρουσίες των τελευταίων ημερών
+  if(o&&Array.isArray(o.projects)&&!o.attSeed){
+    o.attSeed=true;const d=demo(),same=k=>{const x=o.projects.find(y=>y.id===k),z=d.projects.find(y=>y.id===k);return x&&z&&x.name===z.name};
+    if(['p1','p2','p3'].every(same)){attDemoSites(o);o.attDemo=true}}
   // μία φορά: demo αναφορές από το εργοτάξιο, όταν οι εργαζόμενοι και η εργασία είναι του demo
   if(o&&Array.isArray(o.workers)&&Array.isArray(o.tasks)&&!o.fieldDemo){
     o.fieldDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&(x.name||x.title)===(z.name||z.title)};
@@ -1220,7 +1349,7 @@ const availOn=()=>hasF('avail');
 const isRest=(w,d)=>availOn()&&Array.isArray(w.days)&&w.days.length>0&&!w.days.includes(dow(d));
 const isLeave=(w,d)=>(w.off||[]).includes(d)||ov(d,w.id)?.type==='off';
 const isOff=(w,d)=>isLeave(w,d)||isRest(w,d);
-const offWord=(w,d)=>isLeave(w,d)?'Άδεια':'Ρεπό';
+const offWord=(w,d)=>isLeave(w,d)?(S.overrides[d+'|'+w.id]?.why==='absent'?'Απουσία':'Άδεια'):'Ρεπό';
 // δεύτερη ειδικότητα: μπαίνει βοηθός ή αναπληρωτής υπεύθυνος και σε αυτή
 const sp2=w=>availOn()&&w&&w.spec2&&w.spec2!==w.specialtyId?w.spec2:null;
 const canSpec=(w,sid)=>w.specialtyId===sid||sp2(w)===sid;
@@ -1696,10 +1825,11 @@ function personWeek(R,w,ws){
     return o})};
 }
 // ό,τι βλέπει ο εργαζόμενος στο «Το πρόγραμμά μου»: η εβδομάδα του και τα δικά του αιτήματα άδειας
-function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push')};
+function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push'),gps:hasF('gps')&&!isOffice(w)&&!isExt(w)};
+  o.days.forEach(d=>{if(d.off&&isAbsent(w.id,d.date))d.absent=true;const r=o.feats.gps&&attOf(d.date,w.id);if(r)d.att=attPub(r)});
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
@@ -1709,10 +1839,10 @@ root.ErgoCore={COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matT
 </script>
 <script>
 (()=>{
-const {COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {gpsOn,siteOf,yardOf,siteFor,distS,parseLL,attOf,attProjects,attWhere,attWS,attMin,hrsS,hrsL,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attMissing,attDemoFill,ATT_R,COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
-const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['profit','Κέρδος ανά έργο'],['equip','Εξοπλισμός και οχήματα'],['settings','Ρυθμίσεις']];
+const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['profit','Κέρδος ανά έργο'],['equip','Εξοπλισμός και οχήματα'],['att','Παρουσίες'],['settings','Ρυθμίσεις']];
 
 
 const SERVER=!!window.ERGO_SERVER;
@@ -2026,7 +2156,7 @@ const nextOn=(R,tid,d)=>Object.keys(R.byDay).sort().find(x=>x>d&&R.byDay[x].jobs
 const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?'Κάθε '+(x.days||[]).map(d=>DAYS[d]).join(', '):x.freq==='month'?'Κάθε μήνα στις '+(+x.dom||1):'Μία φορά, '+fmt(x.date);
 
 /* ---------- Καρτέλες ---------- */
-const ICONS={trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+const ICONS={loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
   proj:'<path d="M3 21h18M5 21V9.5l7-5 7 5V21"/><path d="M10 21v-5h4v5"/>',
   ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.2" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 2 5 5.4"/>',
   eur:'<circle cx="12" cy="12" r="9"/><path d="M15.6 8.6a4.6 4.6 0 1 0 0 6.8M7.5 10.6h6M7.5 13.4h6"/>',
@@ -2068,12 +2198,12 @@ const ICONS={trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.
   meet:'<path d="M20.5 11V6.5a2 2 0 0 0-2-2h-13a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2H11"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.6v2l1.3.9"/>'};
 const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
-const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck'};
+const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck',att:'loc'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
 const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
   {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['duties','Υπενθυμίσεις']]},
   {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['equip','Εξοπλισμός']]},
-  {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες']]},
+  {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες'],['att','Παρουσίες']]},
   {k:'fin',l:'Οικονομικά',i:'eur',items:[['pay','Πληρωμές'],['costs','Κόστος'],['profit','Κέρδος'],['acc','Για τον λογιστή']]}];
 const isCur=(k,p)=>UI.tab===k&&(!p||UI.proj===p.id);
 function renderNav(){
@@ -2106,9 +2236,11 @@ function render(){
   const R=isWorker()?null:schedule();
   // οι μέρες που πέρασαν καταγράφονται όπως έγιναν, πριν από οποιαδήποτε αλλαγή
   if(R&&freezePast(R))save(true);
+  // demo: παρουσίες των τελευταίων ημερών, μόνο στα δεδομένα του demo
+  if(R&&attDemoFill(R))save(true);
   if(UI.tab==='project'&&!P(UI.proj))UI.tab='projects';
   renderNav();
-  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,profit:vProfit,equip:vEquip,settings:vSettings}[UI.tab]||vToday;
+  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,profit:vProfit,equip:vEquip,att:vAtt,settings:vSettings}[UI.tab]||vToday;
   const lf=TAB_F[UI.tab];
   document.getElementById('main').innerHTML=lf&&!hasF(lf)?`<h1>${h(TABS.find(x=>x[0]===UI.tab)[1])}</h1><section class="panel">${upsell(lf)}</section>`:v(R);
   if(UI.sec){const x=document.getElementById(UI.sec);UI.sec='';x&&setTimeout(()=>x.scrollIntoView({block:'start'}),0)}
@@ -2209,13 +2341,13 @@ function vMine(){
   const apItem=a=>`<div class="mi"><div class="t">${ico('meet')}<b>Ραντεβού ${h(a.time)}</b></div><div>${h(a.title)}${a.client?` <span class="note">· ${h(a.client)}</span>`:''}</div>
       ${a.with&&a.with.length?`<div class="chips">${a.with.map(n=>`<span class="chip">${h(n)}</span>`).join('')}</div>`:''}
       <div class="mbtns">${a.place?`<a class="btn sm" href="${mapsUrl(a.place)}" target="_blank" rel="noopener">Οδηγίες στον χάρτη</a>`:''}${a.phone?`<a class="btn sm" href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">Κλήση πελάτη</a>`:''}</div></div>`;
-  const body=(d,hero)=>d.off?`<span class="tag ${d.rest?'mute':'warn'}">${d.rest?'Ρεπό':'Άδεια'}</span>`:d.items.map(it=>item(it,hero)).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<div class="mrem"><span class="lbl">Υπενθυμίσεις</span><ul class="mduties">${d.duties.map(t=>`<li>${t.time?`<b>${h(t.time)}</b> `:''}${h(t.title)}${t.project?` <span class="note">(${h(t.project)})</span>`:''}${t.late?` <span class="tag warn">από ${h(fmt(t.late))}</span>`:''}${t.notes?`<div class="note">${h(t.notes)}</div>`:''}</li>`).join('')}</ul></div>`:'');
+  const body=(d,hero)=>d.off?`<span class="tag ${d.rest?'mute':'warn'}">${d.rest?'Ρεπό':d.absent?'Απουσία':'Άδεια'}</span>`:d.items.map(it=>item(it,hero)).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<div class="mrem"><span class="lbl">Υπενθυμίσεις</span><ul class="mduties">${d.duties.map(t=>`<li>${t.time?`<b>${h(t.time)}</b> `:''}${h(t.title)}${t.project?` <span class="note">(${h(t.project)})</span>`:''}${t.late?` <span class="tag warn">από ${h(fmt(t.late))}</span>`:''}${t.notes?`<div class="note">${h(t.notes)}</div>`:''}</li>`).join('')}</ul></div>`:'');
   const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span>${h(d.wx.text)}</span></div>`:'';
   const next=o.days.find(d=>d.date>=TODAY);
   return head+`<p class="note" style="margin:-8px 0 0">${h(o.name)}${o.specialty?' · '+h(o.specialty):''}${o.offline?' · <span class="tag warn">Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε</span>':''}</p>
-  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${body(next,true)}${wx(next,'hwx')}</section>`:''}
+  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${o.feats&&o.feats.gps&&next.date===TODAY&&!next.off&&next.items.length&&!o.offline?attBox(next):''}${body(next,true)}${wx(next,'hwx')}</section>`:''}
   ${o.feats&&o.feats.push?pushInvite():''}
-  <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}${wx(d,'wx')}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
+  <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}${attLine(d)}${wx(d,'wx')}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
   ${o.feats&&o.feats.leave?myLeavePanel(o):''}
   <p class="note">Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.</p>`;
 }
@@ -2232,7 +2364,7 @@ async function myAct(path,body){const w=W(AUTH.user.workerId);
     Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});try{MY[UI.week]=await api('my?week='+UI.week)}catch(e){}   // χωρίς ενδιάμεσο «Φόρτωση»
     return true}
   if(!w){toast('Ο λογαριασμός σου δεν έχει συνδεθεί με εργαζόμενο.');return false}
-  const out=path==='progress'?addProgress(schedule(),w,body.task,body.kind,body.note,TODAY):path==='leave'?addLeave(w,body.from,body.to,body.note):cancelLeave(w,body.id);
+  const out=path==='att'?addAtt(schedule(),w,body.k,body.lat!=null?body:null,new Date(),body.why):path==='progress'?addProgress(schedule(),w,body.task,body.kind,body.note,TODAY):path==='leave'?addLeave(w,body.from,body.to,body.note):cancelLeave(w,body.id);
   if(out.err){toast(out.err);return false}
   if(out.e)ringPush(out.e.id);
   const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}
@@ -2391,6 +2523,7 @@ function vToday(R){
   ${guideCard()}
   ${chgBanner()}
   ${fieldPanel(R)}
+  ${attPanel(R,d)}
   ${expPanel()}
   ${matPanel(R)}
   ${(n=>n&&d!==TODAY&&d===nextWork(TODAY)&&S.settings.workdays.includes(dow(TODAY))?`<p class="note">${ico('cal','pin')}Σήμερα ${n==='Κλειστά'?'η εταιρεία είναι κλειστή':'είναι αργία, '+h(n)}, οπότε δεν υπάρχει πρόγραμμα. Βλέπεις την επόμενη εργάσιμη.</p>`:'')(holName(TODAY))}
@@ -2826,7 +2959,7 @@ function vProject(R){
   const open=st.ts.filter(t=>t.status!=='done').length;
   const ext=new Set(st.ts.map(t=>W(t.responsibleId)).filter(isExt));
   return `<div class="bar"><h1 class="grow ptitle"><i class="dot lg" style="background:${pc(p)}"></i><span>${h(p.name)}</span></h1><button class="btn" data-act="editproj" data-id="${p.id}">Επεξεργασία έργου</button><button class="btn pri" data-act="newtask" data-p="${p.id}">${ico('plus')}Νέα εργασία</button></div>
-  <p class="note" style="margin-top:-12px">${h(p.location)} · Διαχειριστές: ${mgrNames(p)||'κανένας'}${ext.size?' · Συνεργάτες: '+[...ext].map(w=>h(w.company||w.name)).join(', '):''}</p>
+  <p class="note" style="margin-top:-12px">${h(p.location)} · Διαχειριστές: ${mgrNames(p)||'κανένας'}${ext.size?' · Συνεργάτες: '+[...ext].map(w=>h(w.company||w.name)).join(', '):''}${hasF('gps')?` · <button class="lnk sitelnk" data-act="siteform" data-k="${p.id}">${siteOf(p)?'Σημείο για τις παρουσίες: '+siteOf(p).r+' μέτρα':'Ορισμός σημείου για τις παρουσίες'}</button>`:''}</p>
   ${st.due&&st.due.late?`<p class="warnline bad">${ico('info')}<span><b>Παράδοση ${fmt(p.due)}.</b> ${h(st.due.txt)} Δες το «Τι λείπει» στο Σήμερα ή πρόσθεσε άτομα στις εργασίες.</span></p>`:''}
   <div class="kpis">
     <div class="kpi"><span class="lbl">Εργατικά σε πρόγραμμα</span><span class="v">${eur(st.cost)}</span><div class="meter"><i class="${st.over?'over':''}" style="width:${st.pct}%"></i></div><span class="s">${st.over?'Υπέρβαση '+eur(st.cost-p.budget):'από '+eur(p.budget)+' προϋπολογισμό'}</span></div>
@@ -3040,6 +3173,113 @@ function readMat(){const g=id=>{const e=document.getElementById(id);return e?e.v
   const o={what,lead:Math.max(0,Math.min(60,+g('f_mlead')||0)),ordered:g('f_mord'),sup:g('f_msup').trim()};
   if(document.getElementById('f_mest'))o.est=+g('f_mest')||0;else{const t=T(document.getElementById('tf').dataset.id);if(t&&t.mat&&t.mat.est)o.est=t.mat.est}
   return o}
+/* Παρουσίες με GPS (πακέτο Εργοτάξιο): ο εργαζόμενος πατά «Ήρθα» και «Έφυγα», η θέση διαβάζεται μόνο εκείνη τη στιγμή.
+   Το γραφείο βλέπει ποιος ήρθε, πότε και πόσο μακριά από το εργοτάξιο, και αποφασίζει για όσους δεν δήλωσαν. */
+const ATT_TAG={ok:'ok',far:'warn',nopos:'mute',nosite:'mute'};
+const siteName=pid=>pid?(P(pid)?.name||'—'):PSEUDO.gen.name;
+const mapLL=s=>'https://www.google.com/maps/search/?api=1&query='+s.lat+','+s.lon;
+const whereTag=(r,pt)=>{const x=attWhere(r,pt);return x?`<span class="tag ${ATT_TAG[x.k]}"${pt.why?` title="${h(pt.why)}"`:''}>${h(attWS(x))}</span>`:''};
+// για το γραφείο, σε πρόταση: πόσο μακριά ήταν ή γιατί δεν υπάρχει θέση
+const attNote=(r,pt)=>{const x=attWhere(r,pt);if(!x)return '';const acc=pt.acc>100?' · ακρίβεια θέσης '+distS(pt.acc):'';
+  return (x.k==='far'?distS(x.m)+(x.yard?' από την αποθήκη':' από το εργοτάξιο'):x.k==='nopos'?'χωρίς θέση'+(pt.why?': '+pt.why:''):attWS(x))+acc};
+// η θέση του κινητού τη στιγμή που πατιέται το κουμπί· χωρίς άδεια ή σήμα επιστρέφει τον λόγο
+const getPos=()=>new Promise(res=>{if(!navigator.geolocation)return res({err:'το κινητό δεν δίνει θέση'});
+  try{navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy}),
+    e=>res({err:e.code===1?'δεν δόθηκε άδεια για τη θέση':e.code===3?'η θέση άργησε να βρεθεί':'δεν βρέθηκε θέση'}),{enableHighAccuracy:true,timeout:15000,maximumAge:60000})}
+  catch(e){res({err:'δεν βρέθηκε θέση'})}});
+// --- στο κινητό του εργαζόμενου ---
+function attBox(d){const a=d.att,busy=UI.attBusy?' disabled':'',wait='Βρίσκω τη θέση…';
+  const where=pt=>pt&&pt.where==='ok'?(pt.yard?' · στην αποθήκη':' · στο εργοτάξιο'):pt&&pt.where==='far'?' · '+distS(pt.m)+(pt.yard?' από την αποθήκη':' από το εργοτάξιο'):pt&&pt.where==='nopos'?' · χωρίς θέση':'';
+  if(!a||!a.in)return `<div class="matt"><button class="btn big" data-act="myatt" data-k="in"${busy}>${ico('loc')}${UI.attBusy?wait:'Ήρθα στο εργοτάξιο'}</button>
+    <div class="note">Η θέση σου διαβάζεται μόνο τη στιγμή που πατάς, όχι όλη τη μέρα.</div></div>`;
+  if(!a.out)return `<div class="matt"><div class="matt-h">${ico('check')}<span>Ήρθες στις <b>${h(a.in.t)}</b>${h(where(a.in))}</span></div>
+    <button class="btn out" data-act="myatt" data-k="out"${busy}>${UI.attBusy?wait:'Έφυγα'}</button></div>`;
+  return `<div class="matt"><div class="matt-h">${ico('check')}<span><b>${h(a.in.t)} – ${h(a.out.t)}</b>${a.min!=null?' · '+h(hrsL(a.min)):''}</span></div></div>`}
+const attLine=d=>d.att&&d.att.in?`<div class="matt-s">${ico('clock')}${h(d.att.in.t)}${d.att.out?' – '+h(d.att.out.t)+(d.att.min!=null?' · '+h(hrsS(d.att.min))+' ώρες':''):''}</div>`:'';
+async function myAtt(k){if(UI.attBusy)return;UI.attBusy=true;render();
+  const pos=await getPos(),body={k,...(pos.lat!=null?{lat:pos.lat,lon:pos.lon,acc:pos.acc}:{why:pos.err})};
+  const ok=await myAct('att',body);UI.attBusy=false;render();
+  if(ok)toast((k==='in'?'Καταγράφηκε η άφιξή σου':'Καταγράφηκε η αποχώρησή σου')+(pos.lat!=null?'.':', χωρίς θέση: '+pos.err+'.'))}
+// --- γραφείο ---
+const attCame=x=>x.r&&x.r.in;
+const attOdd=x=>{if(!attCame(x))return false;const k=attWhere(x.r,x.r.in)?.k;return k==='far'||k==='nopos'};
+function attPanel(R,d){if(!hasF('gps')||d!==TODAY)return '';const xs=attDay(R,d).filter(x=>x.st!=='absent');if(!xs.length)return '';
+  const came=xs.filter(attCame),none=xs.filter(x=>x.st==='none'),odd=xs.filter(attOdd);
+  return `<section class="panel field att" id="attp"><div class="bar"><h2 class="grow" style="margin:0">Παρουσίες σήμερα</h2><span class="tag ${came.length===xs.length?'ok':'hv'}">Ήρθαν ${came.length} από ${xs.length}</span><button class="btn sm ghost" data-tab="att">Όλες</button></div>
+    ${none.length?`<div class="frow"><span class="fic">${ico('clock')}</span><div class="grow"><div>${none.length==1?'Δεν έχει δηλώσει άφιξη':'Δεν έχουν δηλώσει άφιξη'}</div>
+      <div class="chips">${none.map(x=>`<button class="chip" data-act="attedit" data-w="${x.w.id}" data-d="${d}">${h(short(x.w.name))}</button>`).join('')}</div></div></div>`:''}
+    ${odd.map(x=>`<div class="frow"><span class="fic">${ico('loc')}</span><div class="grow"><div><b>${h(short(x.w.name))}</b> ήρθε στις ${h(x.r.in.t)} <span class="note">· ${h(siteName(x.r.p))}</span></div>
+      <div class="note">${h(attNote(x.r,x.r.in))}</div></div><div class="facts"><button class="btn sm ghost" data-act="attedit" data-w="${x.w.id}" data-d="${d}">Άνοιγμα</button></div></div>`).join('')}
+    ${!none.length&&!odd.length?'<p class="note">Όλοι ήρθαν και η θέση τους ήταν στο εργοτάξιο.</p>':''}</section>`}
+// σύνολα εβδομάδας ανά εργαζόμενο, ως σήμερα
+function attWeek(R,ws){const m={};weekDays(ws).filter(d=>d<=TODAY).forEach(d=>attDay(R,d).forEach(x=>{
+    const o=m[x.w.id]=m[x.w.id]||{w:x.w,sched:0,came:0,min:0,open:0,miss:0,absent:0};
+    if(x.st==='absent'){o.absent++;return}if(!x.extra)o.sched++;if(attCame(x)){o.came++;const n=attMin(x.r);if(n!=null)o.min+=n;else if(d<TODAY)o.open++}else if(d<TODAY)o.miss++}));
+  return Object.values(m).sort((a,b)=>a.w.name.localeCompare(b.w.name,'el'))}
+function vAtt(R){if(!UI.attDay)UI.attDay=TODAY;const d=UI.attDay,ws=weekStart(d),xs=attDay(R,d);
+  const live=xs.filter(x=>x.st!=='absent'),came=live.filter(attCame).length,far=live.filter(x=>attCame(x)&&attWhere(x.r,x.r.in)?.k==='far').length;
+  const nopos=live.filter(x=>attCame(x)&&attWhere(x.r,x.r.in)?.k==='nopos').length,none=live.filter(x=>x.st==='none').length;
+  const cell=(x,k)=>{const pt=x.r&&x.r[k];if(!pt)return k==='in'?(x.st==='absent'?'<span class="tag bad">Δεν ήρθε</span>':d<TODAY?'<span class="tag warn">Δεν δηλώθηκε</span>':'<span class="note">δεν έχει δηλώσει</span>'):attCame(x)?`<span class="note">${d<TODAY?'δεν δηλώθηκε':'—'}</span>`:'';
+    return `<b class="mono">${h(pt.t)}</b> ${pt.by==='o'?`<span class="note">από το γραφείο${pt.was?', ήταν '+h(pt.was):''}</span>`:whereTag(x.r,pt)}`};
+  const acts=x=>{const geo=x.r&&[x.r.in,x.r.out].find(pt=>pt&&hasLL(pt)),site=x.r&&siteFor(x.r.p);
+    if(x.st==='absent')return `<button class="btn sm" data-act="attedit" data-w="${x.w.id}" data-d="${d}">Ήρθε τελικά</button>`;
+    if(x.st==='none')return d>TODAY?'':`<button class="btn sm" data-act="attedit" data-w="${x.w.id}" data-d="${d}">Ήρθε</button><button class="btn sm ghost" data-act="attno" data-w="${x.w.id}" data-d="${d}">Δεν ήρθε</button>`;
+    return `<button class="btn sm ghost" data-act="attedit" data-w="${x.w.id}" data-d="${d}">Επεξεργασία</button>${geo&&!site?`<button class="btn sm ghost" data-act="attsite" data-id="${x.r.id}">${ico('loc')}Σημείο από εδώ</button>`:''}`};
+  const rows=xs.map(x=>{const ps=x.r&&x.r.p!==undefined&&attCame(x)?[x.r.p]:x.ps.length?x.ps:[null];
+    return `<tr><td class="tt-main"><b>${h(x.w.name)}</b><div class="note">${h(SP(x.w.specialtyId)?.name||'')}${x.extra?' · εκτός προγράμματος':''}</div>${x.r&&x.r.note?`<div class="note">«${h(x.r.note)}»</div>`:''}</td>
+    <td data-l="Έργο">${ps.map(p=>`<span class="pchip"><i class="dot" style="background:${pc(p||'gen')}"></i>${h(siteName(p))}</span>`).join('')}</td>
+    <td data-l="Άφιξη">${cell(x,'in')}</td><td data-l="Αποχώρηση">${cell(x,'out')}</td><td class="n mono" data-l="Ώρες">${x.r?hrsS(attMin(x.r)):'—'}</td><td class="tt-acts">${acts(x)}</td></tr>`}).join('');
+  const wk=attWeek(R,ws),miss=attMissing(R,add(TODAY,-14),add(TODAY,-1)).filter(m=>m.d!==d);
+  const sites=[...S.projects.filter(p=>!p.closed).map(p=>[p.id,p.name,siteOf(p)]),['yard',PSEUDO.gen.name,yardOf()]];
+  return `<div class="bar"><h1 class="grow">Παρουσίες ${fmt(d)}${d===TODAY?' <span class="tag hv">σήμερα</span>':''}</h1>
+    <div class="bgrp"><button class="btn" data-act="attday" data-dir="-1" aria-label="Προηγούμενη μέρα">${ico('cl')}</button><button class="btn" data-act="attday" data-dir="0">Σήμερα</button><button class="btn" data-act="attday" data-dir="1" aria-label="Επόμενη μέρα">${ico('cr')}</button></div>
+    ${expBtns('att')}</div>
+  ${miss.length?`<p class="warnline">${ico('info')}<span>${miss.length==1?'1 μέρα':miss.length+' μέρες'} τις τελευταίες δύο εβδομάδες χωρίς δήλωση παρουσίας. Όποιος δεν ήρθε δεν παίρνει μεροκάματο: σημείωσέ το πριν πληρώσεις.</span></p>
+    <div class="chips attmiss">${miss.slice(0,12).map(m=>`<button class="chip" data-act="attgo" data-d="${m.d}">${h(fmtS(m.d))} · ${h(short(m.w.name))}</button>`).join('')}${miss.length>12?`<span class="note">και ${miss.length-12} ακόμη</span>`:''}</div>`:''}
+  <div class="kpis">
+    <div class="kpi"><span class="lbl">Ήρθαν</span><span class="v">${came}<span class="sub"> / ${live.length}</span></span><span class="s">${none?(d<TODAY?none+' χωρίς δήλωση':none+' δεν έχουν δηλώσει ακόμη'):'όλοι δήλωσαν'}</span></div>
+    <div class="kpi"><span class="lbl">Μακριά από το εργοτάξιο</span><span class="v"${far?' style="color:var(--warn)"':''}>${far}</span><span class="s">${nopos?nopos+' χωρίς θέση':'όλοι με θέση'}</span></div>
+    <div class="kpi"><span class="lbl">Δεν ήρθαν</span><span class="v">${xs.filter(x=>x.st==='absent').length}</span><span class="s">χωρίς μεροκάματο εκείνη τη μέρα</span></div></div>
+  <section class="panel scroll"><table class="tt attt"><thead><tr><th>Εργαζόμενος</th><th>Έργο</th><th>Άφιξη</th><th>Αποχώρηση</th><th class="n">Ώρες</th><th></th></tr></thead>
+    <tbody>${rows||`<tr><td colspan="6" class="empty">${isWork(d)?'Κανείς δεν είναι στο πρόγραμμα των εργοταξίων αυτή τη μέρα.':'Δεν είναι εργάσιμη μέρα.'}</td></tr>`}</tbody></table></section>
+  <section class="panel scroll"><h2>Εβδομάδα ${fmtS(ws)} – ${fmtS(add(ws,6))}</h2>
+    <table class="tt"><thead><tr><th>Εργαζόμενος</th><th class="n">Μέρες</th><th class="n">Ώρες</th><th>Εκκρεμότητες</th></tr></thead>
+    <tbody>${wk.map(o=>`<tr><td class="tt-main"><b>${h(o.w.name)}</b></td><td class="n mono" data-l="Μέρες">${o.came}${o.sched?' / '+o.sched:''}</td><td class="n mono" data-l="Ώρες">${o.min?hrsS(o.min):'—'}</td>
+      <td data-l="Εκκρεμότητες">${[o.miss?`<span class="tag warn">${o.miss==1?'1 μέρα':o.miss+' μέρες'} χωρίς δήλωση</span>`:'',o.open?`<span class="tag mute">${o.open==1?'1 μέρα':o.open+' μέρες'} χωρίς αποχώρηση</span>`:'',o.absent?`<span class="tag bad">${o.absent==1?'1 απουσία':o.absent+' απουσίες'}</span>`:''].join(' ')||'<span class="note">—</span>'}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Καμία παρουσία αυτή την εβδομάδα.</td></tr>'}</tbody></table></section>
+  <section class="panel" id="sites"><h2>Σημεία εργοταξίων</h2>
+    <p class="note">Όποιος πατά «Ήρθα» μέσα στην ακτίνα του σημείου φαίνεται «στο εργοτάξιο». Χωρίς σημείο, η άφιξη καταγράφεται χωρίς έλεγχο απόστασης.</p>
+    <div class="sitel">${sites.map(([k,n,s])=>`<div class="site"><span class="grow"><b>${h(n)}</b><span class="note">${s?`${s.r} μέτρα γύρω από το σημείο · <a href="${mapLL(s)}" target="_blank" rel="noopener">χάρτης</a>`:'<span class="tag warn">Χωρίς σημείο</span>'}</span></span><button class="btn sm${s?' ghost':''}" data-act="siteform" data-k="${k}">${s?'Αλλαγή':'Ορισμός'}</button></div>`).join('')}</div></section>
+  <p class="note">Η θέση διαβάζεται μόνο όταν ο εργαζόμενος πατά «Ήρθα» ή «Έφυγα», ποτέ όλη τη μέρα. Οι συντεταγμένες σβήνουν μετά από 60 μέρες, ενώ η ώρα και η απόσταση μένουν. Η ψηφιακή κάρτα εργασίας στο ΕΡΓΑΝΗ δεν γίνεται από εδώ.</p>`}
+// το γραφείο καταχωρίζει, διορθώνει ή σημειώνει «δεν ήρθε»
+function attForm(wid,d){const w=W(wid);if(!w)return;const r=attOf(d,wid),R=schedule(),ps=attProjects(R,wid,d),ab=isAbsent(wid,d),pid=r&&r.p!=null?r.p:(ps[0]||'');
+  const src=pt=>pt&&pt.by!=='o'?`${h(pt.t)} από το κινητό · ${h(attNote(r,pt))}`:'';
+  openModal(`<h2>Παρουσία: ${h(w.name)}</h2>
+  <p class="note">${fmt(d)}${ps.length?' · στο πρόγραμμα: '+h(ps.map(siteName).join(', ')):''}${ab?' · <span class="tag bad">Σημειώθηκε ότι δεν ήρθε</span>':''}</p>
+  ${r&&(src(r.in)||src(r.out))?`<p class="note">${src(r.in)?'Άφιξη '+src(r.in):''}${src(r.in)&&src(r.out)?'<br>':''}${src(r.out)?'Αποχώρηση '+src(r.out):''}</p>`:''}
+  <form class="form" id="attf" data-w="${wid}" data-d="${d}">
+    <label>Ώρα άφιξης<input type="time" id="at_in" value="${h(r&&r.in?r.in.t:'07:00')}" required></label>
+    <label>Ώρα αποχώρησης<input type="time" id="at_out" value="${h(r&&r.out?r.out.t:'')}"></label>
+    <label class="full">Έργο<select id="at_p">${[['',PSEUDO.gen.name],...S.projects.filter(p=>!p.closed||p.id===pid).map(p=>[p.id,p.name])].map(([v,l])=>`<option value="${v}"${v===(pid||'')?' selected':''}>${h(l)}</option>`).join('')}</select></label>
+    <label class="full">Σημείωση<input id="at_note" maxlength="200" value="${h(r&&r.note||'')}" placeholder="π.χ. ξέχασε να πατήσει «Ήρθα»"></label></form>
+  <p class="note">Με «Δεν ήρθε» η μέρα μετρά ως απουσία, χωρίς μεροκάματο${d>=TODAY?', και το πρόγραμμα βάζει άλλον στη θέση του':''}.</p>
+  <div class="acts">${ab?'':`<button class="btn" data-act="attno" data-w="${wid}" data-d="${d}">Δεν ήρθε</button>`}${r?`<button class="btn ghost" data-act="attdel" data-id="${r.id}">Διαγραφή</button>`:''}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="attsave">Αποθήκευση</button></div>`)}
+function siteForm(k,pre){const p=k==='yard'?null:P(k);if(k!=='yard'&&!p)return;const s=k==='yard'?yardOf():siteOf(p),v=pre||s,R0=s?s.r:k==='yard'?200:ATT_R;
+  openModal(`<h2>${k==='yard'?'Σημείο αποθήκης':'Σημείο εργοταξίου'}</h2>
+  <p class="note">${k==='yard'?'Για όσους δεν είναι σε έργο εκείνη τη μέρα: αποθήκη, συντήρηση, γενικές εργασίες.':h(p.name)+(p.location?' · '+h(p.location):'')}</p>
+  <form class="form" id="sitef" data-k="${k}">
+    <label class="full">Συντεταγμένες ή σύνδεσμος Google Maps<span class="inl"><input id="si_ll" value="${v?v.lat+', '+v.lon:''}" placeholder="π.χ. 40.58231, 22.95018" autocomplete="off"><button type="button" class="btn" data-act="sitehere">${ico('loc')}Η θέση μου τώρα</button></span>
+      <span class="note" id="si_note">${pre?'Από την άφιξη που κατέγραψε το κινητό. ':''}${v?`<a href="${mapLL(v)}" target="_blank" rel="noopener">Άνοιγμα στον χάρτη</a>`:''}</span></label>
+    <label>Ακτίνα<select id="si_r">${[50,100,150,200,300,500,1000].map(n=>`<option value="${n}"${n===R0?' selected':''}>${n<1000?n+' μέτρα':'1 χιλιόμετρο'}</option>`).join('')}</select></label></form>
+  <p class="note">Στο Google Maps κράτα πατημένο το σημείο και αντέγραψε τις συντεταγμένες. Ή πάτα «Η θέση μου τώρα» όταν είσαι στο εργοτάξιο.</p>
+  <div class="acts">${s?'<button class="btn ghost" data-act="sitedel">Αφαίρεση σημείου</button>':''}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="sitesave">Αποθήκευση</button></div>`)}
+function attSheets(R,ws){const t='Παρουσίες '+fmtS(ws)+' – '+fmtS(add(ws,6));
+  const rows=[];weekDays(ws).filter(d=>d<=TODAY).forEach(d=>attDay(R,d).forEach(x=>{const r=x.r,pt=k=>r&&r[k]?r[k].t+(r[k].by==='o'?' (γραφείο)':''):'';
+    const wh=k=>{const a=r&&r[k]&&attWhere(r,r[k]);return a&&r[k].by!=='o'?attWS(a):''};
+    rows.push([fmt(d),x.w.name,siteName(r&&attCame(x)?r.p:x.ps[0]||null),x.st==='absent'?'Δεν ήρθε':pt('in')||(d<TODAY?'Δεν δηλώθηκε':''),wh('in'),pt('out'),wh('out'),r&&attMin(r)!=null?Math.round(attMin(r)/6)/10:null,r&&r.note||''])}));
+  const a={top:true,name:'Παρουσίες',widths:[14,26,26,14,22,14,22,8,30],freeze:5,rows:[...xTop(t),xHead('Ημέρα','Εργαζόμενος','Έργο','Άφιξη','Θέση άφιξης','Αποχώρηση','Θέση αποχώρησης','Ώρες','Σημείωση'),...rows]};
+  const b={top:true,name:'Σύνολα',widths:[28,10,12,10,16,12],freeze:5,rows:[...xTop(t),xHead('Εργαζόμενος','Μέρες','Στο πρόγραμμα','Ώρες','Χωρίς δήλωση','Απουσίες'),
+    ...attWeek(R,ws).map(o=>[o.w.name,o.came,o.sched,o.min?Math.round(o.min/6)/10:null,o.miss||null,o.absent||null])]};
+  return {title:t,file:'Παρουσίες '+ws+'.xlsx',wide:true,sheets:[a,b]}}
 /* Συνεργάτες */
 // λογαριασμός συνεργάτη κατ' αποκοπή: συμφωνία, δουλεμένα μέχρι σήμερα, πληρωμένα, υπόλοιπο
 function jobAccount(R,w){
@@ -3196,6 +3436,10 @@ function jobSection(R){
 // η πρόταση μπόνους κάτω από το όνομα, ή το μπόνους που δόθηκε
 const bonusLine=r=>r.bonus?`<div class="bonus"><span class="grow">Μπόνους για δύσκολη εργασία <b class="mono">${money(r.bonus)}</b>, μέσα στο ποσό της εβδομάδας.</span><button class="btn sm ghost" data-act="bonusundo" data-id="${r.w.id}">Αναίρεση</button></div>`
   :r.sug?`<div class="bonus"><span class="grow">Δούλεψε ${nf(r.sug.days)} ${r.sug.days==1?'μέρα':'μέρες'} σε δύσκολη εργασία. Πρόταση μπόνους ${r.sug.pct}%: <b class="mono">${money(r.sug.amount)}</b></span><button class="btn sm" data-act="bonusok" data-id="${r.w.id}" data-v="${r.sug.amount}">Προσθήκη</button><button class="btn sm ghost" data-act="bonusno" data-id="${r.w.id}">Όχι</button></div>`:'';
+// πληρωμές: μέρες χωρίς δήλωση παρουσίας μέσα στην εβδομάδα
+function payAttNote(R,ws){if(!hasF('gps'))return '';const xs=attMissing(R,ws,add(ws,6));if(!xs.length)return '';
+  const ns=[...new Set(xs.map(x=>short(x.w.name)))];
+  return `<p class="warnline">${ico('info')}<span>${xs.length==1?'1 μέρα':xs.length+' μέρες'} αυτής της εβδομάδας χωρίς δήλωση παρουσίας (${h(ns.join(', '))}). Όποιος δεν ήρθε δεν παίρνει μεροκάματο: έλεγξέ το πριν πληρώσεις.</span><button class="btn sm" data-act="attgo" data-d="${xs[0].d}">Παρουσίες</button></p>`}
 function vPay(R){
   if(!UI.payWeek)UI.payWeek=weekStart(TODAY);
   const ws=UI.payWeek,rows=payData(R,ws),carryOn=S.settings.payCarry!==false;
@@ -3220,6 +3464,7 @@ function vPay(R){
     <div class="bgrp"><button class="btn" data-act="pweek" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="pweek" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="pweek" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>
     ${expBtns('pay')}<button class="btn fillm" data-act="copypay">Αντιγραφή κατάστασης</button><button class="btn pri" data-act="payall"${nLeft?'':' disabled'}>Εξόφληση όλων</button></div>
   <p class="note paynote">${ico('info')}<span>${past?'Η μέρα πληρωμής ήταν':pday===TODAY?'Σήμερα είναι η μέρα πληρωμής,':'Μέρα πληρωμής:'} <b>${fmt(pday)}</b>. ${carryOn?'Μπορείς να δώσεις μέρος του ποσού: ό,τι μένει περνά στην επόμενη εβδομάδα, και ό,τι δοθεί παραπάνω αφαιρείται ως προκαταβολή.':'Η μεταφορά υπολοίπου είναι κλειστή στις Ρυθμίσεις, οπότε κάθε εβδομάδα μετρά μόνη της.'}</span></p>
+  ${payAttNote(R,ws)}
   <textarea id="paytext" rows="8" hidden readonly>${h(txt)}</textarea>
   <div class="kpis">
     <div class="kpi"><span class="lbl">Μεροκάματα εβδομάδας</span><span class="v">${money(total)}</span><span class="s">${nf(rows.reduce((s,r)=>s+r.days,0))} μεροκάματα</span></div>
@@ -3354,6 +3599,7 @@ function exportData(k){const R=schedule();
   if(k==='pay')return paySheets(R,UI.payWeek||weekStart(TODAY));
   if(k==='costs')return costSheets(R);
   if(k==='profit')return hasF('profit')?profitSheets(R):null;
+  if(k==='att')return hasF('gps')?attSheets(R,weekStart(UI.attDay||TODAY)):null;
   return null}
 const expBtns=k=>offF('export')?'':hasF('export')?`<button class="btn" data-act="prn" data-k="${k}">${ico('print')}PDF</button><button class="btn" data-act="xls" data-k="${k}">${ico('dl')}Excel</button>`
   :`<button class="btn locked" data-act="upsell" data-f="export">${ico('lock')}Excel και PDF</button>`;
@@ -3455,11 +3701,11 @@ function vSettings(){
 
 /* ---------- Πακέτα συνδρομής ---------- */
 // σελίδες που ανοίγουν από συγκεκριμένο πακέτο (τα πακέτα και οι λειτουργίες τους είναι στο core)
-const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs',acc:'acc',profit:'profit',equip:'equip'};
+const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs',acc:'acc',profit:'profit',equip:'equip',att:'gps'};
 // κλειστή από τον διαχειριστή (όχι από το πακέτο): δεν φαίνεται καθόλου
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push','gps'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -3483,7 +3729,7 @@ function officeNote(){const p=planOf();if(!UI.users)return '';const n=officeUser
 const SW=[
   ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.'],['push','Ειδοποιήσεις στο κινητό','Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση, χωρίς χρέωση.']]],
   ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
-  ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.']]],
+  ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['profit','Κέρδος ανά έργο','Τιμή συμβολαίου, υλικά και έξοδα, με το κέρδος κάθε έργου.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
   ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
 const swName=f=>{for(const [,xs] of SW)for(const x of xs)if(x[0]===f)return x[1];return f};
@@ -3835,6 +4081,26 @@ document.addEventListener('click',e=>{
     case 'lvviber':{const r=(S.field||[]).find(x=>x.id===id),w=r&&W(r.w);if(!w)break;
       openViber(w,'Γεια σου '+voc(w.name)+'! '+(r.st==='ok'?'Η άδειά σου για '+lvRange(r)+' εγκρίθηκε. Το πρόγραμμα έχει ήδη αλλάξει.':'Η άδεια που ζήτησες για '+lvRange(r)+' δεν εγκρίθηκε. Πάρε τηλέφωνο στο γραφείο να το δούμε μαζί.')+sign());break}
     case 'myrep':myRepForm(el.dataset.t,el.dataset.k);break;
+    case 'myatt':myAtt(el.dataset.k);break;
+    case 'attedit':attForm(el.dataset.w,el.dataset.d);break;
+    case 'attno':{const w=W(el.dataset.w),d=el.dataset.d;if(!w)break;markAbsent(w.id,d);commit('Δεν ήρθε: '+w.name+', '+fmt(d));break}
+    case 'attdel':{const r=delAtt(el.dataset.id);if(r)commit('Διαγραφή παρουσίας: '+(W(r.w)?.name||'')+', '+fmt(r.d));break}
+    case 'attsave':{const f=document.getElementById('attf');if(!f)break;const i=f.querySelector('#at_in').value,o=f.querySelector('#at_out').value;
+      if(!i){toast('Γράψε την ώρα άφιξης.');break}if(o&&o<=i){toast('Η αποχώρηση πρέπει να είναι μετά την άφιξη.');break}
+      const w=W(f.dataset.w);setAtt(f.dataset.w,f.dataset.d,{in:i,out:o,p:f.querySelector('#at_p').value,note:f.querySelector('#at_note').value});commit('Παρουσία: '+(w?w.name:'')+', '+fmt(f.dataset.d));break}
+    case 'attsite':{const r=(S.att||[]).find(x=>x.id===el.dataset.id),pt=r&&[r.in,r.out].find(x=>x&&hasLL(x));if(pt)siteForm(r.p||'yard',{lat:pt.lat,lon:pt.lon});break}
+    case 'attday':{const n=+el.dataset.dir;UI.attDay=n?add(UI.attDay||TODAY,n):TODAY;render();break}
+    case 'attgo':UI.attDay=el.dataset.d;UI.tab='att';render();window.scrollTo(0,0);break;
+    case 'siteform':siteForm(el.dataset.k);break;
+    case 'sitehere':{const n=document.getElementById('si_note');el.disabled=true;n.textContent='Βρίσκω τη θέση…';getPos().then(p=>{el.disabled=false;
+      if(p.lat==null){n.textContent='Δεν βρέθηκε θέση: '+p.err+'.';return}document.getElementById('si_ll').value=p.lat.toFixed(5)+', '+p.lon.toFixed(5);
+      n.innerHTML='Ακρίβεια περίπου '+h(distS(p.acc||0))+'. <a href="'+mapLL(p)+'" target="_blank" rel="noopener">Άνοιγμα στον χάρτη</a>'});break}
+    case 'sitesave':{const f=document.getElementById('sitef');if(!f)break;const ll=parseLL(f.querySelector('#si_ll').value);
+      if(!ll){toast('Γράψε συντεταγμένες, π.χ. 40.58231, 22.95018, ή επικόλλησε σύνδεσμο από το Google Maps.');break}
+      const site={lat:ll.lat,lon:ll.lon,r:+f.querySelector('#si_r').value||ATT_R},k=f.dataset.k;
+      if(k==='yard'){S.settings.yard=site;commit('Σημείο αποθήκης για τις παρουσίες')}else{const p=P(k);if(!p)break;p.site=site;commit('Σημείο εργοταξίου: '+p.name)}break}
+    case 'sitedel':{const f=document.getElementById('sitef');if(!f)break;const k=f.dataset.k;
+      if(k==='yard'){delete S.settings.yard;commit('Αφαίρεση σημείου αποθήκης')}else{const p=P(k);if(!p)break;delete p.site;commit('Αφαίρεση σημείου εργοταξίου: '+p.name)}break}
     case 'myrepsave':{const f=document.getElementById('myrepf');if(!f)break;el.disabled=true;
       myAct('progress',{task:f.dataset.t,kind:f.dataset.k,note:document.getElementById('mr_note').value}).then(ok=>{el.disabled=false;if(!ok)return;closeModal();render();
         toast(f.dataset.k==='done'?'Στάλθηκε στο γραφείο: η εργασία τελείωσε. Το πρόγραμμα από αύριο άλλαξε.':'Στάλθηκε στο γραφείο: μία μέρα ακόμη. Το πρόγραμμα άλλαξε.')});break}
