@@ -165,7 +165,8 @@ function demo(){
   const o=officeDemo(),x=extDemo();
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
-  return {v:2,fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  const xw=EXPW_DEMO();workers.forEach(w=>{if(xw[w.id])w.exp=xw[w.id]});
+  return {v:2,eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 /* ---------- Αρχεία Excel ----------
    Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
@@ -228,13 +229,40 @@ const PRESETS={build:{name:'Κατασκευές',
   office:[['Γραμματεία'],['Διαχείριση έργων',true],['Ταμείο και λογιστήριο'],['Εξωτερικός υπάλληλος']]}};
 const GEN={id:'gen',name:'Γενικοί βοηθοί'};
 // άδεια δεδομένα για νέα εταιρεία: κρατά τις ρυθμίσεις (πακέτο, λειτουργίες, καιρό, αργίες…) και το ιστορικό αλλαγών
+// --- εξοπλισμός, οχήματα και λήξεις (πακέτο Εργοτάξιο) ---
+// S.equip = [{id,name,kind,code,projectId,holder,notes,exp:[{id,label,due,every}]}]: πού βρίσκεται κάθε μηχάνημα και όχημα και τι λήγει.
+// Λήξεις έχουν και οι άνθρωποι (w.exp: άδεια χειριστή, ιατρικές εξετάσεις, εκπαιδεύσεις). every = μήνες ως την επόμενη ανανέωση.
+const EQ_KINDS=[['veh','Όχημα'],['mach','Μηχάνημα'],['tool','Εργαλείο και ικρίωμα'],['other','Άλλο']];
+const EXP_LABELS={veh:['ΚΤΕΟ','Ασφάλεια','Τέλη κυκλοφορίας','Κάρτα καυσαερίων','Σέρβις'],mach:['Πιστοποίηση','Ασφάλεια','Τεχνικός έλεγχος','Σέρβις'],tool:['Έλεγχος καταλληλότητας'],other:[],person:['Άδεια χειριστή μηχανημάτων','Δίπλωμα οδήγησης','Ιατρικές εξετάσεις','Εκπαίδευση ασφάλειας']};
+const expWarn=()=>+((S.settings&&S.settings.expWarn)||30);
+const expIn=d=>Math.round((pd(d)-pd(TODAY))/864e5);
+const expState=d=>{const n=expIn(d);return n<0?'bad':n<=expWarn()?'warn':'ok'};
+const expWhen=d=>{const n=expIn(d);return n<0?(n===-1?'έληξε χθες':'έληξε πριν από '+(-n)+' μέρες'):n===0?'λήγει σήμερα':n===1?'λήγει αύριο':'σε '+n+' μέρες'};
+// όλες οι λήξεις, με αυτό που αφορούν, από την πιο κοντινή
+function expAll(){const xs=[];
+  (S.equip||[]).forEach(e=>(e.exp||[]).forEach(x=>{if(x.due)xs.push({x,e,name:e.name})}));
+  S.workers.forEach(w=>(w.exp||[]).forEach(x=>{if(x.due)xs.push({x,w,name:w.name})}));
+  return xs.sort((a,b)=>a.x.due.localeCompare(b.x.due))}
+const expSoon=days=>expAll().filter(o=>expIn(o.x.due)<=(days==null?expWarn():days));
+// επόμενη λήξη μετά από ανανέωση: από την παλιά ημερομηνία (ή από σήμερα αν έχει περάσει πολύ), με τους μήνες της επανάληψης
+function expNext(x){const m=+x.every||12;let d=pd(x.due&&x.due>add(TODAY,-60)?x.due:TODAY);const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+m);
+  d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));return ds(d)}
+const eqWhere=e=>e.projectId&&P(e.projectId)?P(e.projectId).name:'Αποθήκη';
+function eqDemo(){const t=n=>add(TODAY,n);
+  return [{id:'e1',name:'Φορτηγάκι Iveco Daily',kind:'veh',code:'ΝΗΖ-4521',projectId:'p1',holder:'w1',notes:'',exp:[{id:'x1',label:'ΚΤΕΟ',due:t(9),every:24},{id:'x2',label:'Ασφάλεια',due:t(96),every:12},{id:'x3',label:'Τέλη κυκλοφορίας',due:'',every:12}]},
+    {id:'e2',name:'Ανυψωτικό JCB 3CX',kind:'mach',code:'ΜΕ 128734',projectId:'p2',holder:'',notes:'Χειριστής μόνο με άδεια.',exp:[{id:'x4',label:'Πιστοποίηση',due:t(-3),every:12},{id:'x5',label:'Ασφάλεια',due:t(210),every:12}]},
+    {id:'e3',name:'Μπετονιέρα 350 λίτρων',kind:'mach',code:'',projectId:'p1',holder:'',notes:'',exp:[]},
+    {id:'e4',name:'Σκαλωσιά 120 τ.μ.',kind:'tool',code:'',projectId:'p1',holder:'',notes:'Τα πλαίσια είναι μετρημένα: 48.',exp:[{id:'x6',label:'Έλεγχος καταλληλότητας',due:t(48),every:6}]},
+    {id:'e5',name:'Κομπρεσέρ Atlas Copco',kind:'mach',code:'',projectId:'',holder:'',notes:'',exp:[{id:'x7',label:'Σέρβις',due:t(150),every:12}]}]}
+// λήξεις προσωπικού στο demo
+const EXPW_DEMO=()=>({w1:[{id:'x8',label:'Ιατρικές εξετάσεις',due:add(TODAY,21),every:12}],w2:[{id:'x9',label:'Άδεια χειριστή μηχανημάτων',due:add(TODAY,300),every:60}]});
 // demo: ένα αίτημα άδειας που περιμένει και μία «+1 μέρα» από την προηγούμενη μέρα (η επιπλέον μέρα είναι ήδη μέσα στις μέρες της εργασίας)
 function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(weekStart(TODAY),8);
   return [{id:'fd1',k:'more',w:'w1',t:'t1',d:y,note:'Δεν ήρθαν τα τούβλα, συνεχίζουμε αύριο',at:y+'T16:40',st:'ok'},
     {id:'fd2',k:'leave',w:'w3',from:nw,to:add(nw,1),note:'Βάφτιση του ανιψιού',at:stamp(),st:'new'}]}
 function blankState(cur){
   const o=demo(),st=(cur&&cur.settings)||{};
-  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[]});
+  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[]});
   o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});
   if(cur&&cur.hist)o.hist=cur.hist;
   return o;
@@ -296,6 +324,11 @@ function migrate(o){
     o.sumDemo=true;const d=demo();
     o.tasks.forEach(t=>{const x=d.tasks.find(y=>y.id===t.id);if(x&&x.doneOn&&t.status==='done'&&!t.doneOn&&x.title===t.title)t.doneOn=x.doneOn});
   }
+  // μία φορά: demo εξοπλισμός και λήξεις, όταν τα έργα και οι εργαζόμενοι είναι του demo
+  if(o&&Array.isArray(o.workers)&&Array.isArray(o.projects)&&!o.eqDemo){
+    o.eqDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&x.name===z.name};
+    if(!(o.equip||[]).length&&same(o.projects,d.projects,'p1')&&same(o.projects,d.projects,'p2')&&same(o.workers,d.workers,'w1')){o.equip=d.equip;
+      const xw=EXPW_DEMO();o.workers.forEach(w=>{if(xw[w.id]&&!w.exp&&same(o.workers,d.workers,w.id))w.exp=xw[w.id]})}}
   // μία φορά: demo αναφορές από το εργοτάξιο, όταν οι εργαζόμενοι και η εργασία είναι του demo
   if(o&&Array.isArray(o.workers)&&Array.isArray(o.tasks)&&!o.fieldDemo){
     o.fieldDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&(x.name||x.title)===(z.name||z.title)};
@@ -779,7 +812,8 @@ function weekSum(R,ws){
     return {p,...sum(PA),done,prog,next,nDone:ts.length-open.length,nAll:ts.length,fin,unpl,due,late,bad:!!due&&open.length>0&&(unpl>0||late>0)}});
   return {ws,we,last:days[days.length-1]||we,nws,days,...sum(A),other:sum(A.filter(a=>!P(a.projectId))),projects,
     nDone:projects.reduce((s,x)=>s+x.done.length,0),nBad:projects.filter(x=>x.bad).length,
-    apNext:hasF('appts')?(S.appts||[]).filter(a=>a.date>=nws&&a.date<=nwe&&a.status!=='done').length:0};
+    apNext:hasF('appts')?(S.appts||[]).filter(a=>a.date>=nws&&a.date<=nwe&&a.status!=='done').length:0,
+    exp:hasF('equip')?expAll().filter(o=>o.x.due<=nwe):[]};
 }
 function weekSumText(X){
   const L=['ΣΥΝΟΨΗ ΕΒΔΟΜΑΔΑΣ '+fmtS(X.ws)+' – '+fmtS(X.last),'',
@@ -797,6 +831,7 @@ function weekSumText(X){
   });
   if(X.other.cost)L.push('','Γραφείο και αποθήκη: '+eur(X.other.cost));
   if(X.apNext)L.push('','Ραντεβού την επόμενη εβδομάδα: '+X.apNext);
+  if(X.exp&&X.exp.length)L.push('','Λήξεις έως '+fmtS(add(X.ws,13))+': '+X.exp.map(o=>o.x.label+' '+o.name+' ('+(o.x.due<TODAY?'έληξε '+fmt(o.x.due):fmt(o.x.due))+')').join(', '));
   return L.join('\n')+'\n'+sign();
 }
 // το καθημερινό μήνυμα που φεύγει αυτόματα
@@ -905,7 +940,7 @@ function personWeek(R,w,ws){
 function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave')};
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
