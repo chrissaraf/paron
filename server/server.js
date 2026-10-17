@@ -160,6 +160,36 @@ function photoGC() {
 setTimeout(() => { try { photoGC(); } catch (e) { console.error('photos', e.message); } }, 5000);
 setInterval(() => { try { photoGC(); } catch (e) { console.error('photos', e.message); } }, 6 * 3600e3);
 
+// --- σελίδα προόδου για τον πελάτη ---
+// Ανοίγει χωρίς σύνδεση με τον ιδιωτικό σύνδεσμο του έργου (/c/<κωδικός>) και δείχνει μόνο ό,τι επιτρέπεται (clientView στο src/core.js).
+// Η σελίδα δεν έχει JavaScript· οι φωτογραφίες σερβίρονται μόνο αν ανήκουν στο έργο και δεν είναι «Μόνο για εμάς».
+F.cviews = path.join(CFG.dataDir, 'client-views.json');
+const CL_HDR = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff',
+  'content-security-policy': "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" };
+// πόσες φορές την άνοιξε ο πελάτης (μία φορά ανά μισή ώρα), για να το βλέπει το γραφείο
+function clientSeen(S, t) {
+  const live = new Set((S.projects || []).map(p => p.share && p.share.t).filter(Boolean)), v = readJSON(F.cviews, {}), x = v[t] || { n: 0 }, ts = Date.now();
+  if (x.ts && ts - x.ts < 30 * 60e3) return;
+  Object.keys(v).forEach(k => { if (!live.has(k)) delete v[k]; });
+  v[t] = { n: x.n + 1, last: now(), ts }; writeJSON(F.cviews, v);
+}
+function clientPage(res, url, m) {
+  const gone = () => { res.writeHead(404, { ...CL_HDR, 'content-type': 'text/html; charset=utf-8' }); res.end(C.clientGone()); };
+  const S = readJSON(F.state, null); if (!S) return gone();
+  C.setState(withPlan(S)); C.today();
+  const p = C.byShare(m[1]); if (!p || !C.clientOn()) return gone();
+  if (m[2]) {
+    const f = phFile(m[2], !!m[3]);
+    if (!C.clientPhotoOk(p.id, m[2]) || !fs.existsSync(f)) { res.writeHead(404, CL_HDR); return res.end(); }
+    res.writeHead(200, { ...CL_HDR, 'content-type': 'image/jpeg', 'cache-control': 'private, max-age=86400' });
+    return fs.createReadStream(f).pipe(res);
+  }
+  const base = '/c/' + m[1], v = C.clientView(C.schedule(), p.id, url.searchParams.get('all') === '1');
+  try { clientSeen(S, m[1]); } catch (e) { console.error('client', e.message); }
+  res.writeHead(200, { ...CL_HDR, 'content-type': 'text/html; charset=utf-8' });
+  res.end(C.clientDoc(v, { ph: (ph, big) => ph && ph.id ? base + '/ph/' + ph.id + (big ? '' : '_t') + '.jpg' : '', all: base + '?all=1' }));
+}
+
 // --- Viber ---
 function normPhone(p) {
   let d = String(p || '').replace(/\D/g, '');
@@ -425,6 +455,8 @@ http.createServer(async (req, res) => {
     if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html'))
       return send(res, 200, fullPage(PWA_HEAD), 'text/html; charset=utf-8');
     if (url.pathname === '/api/health') return send(res, 200, { ok: true, time: now() });
+    const clm = /^\/c\/([^/]{0,80})(?:\/ph\/([a-f0-9]{16})(_t)?\.jpg)?\/?$/.exec(url.pathname);   // ο κωδικός ελέγχεται στο byShare
+    if (clm && req.method === 'GET') return clientPage(res, url, clm);
     if (req.method !== 'GET') {
       // αλλαγές μόνο από την ίδια την εφαρμογή (προστασία από αιτήματα άλλων σελίδων)
       const origin = req.headers.origin;
@@ -514,6 +546,11 @@ http.createServer(async (req, res) => {
       const x = savePhoto(await body()); if (x.err) return send(res, x.full ? 507 : 400, { error: x.err });
       console.log(now(), 'φωτογραφία', me.username, x.ph.kb + ' KB');
       return send(res, 200, { ok: true, ph: x.ph });
+    }
+    if (me.role !== 'worker' && url.pathname === '/api/client-views' && req.method === 'GET') {
+      const S = readJSON(F.state, {}), v = readJSON(F.cviews, {}), out = {};
+      (S.projects || []).forEach(p => { const t = p.share && p.share.t; if (t && v[t]) out[p.id] = { n: v[t].n, last: v[t].last }; });
+      return send(res, 200, out);
     }
     if (me.role !== 'worker' && url.pathname === '/api/photos' && req.method === 'GET') {
       const u = photoUsage(); return send(res, 200, { n: u.n, mb: Math.round(u.bytes / 1e5) / 10, capGb: Math.round(u.cap / 1e8) / 10, freeGb: u.free == null ? null : Math.round(u.free / 1e8) / 10 });

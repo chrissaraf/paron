@@ -605,6 +605,13 @@ table.pfall td .btn{margin-top:6px}table.pfall .lnk{display:inline-flex;gap:6px;
 .warnline .btn{margin-left:auto;flex:none}
 .sitelnk{text-decoration:underline;text-underline-offset:2px}
 
+/* Σελίδα για τον πελάτη */
+.cllink{display:flex;gap:8px;align-items:center;margin:4px 0 0}.cllink input{flex:1;min-width:0;font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--sunk);color:var(--ink)}
+.clshare{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0}.clshare .note{margin-right:4px}.clshare .chip{text-decoration:none}
+.clp>.note{margin:10px 0 0}.clp>.bar:last-child{margin-top:8px}
+.modal.clpv{width:min(1040px,100%)}
+.clframe{display:flex;justify-content:center;background:var(--sunk);border-radius:14px;padding:12px;overflow:auto}
+.clframe iframe{border:0;border-radius:14px;height:min(64vh,760px);max-width:100%;background:#E8ECE4;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 /* Ημερολόγιο έργου */
 .fpick{position:relative;cursor:pointer;overflow:hidden}
 .fpick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
@@ -787,7 +794,7 @@ body:not(.in) .app{display:none}
 </script>
 <script>
 (()=>{
-const {DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,gpsOn,siteOf,yardOf,siteFor,distS,parseLL,attOf,attProjects,attWhere,attWS,attMin,hrsS,hrsL,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attMissing,attDemoFill,ATT_R,COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {DAYS_L,MON_G,fmtL,CL_MSG,shareOf,clientOpt,clientView,clientDoc,newTok,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,gpsOn,siteOf,yardOf,siteFor,distS,parseLL,attOf,attProjects,attWhere,attWS,attMin,hrsS,hrsL,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attMissing,attDemoFill,ATT_R,COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο έργου'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['profit','Κέρδος ανά έργο'],['equip','Εξοπλισμός και οχήματα'],['att','Παρουσίες'],['settings','Ρυθμίσεις']];
@@ -1105,7 +1112,7 @@ const nextOn=(R,tid,d)=>Object.keys(R.byDay).sort().find(x=>x>d&&R.byDay[x].jobs
 const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?'Κάθε '+(x.days||[]).map(d=>DAYS[d]).join(', '):x.freq==='month'?'Κάθε μήνα στις '+(+x.dom||1):'Μία φορά, '+fmt(x.date);
 
 /* ---------- Καρτέλες ---------- */
-const ICONS={cam:'<path d="M3.5 8.5h3.2l1.7-2.6h7.2l1.7 2.6h3.2v10.6h-17z"/><circle cx="12" cy="13.4" r="3.5"/>',loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+const ICONS={link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',cam:'<path d="M3.5 8.5h3.2l1.7-2.6h7.2l1.7 2.6h3.2v10.6h-17z"/><circle cx="12" cy="13.4" r="3.5"/>',loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
   proj:'<path d="M3 21h18M5 21V9.5l7-5 7 5V21"/><path d="M10 21v-5h4v5"/>',
   ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.2" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 2 5 5.4"/>',
   eur:'<circle cx="12" cy="12" r="9"/><path d="M15.6 8.6a4.6 4.6 0 1 0 0 6.8M7.5 10.6h6M7.5 13.4h6"/>',
@@ -1926,6 +1933,7 @@ function vProject(R){
   <section class="panel scroll"><h2>Εργασίες</h2>${taskTable(R,list,false)}</section>
   ${profitPanel(R,p)}
   ${diaryPanel(R,p)}
+  ${clientPanel(R,p)}
   ${hasF('gantt')?`<section class="panel"><h2>Χρονοδιάγραμμα</h2>${gantt(R,[p])}</section>`:''}
   ${eqHere(p)}`;
 }
@@ -2239,8 +2247,6 @@ function attSheets(R,ws){const t='Παρουσίες '+fmtS(ws)+' – '+fmtS(add
   return {title:t,file:'Παρουσίες '+ws+'.xlsx',wide:true,sheets:[a,b]}}
 /* Ημερολόγιο έργου (πακέτο Εργοτάξιο): κάθε μέρα του έργου γεμίζει μόνη της από το πρόγραμμα, τις παρουσίες, το εργοτάξιο, τα υλικά και τον καιρό.
    Από πάνω μπαίνουν σημειώσεις και φωτογραφίες από το γραφείο και από το κινητό στο εργοτάξιο. Βγαίνει σε PDF για τον πελάτη ή για την εταιρεία. */
-const DAYS_L=['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'],MON_G=['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
-const fmtL=s=>{const d=pd(s);return DAYS_L[d.getDay()]+' '+d.getDate()+' '+MON_G[d.getMonth()]+(d.getFullYear()!==pd(TODAY).getFullYear()?' '+d.getFullYear():'')};
 const nl=s=>h(s).replace(/\n/g,'<br>');
 const uname=()=>AUTH.user?AUTH.user.name:'';
 // --- φωτογραφίες: με τον server φυλάγονται εκεί· χωρίς server, σε αυτή τη συσκευή (IndexedDB) ---
@@ -2462,6 +2468,48 @@ function myNoteForm(){openModal(`<h2>Σημείωση για το ημερολό
 function myDiaryLocal(w,b){if(b.del)return delMyDiary(w,b.del);const md=myDiary(schedule(),w),pid=md.ps.some(x=>x.id===b.p)?b.p:(md.ps[0]||{}).id;
   if(!pid)return {err:'Σήμερα δεν είσαι σε έργο. Φωτογραφίες στέλνεις τη μέρα που δουλεύεις σε κάποιο.'};
   return addDiary({p:pid,d:TODAY,text:b.text||'',ph:b.ph||null,by:'w',bw:w.id,bn:w.name})}
+/* Σελίδα προόδου για τον πελάτη (πακέτο Εργοτάξιο): ιδιωτικός σύνδεσμος ανά έργο που ανοίγει χωρίς κωδικό.
+   Τη σελίδα τη φτιάχνει ο server (clientView / clientDoc στο src/core.js)· εδώ ο σύνδεσμος, τι βλέπει ο πελάτης και η προεπισκόπηση. */
+const clLink=p=>SERVER&&shareOf(p)?location.origin+'/c/'+p.share.t:'';
+const clText=(p,url)=>'Καλησπέρα σας. Εδώ βλέπετε πώς προχωρά το έργο «'+p.name+'»'+(clientOpt(p).ph?', με φωτογραφίες από το εργοτάξιο':'')+':\n'+url+(company().name?'\n\n'+company().name:'');
+let CLV=null;   // πόσες φορές άνοιξε ο πελάτης κάθε σελίδα (ο server το μετρά μία φορά ανά μισή ώρα)
+function clViewsLoad(){if(!SERVER||CLV&&Date.now()-CLV.at<60e3)return;CLV={at:Date.now(),v:null};
+  api('client-views').then(o=>{CLV={at:Date.now(),v:o||{}};const el=document.getElementById('clseen');if(el)el.textContent=clSeen(el.dataset.p)}).catch(()=>{})}
+const clSeen=pid=>{if(!CLV||!CLV.v)return '';const x=CLV.v[pid];
+  return x?'Ο πελάτης την άνοιξε '+(x.n==1?'1 φορά':x.n+' φορές')+', τελευταία '+fmt(String(x.last).slice(0,10))+' '+String(x.last).slice(11,16)+'.':'Ο πελάτης δεν την έχει ανοίξει ακόμη.'};
+const clWhat=p=>{const o=clientOpt(p);return ['την πρόοδο','τις εργασίες',o.days&&'το ημερολόγιο',o.ph&&'τις φωτογραφίες'].filter(Boolean).join(', ').replace(/, ([^,]*)$/,' και $1')};
+function clientPanel(R,p){if(!hasF('client'))return '';const sh=shareOf(p),url=clLink(p);
+  const head=`<div class="bar"><h2 class="grow" style="margin:0">Σελίδα για τον πελάτη</h2><button class="btn sm ghost" data-act="cprev" data-p="${p.id}">${ico('eye')}Προεπισκόπηση</button><button class="btn sm" data-act="cset" data-p="${p.id}">Τι βλέπει</button></div>`;
+  const what=`Ο πελάτης βλέπει ${clWhat(p)}, χωρίς κωδικό. Ονόματα, μεροκάματα και κόστη δεν φαίνονται ποτέ.`;
+  if(!SERVER)return `<section class="panel clp">${head}<p class="note">${what} Ο σύνδεσμος βγαίνει όταν η εφαρμογή τρέχει στον server της εταιρείας. Εδώ βλέπεις μόνο την προεπισκόπηση.</p></section>`;
+  if(!sh)return `<section class="panel clp">${head}<p class="note">${what}</p><div class="bar"><button class="btn pri" data-act="cmake" data-p="${p.id}">${ico('link')}Δημιουργία συνδέσμου</button></div></section>`;
+  clViewsLoad();const text=clText(p,url);
+  return `<section class="panel clp">${head}
+    <div class="cllink"><input id="cl_url" readonly value="${h(url)}" aria-label="Σύνδεσμος για τον πελάτη"><button class="btn sm" data-act="ccopy" data-p="${p.id}">Αντιγραφή</button></div>
+    <div class="clshare"><span class="note">Στείλ’ τον με</span><a class="chip" href="${h(viberHref(text))}" target="_blank" rel="noopener">Viber</a><a class="chip" href="https://wa.me/?text=${h(encodeURIComponent(text))}" target="_blank" rel="noopener">WhatsApp</a><a class="chip" href="mailto:?subject=${h(encodeURIComponent('Πρόοδος του έργου: '+p.name))}&amp;body=${h(encodeURIComponent(text))}">Email</a></div>
+    <p class="note"><span id="clseen" data-p="${p.id}">${h(clSeen(p.id))}</span> ${what}</p>
+    <div class="bar"><span class="grow"></span><button class="btn sm ghost" data-act="cnew" data-p="${p.id}">Νέος σύνδεσμος</button><button class="btn sm ghost" data-act="coff" data-p="${p.id}">Κλείσιμο συνδέσμου</button></div></section>`}
+function clForm(pid){const p=P(pid);if(!p)return;const o=clientOpt(p),m=(p.share&&p.share.msg)||'';
+  const ck=(id,on,t,n)=>`<label class="ck"><input type="checkbox" id="${id}"${on?' checked':''}> <span><b>${t}</b><span class="note" style="display:block">${n}</span></span></label>`;
+  openModal(`<h2>Τι βλέπει ο πελάτης</h2><p class="note">${h(p.name)}</p><form class="form" id="clf" data-p="${pid}">
+    <div class="full radios">${ck('cl_days',o.days,'Ημερολόγιο','Τι έγινε κάθε μέρα, πόσα άτομα ανά ειδικότητα, ο καιρός και οι σημειώσεις. Χωρίς ονόματα και ώρες.')}
+      ${ck('cl_ph',o.ph,'Φωτογραφίες','Όσες δεν είναι «Μόνο για εμάς».')}
+      ${ck('cl_plan',o.plan,'Πότε ξεκινά κάθε εργασία','Οι ημερομηνίες του προγράμματος. Αλλάζουν μόνες τους όταν αλλάζει το πρόγραμμα.')}
+      ${ck('cl_end',o.end,'Παράδοση',hasF('deadline')&&p.due?'Η ημερομηνία παράδοσης του έργου, '+h(fmtL(p.due))+'.':'Το εκτιμώμενο τέλος από το πρόγραμμα'+(hasF('deadline')?'. Αν ορίσεις παράδοση στο έργο, φαίνεται εκείνη.':'.'))}</div>
+    <label class="full">Μήνυμα για τον πελάτη<textarea id="cl_msg" rows="3" maxlength="${CL_MSG}" placeholder="π.χ. Από Δευτέρα ξεκινούν τα ηλεκτρολογικά.">${h(m)}</textarea><span class="note">Φαίνεται πάνω πάνω στη σελίδα. Κενό για να μη φαίνεται.</span></label></form>
+    <p class="note">Ονόματα, μεροκάματα, κόστη, προμηθευτές, ώρες και ό,τι είναι «Μόνο για εμάς» δεν φαίνονται ποτέ.</p>
+    <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="csave">Αποθήκευση</button></div>`)}
+function clSave(){const f=document.getElementById('clf');if(!f)return;const p=P(f.dataset.p);if(!p)return;const v=id=>document.getElementById(id).checked?1:0;
+  p.share={...(p.share||{}),opt:{days:v('cl_days'),ph:v('cl_ph'),plan:v('cl_plan'),end:v('cl_end')},msg:document.getElementById('cl_msg').value.trim().slice(0,CL_MSG)};
+  UI.hmsg='Σελίδα πελάτη: αλλαγές για «'+p.name+'»';commit('Αποθηκεύτηκε.')}
+// προεπισκόπηση: η ίδια σελίδα με του server, σε πλαίσιο χωρίς JavaScript· χωρίς server οι φωτογραφίες έρχονται από τη συσκευή
+async function clPreview(pid){const p=P(pid);if(!p)return;
+  if(!SERVER)for(const r of diaryList().filter(r=>r.p===pid&&r.ph&&r.ph.id&&!PHC.has(r.ph.id+'_t'))){const x=await phGetLocal(r.ph.id);if(x){PHC.set(r.ph.id,URL.createObjectURL(x.full));PHC.set(r.ph.id+'_t',URL.createObjectURL(x.thumb||x.full))}}
+  const doc=clientDoc(clientView(schedule(),pid,false),{ph:(ph,big)=>phSrc(ph,big),all:''}),w=UI.clW||390;
+  openModal(`<div class="bar"><h2 class="grow" style="margin:0">Τι βλέπει ο πελάτης</h2><div class="seg" role="group" aria-label="Οθόνη">${[[390,'Κινητό'],[960,'Υπολογιστής']].map(([x,l])=>`<button data-act="cpw" data-w="${x}" aria-pressed="${w===x}">${l}</button>`).join('')}</div></div>
+    <div class="clframe"><iframe id="cl_if" title="Η σελίδα του πελάτη" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" style="width:${w}px"></iframe></div>
+    <div class="acts"><span class="note grow">${SERVER&&shareOf(p)?'Ο πελάτης τη βλέπει πάντα ενημερωμένη, όπως είναι τώρα το πρόγραμμα και το ημερολόγιο.':SERVER?'Φτιάξε τον σύνδεσμο από τη σελίδα του έργου για να τη στείλεις στον πελάτη.':'Ο σύνδεσμος βγαίνει όταν η εφαρμογή τρέχει στον server της εταιρείας.'}</span><button class="btn" data-act="cset" data-p="${pid}">Τι βλέπει</button><button class="btn pri" data-act="close">Κλείσιμο</button></div>`,'clpv');
+  document.getElementById('cl_if').srcdoc=doc}
 /* Συνεργάτες */
 // λογαριασμός συνεργάτη κατ' αποκοπή: συμφωνία, δουλεμένα μέχρι σήμερα, πληρωμένα, υπόλοιπο
 function jobAccount(R,w){
@@ -2910,7 +2958,7 @@ function officeNote(){const p=planOf();if(!UI.users)return '';const n=officeUser
 // διακόπτες λειτουργιών: ο διαχειριστής κλείνει ό,τι δεν χρειάζεται η εταιρεία
 const SW=[
   ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.'],['push','Ειδοποιήσεις στο κινητό','Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση, χωρίς χρέωση.']]],
-  ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['diary','Ημερολόγιο έργου','Κάθε μέρα του έργου: ποιοι δούλεψαν, τι έγινε, καιρός, σημειώσεις και φωτογραφίες από το εργοτάξιο, σε PDF για τον πελάτη.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
+  ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['diary','Ημερολόγιο έργου','Κάθε μέρα του έργου: ποιοι δούλεψαν, τι έγινε, καιρός, σημειώσεις και φωτογραφίες από το εργοτάξιο, σε PDF για τον πελάτη.'],['client','Σελίδα για τον πελάτη','Ιδιωτικός σύνδεσμος ανά έργο όπου ο πελάτης βλέπει την πρόοδο, το ημερολόγιο και τις φωτογραφίες, χωρίς ονόματα και κόστη.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
   ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['profit','Κέρδος ανά έργο','Τιμή συμβολαίου, υλικά και έξοδα, με το κέρδος κάθε έργου.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
   ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
@@ -3279,6 +3327,16 @@ document.addEventListener('click',e=>{
     case 'dprgo':{const f=document.getElementById('dpf');if(!f)break;const a0=f.querySelector('#dp_from').value,b0=f.querySelector('#dp_to').value||TODAY;
       if(!a0||b0<a0){toast('Η τελευταία μέρα είναι πριν από την πρώτη.');break}
       const full=f.querySelector('[name=dp_m]:checked').value==='full',ph=f.querySelector('#dp_ph').checked;closeModal();printDiary(f.dataset.p,a0,b0,full,ph);break}
+    case 'cprev':clPreview(el.dataset.p);break;
+    case 'cset':clForm(el.dataset.p);break;
+    case 'csave':clSave();break;
+    case 'cpw':{UI.clW=+el.dataset.w;const f=document.getElementById('cl_if');if(f)f.style.width=UI.clW+'px';el.parentNode.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b===el));break}
+    case 'cmake':{const p=P(el.dataset.p);if(!p)break;p.share={...(p.share||{}),t:newTok(),at:stamp()};UI.hmsg='Σελίδα πελάτη: σύνδεσμος για «'+p.name+'»';commit('Ο σύνδεσμος είναι έτοιμος. Στείλ’ τον στον πελάτη.');break}
+    case 'ccopy':{const p=P(el.dataset.p);if(p&&clLink(p))copy(clLink(p),document.getElementById('cl_url'));break}
+    case 'cnew':{const p=P(el.dataset.p);if(!p)break;if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Ο παλιός σταματά. Πάτα ξανά';break}
+      p.share={...(p.share||{}),t:newTok(),at:stamp()};UI.hmsg='Σελίδα πελάτη: νέος σύνδεσμος για «'+p.name+'»';commit('Νέος σύνδεσμος. Ο παλιός δεν ανοίγει πια.');break}
+    case 'coff':{const p=P(el.dataset.p);if(!p||!p.share)break;if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά';break}
+      const {t,at,...rest}=p.share;p.share=rest;UI.hmsg='Σελίδα πελάτη: κλείσιμο συνδέσμου για «'+p.name+'»';commit('Ο σύνδεσμος έκλεισε. Ο πελάτης δεν βλέπει πια τη σελίδα.');break}
     case 'mynote':myNoteForm();break;
     case 'mysend':{const t=(document.getElementById('mp_text')||{}).value||'',pp=el.dataset.note?null:UI.myPP;if(!pp&&!t.trim()){toast('Γράψε τη σημείωση.');break}
       el.disabled=true;UI.myPhBusy=true;myAct('diary',{p:UI.mdP,text:t,pp}).then(ok=>{UI.myPhBusy=false;el.disabled=false;if(!ok){render();return}UI.myPP=null;closeModal();render();

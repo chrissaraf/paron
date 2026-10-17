@@ -138,7 +138,7 @@ function demo(){
     w('w17','Ηλίας Μπέκας','gen','voith',50,'698 027 5541'),
   ];
   const projects=[
-    {id:'p1',name:'Πολυκατοικία Καλαμαριάς',location:'Κομνηνών 24, Καλαμαριά',budget:24000,color:'p1',managers:['w19'],...WX_DEMO.p1},
+    {id:'p1',name:'Πολυκατοικία Καλαμαριάς',location:'Κομνηνών 24, Καλαμαριά',budget:24000,color:'p1',managers:['w19'],...WX_DEMO.p1,share:clientDemo()},
     {id:'p2',name:'Μονοκατοικία Πανοράματος',location:'Αγ. Αντωνίου 7, Πανόραμα',budget:9500,color:'p2',managers:['w19','w21'],...WX_DEMO.p2},
     {id:'p3',name:'Κατάστημα Τσιμισκή',location:'Τσιμισκή 112, Θεσσαλονίκη',budget:5200,color:'p3',managers:['w21']},
   ];
@@ -536,6 +536,119 @@ function wxLogDemo(wd){wd=wd||[1,2,3,4,5,6];const o={},C0=[[1,13,22,0,5],[2,12,2
   for(let i=1,k=0;i<=14;i++){const d=add(TODAY,-i);if(!wd.includes(dow(d)))continue;const c=C0[k++%C0.length];
     ['p1','p2','p3'].forEach((p,j)=>{o[d+'|'+p]={code:c[0],tmin:c[1]+(j===1?-1:0),tmax:c[2]+(j===1?-1:0),mm:c[3],p:c[4]}})}
   return o}
+/* ---------- Σελίδα προόδου για τον πελάτη ----------
+   Ιδιωτικός σύνδεσμος ανά έργο (p.share.t), που ανοίγει χωρίς κωδικό. Ο πελάτης βλέπει πρόοδο, εργασίες, ημερολόγιο και φωτογραφίες.
+   Ποτέ ονόματα, μεροκάματα, κόστη, προμηθευτές, ώρες ή ό,τι είναι «Μόνο για εμάς». Ο server φτιάχνει τη σελίδα χωρίς JavaScript. */
+const DAYS_L=['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'],MON_G=['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
+const fmtL=s=>{const d=pd(s);return DAYS_L[d.getDay()]+' '+d.getDate()+' '+MON_G[d.getMonth()]+(d.getFullYear()!==pd(TODAY).getFullYear()?' '+d.getFullYear():'')};
+const CL_DAYS=14,CL_PH=24,CL_MSG=500,CL_TOK=/^[A-Za-z0-9_-]{20,64}$/;
+const clientOn=()=>hasF('client');
+const shareOf=p=>p&&p.share&&CL_TOK.test(p.share.t||'')?p.share:null;
+const clientOpt=p=>{const o=(p&&p.share&&p.share.opt)||{};return {ph:o.ph!==0,days:o.days!==0,plan:o.plan!==0,end:o.end!==0}};
+const byShare=t=>typeof t==='string'&&CL_TOK.test(t)?S.projects.find(p=>shareOf(p)&&p.share.t===t)||null:null;
+// η φωτογραφία ανήκει στο έργο και επιτρέπεται να τη δει ο πελάτης
+const clientPhotoOk=(pid,id)=>clientOpt(P(pid)).ph&&diaryList().some(r=>r.p===pid&&r.ph&&r.ph.id===id&&!r.hide);
+function clientView(R,pid,all){const p=P(pid);if(!p)return null;const o=clientOpt(p),sh=p.share||{},co=(S.settings&&S.settings.company)||{};
+  const ts=S.tasks.filter(t=>t.projectId===pid),worked={},cur={},F=diaryFin(R,pid);
+  Object.keys(R.byDay).forEach(d=>R.byDay[d].jobs.forEach(j=>{const t=j.task;if(!t||t.projectId!==pid)return;
+    if(d<TODAY&&j.lead)worked[t.id]=(worked[t.id]||0)+1;if(d===TODAY)cur[t.id]=j.dayNo||1}));
+  let tot=0,dn=0;
+  const rows=ts.map(t=>{const days=Math.max(1,+t.days||1),f=R.finish[t.id],done=t.status==='done'||(!!f&&f<TODAY&&!cur[t.id]);
+    const w=done?days:Math.min(days,worked[t.id]||0);tot+=days;dn+=w;
+    const st=done?'done':cur[t.id]||(w>0&&R.begin[t.id]&&R.begin[t.id]<=TODAY)?'now':'next';
+    return {title:t.title,st,days,day:cur[t.id]||null,from:R.begin[t.id]||null,to:(done?F[t.id]||f||t.doneOn:f)||null}});
+  const ord=(a,b)=>String(a||'9999').localeCompare(String(b||'9999'));
+  const done=rows.filter(r=>r.st==='done').sort((a,b)=>ord(a.to,b.to)),now=rows.filter(r=>r.st==='now').sort((a,b)=>ord(a.from,b.from)),next=rows.filter(r=>r.st==='next').sort((a,b)=>ord(a.from,b.from));
+  const pct=!tot?0:done.length===rows.length?100:Math.min(99,Math.round(dn/tot*100));
+  const fin=rows.map(r=>r.to).filter(Boolean).sort().pop()||null;
+  const end=!o.end||!rows.length?null:done.length===rows.length?{k:'done',d:fin}:hasF('deadline')&&p.due?{k:'due',d:p.due}:R.unplanned.some(t=>t.projectId===pid)||!fin?null:{k:'est',d:fin};
+  let days=[],more=false,gal=[];
+  if(o.days){
+    for(const d of diaryDays(R,pid)){const x=diaryDay(R,pid,d,F),items=x.items.filter(r=>!r.hide);
+      if(!x.jobs.length&&!items.length&&!x.wet.length)continue;
+      if(!all&&days.length>=CL_DAYS){more=true;break}
+      const sp=new Map();x.people.filter(q=>!q.pm).forEach(q=>{const k=q.sp||'Άλλοι';sp.set(k,(sp.get(k)||0)+1)});
+      days.push({d,wx:x.wx?wxText(x.wx):'',jobs:x.jobs.map(j=>({title:j.title,day:j.day,days:j.days,end:j.end})),wet:x.wet,crew:x.crew,sp:[...sp],
+        notes:items.filter(r=>!r.ph).map(r=>r.text),ph:o.ph?items.filter(r=>r.ph).map(r=>({ph:r.ph,text:r.text})):[]})}}
+  else if(o.ph)gal=diaryPhotos(pid).filter(r=>!r.hide).slice(0,all?999:CL_PH).map(r=>({ph:r.ph,text:r.text,d:r.d}));
+  return {co:{name:co.name||'',phone:co.phone||''},p:{name:p.name,loc:p.location||''},o,pct,rows:rows.length,done,now,next,end,
+    msg:String(sh.msg||'').slice(0,CL_MSG),days,more,gal,at:stamp(),today:TODAY}}
+// η σελίδα: ίδιο HTML στον server και στην προεπισκόπηση της εφαρμογής. u.ph(ph,big) δίνει τη διεύθυνση της φωτογραφίας, u.all τον σύνδεσμο για όλες τις μέρες
+const CL_CSS=`:root{--bg:#E8ECE4;--card:#F6F8F3;--ink:#17241F;--mut:#56655F;--line:#D6DDD2;--forest:#0E3B34;--lime:#C2CF7E;--soft:#E8EDCD;--softink:#2E5310;--seg:rgba(255,255,255,.16)}
+@media (prefers-color-scheme:dark){:root{--bg:#0B2C27;--card:#113A33;--ink:#E7EEE4;--mut:#A7B8B0;--line:#21504A;--soft:#26391C;--softink:#DCE6B5}.hero{box-shadow:inset 0 0 0 1px var(--line)}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Commissioner,system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:760px;margin:0 auto;padding:12px 16px 24px}
+.top{display:flex;align-items:center;gap:12px;min-height:52px}.co{flex:1;font-weight:700;font-size:17px;line-height:1.25}
+.call{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:600;white-space:nowrap}
+.call svg{width:18px;height:18px}
+.hero{background:var(--forest);color:#EEF3EA;border-radius:22px;padding:22px 20px 20px;margin-top:4px}
+.hero h1{font:800 clamp(30px,7vw,44px)/1.04 "Fira Sans Condensed",Commissioner,sans-serif;margin:0;letter-spacing:-.01em}
+.loc{color:#B3C5BD;margin:4px 0 0}
+.pg{margin:20px 0 0;font-size:17px}.pg b{font:800 30px/1 "Fira Sans Condensed",sans-serif;color:var(--lime);margin-right:4px}
+.strip{display:flex;gap:3px;height:16px;margin:10px 0 0}.strip i{flex:var(--d) 1 0;min-width:4px;border-radius:4px;background:var(--seg)}
+.strip i.done{background:var(--lime)}.strip i.now{background:repeating-linear-gradient(135deg,var(--lime) 0 5px,#8FA154 5px 10px)}
+.kv{display:grid;gap:4px;margin:16px 0 0;font-size:15.5px}.kv span{color:#B3C5BD}.kv b{font-weight:600;color:#fff}
+.msg{background:var(--soft);color:var(--softink);border-radius:16px;padding:14px 16px;margin:14px 0 0;white-space:pre-line}.msg small{display:block;opacity:.8;margin-bottom:2px;font-size:13px}
+h2{font:800 23px/1.2 "Fira Sans Condensed",Commissioner,sans-serif;margin:30px 0 10px}
+.list{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:18px}
+.list li{display:flex;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}.list li:first-child{border-top:0}
+.mk{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);margin-top:1px;display:grid;place-items:center}
+.done .mk{background:var(--lime);border-color:var(--lime);color:#21360F}.mk svg{width:14px;height:14px}
+.now .mk{border-color:var(--ink)}.now .mk:after{content:"";width:10px;height:10px;border-radius:50%;background:var(--ink)}
+.t{flex:1;min-width:0}.t b{font-weight:600}.when{display:block;color:var(--mut);font-size:14.5px}.done .t b{font-weight:500}
+details.list{padding:0}details.list summary{padding:12px 16px;cursor:pointer;color:var(--mut);list-style:none}details.list summary::-webkit-details-marker{display:none}
+details.list summary:before{content:"+ "}details[open].list summary:before{content:"− "}details.list ul{list-style:none;margin:0;padding:0}
+.list+.list{margin-top:8px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin:0 0 10px}
+.dh{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}.dh b{font-weight:700;font-size:17px}.tag{font-size:13px;font-weight:600;background:var(--soft);color:var(--softink);padding:1px 8px;border-radius:999px}
+.wx{color:var(--mut);font-size:14.5px;flex-basis:100%}
+.day p{margin:7px 0 0}.day .l{color:var(--mut)}.note{border-left:3px solid var(--lime);padding-left:10px}
+.ph{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:12px}
+.ph a{display:block;position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:var(--line);color:#fff;text-decoration:none}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}.ph a:only-child{grid-column:1/-1;max-width:460px}
+.ph span{position:absolute;left:0;right:0;bottom:0;padding:16px 8px 6px;font-size:13px;line-height:1.3;background:linear-gradient(transparent,rgba(0,0,0,.62));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.more{display:block;text-align:center;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;text-decoration:none}
+.empty{color:var(--mut)}
+footer{color:var(--mut);font-size:13.5px;margin:30px 0 8px;text-align:center}footer p{margin:2px 0}
+a:focus-visible,summary:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+@media (min-width:640px){.w{padding:20px 24px 32px}.hero{padding:28px 30px 26px}.kv{grid-template-columns:auto 1fr;column-gap:14px}}
+@media print{body{background:#fff}.call,.more{display:none}.hero{border:1px solid #ccc}}`;
+const CL_OK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CL_TEL='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5l2.6.4 1.3 4-2 1.5a12 12 0 0 0 6.1 6.1l1.5-2 4 1.3.4 2.6c-.1 1.5-1.4 2.6-2.9 2.6C10.3 20 4 13.7 4 6.4c0-1.5 1.1-2.8 2.6-2.9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+function clientHtml(v,u){const tel=String(v.co.phone||'').replace(/[^\d+]/g,'');
+  const jobTxt=j=>h(j.title)+(j.end?' (τελείωσε)':j.days>1?' (μέρα '+j.day+' από '+j.days+')':'');
+  const li=r=>`<li class="${r.st}"><span class="mk">${r.st==='done'?CL_OK:''}</span><span class="t"><b>${h(r.title)}</b><span class="when">${
+    r.st==='done'?(r.to?'Τελείωσε '+h(fmtL(r.to)):'Τελείωσε'):r.st==='now'?(r.day?'Σε εξέλιξη, μέρα '+r.day+' από '+r.days:'Σε εξέλιξη'):!v.o.plan?'Ακολουθεί':r.from?'Ξεκινά '+h(fmtL(r.from)):'Θα μπει σύντομα στο πρόγραμμα'}</span></span></li>`;
+  const phs=xs=>(xs=xs.filter(x=>u.ph(x.ph,false))).length?`<div class="ph">${xs.map(x=>`<a href="${h(u.ph(x.ph,true))}" target="_blank" rel="noopener"><img src="${h(u.ph(x.ph,false))}" alt="${h(x.text||'Φωτογραφία από το εργοτάξιο')}" loading="lazy">${x.text?`<span>${h(x.text)}</span>`:''}</a>`).join('')}</div>`:'';
+  const crew=x=>x.crew?(x.crew==1?'1 άτομο':x.crew+' άτομα')+(x.sp.length?' ('+x.sp.map(([s,n])=>h(s)+' '+n).join(', ')+')':''):'';
+  const day=x=>`<article class="day"><div class="dh"><b>${h(fmtL(x.d))}</b>${x.d===v.today?'<span class="tag">Σήμερα</span>':''}${x.wx?`<span class="wx">${h(x.wx)}</span>`:''}</div>
+    ${x.jobs.length?`<p><span class="l">${x.d===v.today?'Σήμερα':'Έγινε'}:</span> ${x.jobs.map(jobTxt).join(', ')}</p>`:''}
+    ${x.wet.length?`<p><span class="l">Δεν έγινε λόγω καιρού:</span> ${h(x.wet.join(', '))}</p>`:''}
+    ${x.crew?`<p><span class="l">Στο εργοτάξιο:</span> ${crew(x)}</p>`:''}
+    ${x.notes.map(t=>`<p class="note">${h(t).replace(/\n/g,'<br>')}</p>`).join('')}${phs(x.ph)}</article>`;
+  const segs=[...v.done,...v.now,...v.next].map(r=>`<i class="${r.st}" style="--d:${r.days}"></i>`).join('');
+  const cur=v.now.length?v.now.map(r=>h(r.title)).join(', '):'';
+  const endTxt=v.end?(v.end.k==='done'?['Ολοκληρώθηκε',fmtL(v.end.d)]:v.end.k==='due'?['Παράδοση',fmtL(v.end.d)]:['Εκτιμώμενο τέλος',fmtL(v.end.d)]):null;
+  const nextUp=!cur&&v.next.length&&v.o.plan&&v.next[0].from?v.next[0]:null;
+  const old=v.done.length>4?v.done.slice(0,v.done.length-3):[],recent=v.done.slice(old.length);
+  return `<div class="w"><header class="top"><div class="co">${h(v.co.name||'Πρόοδος του έργου')}</div>${tel?`<a class="call" href="tel:${h(tel)}">${CL_TEL}Κλήση</a>`:''}</header>
+  <section class="hero"><h1>${h(v.p.name)}</h1>${v.p.loc?`<p class="loc">${h(v.p.loc)}</p>`:''}
+    ${v.rows?`<p class="pg"><b>${v.pct}%</b> ${v.pct===100?'ολοκληρώθηκε':'της δουλειάς έχει γίνει'}</p><div class="strip" aria-hidden="true">${segs}</div>`:'<p class="pg">Οι εργασίες του έργου μπαίνουν σύντομα.</p>'}
+    ${cur||endTxt||nextUp?`<div class="kv">${cur?`<span>Τώρα</span><b>${cur}</b>`:''}${nextUp?`<span>Επόμενο</span><b>${h(nextUp.title)}, ${h(fmtL(nextUp.from))}</b>`:''}${endTxt?`<span>${endTxt[0]}</span><b>${h(endTxt[1])}</b>`:''}</div>`:''}</section>
+  ${v.msg?`<div class="msg"><small>Μήνυμα από ${h(v.co.name||'την εταιρεία')}</small>${h(v.msg)}</div>`:''}
+  ${v.rows?`<h2>Εργασίες</h2>${old.length?`<details class="list"><summary>${old.length==1?'1 ακόμη εργασία τελείωσε':old.length+' ακόμη εργασίες τελείωσαν'} νωρίτερα</summary><ul>${old.map(li).join('')}</ul></details>`:''}<ul class="list">${[...recent,...v.now,...v.next].map(li).join('')}</ul>`:''}
+  ${v.o.days?`<h2>Ημερολόγιο</h2>${v.days.length?v.days.map(day).join(''):'<p class="empty">Οι μέρες γράφονται εδώ μόλις ξεκινήσει η δουλειά στο εργοτάξιο.</p>'}${v.more&&u.all?`<a class="more" href="${h(u.all)}">Όλες οι μέρες</a>`:''}`
+    :v.gal.length?`<h2>Φωτογραφίες</h2>${phs(v.gal)}`:''}
+  <footer><p>Ενημερώθηκε ${h(fmtL(String(v.at).slice(0,10)))}, ${h(String(v.at).slice(11,16))}.</p><p>Ο σύνδεσμος είναι προσωπικός, για εσάς.</p><p>Με το ${h(BRAND.name)}</p></footer></div>`}
+const CL_FONTS='https://fonts.googleapis.com/css2?family=Commissioner:wght@400..800&family=Fira+Sans+Condensed:wght@800&display=swap';
+const clientDoc=(v,u)=>`<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><meta name="color-scheme" content="light dark">
+<title>${h(v.p.name)}: πρόοδος${v.co.name?' · '+h(v.co.name):''}</title><link rel="stylesheet" href="${CL_FONTS}"><style>${CL_CSS}</style></head><body>${clientHtml(v,u)}</body></html>`;
+const clientGone=()=>`<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Ο σύνδεσμος δεν ισχύει</title><style>${CL_CSS}</style></head>
+<body><div class="w"><section class="hero" style="margin-top:24px"><h1>Ο σύνδεσμος δεν ισχύει</h1><p class="loc">Ζητήστε νέο σύνδεσμο από την εταιρεία που κάνει το έργο.</p></section></div></body></html>`;
+// demo: μία σελίδα πελάτη ήδη ανοιχτή στο πρώτο έργο, ώστε να φαίνεται στην προεπισκόπηση
+const TOK_A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const newTok=()=>{const b=new Uint8Array(24),c=globalThis.crypto;if(c&&c.getRandomValues)c.getRandomValues(b);else for(let i=0;i<24;i++)b[i]=Math.random()*256|0;return [...b].map(x=>TOK_A[x&63]).join('')};   // 144 bit
+const clientDemo=()=>({t:newTok(),at:stamp(),opt:{ph:1,days:1,plan:1,end:1},msg:'Από Δευτέρα ξεκινούν οι ηλεκτρολογικές σωληνώσεις στον 2ο όροφο. Θα σας πούμε από πριν αν χρειαστεί να κλείσει το ρεύμα στο κλιμακοστάσιο.'});
 // demo: ένα αίτημα άδειας που περιμένει και μία «+1 μέρα» από την προηγούμενη μέρα (η επιπλέον μέρα είναι ήδη μέσα στις μέρες της εργασίας)
 function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(weekStart(TODAY),8);
   return [{id:'fd1',k:'more',w:'w1',t:'t1',d:y,note:'Δεν ήρθαν τα τούβλα, συνεχίζουμε αύριο',at:y+'T16:40',st:'ok'},
@@ -1239,7 +1352,7 @@ function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progr
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
