@@ -241,8 +241,6 @@ input[type=range]{width:100%;accent-color:var(--btn-bg);height:28px;margin:0}
 .plans-foot a{color:var(--ink);font-weight:600}
 .plan li.inc{display:block;font-weight:600}
 .soon{display:inline-block;vertical-align:2px;margin-left:6px;padding:2px 6px;border-radius:5px;background:var(--accent-soft);color:var(--accent-soft-ink);font:700 11px/1.2 var(--f-display);letter-spacing:.08em;white-space:nowrap}
-.soon-note{margin-top:14px;color:var(--muted);font-size:14px}
-.soon-note .soon{margin:0 6px 0 0}
 .compare{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .compare summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;font-weight:600;font-size:17px}
 .compare summary::-webkit-details-marker{display:none}
