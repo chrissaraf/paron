@@ -56,7 +56,8 @@ function saveState(o) {
 const UNDO = path.join(CFG.dataDir, 'undo');
 function saveUndo(ids, prev) {
   fs.mkdirSync(UNDO, { recursive: true, mode: 0o700 });
-  writeJSON(path.join(UNDO, ids[ids.length - 1].replace(/[^\w-]/g, '') + '.json'), { ids, at: now(), state: prev });
+  const { past, ...rest } = prev || {};   // οι καταγεγραμμένες μέρες δεν αναιρούνται
+  writeJSON(path.join(UNDO, ids[ids.length - 1].replace(/[^\w-]/g, '') + '.json'), { ids, at: now(), state: rest });
   const fs_ = fs.readdirSync(UNDO).filter(f => f.endsWith('.json')).map(f => ({ f, t: fs.statSync(path.join(UNDO, f)).mtimeMs })).sort((a, b) => a.t - b.t);
   fs_.slice(0, -15).forEach(x => fs.unlinkSync(path.join(UNDO, x.f)));
 }
@@ -160,6 +161,26 @@ async function runSend(date, trigger, week = false, changed = false) {
     return { ok: true, message: msg, sent, dry, failed, skipped };
   } finally { running = false; }
 }
+// σύνοψη εβδομάδας στο Viber του εργολάβου (πακέτο Συνεργείο και πάνω)
+async function runSum(date, trigger) {
+  const S = readJSON(F.state, null);
+  if (!S || !S.settings) return { ok: false, message: 'Δεν υπάρχουν ακόμη δεδομένα στον server.' };
+  C.setState(withPlan(S));
+  if (!C.hasF('weekly')) return { ok: false, message: 'Η σύνοψη εβδομάδας δεν περιλαμβάνεται στο πακέτο.' };
+  const owner = C.ownerW(), phone = normPhone(owner.phone);
+  const text = C.weekSumText(C.weekSum(C.schedule(), C.weekStart(date)));
+  const entry = { at: now(), date, trigger: trigger + '-sum', kind: 'sum', workerId: C.OWNER, name: owner.name, phone: owner.phone || '' };
+  const log = readJSON(F.log, []);
+  let r;
+  if (!phone) { log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); r = { ok: false, message: 'Δεν υπάρχει σωστό κινητό του εργολάβου στις Ρυθμίσεις.' }; }
+  else {
+    try { const x = await sendOne(phone, text); log.push({ ...entry, status: x.status, text }); r = { ok: true, message: x.status === 'sent' ? 'Η σύνοψη στάλθηκε στον εργολάβο.' : 'Δοκιμαστική λειτουργία: η σύνοψη ετοιμάστηκε χωρίς να σταλεί.' }; }
+    catch (e) { log.push({ ...entry, status: 'error', error: e.message, text }); r = { ok: false, message: 'Η σύνοψη δεν στάλθηκε: ' + e.message }; }
+  }
+  writeJSON(F.log, log.slice(-3000));
+  console.log(now(), trigger, 'sum', date, r.message);
+  return r;
+}
 // ποιοι πήραν ήδη το πρόγραμμα μιας μέρας και από τότε τους άλλαξε (π.χ. η βροχή μετέθεσε την εργασία τους)
 function changedSince(date) {
   const S = readJSON(F.state, null);
@@ -184,6 +205,21 @@ setInterval(() => {
   if ((meta.sentFor || []).includes(today)) { meta.lastAuto = today; writeJSON(F.meta, meta); runSend(today, 'auto', false, true).catch(e => console.error('auto update', e)); return; }
   meta.lastAuto = today; writeJSON(F.meta, meta);
   runSend(today, 'auto').catch(e => console.error('auto send', e));
+}, 30000);
+
+// η σύνοψη της εβδομάδας φεύγει μία φορά, τη μέρα και την ώρα που ορίζονται στις Ρυθμίσεις
+setInterval(() => {
+  const S = readJSON(F.state, null);
+  const c = S && S.settings && S.settings.sum;
+  if (!c || !c.auto) return;
+  const d = new Date(), today = C.ds(d);
+  if (d.getDay() !== +(c.day ?? C.SUM_D.day)) return;
+  const [sh, sm] = String(c.time || C.SUM_D.time).split(':').map(Number);
+  const late = d.getHours() * 60 + d.getMinutes() - (sh * 60 + sm);
+  const meta = readJSON(F.meta, {});
+  if (meta.lastSum === today || late < 0 || late > 120) return;
+  meta.lastSum = today; writeJSON(F.meta, meta);
+  runSum(today, 'auto').catch(e => console.error('auto sum', e));
 }, 30000);
 
 // --- εφαρμογή για κινητά (PWA): εικονίδια, manifest, service worker ---
@@ -376,6 +412,7 @@ http.createServer(async (req, res) => {
       const o = u.state;
       o.hist = (cur.hist || []).concat({ id: 'h' + Date.now().toString(36), at: now().slice(0, 16), by: me.name, msg: 'Αναίρεση: ' + t.msg, undo: u.ids });
       o.dutyDone = cur.dutyDone || {};   // τα «έγινε» των υπενθυμίσεων μένουν όπως είναι
+      o.past = cur.past || {};           // και οι μέρες που πέρασαν
       if (o.settings) { delete o.settings.planLock; if (CFG.plan) o.settings.plan = CFG.plan; }
       saveState(o); try { fs.unlinkSync(u.file); } catch {}
       console.log(now(), 'αναίρεση', me.username, t.msg);
@@ -394,6 +431,7 @@ http.createServer(async (req, res) => {
       const log = readJSON(F.log, []);
       return send(res, 200, { mode: CFG.provider === 'http' ? 'live' : 'dryrun', lastAuto: readJSON(F.meta, {}).lastAuto || null, log: log.slice(-40).reverse().map(({ text, ...x }) => x) });
     }
+    if (url.pathname === '/api/sum/send' && req.method === 'POST') return send(res, 200, await runSum(C.ds(new Date()), 'manual'));
     if (url.pathname === '/api/viber/send' && req.method === 'POST') {
       const b = JSON.parse((await readBody(req)) || '{}');
       const date = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : C.ds(new Date());
