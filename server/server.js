@@ -153,12 +153,24 @@ async function runSend(date, trigger, week = false, changed = false) {
       catch (e) { failed++; log.push({ ...entry, status: 'error', error: e.message, text }); }
     }
     writeJSON(F.log, log.slice(-3000));
+    // το ίδιο πρόγραμμα ως ειδοποίηση στο κινητό, σε όσους έχουν λογαριασμό και την ενεργοποίησαν
+    let pushed = 0;
+    if (pushOn(S)) for (const w of S.workers) {
+      const us = usersOf(w.id);
+      if (!us.length || (only && !only.has(w.id))) continue;
+      if (!only && C.isExt(w) && !C.hasJob(R, w.id, days)) continue;
+      if (!week && !only && C.isRest(w, date) && !C.isLeave(w, date)) continue;
+      const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date, !!only);
+      const title = week ? 'Το πρόγραμμά σου για την εβδομάδα ' + C.fmtS(C.weekStart(date)) : (only ? 'Άλλαξε το πρόγραμμά σου για ' : 'Το πρόγραμμά σου για ') + C.fmt(date);
+      pushed += (await pushTo(us, 'day', { title, body: pushBody(text), url: '/', tag: 'day-' + (week ? 'w' : '') + date })).sent;
+    }
     const what = only ? ' με την αλλαγή' : '';
     const msg = CFG.provider === 'http'
       ? `Στάλθηκαν ${sent} μηνύματα${what}${failed ? ', ' + failed + ' απέτυχαν' : ''}${skipped ? ', ' + skipped + ' παραλείφθηκαν' : ''}.`
       : `Δοκιμαστική λειτουργία: ετοιμάστηκαν ${dry} μηνύματα${what} χωρίς να σταλούν${skipped ? ', ' + skipped + ' παραλείφθηκαν' : ''}.`;
-    console.log(now(), trigger, date, msg);
-    return { ok: true, message: msg, sent, dry, failed, skipped };
+    const msg2 = msg + (pushed ? ` Ειδοποιήσεις στο κινητό: ${pushed}.` : '');
+    console.log(now(), trigger, date, msg2);
+    return { ok: true, message: msg2, sent, dry, failed, skipped, pushed };
   } finally { running = false; }
 }
 // σύνοψη εβδομάδας στο Viber του εργολάβου (πακέτο Συνεργείο και πάνω)
@@ -170,11 +182,12 @@ async function runSum(date, trigger) {
   const owner = C.ownerW(), phone = normPhone(owner.phone);
   const text = C.weekSumText(C.weekSum(C.schedule(), C.weekStart(date)));
   const entry = { at: now(), date, trigger: trigger + '-sum', kind: 'sum', workerId: C.OWNER, name: owner.name, phone: owner.phone || '' };
+  const pushed = pushOn(S) ? (await pushTo(USERS.filter(u => u.role === 'admin'), 'sum', { title: 'Σύνοψη εβδομάδας ' + C.fmtS(C.weekStart(date)), body: pushBody(text), url: '/?tab=today', tag: 'sum-' + date })).sent : 0;
   const log = readJSON(F.log, []);
   let r;
-  if (!phone) { log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); r = { ok: false, message: 'Δεν υπάρχει σωστό κινητό του εργολάβου στις Ρυθμίσεις.' }; }
+  if (!phone) { log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); r = pushed ? { ok: true, message: 'Η σύνοψη στάλθηκε ως ειδοποίηση στο κινητό. Για Viber γράψε το κινητό του εργολάβου στις Ρυθμίσεις.' } : { ok: false, message: 'Δεν υπάρχει σωστό κινητό του εργολάβου στις Ρυθμίσεις.' }; }
   else {
-    try { const x = await sendOne(phone, text); log.push({ ...entry, status: x.status, text }); r = { ok: true, message: x.status === 'sent' ? 'Η σύνοψη στάλθηκε στον εργολάβο.' : 'Δοκιμαστική λειτουργία: η σύνοψη ετοιμάστηκε χωρίς να σταλεί.' }; }
+    try { const x = await sendOne(phone, text); log.push({ ...entry, status: x.status, text }); r = { ok: true, message: (x.status === 'sent' ? 'Η σύνοψη στάλθηκε στον εργολάβο.' : 'Δοκιμαστική λειτουργία: η σύνοψη ετοιμάστηκε χωρίς να σταλεί στο Viber.') + (pushed ? ' Στάλθηκε και ως ειδοποίηση στο κινητό.' : '') }; }
     catch (e) { log.push({ ...entry, status: 'error', error: e.message, text }); r = { ok: false, message: 'Η σύνοψη δεν στάλθηκε: ' + e.message }; }
   }
   writeJSON(F.log, log.slice(-3000));
@@ -293,6 +306,41 @@ const failKey = (req, u) => clientIp(req) + '|' + u;
 const isLocked = k => { const f = FAILS.get(k); return !!(f && f.until > Date.now()); };
 function addFail(k) { const f = FAILS.get(k) || { n: 0, until: 0 }; if (f.until && f.until <= Date.now()) { f.n = 0; f.until = 0; } if (++f.n >= 8) f.until = Date.now() + 15 * 60e3; FAILS.set(k, f); }
 
+// --- ειδοποιήσεις στο κινητό (Web Push, πακέτο Συνεργείο) ---
+// Κάθε συσκευή που τις ενεργοποιεί γράφεται στο data/push.json, ανά χρήστη. Τα κλειδιά του server (VAPID) φτιάχνονται μία φορά.
+// Δεν χρειάζεται πάροχος ούτε χρέωση: τις παραδίδει η υπηρεσία του browser (Google, Apple, Mozilla).
+// Είδη: day = το πρόγραμμα της μέρας και οι αλλαγές του, leave = απάντηση σε αίτημα άδειας,
+//       field = αναφορές και αιτήματα από το εργοτάξιο (γραφείο), sum = σύνοψη εβδομάδας (διαχειριστής).
+const WP = require('./webpush.js');
+F.push = path.join(CFG.dataDir, 'push.json'); F.vapid = path.join(CFG.dataDir, 'vapid.json');
+let VAPID = readJSON(F.vapid, null);
+if (!VAPID || !VAPID.pub || !VAPID.priv) { VAPID = WP.vapidKeys(); writeJSON(F.vapid, VAPID); }
+const PUSH_SUBJ = process.env.PUSH_SUBJECT || 'mailto:info@paron.gr';
+const PUSH_KINDS = { day: 'Το πρόγραμμά μου', leave: 'Απάντηση στις άδειές μου', field: 'Πρόοδος και άδειες από το εργοτάξιο', sum: 'Σύνοψη εβδομάδας' };
+const pushKinds = u => [...(u.workerId ? ['day', 'leave'] : []), ...(u.role !== 'worker' ? ['field'] : []), ...(u.role === 'admin' ? ['sum'] : [])];
+// ανοιχτές για την εταιρεία; (αντίγραφο ρυθμίσεων, ώστε να μη γραφτεί το πακέτο στα δεδομένα)
+const pushOn = S => { if (!S || !S.settings) return false; C.setState(withPlan({ ...S, settings: { ...S.settings } })); return C.hasF('push'); };
+// το κείμενο της ειδοποίησης: χωρίς τον χαιρετισμό, την υπογραφή και κενές γραμμές
+const pushBody = t => { const L = String(t || '').split('\n').map(x => x.trim()).filter(Boolean); return L.slice(1, L.length > 2 ? -1 : undefined).join('\n').slice(0, 400); };
+// kind null = δοκιμή, πάει σε όλες τις συσκευές του χρήστη
+async function pushTo(users, kind, msg) {
+  const db = readJSON(F.push, {}), dead = [];
+  let sent = 0, failed = 0;
+  for (const u of users) {
+    const e = db[u.id];
+    if (!e || !(e.subs || []).length || (kind && ((e.off || []).includes(kind) || !pushKinds(u).includes(kind)))) continue;
+    for (const s of e.subs) {
+      const r = await WP.send(s, { ...msg, kind: kind || 'test' }, VAPID, PUSH_SUBJ);
+      if (r.ok) sent++; else { failed++; if (r.gone) dead.push(s.endpoint); console.log(now(), 'push', u.username, r.status || '', r.error || ''); }
+    }
+  }
+  // συσκευές που δεν δέχονται πια (απεγκαταστάθηκε η εφαρμογή ή έληξε η άδεια) σβήνονται
+  if (dead.length) { const cur = readJSON(F.push, {}); for (const k of Object.keys(cur)) cur[k].subs = (cur[k].subs || []).filter(x => !dead.includes(x.endpoint)); writeJSON(F.push, cur); }
+  return { sent, failed, removed: dead.length };
+}
+const usersOf = wid => USERS.filter(u => u.workerId && u.workerId === wid);
+const officeUsers = () => USERS.filter(u => u.role !== 'worker');
+
 const send = (res, code, body, type = 'application/json; charset=utf-8') => {
   res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store' });
   res.end(typeof body === 'string' ? body : JSON.stringify(body));
@@ -356,6 +404,43 @@ http.createServer(async (req, res) => {
       dropSessions(me.id, session(req));   // αποσυνδέει τις άλλες συσκευές
       return send(res, 200, { ok: true });
     }
+    if (url.pathname.startsWith('/api/push')) {
+      const on = pushOn(readJSON(F.state, null)), db = readJSON(F.push, {}), mine = db[me.id] || { subs: [], off: [] };
+      if (url.pathname === '/api/push' && req.method === 'GET') {
+        const ep = url.searchParams.get('ep') || '';
+        return send(res, 200, { on, key: VAPID.pub, devices: (mine.subs || []).length, here: !!ep && (mine.subs || []).some(x => x.endpoint === ep), kinds: pushKinds(me).map(k => ({ k, name: PUSH_KINDS[k], on: !(mine.off || []).includes(k) })) });
+      }
+      if (req.method === 'POST') {
+        const b = await body(), off = { error: 'Οι ειδοποιήσεις στο κινητό δεν είναι ανοιχτές για την εταιρεία σου.' };
+        if (url.pathname === '/api/push/sub') {
+          if (!on) return send(res, 403, off);
+          const s = b.sub || {}, k = s.keys || {};
+          if (!WP.okEndpoint(s.endpoint) || WP.ub64(k.p256dh).length !== 65 || WP.ub64(k.auth).length < 16) return send(res, 400, { error: 'Η συσκευή δεν έδωσε σωστά στοιχεία για ειδοποιήσεις.' });
+          // μία συσκευή ανήκει σε έναν χρήστη: αν μπήκε άλλος λογαριασμός, φεύγει από τον προηγούμενο
+          for (const id of Object.keys(db)) db[id].subs = (db[id].subs || []).filter(x => x.endpoint !== s.endpoint && (!b.old || x.endpoint !== b.old));
+          const e = db[me.id] = db[me.id] || { subs: [], off: [] };
+          e.subs = [...e.subs, { endpoint: s.endpoint, keys: { p256dh: k.p256dh, auth: k.auth }, ua: String(req.headers['user-agent'] || '').slice(0, 160), at: now() }].slice(-10);
+          writeJSON(F.push, db); console.log(now(), 'ειδοποιήσεις: νέα συσκευή', me.username);
+          return send(res, 200, { ok: true, devices: e.subs.length });
+        }
+        if (url.pathname === '/api/push/unsub') {
+          if (db[me.id]) { db[me.id].subs = (db[me.id].subs || []).filter(x => x.endpoint !== b.endpoint); writeJSON(F.push, db); }
+          return send(res, 200, { ok: true, devices: db[me.id] ? db[me.id].subs.length : 0 });
+        }
+        if (url.pathname === '/api/push/prefs') {
+          const e = db[me.id] = db[me.id] || { subs: [], off: [] };
+          e.off = (Array.isArray(b.off) ? b.off : []).filter(k => PUSH_KINDS[k]); writeJSON(F.push, db);
+          return send(res, 200, { ok: true });
+        }
+        if (url.pathname === '/api/push/test') {
+          if (!on) return send(res, 403, off);
+          if (!(mine.subs || []).length) return send(res, 400, { error: 'Δεν υπάρχει συσκευή με ειδοποιήσεις για τον λογαριασμό σου.' });
+          const r = await pushTo([me], null, { title: C.BRAND.name + ': δοκιμή', body: 'Οι ειδοποιήσεις φτάνουν σε αυτή τη συσκευή.', url: '/', tag: 'test' });
+          return send(res, 200, { ok: r.sent > 0, ...r });
+        }
+      }
+      return send(res, 404, { error: 'Δεν βρέθηκε' });
+    }
     if (me.role === 'worker') {
       // ο εργάτης παίρνει μόνο το δικό του εβδομαδιαίο πρόγραμμα, όχι μεροκάματα, οικονομικά ή άλλους εργαζόμενους
       const S = readJSON(F.state, null), w = S && (S.workers || []).find(x => x.id === me.workerId);
@@ -383,6 +468,15 @@ http.createServer(async (req, res) => {
         delete S.settings.planLock;
         saveState(S);
         console.log(now(), 'από το εργοτάξιο', me.username, url.pathname.slice(8), out.r.k || '');
+        // ειδοποίηση στο γραφείο (χωρίς αναμονή, η απάντηση στον εργαζόμενο φεύγει αμέσως)
+        const r = out.r, t = r.t && S.tasks.find(x => x.id === r.t), pn = t && (S.projects.find(p => p.id === t.projectId) || {}).name;
+        const msg = r.k === 'done' ? { title: w.name + ': τελείωσε «' + (t ? t.title : '') + '»' } : r.k === 'more' ? { title: w.name + ': μία μέρα ακόμη για «' + (t ? t.title : '') + '»' }
+          : r.k === 'leave' && url.pathname === '/api/my/leave' ? { title: w.name + ' ζητά άδεια', body: C.fmt(r.from) + (r.to && r.to !== r.from ? ' έως ' + C.fmt(r.to) : '') } : null;
+        if (msg && pushOn(S)) {
+          if (pn && r.k !== 'leave') msg.body = pn;
+          if (r.note) msg.body = (msg.body ? msg.body + ' · ' : '') + '«' + r.note + '»';
+          pushTo(officeUsers(), 'field', { ...msg, url: '/?tab=today', tag: 'field-' + r.id }).catch(e => console.error('push', e));
+        }
         return send(res, 200, { ok: true });
       }
       return send(res, 403, { error: 'Ο λογαριασμός σου βλέπει μόνο το πρόγραμμά σου.' });
@@ -422,7 +516,13 @@ http.createServer(async (req, res) => {
         fresh.forEach(e => { e.by = me.name; });
         if (cur && fresh.length && !fresh.some(e => e.undo)) saveUndo(fresh.map(e => String(e.id)), cur);
         if (cur) C.mergeField(o, cur);   // ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι δεν χάνεται
-        saveState(o); return send(res, 200, { ok: true });
+        // αιτήματα άδειας που μόλις απαντήθηκαν: ειδοποίηση στον εργαζόμενο
+        const was = new Map(((cur && cur.field) || []).map(r => [r.id, r.st]));
+        const decided = (o.field || []).filter(r => r.k === 'leave' && (r.st === 'ok' || r.st === 'no') && was.get(r.id) === 'new');
+        saveState(o);
+        if (decided.length && pushOn(o)) for (const r of decided)
+          pushTo(usersOf(r.w), 'leave', { title: r.st === 'ok' ? 'Η άδειά σου εγκρίθηκε' : 'Η άδειά σου δεν εγκρίθηκε', body: C.fmt(r.from) + (r.to && r.to !== r.from ? ' έως ' + C.fmt(r.to) : ''), url: '/', tag: 'leave-' + r.id }).catch(e => console.error('push', e));
+        return send(res, 200, { ok: true });
       }
     }
     if (url.pathname === '/api/undo' && req.method === 'POST') {

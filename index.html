@@ -546,6 +546,8 @@ table.pfall td .btn{margin-top:6px}table.pfall .lnk{display:inline-flex;gap:6px;
 .matf .mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
 .matf .mgrid label.full{grid-column:1/-1}
 @media (max-width:520px){.matf .mgrid{grid-template-columns:minmax(0,1fr)}}
+.pinv{border-color:var(--accent-strong);background:var(--accent-soft)}.pinv-t{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}.pinv-t>svg{width:22px;height:22px;flex:none;color:var(--accent-soft-ink);margin-top:2px}
+.pinv b{color:var(--accent-soft-ink)}.pushst{margin-top:10px}.pushst .warnline{margin:0;flex:1}
 .eqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .eq{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);display:flex;flex-direction:column;gap:6px;padding:12px 14px}
 .eqmain{all:unset;display:grid;gap:4px;cursor:pointer}.eqmain:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:4px}
@@ -1696,7 +1698,7 @@ function personWeek(R,w,ws){
     return o})};
 }
 // ό,τι βλέπει ο εργαζόμενος στο «Το πρόγραμμά μου»: η εβδομάδα του και τα δικά του αιτήματα άδειας
-function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave')};
+function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push')};
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
 root.ErgoCore={COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
@@ -1717,9 +1719,11 @@ const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],[
 
 const SERVER=!!window.ERGO_SERVER;
 let S,saveT;
+// με τον server: τίποτα δεν ανεβαίνει πριν διαβαστούν τα δεδομένα του server, ώστε ένα παλιό αντίγραφο του browser να μη γράψει πάνω τους
+let SYNC=!SERVER;
 function setS(x){S=x;ErgoCore.setState(x)}
 function load(){try{const r=localStorage.getItem(LS);if(r){const o=migrate(JSON.parse(r));if(o&&o.v===2)return o}}catch(e){}return demo()}
-function save(){if(isWorker())return;const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}if(SERVER){clearTimeout(saveT);saveT=setTimeout(()=>{saveT=null;push()},300)}}
+function save(auto){if(isWorker())return;if(SERVER&&!SYNC&&!auto&&AUTH.user)toast('Δεν υπάρχει σύνδεση με τον server και η αλλαγή δεν αποθηκεύτηκε. Ξαναδοκίμασε όταν επανέλθει η σύνδεση.');const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}if(SERVER&&SYNC){clearTimeout(saveT);saveT=setTimeout(()=>{saveT=null;push()},300)}}
 // ιστορικό αλλαγών (γράφεται πάντα· η σελίδα και η αναίρεση είναι στο πακέτο Εργοτάξιο)
 const HMAX=300,ULS=LS+'.undo';
 let LAST=null;   // τα δεδομένα όπως ήταν στην τελευταία αποθήκευση: από εκεί γίνεται η αναίρεση χωρίς server
@@ -1729,7 +1733,8 @@ function logChange(msg){if(!msg||isWorker())return null;S.hist=S.hist||[];const 
   ringPush(e.id);return e}
 function ringPush(id){if(!SERVER&&LAST){try{const r=undoRing().slice(-4),o=JSON.parse(LAST);delete o.past;r.push({id,snap:JSON.stringify(o)});localStorage.setItem(ULS,JSON.stringify(r))}catch(err){}}}
 async function push(){if(isWorker())return;try{const r=await fetch('api/state',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(S)});if(r.status===401)return expired();if(!r.ok)throw 0;if(UI.tab==='today')loadChanges(true)}catch(e){toast('Η αλλαγή δεν αποθηκεύτηκε στον server. Έλεγξε τη σύνδεση.')}}
-async function pull(again,quiet){if(isWorker())return false;try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));LAST=JSON.stringify(S);return true}
+async function pull(again,quiet){if(isWorker())return false;if(saveT&&SYNC)return false;   // μια αλλαγή περιμένει να ανέβει: δεν τη σβήνει
+  try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));LAST=JSON.stringify(S);SYNC=true;return true}
   // πρώτη φορά: ο server δεν έχει δεδομένα. Ανεβαίνουν αυτά του browser και ξαναδιαβάζονται, ώστε να ισχύσει το πακέτο της συνδρομής.
   if(again)return false;await push();return pull(true)}catch(e){if(!quiet)toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
 setS(load());LAST=JSON.stringify(S);
@@ -1855,11 +1860,13 @@ function showAuth(mode,msg){
   const f=document.getElementById(setup?'a_name':'a_user');if(f)f.focus();
 }
 function enter(u){
-  AUTH.user=u;
+  AUTH.user=u;PUSH.st=null;SYNC=!SERVER;
   if(SERVER){lsSet(LS+'.me',u);if(u.role==='worker')lsDel(LS)}   // ο εργάτης δεν κρατά αντίγραφο των δεδομένων της εταιρείας
   const a=document.getElementById('auth');a.hidden=true;a.innerHTML='';document.getElementById('toast').hidden=true;
   document.body.classList.add('in');
   if(u.role==='worker'){UI.tab='mine';UI.week=null}else if(UI.tab==='mine')UI.tab='today';
+  // από ειδοποίηση: ανοίγει τη σελίδα που λέει (π.χ. ?tab=today)
+  const qt=new URLSearchParams(location.search).get('tab');if(qt){if(u.role!=='worker'&&TABS.some(t=>t[0]===qt))UI.tab=qt;history.replaceState(null,'',location.pathname)}
   render();fitLogo();window.scrollTo(0,0);
   if(SERVER&&u.role!=='worker')pull().then(ok=>{ok&&render();wxRefresh();guideAuto()});else{wxRefresh();guideAuto()}
 }
@@ -2100,7 +2107,7 @@ function render(){
   if(TAB_F[UI.tab]&&offF(TAB_F[UI.tab]))UI.tab='today';
   const R=isWorker()?null:schedule();
   // οι μέρες που πέρασαν καταγράφονται όπως έγιναν, πριν από οποιαδήποτε αλλαγή
-  if(R&&freezePast(R))save();
+  if(R&&freezePast(R))save(true);
   if(UI.tab==='project'&&!P(UI.proj))UI.tab='projects';
   renderNav();
   const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,profit:vProfit,equip:vEquip,settings:vSettings}[UI.tab]||vToday;
@@ -2108,9 +2115,72 @@ function render(){
   document.getElementById('main').innerHTML=lf&&!hasF(lf)?`<h1>${h(TABS.find(x=>x[0]===UI.tab)[1])}</h1><section class="panel">${upsell(lf)}</section>`:v(R);
   if(UI.sec){const x=document.getElementById(UI.sec);UI.sec='';x&&setTimeout(()=>x.scrollIntoView({block:'start'}),0)}
   if(UI.tab==='settings'){if(SERVER&&!isWorker())loadVStatus();if(isAdmin())loadUsers()}
+  if(SERVER&&(UI.tab==='settings'||UI.tab==='mine'))pushLoad();
   if(UI.tab==='today')loadChanges();
 }
 
+/* Ειδοποιήσεις στο κινητό (πακέτο Συνεργείο): με τον server της εταιρείας, σε κινητό ή υπολογιστή που υποστηρίζει Web Push.
+   Ο καθένας τις ανοίγει στη δική του συσκευή. Ο server κρατά τις συσκευές ανά χρήστη και στέλνει χωρίς πάροχο και χωρίς χρέωση. */
+const PUSH={st:null,load:false,busy:false};
+const pushCan=()=>SERVER&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isApp=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const u8=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((s.length+3)%4)),c=>c.charCodeAt(0));
+// ο service worker γράφεται στη φόρτωση της σελίδας· αν δεν έχει γραφτεί ακόμη, γράφεται εδώ
+const swReady=()=>Promise.race([navigator.serviceWorker.getRegistration().then(r=>r||navigator.serviceWorker.register('/sw.js')).then(()=>navigator.serviceWorker.ready),
+  new Promise((_,no)=>setTimeout(()=>no(new Error('Η εφαρμογή δεν ετοιμάστηκε για ειδοποιήσεις. Ξαναφόρτωσε τη σελίδα.')),8000))]);
+async function pushLoad(force){if(PUSH.load||(PUSH.st&&!force))return;PUSH.load=true;
+  try{let sub=null;if(pushCan()){const reg=await swReady();sub=await reg.pushManager.getSubscription()}
+    PUSH.st={...await api('push'+(sub?'?ep='+encodeURIComponent(sub.endpoint):'')),sub}}
+  catch(e){if(e.status===401){PUSH.load=false;return expired()}PUSH.st={err:e.message}}
+  PUSH.load=false;pushPaint()}
+// ξαναγράφει μόνο τα κομμάτια των ειδοποιήσεων, χωρίς να ξαναστηθεί η σελίδα
+function pushPaint(){const a=document.getElementById('pushp');if(a)a.outerHTML=pushPanel();const b=document.getElementById('pushinv');if(b)b.outerHTML=pushInvite()}
+// τι μπορεί να γίνει σε αυτή τη συσκευή· κενό = μπορεί να ενεργοποιηθεί
+function pushWhy(){
+  if(isIOS()&&!isApp())return 'Στο iPhone οι ειδοποιήσεις έρχονται όταν η εφαρμογή είναι στην αρχική οθόνη. Στο Safari πάτα Κοινοποίηση και «Προσθήκη στην οθόνη Αφετηρίας», και άνοιξέ την από εκεί.';
+  if(!pushCan())return 'Αυτός ο browser δεν δέχεται ειδοποιήσεις. Άνοιξε την εφαρμογή στο κινητό από Chrome ή Safari.';
+  if(Notification.permission==='denied')return 'Οι ειδοποιήσεις είναι μπλοκαρισμένες για την εφαρμογή. Άνοιξέ τες από τις ρυθμίσεις του κινητού ή του browser και ξαναδοκίμασε.';
+  return ''}
+function pushPanel(){
+  const head='<section class="panel" id="pushp"><h2>Ειδοποιήσεις στο κινητό</h2>',end='</section>';
+  if(!isWorker()){if(offF('push'))return '<div id="pushp" hidden></div>';
+    if(!planHas('push'))return head+`<p class="note">Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση στο κινητό, χωρίς χρέωση ανά μήνυμα.</p><div class="bar" style="margin-top:8px">${lockBtn('push','<button>Ειδοποιήσεις στο κινητό</button>')}</div>`+end}
+  if(!SERVER)return head+'<p class="note">Ο καθένας τις ενεργοποιεί στο κινητό του, και του έρχονται το πρόγραμμα της μέρας, οι αλλαγές του και η απάντηση στις άδειες. Στο γραφείο έρχονται η πρόοδος και τα αιτήματα άδειας από το εργοτάξιο. Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.</p>'+end;
+  const st=PUSH.st;
+  if(!st)return head+'<p class="note">Φόρτωση…</p>'+end;
+  if(st.err)return head+`<p class="note">${h(st.err)}</p>`+end;
+  if(!st.on)return isWorker()?'<div id="pushp" hidden></div>':head+'<p class="note">Οι ειδοποιήσεις είναι κλειστές για την εταιρεία.</p>'+end;
+  const why=pushWhy(),busy=PUSH.busy?' disabled':'';
+  return head+`<p class="note">${isWorker()?'Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.':'Ενεργοποίησέ τες σε κάθε κινητό ή υπολογιστή που θέλεις. Κάθε χρήστης τις ανοίγει στη δική του συσκευή.'}</p>
+    <div class="bar pushst">${st.here?`<span class="tag ok">${ico('check')}Ενεργές σε αυτή τη συσκευή</span><button class="btn" data-act="pushtest"${busy}>Δοκιμή</button><button class="btn ghost" data-act="pushoff"${busy}>Απενεργοποίηση</button>`
+      :why?`<p class="warnline">${ico('info')}<span>${h(why)}</span></p>`:`<button class="btn pri" data-act="pushon"${busy}>${ico('bell')}Ενεργοποίηση σε αυτή τη συσκευή</button>`}</div>
+    ${st.devices&&!(st.here&&st.devices===1)?`<p class="note">${st.devices===1?'1 συσκευή':st.devices+' συσκευές'} με ειδοποιήσεις για τον λογαριασμό σου.</p>`:''}
+    ${st.devices&&st.kinds&&st.kinds.length>1?`<div class="fs" style="margin-top:12px"><span class="fl">Τι θέλω να μου έρχεται</span><div class="wd">${st.kinds.map(k=>`<label><input type="checkbox" data-pk="${h(k.k)}"${k.on?' checked':''}> ${h(k.name)}</label>`).join('')}</div></div>`:''}`+end}
+// στο «Το πρόγραμμά μου»: πρόταση μία φορά, μέχρι να την ενεργοποιήσει ή να πει «Όχι τώρα»
+function pushInvite(){const st=PUSH.st,none='<div id="pushinv" hidden></div>';
+  if(!SERVER||!st||st.err||!st.on||st.here||st.devices||lsGet(LS+'.pushinv',0)||pushWhy()&&!(isIOS()&&!isApp()))return none;
+  return `<section class="panel pinv" id="pushinv"><div class="pinv-t">${ico('bell')}<div class="grow"><b>Να σου έρχεται το πρόγραμμα ως ειδοποίηση;</b><div class="note">${isIOS()&&!isApp()?h(pushWhy()):'Μόλις βγαίνει το πρόγραμμα της μέρας ή αλλάζει, το βλέπεις στο κινητό χωρίς να ανοίξεις την εφαρμογή.'}</div></div></div>
+    <div class="bar">${isIOS()&&!isApp()?'':`<button class="btn pri" data-act="pushon">Ενεργοποίηση</button>`}<button class="btn ghost" data-act="pushlater">Όχι τώρα</button></div></section>`}
+async function pushEnable(){if(PUSH.busy)return;PUSH.busy=true;pushPaint();
+  try{const perm=await Notification.requestPermission();
+    if(perm!=='granted'){toast(perm==='denied'?'Οι ειδοποιήσεις μπλοκαρίστηκαν. Άνοιξέ τες από τις ρυθμίσεις του κινητού.':'Δεν δόθηκε άδεια για ειδοποιήσεις.');return}
+    const reg=await swReady();let sub=await reg.pushManager.getSubscription();
+    try{if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(PUSH.st.key)})}
+    catch(e){if(sub)await sub.unsubscribe();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(PUSH.st.key)})}
+    await api('push/sub',{sub:sub.toJSON()});lsSet(LS+'.pushinv',1);
+    toast('Οι ειδοποιήσεις ενεργοποιήθηκαν σε αυτή τη συσκευή.')}
+  catch(e){if(e.status===401)return expired();toast(e.status?e.message:'Δεν ενεργοποιήθηκαν οι ειδοποιήσεις σε αυτή τη συσκευή. Δοκίμασε ξανά.')}
+  finally{PUSH.busy=false;await pushLoad(true)}}
+async function pushDisable(){if(PUSH.busy)return;PUSH.busy=true;pushPaint();
+  try{const reg=await swReady(),sub=await reg.pushManager.getSubscription();if(sub){await api('push/unsub',{endpoint:sub.endpoint});await sub.unsubscribe()}
+    toast('Οι ειδοποιήσεις σταμάτησαν σε αυτή τη συσκευή.')}
+  catch(e){toast(e.message||'Δεν έγινε η αλλαγή. Δοκίμασε ξανά.')}
+  finally{PUSH.busy=false;await pushLoad(true)}}
+async function pushTest(){try{const r=await api('push/test',{});toast(r.sent?'Στάλθηκε δοκιμαστική ειδοποίηση. Θα έρθει σε λίγα δευτερόλεπτα.':'Δεν έφτασε σε καμία συσκευή. Απενεργοποίησέ τες και ενεργοποίησέ τες ξανά.')}
+  catch(e){toast(e.message)}}
+async function pushPrefs(){const off=[...document.querySelectorAll('[data-pk]')].filter(c=>!c.checked).map(c=>c.dataset.pk);
+  try{await api('push/prefs',{off});if(PUSH.st&&PUSH.st.kinds)PUSH.st.kinds.forEach(k=>k.on=!off.includes(k.k));toast('Αποθηκεύτηκε.')}catch(e){toast(e.message)}}
 /* Το πρόγραμμά μου (λογαριασμός εργαζόμενου) */
 const MY={};
 function myData(ws){
@@ -2146,6 +2216,7 @@ function vMine(){
   const next=o.days.find(d=>d.date>=TODAY);
   return head+`<p class="note" style="margin:-8px 0 0">${h(o.name)}${o.specialty?' · '+h(o.specialty):''}${o.offline?' · <span class="tag warn">Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε</span>':''}</p>
   ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${body(next,true)}${wx(next,'hwx')}</section>`:''}
+  ${o.feats&&o.feats.push?pushInvite():''}
   <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}${wx(d,'wx')}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
   ${o.feats&&o.feats.leave?myLeavePanel(o):''}
   <p class="note">Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.</p>`;
@@ -3330,9 +3401,10 @@ const holNext=f=>{const y=+TODAY.slice(0,4),d=f(y);return d>=TODAY?d:f(y+1)};
 function closedRanges(){const r=[];[...new Set(S.settings.closed||[])].sort().forEach(d=>{const l=r[r.length-1];if(l&&add(l[1],1)===d)l[1]=d;else r.push([d,d])});return r}
 const company=()=>S.settings.company||{};
 function vSettings(){
-  if(isWorker())return `<h1>Ο λογαριασμός μου</h1>${vAccount()}`;
+  if(isWorker())return `<h1>Ο λογαριασμός μου</h1>${vAccount()}${pushPanel()}`;
   const hol=S.settings.hol||holDefaults(),hon=hol.on!==false,skip=hol.skip||[],cr=closedRanges().filter(([,b])=>b>=add(TODAY,-31)),co=company();
   return `<h1>Ρυθμίσεις</h1>${vAccount()}
+  ${pushPanel()}
   ${guidePanel()}
   ${planPanel()}
   ${featPanel()}
@@ -3364,7 +3436,7 @@ function vSettings(){
     <div class="fs"><span class="fl">Μεροκάματο που προτείνεται σε νέο εργαζόμενο</span><div class="form dwg">${['arxi','texn','voith','ypal'].map(k=>`<label>${h(ROLES[k])} (€)<input type="number" min="0" step="5" data-dw="${k}" value="${defWage(k)}"></label>`).join('')}</div></div></div></section>
   ${wxSettings()}
   <section class="panel"><h2>Αυτόματη αποστολή στο Viber</h2>
-    <p class="note">Κάθε εργάσιμη μέρα, την ώρα που ορίζεις, ο server στέλνει σε κάθε εργαζόμενο το πρόγραμμα της ημέρας του μέσω Viber Business.${SERVER?'':' Λειτουργεί μόνο όταν η εφαρμογή τρέχει από τον server της εταιρείας. Εδώ μπορείς να δεις πώς θα είναι τα μηνύματα.'}</p>
+    <p class="note">Κάθε εργάσιμη μέρα, την ώρα που ορίζεις, ο server στέλνει σε κάθε εργαζόμενο το πρόγραμμα της ημέρας του μέσω Viber Business.${hasF('push')?' Όσοι έχουν ενεργές ειδοποιήσεις στο κινητό το παίρνουν και ως ειδοποίηση, χωρίς χρέωση.':''}${SERVER?'':' Λειτουργεί μόνο όταν η εφαρμογή τρέχει από τον server της εταιρείας. Εδώ μπορείς να δεις πώς θα είναι τα μηνύματα.'}</p>
     <div class="form" style="margin-top:8px">
       <label class="ck full"><input type="checkbox" id="s_auto"${S.settings.autoSend?' checked':''}> <span>Ενεργή αυτόματη αποστολή</span></label>
       <label>Ώρα αποστολής<input type="time" id="s_time" value="${h(S.settings.sendTime||'06:30')}"></label>
@@ -3389,7 +3461,7 @@ const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay
 // κλειστή από τον διαχειριστή (όχι από το πακέτο): δεν φαίνεται καθόλου
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -3411,7 +3483,7 @@ function officeNote(){const p=planOf();if(!UI.users)return '';const n=officeUser
   return `Χρήστες γραφείου: ${n}${p.office?' από '+p.office:', χωρίς όριο'}.`+(p.office&&n>p.office?` <span class="tag warn">Πάνω από το όριο του ${h(p.name)}</span>`:'')}
 // διακόπτες λειτουργιών: ο διαχειριστής κλείνει ό,τι δεν χρειάζεται η εταιρεία
 const SW=[
-  ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.']]],
+  ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.'],['push','Ειδοποιήσεις στο κινητό','Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση, χωρίς χρέωση.']]],
   ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
   ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['profit','Κέρδος ανά έργο','Τιμή συμβολαίου, υλικά και έξοδα, με το κέρδος κάθε έργου.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
@@ -3644,8 +3716,8 @@ function searchRun(q){const box=document.getElementById('qres');if(!box)return;c
   ].filter(g=>g[1].length);
   box.innerHTML=G.length?G.map(([l,rs])=>`<div class="qgrp"><h3>${l}</h3>${rs.join('')}</div>`).join(''):`<p class="note">Δεν βρέθηκε τίποτα για «${h(q.trim())}».</p>`}
 // UI.hmsg: πιο συγκεκριμένο κείμενο για το ιστορικό από το μήνυμα στην οθόνη
-function commit(msg){const e=logChange(UI.hmsg||msg);UI.hmsg='';save();closeModal();render();if(msg)toast(msg,e&&hasF('history')?e.id:'')}
-function note(msg){logChange(UI.hmsg||msg);UI.hmsg='';save();toast(msg)}
+function commit(msg){const e=logChange(UI.hmsg||msg);UI.hmsg='';save();closeModal();render();if(msg&&(SYNC||!SERVER))toast(msg,e&&hasF('history')?e.id:'')}
+function note(msg){logChange(UI.hmsg||msg);UI.hmsg='';save();if(SYNC||!SERVER)toast(msg)}
 async function undoChange(id){const t=undoTarget(S.hist);
   if(!t||(id&&t.id!==id)){toast('Μετά έγιναν κι άλλες αλλαγές. Δες το ιστορικό στις Ρυθμίσεις.');return}
   if(SERVER){if(saveT){clearTimeout(saveT);saveT=null;await push()}   // μόνο ό,τι δεν έχει φύγει ακόμη
@@ -3658,7 +3730,7 @@ async function undoChange(id){const t=undoTarget(S.hist);
   closeModal();render();toast('Αναιρέθηκε: '+t.msg)}
 document.addEventListener('click',e=>{
   // αν άλλαξε η μέρα με την εφαρμογή ανοιχτή, η χθεσινή καταγράφεται πριν από την αλλαγή
-  if(AUTH.user&&!isWorker()&&pastPending()&&freezePast(schedule()))save();
+  if(AUTH.user&&!isWorker()&&pastPending()&&freezePast(schedule()))save(true);
   const tab=e.target.closest('[data-tab]');
   if(tab){UI.tab=tab.dataset.tab;if(tab.dataset.p)UI.proj=tab.dataset.p;if(tab.dataset.pw)UI.payWeek=tab.dataset.pw;UI.sec=tab.dataset.sec||'';try{localStorage.setItem(LS+'.tab',UI.tab);localStorage.setItem(LS+'.proj',UI.proj)}catch(err){}
     document.body.classList.remove('nav-open');closeModal();window.scrollTo(0,0);render();return}
@@ -3673,6 +3745,10 @@ document.addEventListener('click',e=>{
     case 'wmode':UI.weekMode=el.dataset.m;render();break;
     case 'navopen':document.body.classList.add('nav-open');break;
     case 'logout':authLogout();break;
+    case 'pushon':pushEnable();break;
+    case 'pushoff':pushDisable();break;
+    case 'pushtest':pushTest();break;
+    case 'pushlater':lsSet(LS+'.pushinv',1);pushPaint();break;
     case 'pwshow':{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';el.textContent=show?'Απόκρυψη':'Εμφάνιση';i.focus();break}
     case 'pwform':pwForm();break;
     case 'savepw':{const g=x=>document.getElementById(x).value;if(g('pw_new')!==g('pw_new2')){toast('Οι δύο νέοι κωδικοί δεν είναι ίδιοι.');break}
@@ -3925,6 +4001,7 @@ document.addEventListener('change',e=>{
     if(t.dataset.k==='spec'){const off=t.selectedOptions[0]?.parentElement?.label==='Στο γραφείο';rl.disabled=off;rl.querySelector('[value=ypal]').hidden=!off;if(off)rl.value='ypal';else if(rl.value==='ypal')rl.value='voith'}
     if(wg)wg.placeholder=defWage(rl.value);return}
   if(t.dataset.at!=null){const r=document.querySelector('#af input[name=asg][value=tasks]');if(r)r.checked=true;return}
+  if(t.dataset.pk){pushPrefs();return}
   if(t.dataset.feat){if(!isAdmin()){t.checked=!t.checked;return}const f=t.dataset.feat,off=new Set(S.settings.off||[]);t.checked?off.delete(f):off.add(f);S.settings.off=[...off];
     commit('«'+swName(f)+'» '+(t.checked?'άνοιξε.':'έκλεισε. Τα δεδομένα της μένουν.'));return}
   if(t.dataset.duty){S.dutyDone[t.dataset.duty]=t.checked?TODAY:false;if(!t.checked)delete S.dutyDone[t.dataset.duty];save();
