@@ -92,6 +92,9 @@ function wxFetch(maxAge = 3 * 3600e3, force = false) {
       WX = C.wxParse(await r.json(), locs); WX.error = '';
       writeJSON(F.weather, WX); C.setWeather(WX);
       console.log(now(), 'καιρός: νέα πρόγνωση για', locs.length, 'περιοχές');
+      // ο καιρός της μέρας γράφεται και στο ημερολόγιο των έργων
+      const S2 = readJSON(F.state, null);
+      if (S2 && S2.settings) { C.setState(withPlan(S2)); C.today(); if (C.wxLogFill(C.schedule())) { delete S2.settings.planLock; saveState(S2); } }
     } catch (e) {
       console.error(now(), 'καιρός: δεν ήρθε πρόγνωση:', e.message);
       if (WX) WX.error = 'Η τελευταία ενημέρωση απέτυχε.';
@@ -102,6 +105,60 @@ function wxFetch(maxAge = 3 * 3600e3, force = false) {
 }
 setInterval(() => wxFetch().catch(() => {}), 20 * 60e3);
 setTimeout(() => wxFetch().catch(() => {}), 2000);
+
+// --- φωτογραφίες του ημερολογίου έργου ---
+// Φυλάγονται ως αρχεία στο data/photos, έξω από τα δεδομένα: <id>.jpg (έως 1600 px) και <id>_t.jpg (μικρή, για τις λίστες).
+// Όσες δεν χρειάζονται πια (σβήστηκαν, διαγράφηκε το έργο, ή ανέβηκαν και δεν μπήκαν ποτέ στο ημερολόγιο) σβήνονται μετά από 7 μέρες,
+// ώστε να προλαβαίνει η αναίρεση. Ανεβαίνουν μόνο όσο ο δίσκος έχει χώρο και το σύνολο είναι κάτω από το όριο (PHOTO_MAX_GB, 20 GB).
+const PH = path.join(CFG.dataDir, 'photos'), PH_ORPH = path.join(CFG.dataDir, 'photos-orphans.json');
+const PH_MAX = 5e6, PH_TMAX = 4e5, PH_KEEP = 7, PH_CAP = (+process.env.PHOTO_MAX_GB || 20) * 1e9, PH_FREE = 1e9;
+const phFile = (id, t) => path.join(PH, id + (t ? '_t' : '') + '.jpg');
+let phUse = null;
+function photoUsage() {
+  if (phUse && Date.now() - phUse.at < 60e3) return phUse;
+  let n = 0, bytes = 0;
+  try { for (const f of fs.readdirSync(PH)) { const m = /^[a-f0-9]{16}(_t)?\.jpg$/.exec(f); if (!m) continue; if (!m[1]) n++; bytes += fs.statSync(path.join(PH, f)).size; } } catch {}
+  let free = null; try { const st = fs.statfsSync(CFG.dataDir); free = st.bavail * st.bsize; } catch {}
+  return (phUse = { n, bytes, free, cap: PH_CAP, at: Date.now() });
+}
+// μόνο JPEG, όπως τη φτιάχνει η εφαρμογή από τη φωτογραφία του κινητού
+function jpegOf(b64, max) {
+  const s = String(b64 || '').replace(/^data:image\/jpeg;base64,/, '');
+  if (!s || s.length > max * 1.4 || !/^[A-Za-z0-9+/=]+$/.test(s)) return null;
+  const buf = Buffer.from(s, 'base64');
+  return buf.length > 100 && buf.length <= max && buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF ? buf : null;
+}
+function savePhoto(b) {
+  const full = jpegOf(b.data, PH_MAX), th = jpegOf(b.thumb, PH_TMAX);
+  if (!full || !th) return { err: 'Η φωτογραφία δεν ανέβηκε: δεν είναι εικόνα JPEG ή είναι πολύ μεγάλη.' };
+  const u = photoUsage();
+  if (u.bytes + full.length > PH_CAP || (u.free != null && u.free < PH_FREE)) return { err: 'Δεν υπάρχει άλλος χώρος για φωτογραφίες στον server. Μίλησε με τον διαχειριστή.', full: true };
+  fs.mkdirSync(PH, { recursive: true, mode: 0o700 });
+  const id = crypto.randomBytes(8).toString('hex');
+  fs.writeFileSync(phFile(id, true), th, { mode: 0o600 }); fs.writeFileSync(phFile(id), full, { mode: 0o600 });
+  u.n++; u.bytes += full.length + th.length;
+  const dim = v => Math.max(0, Math.min(20000, Math.round(+v || 0)));
+  return { ph: { id, w: dim(b.w), h: dim(b.h), kb: Math.round(full.length / 1024) } };
+}
+function photoGC() {
+  if (!fs.existsSync(PH)) return 0;
+  const S = readJSON(F.state, null); if (!S) return 0;
+  const refs = C.diaryRefs(S), orph = readJSON(PH_ORPH, {}), today = C.ds(new Date()), lim = C.add(today, -PH_KEEP); let n = 0;
+  // και όσες είναι στα αντίγραφα της αναίρεσης
+  try { for (const f of fs.readdirSync(UNDO)) { const o = readJSON(path.join(UNDO, f), null); if (o && o.state) C.diaryRefs(o.state).forEach(id => refs.add(id)); } } catch {}
+  const ids = new Set(fs.readdirSync(PH).map(f => (/^([a-f0-9]{16})(_t)?\.jpg$/.exec(f) || [])[1]).filter(Boolean));
+  for (const id of ids) {
+    if (refs.has(id)) { delete orph[id]; continue; }
+    if (!orph[id]) { orph[id] = today; continue; }
+    if (orph[id] <= lim) { for (const t of [false, true]) try { fs.unlinkSync(phFile(id, t)); } catch {} delete orph[id]; n++; }
+  }
+  Object.keys(orph).forEach(id => { if (!ids.has(id)) delete orph[id]; });
+  writeJSON(PH_ORPH, orph); phUse = null;
+  if (n) console.log(now(), 'φωτογραφίες: σβήστηκαν', n, 'που δεν χρειάζονται πια');
+  return n;
+}
+setTimeout(() => { try { photoGC(); } catch (e) { console.error('photos', e.message); } }, 5000);
+setInterval(() => { try { photoGC(); } catch (e) { console.error('photos', e.message); } }, 6 * 3600e3);
 
 // --- Viber ---
 function normPhone(p) {
@@ -396,6 +453,16 @@ http.createServer(async (req, res) => {
     const me = currentUser(req);
     if (!me) return send(res, 401, { error: 'Χρειάζεται σύνδεση.', setup: !USERS.length });
     if (url.pathname === '/api/me') return send(res, 200, { user: pubU(me) });
+    // φωτογραφία του ημερολογίου: το γραφείο βλέπει όλες, ο εργαζόμενος μόνο όσες έστειλε ο ίδιος
+    const phm = /^\/api\/photo\/([a-f0-9]{16})$/.exec(url.pathname);
+    if (phm && req.method === 'GET') {
+      const id = phm[1];
+      if (me.role === 'worker') { const S = readJSON(F.state, {}); if (!(S.diary || []).some(r => r.ph && r.ph.id === id && !r.x && r.by === 'w' && r.bw === me.workerId)) return send(res, 404, { error: 'Η φωτογραφία δεν βρέθηκε.' }); }
+      const f = phFile(id, url.searchParams.get('t') === '1');
+      if (!fs.existsSync(f)) return send(res, 404, { error: 'Η φωτογραφία δεν βρέθηκε.' });
+      res.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'private, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' });
+      return fs.createReadStream(f).pipe(res);
+    }
     if (url.pathname === '/api/password' && req.method === 'POST') {
       const b = await body();
       if (!checkPw(me, b.current || '')) return send(res, 400, { error: 'Ο τωρινός κωδικός δεν είναι σωστός.' });
@@ -441,6 +508,16 @@ http.createServer(async (req, res) => {
       }
       return send(res, 404, { error: 'Δεν βρέθηκε' });
     }
+    if (me.role !== 'worker' && url.pathname === '/api/photo' && req.method === 'POST') {
+      const S = readJSON(F.state, null); if (!S) return send(res, 400, { error: 'Δεν υπάρχουν ακόμη δεδομένα.' });
+      C.setState(withPlan(S)); if (!C.hasF('diary')) return send(res, 403, { error: 'Το ημερολόγιο έργου δεν είναι ανοιχτό για την εταιρεία σου.' });
+      const x = savePhoto(await body()); if (x.err) return send(res, x.full ? 507 : 400, { error: x.err });
+      console.log(now(), 'φωτογραφία', me.username, x.ph.kb + ' KB');
+      return send(res, 200, { ok: true, ph: x.ph });
+    }
+    if (me.role !== 'worker' && url.pathname === '/api/photos' && req.method === 'GET') {
+      const u = photoUsage(); return send(res, 200, { n: u.n, mb: Math.round(u.bytes / 1e5) / 10, capGb: Math.round(u.cap / 1e8) / 10, freeGb: u.free == null ? null : Math.round(u.free / 1e8) / 10 });
+    }
     if (me.role === 'worker') {
       // ο εργάτης παίρνει μόνο το δικό του εβδομαδιαίο πρόγραμμα, όχι μεροκάματα, οικονομικά ή άλλους εργαζόμενους
       const S = readJSON(F.state, null), w = S && (S.workers || []).find(x => x.id === me.workerId);
@@ -451,11 +528,11 @@ http.createServer(async (req, res) => {
         return send(res, 200, C.myView(C.schedule(), w, C.weekStart(/^\d{4}-\d{2}-\d{2}$/.test(q) ? q : C.ds(new Date()))));
       }
       // ο εργάτης γράφει μόνο δύο πράγματα και μόνο για τον εαυτό του: πρόοδο της εργασίας του σήμερα και αίτημα άδειας
-      const mine = ['/api/my/progress', '/api/my/leave', '/api/my/leave/cancel', '/api/my/att'];
+      const mine = ['/api/my/progress', '/api/my/leave', '/api/my/leave/cancel', '/api/my/att', '/api/my/diary'];
       if (mine.includes(url.pathname) && req.method === 'POST') {
         if (!w) return send(res, 400, { error: 'Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο.' });
         const b = await body(); C.setState(withPlan(S)); C.today();
-        const feat = url.pathname === '/api/my/progress' ? 'progress' : url.pathname === '/api/my/att' ? 'gps' : 'leave';
+        const feat = url.pathname === '/api/my/progress' ? 'progress' : url.pathname === '/api/my/att' ? 'gps' : url.pathname === '/api/my/diary' ? 'diary' : 'leave';
         if (!C.hasF(feat)) return send(res, 403, { error: 'Αυτή η λειτουργία δεν είναι ανοιχτή για την εταιρεία σου.' });
         if (C.pastPending()) C.freezePast(C.schedule());   // οι μέρες που πέρασαν μένουν όπως έγιναν
         const before = JSON.parse(JSON.stringify(S));
@@ -470,6 +547,28 @@ http.createServer(async (req, res) => {
           saveState(S);
           console.log(now(), 'παρουσία', me.username, b.k, pos ? 'με θέση' : 'χωρίς θέση');
           return send(res, 200, { ok: true, att: C.attPub(out.r) });
+        }
+        if (feat === 'diary') {
+          // φωτογραφία ή σημείωση για το ημερολόγιο του έργου όπου δουλεύει σήμερα· σβήνει μόνο δικά του και μόνο την ίδια μέρα
+          const R = C.schedule();
+          if (b.del) {
+            out = C.delMyDiary(w, String(b.del)); if (out.err) return send(res, 400, { error: out.err });
+            delete S.settings.planLock; saveState(S); return send(res, 200, { ok: true, diary: C.myDiary(R, w) });
+          }
+          const md = C.myDiary(R, w), pid = md.ps.some(x => x.id === b.p) ? b.p : (md.ps[0] || {}).id;
+          if (!pid) return send(res, 400, { error: 'Σήμερα δεν είσαι σε έργο. Φωτογραφίες στέλνεις τη μέρα που δουλεύεις σε κάποιο.' });
+          if (md.items.length >= 40) return send(res, 400, { error: 'Έστειλες ήδη 40 σήμερα. Τα υπόλοιπα στείλ’ τα στο γραφείο.' });
+          let ph = null;
+          if (b.data) { const x = savePhoto(b); if (x.err) return send(res, x.full ? 507 : 400, { error: x.err }); ph = x.ph; }
+          out = C.addDiary({ p: pid, d: C.today(), text: typeof b.text === 'string' ? b.text : '', ph, by: 'w', bw: w.id, bn: w.name });
+          if (out.err) return send(res, 400, { error: out.err });
+          delete S.settings.planLock; saveState(S);
+          console.log(now(), 'ημερολόγιο', me.username, ph ? 'φωτογραφία ' + ph.kb + ' KB' : 'σημείωση');
+          if (pushOn(S)) {
+            const pn = (S.projects.find(p => p.id === pid) || {}).name || '';
+            pushTo(officeUsers(), 'field', { title: w.name + (ph ? ': φωτογραφία από το εργοτάξιο' : ': σημείωση από το εργοτάξιο'), body: pn + (out.r.text ? ' · «' + out.r.text.slice(0, 120) + '»' : ''), url: '/#diary', tag: 'diary-' + out.r.id }).catch(e => console.error('push', e));
+          }
+          return send(res, 200, { ok: true, diary: C.myDiary(C.schedule(), w) });
         }
         if (feat === 'progress') out = C.addProgress(C.schedule(), w, String(b.task || ''), b.kind, b.note, C.ds(new Date()));
         else if (url.pathname === '/api/my/leave') out = C.addLeave(w, b.from, b.to, b.note);
@@ -526,7 +625,7 @@ http.createServer(async (req, res) => {
         const fresh = (Array.isArray(o.hist) ? o.hist : []).filter(e => e && e.id && !known.has(e.id));
         fresh.forEach(e => { e.by = me.name; });
         if (cur && fresh.length && !fresh.some(e => e.undo)) saveUndo(fresh.map(e => String(e.id)), cur);
-        if (cur) { C.mergeField(o, cur); C.mergeAtt(o, cur); }   // ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι δεν χάνεται
+        if (cur) { C.mergeField(o, cur); C.mergeAtt(o, cur); C.mergeDiary(o, cur); }   // ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι δεν χάνεται
         // αιτήματα άδειας που μόλις απαντήθηκαν: ειδοποίηση στον εργαζόμενο
         const was = new Map(((cur && cur.field) || []).map(r => [r.id, r.st]));
         const decided = (o.field || []).filter(r => r.k === 'leave' && (r.st === 'ok' || r.st === 'no') && was.get(r.id) === 'new');
@@ -547,7 +646,7 @@ http.createServer(async (req, res) => {
       o.past = cur.past || {};           // και οι μέρες που πέρασαν
       // αναφορές και αιτήματα από το εργοτάξιο που ήρθαν μετά μένουν· αν αναιρείται η ίδια η αναφορά, μένει ως αναιρεμένη
       const fids = new Set((cur.hist || []).filter(e => e && e.fid && u.ids.includes(e.id)).map(e => e.fid));
-      C.mergeField(o, cur, fids, true); C.mergeAtt(o, cur);
+      C.mergeField(o, cur, fids, true); C.mergeAtt(o, cur, true); C.mergeDiary(o, cur, true);
       if (o.settings) { delete o.settings.planLock; if (CFG.plan) o.settings.plan = CFG.plan; }
       saveState(o); try { fs.unlinkSync(u.file); } catch {}
       console.log(now(), 'αναίρεση', me.username, t.msg);

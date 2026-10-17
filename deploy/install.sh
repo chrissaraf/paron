@@ -25,7 +25,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 say "Πακέτα συστήματος"
 apt-get update -q
-apt-get install -y -q curl ca-certificates gnupg ufw unattended-upgrades debian-keyring debian-archive-keyring apt-transport-https
+apt-get install -y -q curl ca-certificates gnupg ufw unattended-upgrades rsync debian-keyring debian-archive-keyring apt-transport-https
 timedatectl set-timezone Europe/Athens 2>/dev/null || true
 
 say "Node.js"
@@ -128,9 +128,32 @@ ufw --force enable >/dev/null
 printf 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgrade "1";\n' > "$R/etc/apt/apt.conf.d/20auto-upgrades"
 
 say "Νυχτερινό αντίγραφο δεδομένων (κρατά 30 μέρες)"
+install -d "$R/usr/local/sbin"
+cat > "$R/usr/local/sbin/ergodo-backup" <<BACKUP
+#!/bin/sh
+# PARON: νυχτερινό αντίγραφο. Τα δεδομένα σε ένα αρχείο ανά μέρα (κρατιούνται 30 μέρες).
+# Οι φωτογραφίες του ημερολογίου δεν αλλάζουν ποτέ, οπότε μπαίνουν μία φορά σε κοινό φάκελο
+# και όχι σε κάθε νυχτερινό αρχείο, για να μη γεμίζει ο δίσκος. Όσες σβήσει η εφαρμογή
+# μεταφέρονται στο photos-deleted και φεύγουν από εκεί μετά από 30 μέρες.
+set -eu
+DATA="$DATA"; BK="$BK"
+tar -czf "\$BK/ergodo-\$(date +%F).tar.gz" --exclude=./photos -C "\$DATA" .
+find "\$BK" -maxdepth 1 -name 'ergodo-*.tar.gz' -mtime +30 -delete
+if [ -d "\$DATA/photos" ]; then
+  mkdir -p "\$BK/photos" "\$BK/photos-deleted"
+  if command -v rsync >/dev/null; then rsync -a "\$DATA/photos/" "\$BK/photos/"
+  else cp -a --update=none "\$DATA/photos/." "\$BK/photos/" 2>/dev/null || cp -an "\$DATA/photos/." "\$BK/photos/"; fi
+  for f in "\$BK/photos/"*.jpg; do
+    [ -e "\$f" ] || continue; n="\${f##*/}"
+    [ -e "\$DATA/photos/\$n" ] || { mv "\$f" "\$BK/photos-deleted/\$n" && touch "\$BK/photos-deleted/\$n"; }
+  done
+  find "\$BK/photos-deleted" -type f -mtime +30 -delete
+fi
+BACKUP
+chmod 755 "$R/usr/local/sbin/ergodo-backup"
 cat > "$R/etc/cron.d/ergodo-backup" <<CRON
 # PARON: αντίγραφο των δεδομένων κάθε βράδυ στις 02:30, κρατά 30 μέρες
-30 2 * * * root tar -czf $BK/ergodo-\$(date +\%F).tar.gz -C $DATA . && find $BK -name 'ergodo-*.tar.gz' -mtime +30 -delete
+30 2 * * * root $R/usr/local/sbin/ergodo-backup
 CRON
 chmod 644 "$R/etc/cron.d/ergodo-backup"
 

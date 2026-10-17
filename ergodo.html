@@ -178,6 +178,18 @@ table.gantt td.dl{box-shadow:inset -2px 0 0 var(--bad)}
   #print th{background:#eee}#print .n{text-align:right;font-variant-numeric:tabular-nums}
   #print section.wide table{font-size:7.5pt}#print section.wide td,#print section.wide th{padding:2pt 2.5pt}
   #print tr{break-inside:avoid}
+  #print .dp-top{display:flex;justify-content:space-between;gap:12pt;border-bottom:1pt solid #000;padding-bottom:6pt;margin-bottom:6pt}
+  #print .dp-co{text-align:right}
+  #print .dp-sum{margin:0 0 6pt;color:#333}
+  #print .dp-day{padding-top:6pt;margin-top:6pt;border-top:.5pt solid #999}
+  #print .dp-day h2{font-size:11.5pt;margin:0 0 2pt;break-after:avoid}
+  #print .dp-wx{color:#333;font-size:9pt}
+  #print .dp-note{border-left:2pt solid #888;padding-left:5pt;margin:3pt 0}
+  #print .dp-by{color:#555;font-size:8.5pt}
+  #print .dp-ph{display:grid;grid-template-columns:1fr 1fr;gap:6pt;margin-top:5pt}
+  #print .dp-ph figure{margin:0;break-inside:avoid}
+  #print .dp-ph img{width:100%;height:64mm;object-fit:contain;background:#f2f2f2;border:.5pt solid #ccc;display:block}
+  #print figcaption{font-size:8.5pt;margin-top:2pt}
 }
 .modal.guide{width:min(820px,100%)}
 .modal.guide h2{margin:0}.modal.guide>p,.modal.guide .note{margin:0}
@@ -593,6 +605,64 @@ table.pfall td .btn{margin-top:6px}table.pfall .lnk{display:inline-flex;gap:6px;
 .warnline .btn{margin-left:auto;flex:none}
 .sitelnk{text-decoration:underline;text-underline-offset:2px}
 
+/* Ημερολόγιο έργου */
+.fpick{position:relative;cursor:pointer;overflow:hidden}
+.fpick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+.fpick:focus-within{outline:2px solid var(--accent-strong);outline-offset:2px}
+.fpick.dis{opacity:.6;pointer-events:none}
+.dproj{margin:0 0 8px}
+.dproj .chip{cursor:pointer;font:inherit;font-size:13.5px}
+.dproj .chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.dsum{margin:0 0 14px}
+.dday-h{display:flex;align-items:flex-start;gap:10px 12px;flex-wrap:wrap;margin-bottom:10px}
+.dday-h h2{margin:0;font-size:17px}
+.dday-h .grow{flex:1;min-width:200px;display:grid;gap:2px}
+.dwx{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-2);background:var(--sunk);border-radius:999px;padding:4px 11px}
+.dwx svg{width:16px;height:16px;flex:none}
+.dday-a{display:flex;gap:6px;flex-wrap:wrap}
+.dgrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:4px 24px}
+@media(max-width:760px){.dgrid{grid-template-columns:1fr}}
+.dsec{display:grid;gap:4px;margin-bottom:10px}
+.dsec ul{margin:0;padding-left:18px;display:grid;gap:3px}
+.dsec li{font-size:14.5px}
+.dsec .chips .chip{white-space:normal}
+.dwet{list-style:none;margin-left:-18px;display:flex;gap:6px;align-items:center;color:var(--rain)}
+.dwet svg{width:16px;height:16px;flex:none}
+.chip.dpm{background:transparent}
+.dnote{border-left:3px solid var(--accent-strong);background:var(--sunk);border-radius:0 var(--r) var(--r) 0;padding:10px 12px;margin:8px 0}
+.dnote p{margin:0 0 6px}
+.dnote.hid{border-left-color:var(--line-2)}
+.dmeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dmeta .btn{margin-left:auto}
+.dph{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:10px}
+.dph.sm{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+.dph.xs{grid-template-columns:repeat(auto-fill,minmax(64px,88px));margin-top:6px}
+@media(max-width:640px){.dph{grid-template-columns:repeat(2,minmax(0,1fr))}.dph.sm,.dph.xs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.dthumb{position:relative;display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--sunk);aspect-ratio:4/3;cursor:zoom-in}
+.dthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.dthumb:focus-visible{outline:2px solid var(--accent-strong);outline-offset:2px}
+.dcap{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 6px;font-size:12px;line-height:1.3;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.72));text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dph.xs .dcap,.dph.sm .dcap{display:none}
+.dlock{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center}
+.dlock svg{width:13px;height:13px}
+img.phgone{opacity:.35}
+.drows{display:grid;margin-top:8px}
+.drow{display:flex;gap:12px;align-items:baseline;padding:9px 0;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;min-width:0}
+.drow:first-child{border-top:0}.drow b{flex:none}.drow .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.drow .note{flex:none}
+.drow:hover b{text-decoration:underline}
+.modal.lbx{width:min(980px,100%)}
+.lbx-img{background:#0B0F0E;border-radius:var(--r);overflow:hidden;display:grid;place-items:center;min-height:120px}
+.lbx-img img{max-width:100%;max-height:60vh;max-height:60dvh;width:auto;height:auto;display:block}
+.lbx-img.sm img{max-height:38vh}
+.lbx-bar{gap:8px;flex-wrap:nowrap}.lbx-bar .grow{min-width:0}
+.mdiary select{min-height:42px;border-radius:var(--r-sm)}
+.mdph{display:flex;gap:8px;flex-wrap:wrap}
+.mdt{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;background:color-mix(in srgb,var(--surface) 13%,var(--ink));display:grid;place-items:center}
+.mdt img{width:100%;height:100%;object-fit:cover}
+.mdt.txt{width:auto;max-width:220px;height:auto;min-height:44px;padding:8px 34px 8px 10px;font-size:13px;place-items:center start}
+.mdx{position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:999px;border:0;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.mdx svg{width:13px;height:13px}
+
 /* μενού */
 .app{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh;min-height:100dvh}
 .content{min-width:0}
@@ -882,7 +952,7 @@ function demo(){
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   const xw=EXPW_DEMO();workers.forEach(w=>{if(xw[w.id])w.exp=xw[w.id]});
   profitDemo({projects,tasks});attDemoSites({projects});
-  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],diarySeed:true,diary:diaryDemo([1,2,3,4,5,6]),wxLog:wxLogDemo([1,2,3,4,5,6]),eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 /* ---------- Αρχεία Excel ----------
    Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
@@ -1109,9 +1179,10 @@ function attPrune(o){if(!Array.isArray(o.att))return;const g=add(TODAY,-ATT_GEO)
   o.att.forEach(r=>{if(r.d<g)['in','out'].forEach(x=>{const pt=r[x];if(pt&&hasLL(pt)){delete pt.lat;delete pt.lon;delete pt.acc}})})}
 // ό,τι έγραψαν οι εργαζόμενοι στο μεταξύ μένει όταν αποθηκεύει το γραφείο. Κάθε αλλαγή μιας εγγραφής ανεβάζει το n:
 // κερδίζει όποια έχει τις περισσότερες αλλαγές· με ίσες, του γραφείου, συμπληρωμένη με ό,τι δήλωσε στο μεταξύ ο εργαζόμενος
-function mergeAtt(o,cur){if(!o||!cur||!Array.isArray(cur.att))return o;o.att=Array.isArray(o.att)?o.att:[];
+// στην αναίρεση δεν ξαναμπαίνουν όσες έγραψε το γραφείο μετά το αντίγραφο
+function mergeAtt(o,cur,undo){if(!o||!cur||!Array.isArray(cur.att))return o;o.att=Array.isArray(o.att)?o.att:[];
   const mine=new Map(o.att.map(r=>[r.id,r])),ws=new Set((o.workers||[]).map(w=>w.id));
-  cur.att.forEach(r=>{if(!ws.has(r.w))return;const x=mine.get(r.id);if(!x){o.att.push({...r});return}
+  cur.att.forEach(r=>{if(!ws.has(r.w))return;const x=mine.get(r.id);if(!x){if(!undo||r.by!=='o')o.att.push({...r});return}
     if((r.n||0)>(x.n||0))Object.assign(x,r);else if((r.n||0)===(x.n||0)&&!x.x){if(!x.in&&r.in)x.in=r.in;if(!x.out&&r.out)x.out=r.out}});
   return o}
 // για «Το πρόγραμμά μου»: χωρίς συντεταγμένες
@@ -1132,13 +1203,131 @@ function attDemoFill(R,now){if(!S.attDemo||!gpsOn())return 0;now=now||new Date()
       const far=h0%13===5;const r={id:'a'+d.replace(/-/g,'').slice(2)+x.w.id,d,w:x.w.id,p,in:pt(ti,far?1400:15+h0%90),out:null,by:'w',u:d+'T'+tStr(ti)};
       if(d<TODAY||tStr(to)<=cut)r.out=pt(to,20+(h0>>>4)%80);S.att.push(r);n++})});
   return n}
+// --- ημερολόγιο έργου (πακέτο Εργοτάξιο) ---
+// Κάθε μέρα ενός έργου μαζεύεται μόνη της από όσα υπάρχουν ήδη: ποιοι δούλεψαν (πρόγραμμα και παρουσίες), ποιες εργασίες έγιναν και ποιες τελείωσαν,
+// τι δήλωσε το εργοτάξιο, ποια υλικά ήρθαν, ραντεβού, καιρός. Από πάνω μπαίνουν σημειώσεις και φωτογραφίες από το γραφείο και από το εργοτάξιο.
+// S.diary = [{id,p,d,k:'note'|'photo',text,ph,by:'o'|'w',bw,bn,at,u,n,x,hide}]
+//   ph = {id,w,h,kb}: η φωτογραφία φυλάγεται στον server (ή στη συσκευή χωρίς server)· {demo,w,h}: φωτογραφία-δείγμα
+//   hide = μόνο για την εταιρεία: δεν μπαίνει στο PDF για τον πελάτη ούτε στη σελίδα του πελάτη
+// S.wxLog = {'ημερομηνία|έργο':{code,tmin,tmax,mm,p}}: ο καιρός κάθε μέρας όπως ήταν, για να μείνει και όταν η πρόγνωση δεν τον δείχνει πια
+const DIARY_TXT=1000,DIARY_X=30;   // χαρακτήρες σημείωσης· μέρες που μένουν τα σβησμένα ως σημάδι
+const diaryOn=()=>hasF('diary');
+const isDS=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'');
+const diaryList=()=>(S.diary||[]).filter(r=>!r.x&&P(r.p));
+const diaryOf=(pid,d)=>diaryList().filter(r=>r.p===pid&&(!d||r.d===d)).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+const diaryPhotos=pid=>diaryList().filter(r=>r.ph&&(!pid||r.p===pid)).sort((a,b)=>(b.d+b.at).localeCompare(a.d+a.at));
+// o = {p,d,text,ph,by,bw,bn,hide,at}
+function addDiary(o){S.diary=S.diary||[];o=o||{};
+  const p=P(o.p);if(!p)return {err:'Διάλεξε έργο.'};
+  const d=o.d||TODAY;if(!isDS(d)||d>TODAY)return {err:'Το ημερολόγιο γράφεται για σήμερα ή για μέρες που πέρασαν.'};
+  const text=String(o.text||'').trim().slice(0,DIARY_TXT),ph=o.ph;
+  if(!ph&&!text)return {err:'Γράψε τη σημείωση.'};
+  if(ph&&!ph.demo&&!/^[a-z0-9]{8,32}$/.test(String(ph.id||'')))return {err:'Η φωτογραφία δεν ανέβηκε.'};
+  const at=o.at||stamp(),r={id:o.id||uid('j'),p:p.id,d,k:ph?'photo':'note',text,by:o.by==='w'?'w':'o',at,u:at,n:1};
+  if(ph)r.ph=ph.demo?{demo:String(ph.demo),w:+ph.w||1600,h:+ph.h||1200}:{id:String(ph.id),w:+ph.w||0,h:+ph.h||0,kb:+ph.kb||0};
+  if(o.bw)r.bw=String(o.bw);if(o.bn)r.bn=String(o.bn).slice(0,80);if(o.hide)r.hide=1;
+  S.diary.push(r);diaryPrune(S);return {r}}
+function editDiary(id,o){const r=(S.diary||[]).find(x=>x.id===id&&!x.x);if(!r)return null;o=o||{};
+  if(o.text!=null){const t=String(o.text).trim().slice(0,DIARY_TXT);if(!t&&!r.ph)return null;r.text=t}
+  if(o.hide!=null){if(o.hide)r.hide=1;else delete r.hide}
+  if(o.d&&isDS(o.d)&&o.d<=TODAY)r.d=o.d;
+  if(o.p&&P(o.p))r.p=o.p;
+  r.u=stamp();r.n=(r.n||0)+1;delete r.ub;return r}
+// ub:'w' = την τελευταία αλλαγή (το σβήσιμο) την έκανε ο ίδιος ο εργαζόμενος· μια αναίρεση του γραφείου δεν τη γυρίζει πίσω
+const delDiary=(id,w)=>{const r=(S.diary||[]).find(x=>x.id===id);if(r&&!r.x){r.x=1;r.u=stamp();r.n=(r.n||0)+1;if(w)r.ub='w';else delete r.ub}return r||null};
+// τα σβησμένα μένουν 30 μέρες ως σημάδι, ώστε ένα παλιό αντίγραφο να μην τα ξαναφέρει· ο καιρός κρατιέται όσο και οι περασμένες μέρες
+function diaryPrune(o){if(Array.isArray(o.diary)){const lim=add(TODAY,-DIARY_X);o.diary=o.diary.filter(r=>!(r.x&&String(r.u||r.at||'').slice(0,10)<lim))}
+  if(o.wxLog&&typeof o.wxLog==='object'){const k=add(TODAY,-550);Object.keys(o.wxLog).forEach(x=>{if(x.slice(0,10)<k)delete o.wxLog[x]})}}
+// οι φωτογραφίες που χρειάζονται ακόμη (για τον server: ό,τι δεν είναι εδώ σβήνεται μετά από μερικές μέρες)
+const diaryRefs=o=>{const ps=new Set(((o&&o.projects)||[]).map(p=>p.id));return new Set(((o&&o.diary)||[]).filter(r=>r.ph&&r.ph.id&&!r.x&&ps.has(r.p)).map(r=>r.ph.id))};
+// ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι ή άλλος χρήστης του γραφείου δεν χάνεται όταν αποθηκεύει ένα παλιότερο αντίγραφο.
+// Κάθε αλλαγή ανεβάζει το n και κερδίζει η εγγραφή με τις περισσότερες αλλαγές. Στην αναίρεση κερδίζει το αντίγραφο
+// και ξαναμπαίνουν μόνο όσα έστειλε στο μεταξύ το εργοτάξιο.
+function mergeDiary(o,cur,undo){if(!o||!cur)return o;
+  if(Array.isArray(cur.diary)){o.diary=Array.isArray(o.diary)?o.diary:[];const mine=new Map(o.diary.map(r=>[r.id,r])),ps=new Set((o.projects||[]).map(p=>p.id));
+    cur.diary.forEach(r=>{if(!ps.has(r.p))return;const x=mine.get(r.id);
+      if(!x){if(!undo||r.by==='w')o.diary.push({...r});return}
+      if((r.n||0)>(x.n||0)){if(undo&&r.ub!=='w')x.n=(r.n||0)+1;else Object.assign(x,r)}})}
+  if(cur.wxLog&&typeof cur.wxLog==='object'){o.wxLog=o.wxLog&&typeof o.wxLog==='object'?o.wxLog:{};Object.keys(cur.wxLog).forEach(k=>{if(!o.wxLog[k])o.wxLog[k]=cur.wxLog[k]})}
+  return o}
+// ο καιρός των τελευταίων 7 ημερών και του σήμερα γράφεται στο ημερολόγιο για κάθε έργο που δούλεψε
+function wxLogFill(R){if(!diaryOn()||!R||!getWeather())return 0;S.wxLog=S.wxLog&&typeof S.wxLog==='object'?S.wxLog:{};let n=0;const from=add(TODAY,-7),ps={};
+  R.asg.forEach(a=>{if(a.date>=from&&a.date<=TODAY&&a.projectId&&P(a.projectId))(ps[a.date]=ps[a.date]||new Set()).add(a.projectId)});
+  Object.keys(ps).forEach(d=>ps[d].forEach(pid=>{const f=wxDay(pid,d);if(!f||f.code==null)return;
+    const v={code:f.code,tmin:f.tmin,tmax:f.tmax,mm:f.mm,p:f.p},k=d+'|'+pid;if(JSON.stringify(S.wxLog[k])!==JSON.stringify(v)){S.wxLog[k]=v;n++}}));
+  return n}
+const wxOf=(pid,d)=>{const f=wxDay(pid,d);return f&&f.code!=null?f:(S.wxLog||{})[d+'|'+pid]||null};
+// πότε τελείωσε κάθε ολοκληρωμένη εργασία του έργου: η τελευταία μέρα που ήταν στο πρόγραμμα πριν την ολοκλήρωση
+function diaryFin(R,pid){const f={},ts=S.tasks.filter(t=>t.projectId===pid&&t.status==='done'&&t.doneOn);if(!ts.length)return f;
+  const ds0=Object.keys(R.byDay).sort();
+  ts.forEach(t=>{for(let i=ds0.length-1;i>=0;i--){const d=ds0[i];if(d>=t.doneOn)continue;if(R.byDay[d].jobs.some(j=>j.task&&j.task.id===t.id)){f[t.id]=d;break}}});
+  return f}
+// οι μέρες του έργου με κάτι να γράψουν, από την πιο πρόσφατη
+function diaryDays(R,pid){const p=P(pid),s=new Set();if(!p)return [];
+  R.asg.forEach(a=>{if(a.projectId===pid&&a.date<=TODAY&&!a.pm)s.add(a.date)});   // μόνο ο υπεύθυνος του έργου δεν κάνει μέρα ημερολογίου
+  diaryOf(pid).forEach(r=>s.add(r.d));
+  (S.field||[]).forEach(r=>{if(r.k!=='leave'&&r.st==='ok'&&r.d<=TODAY&&T(r.t)&&T(r.t).projectId===pid)s.add(r.d)});
+  (p.costs||[]).forEach(c=>{if(c.kind==='mat'&&isDS(c.date)&&c.date<=TODAY)s.add(c.date)});
+  if(hasF('appts'))(S.appts||[]).forEach(a=>{if(a.projectId===pid&&a.date<=TODAY)s.add(a.date)});
+  return [...s].sort().reverse()}
+// μία μέρα ενός έργου
+function diaryDay(R,pid,d,fin){const p=P(pid);if(!p)return null;const D=R.byDay[d];fin=fin||diaryFin(R,pid);
+  const jobs=(D?D.jobs:[]).filter(j=>j.task&&j.task.projectId===pid).map(j=>{const t=T(j.task.id)||j.task;
+    return {tid:t.id,title:t.title,sp:SP(t.specialtyId)?.name||'',day:j.dayNo||1,days:+t.days||1,lead:j.lead?j.lead.name:'',n:[j.lead,...(j.helpers||[])].filter(Boolean).length,end:fin[t.id]===d}});
+  const ppl=new Map(),put=(id,o)=>{if(id===OWNER)return;const w=W(id);if(!w)return;
+    const x=ppl.get(id)||{id,name:w.name,sp:SP(w.specialtyId)?.name||'',role:w.role||'',ext:isExt(w),pm:false,att:null};Object.assign(x,o||{});ppl.set(id,x)};
+  R.asg.forEach(a=>{if(a.date===d&&a.projectId===pid)put(a.workerId,a.pm?{pm:true}:null)});
+  if(gpsOn())attList().forEach(r=>{if(r.d!==d||!(r.p===pid||(!r.p&&ppl.has(r.w))))return;if(!ppl.has(r.w))put(r.w,{extra:true});
+    ppl.get(r.w)&&(ppl.get(r.w).att={in:r.in?r.in.t:'',out:r.out?r.out.t:'',min:attMin(r)})});
+  const done=S.tasks.filter(t=>t.projectId===pid&&fin[t.id]===d).map(t=>t.title);
+  const wet=(D&&D.wet||[]).filter(t=>t&&t.projectId===pid).map(t=>t.title);
+  const rep=(S.field||[]).filter(r=>r.k!=='leave'&&r.st==='ok'&&r.d===d&&T(r.t)&&T(r.t).projectId===pid)
+    .map(r=>({k:r.k,task:T(r.t).title,who:W(r.w)?.name||'',note:r.note||'',at:r.at||''}));
+  const mats=(p.costs||[]).filter(c=>c.kind==='mat'&&c.date===d).map(c=>({what:c.desc||'',sup:c.sup||''}));
+  S.tasks.forEach(t=>{if(t.projectId===pid&&t.mat&&t.mat.ordered===d&&!mats.some(m=>m.what===t.mat.what))mats.push({what:t.mat.what||'',sup:t.mat.sup||'',order:true})});
+  const appts=hasF('appts')?(S.appts||[]).filter(a=>a.projectId===pid&&a.date===d).sort((a,b)=>(a.time||'').localeCompare(b.time||''))
+    .map(a=>({time:apTime(a),title:a.title,client:a.client||'',done:a.status==='done',with:(a.people||[]).map(apPerson).filter(Boolean).map(x=>x.name)})):[];
+  const people=[...ppl.values()].sort((a,b)=>(a.pm-b.pm)||a.name.localeCompare(b.name,'el'));
+  const items=diaryOf(pid,d);
+  return {d,p:pid,jobs,people,crew:people.filter(x=>!x.pm).length,done,wet,rep,mats,appts,wx:wxOf(pid,d),items,
+    empty:!jobs.length&&!people.length&&!rep.length&&!mats.length&&!appts.length&&!items.length}}
+// για «Το πρόγραμμά μου»: σε ποια έργα είναι σήμερα ο εργαζόμενος και τι έχει στείλει ο ίδιος σήμερα
+function myDiary(R,w){const ps=[...new Set(R.asg.filter(a=>a.date===TODAY&&a.workerId===w.id&&a.projectId&&P(a.projectId)).map(a=>a.projectId))];
+  return {ps:ps.map(id=>({id,name:P(id).name})),items:diaryList().filter(r=>r.d===TODAY&&r.by==='w'&&r.bw===w.id)
+    .sort((a,b)=>String(a.at).localeCompare(String(b.at))).map(r=>({id:r.id,p:r.p,project:P(r.p).name,text:r.text,ph:r.ph||null,at:String(r.at).slice(11,16)}))}}
+// ο εργαζόμενος σβήνει κάτι δικό του, την ίδια μέρα
+function delMyDiary(w,id){const r=(S.diary||[]).find(x=>x.id===id&&!x.x);
+  if(!r||r.by!=='w'||r.bw!==w.id)return {err:'Δεν βρέθηκε.'};if(r.d!==TODAY)return {err:'Σβήνεται μόνο την ίδια μέρα. Πες το στο γραφείο.'};
+  delDiary(id,true);return {r}}
+// demo: σημειώσεις και φωτογραφίες-δείγματα των τελευταίων ημερών, και ο καιρός τους
+function diaryDemo(wd){wd=wd||[1,2,3,4,5,6];const pw=[];for(let d=add(TODAY,-1),i=0;pw.length<8&&i<30;i++,d=add(d,-1))if(wd.includes(dow(d)))pw.push(d);
+  const T0=wd.includes(dow(TODAY))?TODAY:pw[0],at=(d,t)=>d+'T'+t,sl=add(weekStart(TODAY),1),slab=sl<TODAY&&wd.includes(dow(sl))?sl:pw[0];   // η πλάκα του demo τελειώνει τη δεύτερη μέρα της εβδομάδας
+  const it=(id,p,d,t,o)=>Object.assign({id,p,d,k:o.ph?'photo':'note',text:o.text,by:o.bw?'w':'o',at:at(d,t),u:at(d,t),n:1},o.ph?{ph:{demo:o.ph,w:1600,h:1200}}:{},o.bw?{bw:o.bw}:{},{bn:o.bn},o.hide?{hide:1}:{});
+  const G={bw:'w1',bn:'Γιώργος Παπαδόπουλος'},AR={bn:'Αντώνης Ρίζος'},KL={bn:'Κατερίνα Λιάπη'};
+  const xs=[
+    it('jd1','p1',T0,'07:52',{...G,ph:'site',text:'Πρωί στο εργοτάξιο. Σήμερα κλείνει η τοιχοποιία του 2ου ορόφου.'}),
+    it('jd2','p1',slab,'13:10',{...G,ph:'slab',text:'Σκυροδέτηση πλάκας 3ου ορόφου. Ήρθαν 38 κ.μ., τελειώσαμε στις 13:00.'}),
+    it('jd3','p1',slab,'15:20',{...AR,text:'Πέρασε ο επιβλέπων μηχανικός. Εντάξει ο οπλισμός και η σκυροδέτηση της πλάκας.'}),
+    it('jd4','p1',pw[1],'16:05',{...G,ph:'brick',text:'Τοιχοποιία 2ου ορόφου, βόρεια πλευρά.'}),
+    it('jd5','p1',pw[2],'11:30',{...AR,hide:true,text:'Ο πελάτης ζήτησε να μετακινηθεί ο ηλεκτρικός πίνακας. Να το δούμε με τον ηλεκτρολόγο πριν τις σωληνώσεις.'}),
+    it('jd6','p2',pw[0],'12:40',{bw:'w2',bn:'Νίκος Κωνσταντίνου',ph:'pipe',text:'Καθαιρέσεις: φάνηκαν οι παλιές σωληνώσεις του μπάνιου. Αλλάζουν όλες.'}),
+    it('jd7','p2',pw[2],'10:15',{bw:'w2',bn:'Νίκος Κωνσταντίνου',ph:'demol',text:'Καθαιρέσεις: βγήκαν τα παλιά πλακάκια και ο σοβάς της κουζίνας.'}),
+    it('jd8','p2',pw[1],'17:00',{...KL,text:'Ο πελάτης διάλεξε πλακάκια μπάνιου: λευκό ματ 30×60 και δάπεδο γκρι 60×60.'}),
+    it('jd9','p3',pw[1],'14:25',{bw:'w13',bn:'Λευτέρης Σταμάτης',ph:'tile',text:'Ήρθαν τα πλακάκια 80×80 για το δάπεδο, 95 τ.μ.'}),
+    it('jd10','p3',pw[2],'09:40',{...KL,hide:true,text:'Ο ιδιοκτήτης θέλει να ανοίξει το κατάστημα στις 15 του επόμενου μήνα. Να μη χαθεί μέρα στα πλακάκια.'}),
+    it('jd11','p3',pw[0],'12:00',{bw:'w14',bn:'Γιάννης Μαυρίδης',ph:'paint',text:'Βάψιμο καταστήματος: δεύτερο χέρι στον τοίχο της βιτρίνας.'})];
+  return xs.filter(r=>r.d)}
+function wxLogDemo(wd){wd=wd||[1,2,3,4,5,6];const o={},C0=[[1,13,22,0,5],[2,12,21,0,10],[0,11,23,0,0],[3,14,20,0.4,30],[51,13,18,1.6,60],[1,12,22,0,10],[2,13,23,0,5],[0,10,21,0,0],[3,12,19,0.2,25],[1,11,22,0,5]];
+  for(let i=1,k=0;i<=14;i++){const d=add(TODAY,-i);if(!wd.includes(dow(d)))continue;const c=C0[k++%C0.length];
+    ['p1','p2','p3'].forEach((p,j)=>{o[d+'|'+p]={code:c[0],tmin:c[1]+(j===1?-1:0),tmax:c[2]+(j===1?-1:0),mm:c[3],p:c[4]}})}
+  return o}
 // demo: ένα αίτημα άδειας που περιμένει και μία «+1 μέρα» από την προηγούμενη μέρα (η επιπλέον μέρα είναι ήδη μέσα στις μέρες της εργασίας)
 function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(weekStart(TODAY),8);
   return [{id:'fd1',k:'more',w:'w1',t:'t1',d:y,note:'Δεν ήρθαν τα τούβλα, συνεχίζουμε αύριο',at:y+'T16:40',st:'ok'},
     {id:'fd2',k:'leave',w:'w3',from:nw,to:add(nw,1),note:'Βάφτιση του ανιψιού',at:stamp(),st:'new'}]}
 function blankState(cur){
   const o=demo(),st=(cur&&cur.settings)||{};
-  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false});
+  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false,diary:[],wxLog:{}});
   o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});if(!st.yard)delete o.settings.yard;
   if(cur&&cur.hist)o.hist=cur.hist;
   return o;
@@ -1213,6 +1402,11 @@ function migrate(o){
   if(o&&Array.isArray(o.projects)&&!o.attSeed){
     o.attSeed=true;const d=demo(),same=k=>{const x=o.projects.find(y=>y.id===k),z=d.projects.find(y=>y.id===k);return x&&z&&x.name===z.name};
     if(['p1','p2','p3'].every(same)){attDemoSites(o);o.attDemo=true}}
+  // μία φορά: demo σημειώσεις και φωτογραφίες-δείγματα στο ημερολόγιο, όταν τα έργα και οι εργαζόμενοι είναι του demo
+  if(o&&Array.isArray(o.projects)&&Array.isArray(o.workers)&&!o.diarySeed){
+    o.diarySeed=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&x.name===z.name};
+    if(!(o.diary||[]).length&&['p1','p2','p3'].every(k=>same(o.projects,d.projects,k))&&['w1','w2','w10'].every(k=>same(o.workers,d.workers,k))){
+      const wd=(o.settings&&o.settings.workdays)||[1,2,3,4,5,6];o.diary=diaryDemo(wd);o.wxLog=Object.assign(wxLogDemo(wd),o.wxLog||{})}}
   // μία φορά: demo αναφορές από το εργοτάξιο, όταν οι εργαζόμενοι και η εργασία είναι του demo
   if(o&&Array.isArray(o.workers)&&Array.isArray(o.tasks)&&!o.fieldDemo){
     o.fieldDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&(x.name||x.title)===(z.name||z.title)};
@@ -1825,11 +2019,12 @@ function personWeek(R,w,ws){
     return o})};
 }
 // ό,τι βλέπει ο εργαζόμενος στο «Το πρόγραμμά μου»: η εβδομάδα του και τα δικά του αιτήματα άδειας
-function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push'),gps:hasF('gps')&&!isOffice(w)&&!isExt(w)};
+function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push'),gps:hasF('gps')&&!isOffice(w)&&!isExt(w),diary:hasF('diary')&&!isOffice(w)};
   o.days.forEach(d=>{if(d.off&&isAbsent(w.id,d.date))d.absent=true;const r=o.feats.gps&&attOf(d.date,w.id);if(r)d.att=attPub(r)});
+  if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
@@ -1839,10 +2034,10 @@ root.ErgoCore={ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,att
 </script>
 <script>
 (()=>{
-const {gpsOn,siteOf,yardOf,siteFor,distS,parseLL,attOf,attProjects,attWhere,attWS,attMin,hrsS,hrsL,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attMissing,attDemoFill,ATT_R,COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,gpsOn,siteOf,yardOf,siteFor,distS,parseLL,attOf,attProjects,attWhere,attWS,attMin,hrsS,hrsL,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attMissing,attDemoFill,ATT_R,COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
-const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['profit','Κέρδος ανά έργο'],['equip','Εξοπλισμός και οχήματα'],['att','Παρουσίες'],['settings','Ρυθμίσεις']];
+const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο έργου'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['profit','Κέρδος ανά έργο'],['equip','Εξοπλισμός και οχήματα'],['att','Παρουσίες'],['settings','Ρυθμίσεις']];
 
 
 const SERVER=!!window.ERGO_SERVER;
@@ -1861,7 +2056,8 @@ function logChange(msg){if(!msg||isWorker())return null;S.hist=S.hist||[];const 
   ringPush(e.id);return e}
 function ringPush(id){if(!SERVER&&LAST){try{const r=undoRing().slice(-4),o=JSON.parse(LAST);delete o.past;r.push({id,snap:JSON.stringify(o)});localStorage.setItem(ULS,JSON.stringify(r))}catch(err){}}}
 async function push(){if(isWorker())return;try{const r=await fetch('api/state',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(S)});if(r.status===401)return expired();if(!r.ok)throw 0;if(UI.tab==='today')loadChanges(true)}catch(e){toast('Η αλλαγή δεν αποθηκεύτηκε στον server. Έλεγξε τη σύνδεση.')}}
-async function pull(again,quiet){if(isWorker())return false;if(saveT&&SYNC)return false;   // μια αλλαγή περιμένει να ανέβει: δεν τη σβήνει
+async function pull(again,quiet){if(isWorker())return false;if(saveT&&SYNC)return false;if(UI.phBusy)return false;   // ανεβαίνουν φωτογραφίες: μπαίνουν στο ημερολόγιο όλες μαζί στο τέλος
+    // μια αλλαγή περιμένει να ανέβει: δεν τη σβήνει
   try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));LAST=JSON.stringify(S);SYNC=true;return true}
   // πρώτη φορά: ο server δεν έχει δεδομένα. Ανεβαίνουν αυτά του browser και ξαναδιαβάζονται, ώστε να ισχύσει το πακέτο της συνδρομής.
   if(again)return false;await push();return pull(true)}catch(e){if(!quiet)toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
@@ -2156,7 +2352,7 @@ const nextOn=(R,tid,d)=>Object.keys(R.byDay).sort().find(x=>x>d&&R.byDay[x].jobs
 const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?'Κάθε '+(x.days||[]).map(d=>DAYS[d]).join(', '):x.freq==='month'?'Κάθε μήνα στις '+(+x.dom||1):'Μία φορά, '+fmt(x.date);
 
 /* ---------- Καρτέλες ---------- */
-const ICONS={loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+const ICONS={cam:'<path d="M3.5 8.5h3.2l1.7-2.6h7.2l1.7 2.6h3.2v10.6h-17z"/><circle cx="12" cy="13.4" r="3.5"/>',loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
   proj:'<path d="M3 21h18M5 21V9.5l7-5 7 5V21"/><path d="M10 21v-5h4v5"/>',
   ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.2" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 2 5 5.4"/>',
   eur:'<circle cx="12" cy="12" r="9"/><path d="M15.6 8.6a4.6 4.6 0 1 0 0 6.8M7.5 10.6h6M7.5 13.4h6"/>',
@@ -2198,11 +2394,11 @@ const ICONS={loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3
   meet:'<path d="M20.5 11V6.5a2 2 0 0 0-2-2h-13a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2H11"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.6v2l1.3.9"/>'};
 const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
-const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck',att:'loc'};
+const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck',att:'loc',diary:'cam'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
 const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
   {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['duties','Υπενθυμίσεις']]},
-  {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['equip','Εξοπλισμός']]},
+  {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο'],['equip','Εξοπλισμός']]},
   {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες'],['att','Παρουσίες']]},
   {k:'fin',l:'Οικονομικά',i:'eur',items:[['pay','Πληρωμές'],['costs','Κόστος'],['profit','Κέρδος'],['acc','Για τον λογιστή']]}];
 const isCur=(k,p)=>UI.tab===k&&(!p||UI.proj===p.id);
@@ -2238,15 +2434,19 @@ function render(){
   if(R&&freezePast(R))save(true);
   // demo: παρουσίες των τελευταίων ημερών, μόνο στα δεδομένα του demo
   if(R&&attDemoFill(R))save(true);
+  // ο καιρός της μέρας γράφεται στο ημερολόγιο των έργων
+  if(R&&wxLogFill(R))save(true);
   if(UI.tab==='project'&&!P(UI.proj))UI.tab='projects';
   renderNav();
-  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,profit:vProfit,equip:vEquip,att:vAtt,settings:vSettings}[UI.tab]||vToday;
+  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,profit:vProfit,equip:vEquip,att:vAtt,diary:vDiary,settings:vSettings}[UI.tab]||vToday;
   const lf=TAB_F[UI.tab];
   document.getElementById('main').innerHTML=lf&&!hasF(lf)?`<h1>${h(TABS.find(x=>x[0]===UI.tab)[1])}</h1><section class="panel">${upsell(lf)}</section>`:v(R);
   if(UI.sec){const x=document.getElementById(UI.sec);UI.sec='';x&&setTimeout(()=>x.scrollIntoView({block:'start'}),0)}
   if(UI.tab==='settings'){if(SERVER&&!isWorker())loadVStatus();if(isAdmin())loadUsers()}
   if(SERVER&&(UI.tab==='settings'||UI.tab==='mine'))pushLoad();
   if(UI.tab==='today')loadChanges();
+  phHydrate();if(UI.tab==='diary')phUseLoad();
+  if(!SERVER&&!isWorker()&&!UI.phgc){UI.phgc=1;setTimeout(()=>phGCLocal().catch(()=>{}),4000)}
 }
 
 /* Ειδοποιήσεις στο κινητό (πακέτο Συνεργείο): με τον server της εταιρείας, σε κινητό ή υπολογιστή που υποστηρίζει Web Push.
@@ -2345,7 +2545,7 @@ function vMine(){
   const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span>${h(d.wx.text)}</span></div>`:'';
   const next=o.days.find(d=>d.date>=TODAY);
   return head+`<p class="note" style="margin:-8px 0 0">${h(o.name)}${o.specialty?' · '+h(o.specialty):''}${o.offline?' · <span class="tag warn">Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε</span>':''}</p>
-  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${o.feats&&o.feats.gps&&next.date===TODAY&&!next.off&&next.items.length&&!o.offline?attBox(next):''}${body(next,true)}${wx(next,'hwx')}</section>`:''}
+  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${o.feats&&o.feats.gps&&next.date===TODAY&&!next.off&&next.items.length&&!o.offline?attBox(next):''}${body(next,true)}${o.feats&&o.feats.diary&&next.date===TODAY&&!next.off&&!o.offline?myDiaryBox(o):''}${wx(next,'hwx')}</section>`:''}
   ${o.feats&&o.feats.push?pushInvite():''}
   <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}${attLine(d)}${wx(d,'wx')}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
   ${o.feats&&o.feats.leave?myLeavePanel(o):''}
@@ -2360,11 +2560,13 @@ function myLeavePanel(o){const xs=o.leave||[];
     :'<p class="note">Ζήτα άδεια από εδώ. Μόλις την εγκρίνει το γραφείο, το πρόγραμμα αλλάζει μόνο του.</p>'}</section>`}
 // οι αλλαγές του εργαζόμενου: με τον server στέλνονται εκεί, χωρίς server γράφονται στα δεδομένα αυτού του browser
 async function myAct(path,body){const w=W(AUTH.user.workerId);
+  // φωτογραφία: με τον server ανεβαίνει μαζί με το αίτημα, χωρίς server φυλάγεται πρώτα σε αυτή τη συσκευή
+  if(path==='diary'&&body.pp){const pp=body.pp;body={p:body.p,text:body.text};try{if(SERVER)Object.assign(body,{data:await b64(pp.full),thumb:await b64(pp.thumb),w:pp.w,h:pp.h});else body.ph=await phLocal(pp)}catch(e){toast('Η φωτογραφία δεν ετοιμάστηκε. Δοκίμασε ξανά.');return false}}
   if(SERVER){try{await api('my/'+path,body)}catch(e){if(e.status===401)return expired(),false;toast(e.message);return false}
     Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});try{MY[UI.week]=await api('my?week='+UI.week)}catch(e){}   // χωρίς ενδιάμεσο «Φόρτωση»
     return true}
   if(!w){toast('Ο λογαριασμός σου δεν έχει συνδεθεί με εργαζόμενο.');return false}
-  const out=path==='att'?addAtt(schedule(),w,body.k,body.lat!=null?body:null,new Date(),body.why):path==='progress'?addProgress(schedule(),w,body.task,body.kind,body.note,TODAY):path==='leave'?addLeave(w,body.from,body.to,body.note):cancelLeave(w,body.id);
+  const out=path==='diary'?myDiaryLocal(w,body):path==='att'?addAtt(schedule(),w,body.k,body.lat!=null?body:null,new Date(),body.why):path==='progress'?addProgress(schedule(),w,body.task,body.kind,body.note,TODAY):path==='leave'?addLeave(w,body.from,body.to,body.note):cancelLeave(w,body.id);
   if(out.err){toast(out.err);return false}
   if(out.e)ringPush(out.e.id);
   const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}
@@ -2524,6 +2726,7 @@ function vToday(R){
   ${chgBanner()}
   ${fieldPanel(R)}
   ${attPanel(R,d)}
+  ${d===TODAY?diaryToday():''}
   ${expPanel()}
   ${matPanel(R)}
   ${(n=>n&&d!==TODAY&&d===nextWork(TODAY)&&S.settings.workdays.includes(dow(TODAY))?`<p class="note">${ico('cal','pin')}Σήμερα ${n==='Κλειστά'?'η εταιρεία είναι κλειστή':'είναι αργία, '+h(n)}, οπότε δεν υπάρχει πρόγραμμα. Βλέπεις την επόμενη εργάσιμη.</p>`:'')(holName(TODAY))}
@@ -2969,6 +3172,7 @@ function vProject(R){
   </div>
   <section class="panel scroll"><h2>Εργασίες</h2>${taskTable(R,list,false)}</section>
   ${profitPanel(R,p)}
+  ${diaryPanel(R,p)}
   ${hasF('gantt')?`<section class="panel"><h2>Χρονοδιάγραμμα</h2>${gantt(R,[p])}</section>`:''}
   ${eqHere(p)}`;
 }
@@ -3280,6 +3484,231 @@ function attSheets(R,ws){const t='Παρουσίες '+fmtS(ws)+' – '+fmtS(add
   const b={top:true,name:'Σύνολα',widths:[28,10,12,10,16,12],freeze:5,rows:[...xTop(t),xHead('Εργαζόμενος','Μέρες','Στο πρόγραμμα','Ώρες','Χωρίς δήλωση','Απουσίες'),
     ...attWeek(R,ws).map(o=>[o.w.name,o.came,o.sched,o.min?Math.round(o.min/6)/10:null,o.miss||null,o.absent||null])]};
   return {title:t,file:'Παρουσίες '+ws+'.xlsx',wide:true,sheets:[a,b]}}
+/* Ημερολόγιο έργου (πακέτο Εργοτάξιο): κάθε μέρα του έργου γεμίζει μόνη της από το πρόγραμμα, τις παρουσίες, το εργοτάξιο, τα υλικά και τον καιρό.
+   Από πάνω μπαίνουν σημειώσεις και φωτογραφίες από το γραφείο και από το κινητό στο εργοτάξιο. Βγαίνει σε PDF για τον πελάτη ή για την εταιρεία. */
+const DAYS_L=['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'],MON_G=['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
+const fmtL=s=>{const d=pd(s);return DAYS_L[d.getDay()]+' '+d.getDate()+' '+MON_G[d.getMonth()]+(d.getFullYear()!==pd(TODAY).getFullYear()?' '+d.getFullYear():'')};
+const nl=s=>h(s).replace(/\n/g,'<br>');
+const uname=()=>AUTH.user?AUTH.user.name:'';
+// --- φωτογραφίες: με τον server φυλάγονται εκεί· χωρίς server, σε αυτή τη συσκευή (IndexedDB) ---
+const PHC=new Map(),PHM=new Map();   // διευθύνσεις εικόνων στη συσκευή · φωτογραφίες στη μνήμη όταν δεν υπάρχει IndexedDB (π.χ. ιδιωτική προβολή)
+let PHDB=null;
+const phDb=()=>PHDB||(PHDB=new Promise((ok,no)=>{try{const q=indexedDB.open(LS+'.photos',1);q.onupgradeneeded=()=>q.result.createObjectStore('ph');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}catch(e){no(e)}}));
+async function phTx(mode,fn){const db=await phDb();return new Promise((ok,no)=>{const t=db.transaction('ph',mode),r=fn(t.objectStore('ph'));t.oncomplete=()=>ok(r&&r.result);t.onerror=t.onabort=()=>no(t.error)})}
+async function phPutLocal(id,v){try{await phTx('readwrite',st=>st.put(v,id))}catch(e){PHM.set(id,v)}}
+async function phGetLocal(id){if(PHM.has(id))return PHM.get(id);try{return await phTx('readonly',st=>st.get(id))||null}catch(e){return null}}
+async function phDelLocal(id){PHM.delete(id);try{await phTx('readwrite',st=>st.delete(id))}catch(e){}}
+// χωρίς server: σβήνει από τη συσκευή όσες δεν είναι πια στο ημερολόγιο (ούτε ως σβησμένες που μπορεί να αναιρεθούν)
+async function phGCLocal(){if(SERVER)return;let ks=[];try{ks=await phTx('readonly',st=>st.getAllKeys())||[]}catch(e){return}
+  const keep=new Set((S.diary||[]).filter(r=>r.ph&&r.ph.id).map(r=>r.ph.id));for(const k of ks)if(!keep.has(k))await phDelLocal(k)}
+const PH_NONE='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 3"><rect width="4" height="3" fill="#D9DFD3"/></svg>');
+function phSrc(ph,big){if(!ph)return PH_NONE;if(ph.demo)return demoPh(ph.demo);if(SERVER)return 'api/photo/'+ph.id+(big?'':'?t=1');return PHC.get(ph.id+(big?'':'_t'))||''}
+const phImg=(ph,big,alt)=>{const s=phSrc(ph,big);return `<img src="${s||PH_NONE}" alt="${h(alt||'Φωτογραφία')}"${big?'':' loading="lazy"'} decoding="async"${!s&&ph&&ph.id?` data-ph="${h(ph.id)}" data-big="${big?1:0}"`:''}${ph&&ph.w&&ph.h?` width="${ph.w}" height="${ph.h}"`:''}>`};
+// χωρίς server οι εικόνες έρχονται από τη συσκευή μετά τη σχεδίαση της σελίδας
+function phHydrate(root){if(SERVER)return;(root||document).querySelectorAll('img[data-ph]').forEach(async img=>{const id=img.dataset.ph,k=id+(img.dataset.big==='1'?'':'_t');img.removeAttribute('data-ph');
+  if(!PHC.has(k)){const v=await phGetLocal(id);if(!v){img.classList.add('phgone');img.alt='Η φωτογραφία είναι αποθηκευμένη σε άλλη συσκευή';return}
+    PHC.set(id,URL.createObjectURL(v.full));PHC.set(id+'_t',URL.createObjectURL(v.thumb||v.full))}
+  img.src=PHC.get(k)})}
+// από το αρχείο του κινητού σε JPEG έως 1600 px και μικρή έως 400 px, ώστε να ανεβαίνει γρήγορα και να μη γεμίζει ο δίσκος
+async function phPrep(file){const bad=()=>new Error('Το αρχείο δεν ανοίγει ως φωτογραφία εδώ. Δοκίμασε JPEG ή PNG.');let src,u='';
+  try{src=await createImageBitmap(file,{imageOrientation:'from-image'})}
+  catch(e){u=URL.createObjectURL(file);src=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(bad());i.src=u}).finally(()=>setTimeout(()=>URL.revokeObjectURL(u),1000))}
+  const W0=src.naturalWidth||src.width,H0=src.naturalHeight||src.height;if(!W0||!H0)throw bad();
+  const out=async(max,q)=>{const k=Math.min(1,max/Math.max(W0,H0)),w=Math.max(1,Math.round(W0*k)),hh=Math.max(1,Math.round(H0*k)),c=document.createElement('canvas');c.width=w;c.height=hh;
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,hh);x.drawImage(src,0,0,w,hh);
+    const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',q));if(!b)throw new Error('Η φωτογραφία δεν ετοιμάστηκε σε αυτόν τον browser.');return {b,w,h:hh}};
+  const f=await out(1600,.82),t=await out(400,.72);if(src.close)src.close();
+  return {full:f.b,thumb:t.b,w:f.w,h:f.h}}
+const b64=blob=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).replace(/^data:[^,]*,/,''));r.onerror=()=>no(r.error);r.readAsDataURL(blob)});
+const phRid=()=>[...crypto.getRandomValues(new Uint8Array(8))].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function phLocal(pp){const id=phRid();await phPutLocal(id,{full:pp.full,thumb:pp.thumb});PHC.set(id,URL.createObjectURL(pp.full));PHC.set(id+'_t',URL.createObjectURL(pp.thumb));
+  return {id,w:pp.w,h:pp.h,kb:Math.round(pp.full.size/1024)}}
+async function phUpload(pp){if(!SERVER)return phLocal(pp);
+  const o=await api('photo',{data:await b64(pp.full),thumb:await b64(pp.thumb),w:pp.w,h:pp.h});return o.ph}
+const phBusyTxt=()=>UI.phBusy?'Ανεβαίνουν οι φωτογραφίες: '+Math.min(UI.phBusy.n+1,UI.phBusy.of)+' από '+UI.phBusy.of+'…':'';
+const phBusyShow=()=>{const el=document.getElementById('phbusy');if(el){el.hidden=!UI.phBusy;el.textContent=phBusyTxt()}};
+// φωτογραφίες από το γραφείο: μπαίνουν στο ημερολόγιο όλες μαζί, με μία εγγραφή στο ιστορικό
+async function diaryAddPhotos(files,pid,d,cap,hide){files=[...files].filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name));
+  if(!files.length)return {n:0,err:'δεν διάλεξες φωτογραφίες'};if(files.length>30)files=files.slice(0,30);
+  let n=0,err='';UI.phBusy={n:0,of:files.length};phBusyShow();
+  try{for(const f of files){try{const ph=await phUpload(await phPrep(f)),r=addDiary({p:pid,d,ph,text:n===0?cap||'':'',by:'o',bn:uname(),hide});if(r.err)throw new Error(r.err);n++}
+    catch(e){err=e.message||'σφάλμα';if(e.status===401){expired();break}if(e.status===507||e.status===403)break}UI.phBusy.n++;phBusyShow()}}
+  finally{UI.phBusy=null;if(n)PHUSE=null;phBusyShow()}
+  return {n,err}}
+const phN=n=>n==1?'1 φωτογραφία':n+' φωτογραφίες';
+function diaryPhotosDone(o,pid,d){if(!o.n){toast('Δεν ανέβηκαν οι φωτογραφίες: '+o.err+'.');return}
+  UI.dP=pid;UI.hmsg='Ημερολόγιο: '+phN(o.n)+', '+P(pid).name+', '+fmt(d);commit(phN(o.n)+' στο ημερολόγιο'+(o.err?'. Κάποιες δεν ανέβηκαν: '+o.err+'.':'.'))}
+// κουμπί επιλογής φωτογραφιών (το input μένει προσβάσιμο από το πληκτρολόγιο)
+const phPick=(pid,d,cls,label)=>`<label class="${cls} fpick">${ico('cam')}<span>${label==null?'Φωτογραφίες':label}</span><input type="file" accept="image/*" multiple data-dph="${pid}" data-dd="${d}" aria-label="Φωτογραφίες για ${h(fmt(d))}"></label>`;
+// --- φωτογραφίες-δείγματα του demo: σκίτσα, όχι αληθινές φωτογραφίες ---
+const DPH=new Map();
+function demoPh(k){if(DPH.has(k))return DPH.get(k);let b='';const R_=(x,y,w,hh,f,o)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" fill="${f}"${o||''}/>`;
+  if(k==='brick'){b=R_(0,0,400,300,'#CFC6B6');for(let r=0;r<13;r++)for(let c=-1;c<9;c++){const x=c*50+(r%2?25:0)+4,y=40+r*20;if(y>250-((x>260)?(x-260):0))continue;b+=R_(x,y,44,16,(r*7+c*3)%5?'#B4552F':'#9E4628')}
+    b+=R_(0,262,400,38,'#8D8273')+`<path d="M300 262l40-70h10l-30 70z" fill="#6D4C2E"/>`+R_(318,150,8,112,'#7A7A72');}
+  else if(k==='slab'){b=R_(0,0,400,300,'#C8DCEA')+`<polygon points="10,260 390,260 330,150 70,150" fill="#A3A8AA"/><polygon points="10,260 210,260 190,150 70,150" fill="#7F878B"/>`;
+    for(let i=0;i<9;i++){const x0=70+i*32.5,x1=10+i*47.5;b+=`<line x1="${x0}" y1="150" x2="${x1}" y2="260" stroke="#6B4A33" stroke-width="2"/>`}
+    for(let j=0;j<6;j++){const t=j/5,y=150+t*110,xa=70-60*t,xb=330+60*t;b+=`<line x1="${xa}" y1="${y}" x2="${xb}" y2="${y}" stroke="#6B4A33" stroke-width="2"/>`}
+    b+=`<path d="M398 30L260 112" stroke="#E0A030" stroke-width="12" stroke-linecap="round"/><path d="M260 112v58" stroke="#333" stroke-width="7"/>`+R_(0,260,400,40,'#8C8577');}
+  else if(k==='pipe'){b=R_(0,0,400,300,'#D9D4CA')+R_(60,0,26,300,'#BDB5A8')+R_(60,180,340,24,'#BDB5A8')+R_(250,40,22,140,'#BDB5A8');
+    b+=`<path d="M73 0v192h320M261 46v134" fill="none" stroke="#C47A3A" stroke-width="10"/><path d="M90 0v178h310" fill="none" stroke="#F3F3EF" stroke-width="10"/><path d="M90 0v178h310" fill="none" stroke="#B8B8B0" stroke-width="1.5" transform="translate(5 0)"/>`;
+    [[73,192],[261,192],[90,178]].forEach(([x,y])=>{b+=`<circle cx="${x}" cy="${y}" r="9" fill="#9C5E2A"/>`});b+=R_(0,250,400,50,'#9D9586');}
+  else if(k==='demol'){b=R_(0,0,400,300,'#CFC7B9')+R_(30,40,120,90,'#B4552F',' opacity=".55"')+R_(200,60,150,70,'#A8A090')+R_(0,215,400,85,'#A49A8B');
+    for(let i=0;i<40;i++){const x=40+(i*53)%300,y=200+(i*29)%60,s=8+(i*7)%14;b+=`<polygon points="${x},${y} ${x+s},${y-s/2} ${x+s*1.4},${y+s/3} ${x+s/3},${y+s/1.6}" fill="${['#8E867A','#C9C1B1','#B4552F','#77706A'][i%4]}"/>`}
+    b+=`<path d="M250 205h110l-18 40h-80z" fill="#3F7A55"/><circle cx="290" cy="258" r="13" fill="#2A2A2A"/><path d="M360 205l30-22" stroke="#555" stroke-width="5"/>`;}
+  else if(k==='paint'){b=R_(0,0,240,260,'#E9E3D6')+R_(240,0,160,260,'#93B7A1')+R_(200,0,48,260,'#AFC8B4',' opacity=".8"')+R_(0,260,400,40,'#A99F90');
+    b+=`<rect x="170" y="120" width="70" height="26" rx="10" fill="#F2EFE8" stroke="#8A8378" stroke-width="2"/><path d="M205 146v24h-30v70" fill="none" stroke="#5B5B55" stroke-width="5"/><rect x="168" y="236" width="14" height="40" rx="4" fill="#C0392B"/>`;}
+  else if(k==='tile'){b=R_(0,0,400,300,'#D7D1C6')+`<polygon points="0,300 400,300 300,110 100,110" fill="#8F8B84"/>`;
+    for(let r=0;r<4;r++)for(let c=0;c<5;c++){const y0=300-r*48,y1=y0-44,s0=1-(300-y0)/190*.5,s1=1-(300-y1)/190*.5,cx=200,x=(i,s)=>cx+(i*80-200)*s;
+      b+=`<polygon points="${x(c,s0)+2},${y0} ${x(c+1,s0)-2},${y0} ${x(c+1,s1)-2},${y1} ${x(c,s1)+2},${y1}" fill="${(r+c)%2?'#CBC6BD':'#C3BEB4'}"/>`}
+    b+=R_(300,60,80,30,'#A06B3C')+R_(306,30,70,30,'#B07A48')+R_(300,90,80,10,'#7E522C');}
+  else{b=R_(0,0,400,300,'#C3D8E8')+R_(0,232,400,68,'#9C8F7A')+R_(110,70,180,162,'#C9C6BE');
+    for(const y of [108,146,184])b+=R_(110,y,180,8,'#A6A298');for(const x of [110,170,230,282])b+=R_(x,70,8,162,'#A6A298');
+    for(const y of [80,116,154,192])for(const x of [124,184,244])b+=R_(x,y,36,24,'#6F6A62');
+    b+=`<path d="M100 70v162M300 70v162M100 108h200M100 146h200M100 184h200" stroke="#D38A2E" stroke-width="3"/><path d="M340 232V36h8v196z" fill="#E0A030"/><path d="M250 40h150v8H250z" fill="#E0A030"/><path d="M270 48v60" stroke="#333" stroke-width="2"/>`;}
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">${b}<rect x="314" y="266" width="78" height="24" rx="12" fill="rgba(0,0,0,.5)"/><text x="353" y="282.5" font-size="12" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial,sans-serif" letter-spacing="1">ΔΕΙΓΜΑ</text></svg>`;
+  const u='data:image/svg+xml,'+encodeURIComponent(svg);DPH.set(k,u);return u}
+// --- γραφείο ---
+const diaryWho=r=>h(r.bn||(r.by==='w'?'Εργοτάξιο':'Γραφείο'))+' · '+h(String(r.at).slice(11,16));
+const dThumb=r=>`<button class="dthumb" data-act="dphoto" data-id="${r.id}" aria-label="Φωτογραφία${r.text?': '+h(r.text):''}">${phImg(r.ph,false,'')}${r.hide?`<span class="dlock" title="Μόνο για εμάς">${ico('lock')}</span>`:''}${r.text?`<span class="dcap">${h(r.text)}</span>`:''}</button>`;
+function diaryCard(R,p,d,fin){const x=diaryDay(R,p.id,d,fin),k=x.wx&&wxKind(x.wx.code),G=hasF('gps');
+  const notes=x.items.filter(r=>!r.ph),phs=x.items.filter(r=>r.ph);
+  const sec=(l,body,cls)=>body?`<div class="dsec${cls?' '+cls:''}"><span class="lbl">${l}</span>${body}</div>`:'';
+  const ul=xs=>xs.length?`<ul>${xs.join('')}</ul>`:'';
+  const jobs=ul(x.jobs.map(j=>`<li><b>${h(j.title)}</b> <span class="note">· ${j.days>1?'μέρα '+j.day+' από '+j.days:'μία μέρα'}${j.n?' · '+(j.n==1?'1 άτομο':j.n+' άτομα'):''}${j.lead?' · υπεύθυνος '+h(short(j.lead)):''}</span>${j.end?' <span class="tag ok">Τελείωσε</span>':''}</li>`)
+    .concat(x.wet.map(t=>`<li class="dwet">${ico('umb')}Δεν έγινε λόγω βροχής: ${h(t)}</li>`)));
+  const ppl=x.people.length?`<div class="chips">${x.people.map(q=>`<span class="chip${q.pm?' dpm':''}" title="${h(q.name+(q.sp?', '+q.sp:''))}">${h(short(q.name))}${q.pm?' <span class="note">διαχείριση</span>':''}${G&&q.att&&q.att.in?` <span class="note mono">${h(q.att.in)}${q.att.out?'–'+h(q.att.out):''}</span>`:''}</span>`).join('')}</div>`:'';
+  const rep=ul(x.rep.map(r=>`<li>${h(short(r.who))}: ${r.k==='done'?'τελείωσε η':'μία μέρα ακόμη για την'} «${h(r.task)}»${r.note?' <span class="note">· «'+h(r.note)+'»</span>':''}</li>`));
+  const mats=ul(x.mats.map(m=>`<li>${h(m.what)}${m.sup?' <span class="note">· '+h(m.sup)+'</span>':''}${m.order?' <span class="tag mute">παραγγελία</span>':''}</li>`));
+  const aps=ul(x.appts.map(a=>`<li><b class="mono">${h(a.time)}</b> ${h(a.title)}${a.with.length?' <span class="note">· '+h(a.with.map(short).join(', '))+'</span>':''}</li>`));
+  const sum=[x.crew?(x.crew==1?'1 άτομο':x.crew+' άτομα')+' στο εργοτάξιο':'',phs.length?phN(phs.length):'',notes.length?(notes.length==1?'1 σημείωση':notes.length+' σημειώσεις'):''].filter(Boolean).join(' · ');
+  return `<article class="panel dday" id="dd${d}"><header class="dday-h"><div class="grow"><h2>${h(fmtL(d))}${d===TODAY?' <span class="tag hv">σήμερα</span>':''}</h2>${sum?`<span class="note">${sum}</span>`:''}</div>
+      ${x.wx?`<span class="dwx">${ico(k.k)}<span>${h(wxText(x.wx))}</span></span>`:''}
+      <div class="dday-a">${phPick(p.id,d,'btn sm ghost','')}<button class="btn sm ghost" data-act="dnote" data-p="${p.id}" data-d="${d}" aria-label="Σημείωση για ${h(fmt(d))}">${ico('plus')}Σημείωση</button></div></header>
+    ${jobs||ppl||rep||mats||aps?`<div class="dgrid"><div>${sec('Εργασίες',jobs)}${sec('Από το εργοτάξιο',rep)}${sec('Υλικά',mats)}${sec('Ραντεβού',aps)}</div><div>${sec('Στο εργοτάξιο',ppl)}</div></div>`:''}
+    ${notes.map(r=>`<div class="dnote${r.hide?' hid':''}"><p>${nl(r.text)}</p><div class="dmeta"><span class="note">${diaryWho(r)}</span>${r.hide?'<span class="tag mute">Μόνο για εμάς</span>':''}<button class="btn sm ghost" data-act="dnote" data-id="${r.id}">Επεξεργασία</button></div></div>`).join('')}
+    ${phs.length?`<div class="dph">${phs.map(dThumb).join('')}</div>`:''}</article>`}
+let PHUSE=null;
+function phUseLoad(){if(!SERVER||PHUSE&&Date.now()-PHUSE.at<60e3){phUseShow();return}PHUSE={at:Date.now()};
+  api('photos').then(o=>{PHUSE={...o,at:Date.now()};phUseShow()}).catch(()=>{})}
+function phUseShow(){const el=document.getElementById('phuse');if(!el||!PHUSE||PHUSE.n==null)return;
+  el.textContent='Στον server: '+phN(PHUSE.n)+', '+String(PHUSE.mb>=1000?Math.round(PHUSE.mb/100)/10+' GB':PHUSE.n&&PHUSE.mb<1?'λιγότερο από 1 MB':Math.round(PHUSE.mb)+' MB').replace('.',',')+(PHUSE.capGb?' από '+String(PHUSE.capGb).replace('.',',')+' GB.':'.')}
+function vDiary(R){const ps=S.projects;
+  if(!ps.length)return `<h1>Ημερολόγιο έργου</h1><section class="panel"><p class="empty">Δεν υπάρχουν ακόμη έργα. Πρόσθεσε ένα από τα «Όλα τα έργα» και το ημερολόγιο του γεμίζει μόνο του από το πρόγραμμα.</p></section>`;
+  if(!P(UI.dP))UI.dP=(ps.find(p=>!p.closed)||ps[0]).id;
+  const p=P(UI.dP),days=diaryDays(R,p.id),fin=diaryFin(R,p.id),N=UI.dN||10;
+  const it=diaryOf(p.id),nPh=it.filter(r=>r.ph).length,nNo=it.length-nPh;
+  return `<div class="bar"><h1 class="grow">Ημερολόγιο έργου</h1><button class="btn" data-act="dprint" data-p="${p.id}">${ico('print')}PDF</button>${phPick(p.id,TODAY,'btn')}<button class="btn pri" data-act="dnote" data-p="${p.id}" data-d="${TODAY}">${ico('plus')}Σημείωση</button></div>
+  <div class="chips dproj">${ps.map(x=>`<button class="chip" data-act="dproj" data-p="${x.id}" aria-pressed="${x.id===p.id}"><i class="dot" style="background:${pc(x)}"></i>${h(x.name)}</button>`).join('')}</div>
+  <p class="note dsum">${p.location?h(p.location)+' · ':''}${days.length==1?'1 μέρα':days.length+' μέρες'} · ${phN(nPh)} · ${nNo==1?'1 σημείωση':nNo+' σημειώσεις'} <span id="phbusy" class="tag hv"${UI.phBusy?'':' hidden'}>${phBusyTxt()}</span></p>
+  ${days.length?days.slice(0,N).map(d=>diaryCard(R,p,d,fin)).join(''):`<section class="panel"><p class="empty">Το ημερολόγιο γεμίζει μόνο του από το πρόγραμμα: κάθε μέρα που δουλεύει συνεργείο στο έργο γράφεται ποιοι ήταν, τι έγινε και ο καιρός. Πρόσθεσε σημειώσεις και φωτογραφίες όποτε θες.</p></section>`}
+  ${days.length>N?`<div class="bar"><button class="btn" data-act="dmore">Παλαιότερες μέρες (${days.length-N})</button></div>`:''}
+  <p class="note">${SERVER?'Οι φωτογραφίες φυλάγονται στον server της εταιρείας. <span id="phuse"></span>':'Χωρίς server οι φωτογραφίες μένουν μόνο σε αυτή τη συσκευή.'} Ό,τι έχει την ένδειξη «Μόνο για εμάς» δεν μπαίνει στο PDF για τον πελάτη. Το ημερολόγιο είναι για την εταιρεία και τον πελάτη και δεν αντικαθιστά το επίσημο Ημερολόγιο Έργου ή το Ημερολόγιο Μέτρων Ασφάλειας.</p>`}
+// στη σελίδα του έργου: οι τελευταίες μέρες και φωτογραφίες
+function diaryPanel(R,p){if(!hasF('diary'))return '';const days=diaryDays(R,p.id).slice(0,3),fin=diaryFin(R,p.id),phs=diaryPhotos(p.id).slice(0,6);
+  const line=d=>{const x=diaryDay(R,p.id,d,fin),n=x.items.length;
+    return `<button class="drow" data-act="dopen" data-p="${p.id}" data-d="${d}"><b>${h(fmt(d))}</b><span class="grow">${h(x.jobs.map(j=>j.title+(j.end?' (τελείωσε)':'')).join(', ')||(x.items[0]&&x.items[0].text)||'Χωρίς εργασία')}</span><span class="note">${[x.crew?x.crew+' άτ.':'',n?(n==1?'1 καταχώριση':n+' καταχωρίσεις'):''].filter(Boolean).join(' · ')}</span></button>`};
+  return `<section class="panel"><div class="bar"><h2 class="grow" style="margin:0">Ημερολόγιο</h2>${phPick(p.id,TODAY,'btn sm ghost')}<button class="btn sm" data-act="dopen" data-p="${p.id}">Όλο το ημερολόγιο</button></div>
+    ${phs.length?`<div class="dph sm">${phs.map(dThumb).join('')}</div>`:''}
+    ${days.length?`<div class="drows">${days.map(line).join('')}</div>`:'<p class="note">Οι μέρες γράφονται μόνες τους μόλις δουλέψει συνεργείο στο έργο.</p>'}</section>`}
+// στο Σήμερα: ό,τι ήρθε σήμερα από τα εργοτάξια
+function diaryToday(){if(!hasF('diary'))return '';const xs=diaryList().filter(r=>r.d===TODAY&&r.by==='w');if(!xs.length)return '';
+  const by=new Map();xs.forEach(r=>{const a=by.get(r.p)||[];a.push(r);by.set(r.p,a)});
+  return `<section class="panel field" id="dtoday"><div class="bar"><h2 class="grow" style="margin:0">Φωτογραφίες από τα εργοτάξια</h2><button class="btn sm ghost" data-tab="diary">Ημερολόγιο</button></div>
+    ${[...by].map(([pid,rs])=>{const ph=rs.filter(r=>r.ph),no=rs.filter(r=>!r.ph);
+      return `<div class="frow"><span class="fic">${ico('cam')}</span><div class="grow"><div><b>${h(P(pid).name)}</b> <span class="note">· ${h([...new Set(rs.map(r=>short(r.bn||'')))].join(', '))}</span></div>
+        ${no.map(r=>`<div class="note">«${h(r.text)}» · ${h(String(r.at).slice(11,16))}</div>`).join('')}${ph.length?`<div class="dph xs">${ph.slice(0,8).map(dThumb).join('')}</div>`:''}</div>
+        <div class="facts"><button class="btn sm ghost" data-act="dopen" data-p="${pid}" data-d="${TODAY}">Άνοιγμα</button></div></div>`}).join('')}</section>`}
+function dPhoto(id){const r=diaryList().find(x=>x.id===id);if(!r||!r.ph)return;const p=P(r.p),xs=diaryPhotos(r.p).reverse(),i=xs.findIndex(x=>x.id===id);
+  const nav=(j,l,ic)=>`<button class="btn" data-act="dphoto"${xs[j]?` data-id="${xs[j].id}"`:' disabled'} aria-label="${l}">${ico(ic)}</button>`;
+  openModal(`<div class="lbx-img">${phImg(r.ph,true,r.text||'Φωτογραφία από το εργοτάξιο')}</div>
+  <div class="bar lbx-bar"><div class="grow"><b>${h(p.name)}</b><div class="note">${h(fmtL(r.d))} · ${diaryWho(r)}${r.ph.demo?' · δείγμα':''}</div></div><span class="note">${i+1} / ${xs.length}</span>${nav(i-1,'Προηγούμενη φωτογραφία','cl')}${nav(i+1,'Επόμενη φωτογραφία','cr')}</div>
+  <form class="form" id="dphf" data-id="${r.id}"><label class="full">Λεζάντα<textarea id="dp_text" rows="2" maxlength="${DIARY_TXT}" placeholder="Τι δείχνει η φωτογραφία">${h(r.text||'')}</textarea></label>
+    <label class="ck full"><input type="checkbox" id="dp_hide"${r.hide?' checked':''}> <span>Μόνο για εμάς: δεν μπαίνει στο PDF για τον πελάτη</span></label></form>
+  <div class="acts"><button class="btn danger" data-act="ddel" data-id="${r.id}">Διαγραφή</button>${SERVER&&!r.ph.demo?`<a class="btn ghost" href="${phSrc(r.ph,true)}" target="_blank" rel="noopener">Πλήρες μέγεθος</a>`:''}<span class="grow"></span><button class="btn" data-act="close">Κλείσιμο</button><button class="btn pri" data-act="dphsave">Αποθήκευση</button></div>`,'lbx');
+  phHydrate(document.getElementById('modal'))}
+function dNote(pid,d,id){const r=id&&diaryList().find(x=>x.id===id);if(r){pid=r.p;d=r.d}const p=P(pid)||S.projects[0];if(!p)return;
+  openModal(`<h2>${r?'Σημείωση στο ημερολόγιο':'Νέα σημείωση στο ημερολόγιο'}</h2>
+  <form class="form" id="dnf" data-id="${r?r.id:''}">
+    <label>Έργο<select id="dn_p">${S.projects.map(x=>`<option value="${x.id}"${x.id===p.id?' selected':''}>${h(x.name)}</option>`).join('')}</select></label>
+    <label>Μέρα<input type="date" id="dn_d" value="${d||TODAY}" max="${TODAY}"></label>
+    <label class="full">Τι έγινε<textarea id="dn_text" rows="4" maxlength="${DIARY_TXT}" placeholder="π.χ. Πέρασε ο επιβλέπων μηχανικός και έλεγξε τον οπλισμό.">${h(r?r.text:'')}</textarea></label>
+    ${r?'':`<label class="full">Φωτογραφίες (προαιρετικά)<input type="file" id="dn_ph" accept="image/*" multiple></label>`}
+    <label class="ck full"><input type="checkbox" id="dn_hide"${r&&r.hide?' checked':''}> <span>Μόνο για εμάς: δεν μπαίνει στο PDF για τον πελάτη</span></label></form>
+  ${r?`<p class="note">${h(r.bn||'')} · ${atTxt(r.at)}</p>`:''}
+  <div class="acts">${r?`<button class="btn danger" data-act="ddel" data-id="${r.id}">Διαγραφή</button>`:''}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="dnsave">Αποθήκευση</button></div>`);
+  const t=document.getElementById('dn_text');if(t)t.focus()}
+async function dNoteSave(btn){const f=document.getElementById('dnf');if(!f)return;const g=x=>f.querySelector('#'+x),pid=g('dn_p').value,d=g('dn_d').value||TODAY,text=g('dn_text').value.trim(),hide=g('dn_hide').checked;
+  if(!P(pid))return toast('Διάλεξε έργο.');if(d>TODAY)return toast('Το ημερολόγιο γράφεται για σήμερα ή για μέρες που πέρασαν.');
+  if(f.dataset.id){const r=editDiary(f.dataset.id,{text,hide,d,p:pid});if(!r)return toast('Γράψε τη σημείωση.');UI.dP=r.p;commit('Σημείωση στο ημερολόγιο: '+P(r.p).name+', '+fmt(r.d));return}
+  const files=g('dn_ph')?[...g('dn_ph').files]:[];if(!text&&!files.length)return toast('Γράψε τη σημείωση ή διάλεξε φωτογραφίες.');
+  btn.disabled=true;btn.textContent='Αποθήκευση…';const one=files.length===1;
+  if(text&&!one){const x=addDiary({p:pid,d,text,by:'o',bn:uname(),hide});if(x.err){btn.disabled=false;btn.textContent='Αποθήκευση';return toast(x.err)}}
+  const o=files.length?await diaryAddPhotos(files,pid,d,one?text:'',hide):{n:0,err:''};UI.dP=pid;
+  if(!o.n&&!(text&&!one)){btn.disabled=false;btn.textContent='Αποθήκευση';return toast('Δεν ανέβηκαν οι φωτογραφίες: '+o.err+'.')}
+  UI.hmsg='Ημερολόγιο: '+(text&&!one?'σημείωση':'')+(text&&!one&&o.n?' και ':'')+(o.n?phN(o.n):'')+', '+P(pid).name+', '+fmt(d);
+  commit((o.n?phN(o.n)+' στο ημερολόγιο':'Σημείωση στο ημερολόγιο')+(o.err?'. Κάποιες φωτογραφίες δεν ανέβηκαν: '+o.err+'.':'.'))}
+// --- PDF ---
+function dPrintForm(pid){const p=P(pid);if(!p)return;const ws=weekStart(TODAY),all=diaryDays(schedule(),pid),first=all.length?all[all.length-1]:TODAY;
+  const rg=[['Αυτή η εβδομάδα',ws,TODAY],['Προηγούμενη',add(ws,-7),add(ws,-1)],['Αυτός ο μήνας',TODAY.slice(0,8)+'01',TODAY],['Όλο το έργο',first,TODAY]];
+  openModal(`<h2>Ημερολόγιο σε PDF</h2><p class="note">${h(p.name)}</p>
+  <div class="chips">${rg.map(([l,a,b])=>`<button class="chip" data-act="dprr" data-a="${a}" data-b="${b}">${h(l)}</button>`).join('')}</div>
+  <form class="form" id="dpf" data-p="${pid}"><label>Από<input type="date" id="dp_from" value="${ws}" max="${TODAY}"></label><label>Έως<input type="date" id="dp_to" value="${TODAY}" max="${TODAY}"></label>
+    <div class="full radios"><label class="ck"><input type="radio" name="dp_m" value="client" checked> <span><b>Για τον πελάτη</b><span class="note" style="display:block">Τι έγινε κάθε μέρα, πόσα άτομα ανά ειδικότητα, καιρός, σημειώσεις και φωτογραφίες. Χωρίς ονόματα, ώρες, προμηθευτές και ό,τι είναι «Μόνο για εμάς».</span></span></label>
+      <label class="ck"><input type="radio" name="dp_m" value="full"> <span><b>Πλήρες</b><span class="note" style="display:block">Για την εταιρεία ή τον επιβλέποντα μηχανικό: ονόματα${hasF('gps')?', ώρες παρουσίας':''}, αναφορές από το εργοτάξιο, υλικά με προμηθευτή και όλες οι σημειώσεις.</span></span></label></div>
+    <label class="ck full"><input type="checkbox" id="dp_ph" checked> <span>Με φωτογραφίες</span></label></form>
+  <p class="note">Στο παράθυρο της εκτύπωσης διάλεξε «Αποθήκευση ως PDF».</p>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="dprgo">${ico('print')}PDF</button></div>`)}
+async function printDiary(pid,from,to,full,withPh){const R=schedule(),p=P(pid);if(!p)return;const fin=diaryFin(R,pid);
+  const days=diaryDays(R,pid).filter(d=>d>=from&&d<=to).sort();
+  const xs=days.map(d=>{const x=diaryDay(R,pid,d,fin);if(!full)x.items=x.items.filter(r=>!r.hide);return x}).filter(x=>full||x.jobs.length||x.items.length||x.wet.length||x.mats.length);
+  if(!xs.length){toast('Δεν υπάρχει τίποτα στο ημερολόγιο για αυτές τις μέρες.');return}
+  // χωρίς server: οι φωτογραφίες σε πλήρες μέγεθος έρχονται πρώτα από τη συσκευή
+  if(withPh&&!SERVER)for(const x of xs)for(const r of x.items)if(r.ph&&r.ph.id&&!PHC.has(r.ph.id)){const v=await phGetLocal(r.ph.id);if(v){PHC.set(r.ph.id,URL.createObjectURL(v.full));PHC.set(r.ph.id+'_t',URL.createObjectURL(v.thumb||v.full))}}
+  const bySp=ppl=>{const m=new Map();ppl.filter(q=>!q.pm).forEach(q=>m.set(q.sp||'Άλλοι',(m.get(q.sp||'Άλλοι')||0)+1));return [...m].map(([s,n])=>s+': '+n).join(' · ')};
+  const P_=(l,v)=>v?`<p><b>${l}:</b> ${v}</p>`:'';
+  const day=x=>{const notes=x.items.filter(r=>!r.ph),phs=withPh?x.items.filter(r=>r.ph):[];
+    return `<div class="dp-day"><h2>${h(fmtL(x.d))}</h2>${x.wx?`<p class="dp-wx">Καιρός: ${h(wxText(x.wx))}</p>`:''}
+      ${P_('Εργασίες',h(x.jobs.map(j=>j.title+' ('+(j.days>1?'μέρα '+j.day+' από '+j.days:'μία μέρα')+(j.end?', τελείωσε':'')+')').join('· ')))}
+      ${P_('Δεν έγινε λόγω βροχής',h(x.wet.join(', ')))}
+      ${full?P_('Στο εργοτάξιο ('+x.crew+')',h(x.people.filter(q=>!q.pm).map(q=>q.name+(q.att&&q.att.in?' '+q.att.in+(q.att.out?'–'+q.att.out:''):'')).join(', ')))+P_('Διαχείριση',h(x.people.filter(q=>q.pm).map(q=>q.name).join(', ')))
+        :P_('Στο εργοτάξιο',x.crew?h((x.crew==1?'1 άτομο':x.crew+' άτομα')+' · '+bySp(x.people)):'')}
+      ${full?P_('Από το εργοτάξιο',h(x.rep.map(r=>r.who+': '+(r.k==='done'?'τελείωσε η «':'μία μέρα ακόμη για την «')+r.task+'»'+(r.note?' («'+r.note+'»)':'')).join(' · '))):''}
+      ${P_('Υλικά',h(x.mats.map(m=>m.what+(full&&m.sup?' ('+m.sup+')':'')+(m.order?(full?', παραγγελία':' (παραγγέλθηκαν)'):'')).join(' · ')))}
+      ${full?P_('Ραντεβού',h(x.appts.map(a=>a.time+' '+a.title+(a.with.length?' ('+a.with.join(', ')+')':'')).join(' · '))):''}
+      ${notes.map(r=>`<p class="dp-note">${nl(r.text)}${full?`<span class="dp-by"> · ${h(r.bn||'')}, ${h(String(r.at).slice(11,16))}${r.hide?', μόνο για εμάς':''}</span>`:''}</p>`).join('')}
+      ${phs.length?`<div class="dp-ph">${phs.map(r=>`<figure><img src="${phSrc(r.ph,true)||PH_NONE}" alt="${h(r.text||'Φωτογραφία')}"><figcaption>${h(r.text||'')}${full?`<span class="dp-by">${r.text?' · ':''}${h(r.bn||'')}, ${h(String(r.at).slice(11,16))}</span>`:''}</figcaption></figure>`).join('')}</div>`:''}</div>`};
+  const done=xs.flatMap(x=>x.jobs.filter(j=>j.end).map(j=>j.title));
+  const el=document.getElementById('print');
+  el.innerHTML=`<div class="dp"><div class="dp-top"><div><p class="b">Ημερολόγιο έργου: ${h(p.name)}</p>${p.location?`<p>${h(p.location)}</p>`:''}<p>${h(from===to?fmtL(from):fmtL(from)+' έως '+fmtL(to))}</p></div>
+    <div class="dp-co">${company().name?`<p class="b">${h(company().name)}</p>`:''}<p>${full?'Πλήρες, για την εταιρεία':'Για τον πελάτη'}</p><p>Από το ${h(BRAND.name)}, ${h(fmt(TODAY))}</p></div></div>
+    <p class="dp-sum">${xs.filter(x=>x.jobs.length).length} ${xs.filter(x=>x.jobs.length).length==1?'μέρα':'μέρες'} με δουλειά στο εργοτάξιο${done.length?' · Τελείωσαν: '+h(done.join(', ')):''}</p>
+    ${xs.map(day).join('')}</div>`;
+  document.getElementById('pgsz').textContent='@page{size:A4 portrait;margin:12mm}';
+  const imgs=[...el.querySelectorAll('img')];
+  if(imgs.length){toast('Ετοιμάζονται οι φωτογραφίες για το PDF…');await Promise.race([Promise.all(imgs.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r}))),new Promise(r=>setTimeout(r,15000))])}
+  document.body.classList.add('printing');
+  try{window.print()}catch(e){toast('Η εκτύπωση δεν άνοιξε εδώ. Δοκίμασε από άλλον browser.')}
+  finally{document.body.classList.remove('printing');el.innerHTML=''}}
+// --- στο κινητό του εργαζόμενου: φωτογραφία ή σημείωση για το έργο όπου δουλεύει σήμερα ---
+function myDiaryBox(o){const md=o.diary;if(!md||!md.ps.length)return '';const busy=!!UI.myPhBusy;
+  if(!md.ps.some(x=>x.id===UI.mdP))UI.mdP=md.ps[0].id;
+  return `<div class="mrep mdiary"><div class="mrep-h"><span>Για το ημερολόγιο του έργου</span>${md.items.length?`<span class="note">${md.items.length==1?'1 σήμερα':md.items.length+' σήμερα'}</span>`:''}</div>
+    ${md.ps.length>1?`<select id="md_p" aria-label="Σε ποιο έργο">${md.ps.map(x=>`<option value="${h(x.id)}"${x.id===UI.mdP?' selected':''}>${h(x.name)}</option>`).join('')}</select>`:''}
+    <div class="mbtns"><label class="btn fpick${busy?' dis':''}">${ico('cam')}<span>${busy?'Ανεβαίνει…':'Φωτογραφία'}</span><input type="file" accept="image/*" data-myph${busy?' disabled':''} aria-label="Φωτογραφία για το ημερολόγιο"></label><button class="btn out" data-act="mynote"${busy?' disabled':''}>Σημείωση</button></div>
+    ${md.items.length?`<div class="mdph">${md.items.map(r=>`<span class="mdt${r.ph?'':' txt'}">${r.ph?phImg(r.ph,false,r.text||'Η φωτογραφία σου'):`<span>${h(r.text.slice(0,60))}</span>`}<button class="mdx" data-act="mydx" data-id="${h(r.id)}" aria-label="Σβήσιμο">${ico('x')}</button></span>`).join('')}</div>`:''}
+    <div class="note">Πηγαίνουν στο γραφείο και στο ημερολόγιο του έργου.</div></div>`}
+async function myPhPick(file){let pp;try{pp=await phPrep(file)}catch(e){toast(e.message);return}
+  UI.myPP=pp;const u=URL.createObjectURL(pp.thumb);
+  openModal(`<h2>Φωτογραφία για το ημερολόγιο</h2><div class="lbx-img sm"><img src="${u}" alt="Η φωτογραφία που διάλεξες"></div>
+  <form class="form" id="mphf"><label class="full">Τι δείχνει (προαιρετικά)<textarea id="mp_text" rows="2" maxlength="${DIARY_TXT}" placeholder="π.χ. τελείωσε η πλάκα του 3ου"></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mysend">${ico('send')}Στείλε</button></div>`)}
+function myNoteForm(){openModal(`<h2>Σημείωση για το ημερολόγιο</h2>
+  <form class="form" id="mphf"><label class="full">Τι έγινε<textarea id="mp_text" rows="4" maxlength="${DIARY_TXT}" placeholder="π.χ. Ήρθαν τα πλακάκια, λείπουν 2 κούτες."></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mysend" data-note="1">${ico('send')}Στείλε</button></div>`);const t=document.getElementById('mp_text');if(t)t.focus()}
+// χωρίς server: η φωτογραφία ή η σημείωση του εργαζόμενου γράφεται στα δεδομένα αυτού του browser
+function myDiaryLocal(w,b){if(b.del)return delMyDiary(w,b.del);const md=myDiary(schedule(),w),pid=md.ps.some(x=>x.id===b.p)?b.p:(md.ps[0]||{}).id;
+  if(!pid)return {err:'Σήμερα δεν είσαι σε έργο. Φωτογραφίες στέλνεις τη μέρα που δουλεύεις σε κάποιο.'};
+  return addDiary({p:pid,d:TODAY,text:b.text||'',ph:b.ph||null,by:'w',bw:w.id,bn:w.name})}
 /* Συνεργάτες */
 // λογαριασμός συνεργάτη κατ' αποκοπή: συμφωνία, δουλεμένα μέχρι σήμερα, πληρωμένα, υπόλοιπο
 function jobAccount(R,w){
@@ -3701,11 +4130,11 @@ function vSettings(){
 
 /* ---------- Πακέτα συνδρομής ---------- */
 // σελίδες που ανοίγουν από συγκεκριμένο πακέτο (τα πακέτα και οι λειτουργίες τους είναι στο core)
-const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs',acc:'acc',profit:'profit',equip:'equip',att:'gps'};
+const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs',acc:'acc',profit:'profit',equip:'equip',att:'gps',diary:'diary'};
 // κλειστή από τον διαχειριστή (όχι από το πακέτο): δεν φαίνεται καθόλου
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push','gps'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push','gps','diary'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -3728,7 +4157,7 @@ function officeNote(){const p=planOf();if(!UI.users)return '';const n=officeUser
 // διακόπτες λειτουργιών: ο διαχειριστής κλείνει ό,τι δεν χρειάζεται η εταιρεία
 const SW=[
   ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.'],['push','Ειδοποιήσεις στο κινητό','Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση, χωρίς χρέωση.']]],
-  ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
+  ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['diary','Ημερολόγιο έργου','Κάθε μέρα του έργου: ποιοι δούλεψαν, τι έγινε, καιρός, σημειώσεις και φωτογραφίες από το εργοτάξιο, σε PDF για τον πελάτη.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
   ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['profit','Κέρδος ανά έργο','Τιμή συμβολαίου, υλικά και έξοδα, με το κέρδος κάθε έργου.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
   ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
@@ -4082,6 +4511,27 @@ document.addEventListener('click',e=>{
       openViber(w,'Γεια σου '+voc(w.name)+'! '+(r.st==='ok'?'Η άδειά σου για '+lvRange(r)+' εγκρίθηκε. Το πρόγραμμα έχει ήδη αλλάξει.':'Η άδεια που ζήτησες για '+lvRange(r)+' δεν εγκρίθηκε. Πάρε τηλέφωνο στο γραφείο να το δούμε μαζί.')+sign());break}
     case 'myrep':myRepForm(el.dataset.t,el.dataset.k);break;
     case 'myatt':myAtt(el.dataset.k);break;
+    case 'dproj':UI.dP=el.dataset.p;UI.dN=10;render();break;
+    case 'dmore':UI.dN=(UI.dN||10)+10;render();break;
+    case 'dopen':{UI.tab='diary';UI.dP=el.dataset.p;UI.dN=10;const d=el.dataset.d;if(d){const k=diaryDays(schedule(),UI.dP).indexOf(d);if(k>=10)UI.dN=k+1;UI.sec='dd'+d}
+      try{localStorage.setItem(LS+'.tab',UI.tab)}catch(err){}closeModal();document.body.classList.remove('nav-open');window.scrollTo(0,0);render();break}
+    case 'dnote':dNote(el.dataset.p,el.dataset.d,id);break;
+    case 'dnsave':dNoteSave(el);break;
+    case 'dphoto':if(id)dPhoto(id);break;
+    case 'dphsave':{const f=document.getElementById('dphf');if(!f)break;const r=editDiary(f.dataset.id,{text:f.querySelector('#dp_text').value,hide:f.querySelector('#dp_hide').checked});
+      if(r)commit('Φωτογραφία στο ημερολόγιο: '+P(r.p).name+', '+fmt(r.d));break}
+    case 'ddel':{const r=delDiary(id);if(r)commit((r.ph?'Διαγραφή φωτογραφίας':'Διαγραφή σημείωσης')+' από το ημερολόγιο: '+(P(r.p)?.name||'')+', '+fmt(r.d));break}
+    case 'dprint':dPrintForm(el.dataset.p);break;
+    case 'dprr':{const a0=document.getElementById('dp_from'),b0=document.getElementById('dp_to');if(a0&&b0){a0.value=el.dataset.a;b0.value=el.dataset.b}break}
+    case 'dprgo':{const f=document.getElementById('dpf');if(!f)break;const a0=f.querySelector('#dp_from').value,b0=f.querySelector('#dp_to').value||TODAY;
+      if(!a0||b0<a0){toast('Η τελευταία μέρα είναι πριν από την πρώτη.');break}
+      const full=f.querySelector('[name=dp_m]:checked').value==='full',ph=f.querySelector('#dp_ph').checked;closeModal();printDiary(f.dataset.p,a0,b0,full,ph);break}
+    case 'mynote':myNoteForm();break;
+    case 'mysend':{const t=(document.getElementById('mp_text')||{}).value||'',pp=el.dataset.note?null:UI.myPP;if(!pp&&!t.trim()){toast('Γράψε τη σημείωση.');break}
+      el.disabled=true;UI.myPhBusy=true;myAct('diary',{p:UI.mdP,text:t,pp}).then(ok=>{UI.myPhBusy=false;el.disabled=false;if(!ok){render();return}UI.myPP=null;closeModal();render();
+        toast(pp?'Η φωτογραφία στάλθηκε στο γραφείο.':'Η σημείωση στάλθηκε στο γραφείο.')});break}
+    case 'mydx':openModal(`<h2>Να σβηστεί;</h2><p class="note">Φεύγει από το ημερολόγιο του έργου.</p><div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn danger" data-act="mydxok" data-id="${h(id)}">Σβήσιμο</button></div>`);break;
+    case 'mydxok':el.disabled=true;myAct('diary',{del:id}).then(ok=>{closeModal();render();if(ok)toast('Σβήστηκε.')});break;
     case 'attedit':attForm(el.dataset.w,el.dataset.d);break;
     case 'attno':{const w=W(el.dataset.w),d=el.dataset.d;if(!w)break;markAbsent(w.id,d);commit('Δεν ήρθε: '+w.name+', '+fmt(d));break}
     case 'attdel':{const r=delAtt(el.dataset.id);if(r)commit('Διαγραφή παρουσίας: '+(W(r.w)?.name||'')+', '+fmt(r.d));break}
@@ -4266,6 +4716,9 @@ document.addEventListener('change',e=>{
     if(wg)wg.placeholder=defWage(rl.value);return}
   if(t.dataset.at!=null){const r=document.querySelector('#af input[name=asg][value=tasks]');if(r)r.checked=true;return}
   if(t.dataset.pk){pushPrefs();return}
+  if(t.dataset.dph!=null){const pid=t.dataset.dph,d=t.dataset.dd||TODAY,files=[...(t.files||[])];t.value='';if(!files.length)return;diaryAddPhotos(files,pid,d,'',false).then(o=>diaryPhotosDone(o,pid,d));return}
+  if(t.dataset.myph!=null){const f=t.files&&t.files[0];t.value='';if(f)myPhPick(f);return}
+  if(t.id==='md_p'){UI.mdP=t.value;return}
   if(t.dataset.feat){if(!isAdmin()){t.checked=!t.checked;return}const f=t.dataset.feat,off=new Set(S.settings.off||[]);t.checked?off.delete(f):off.add(f);S.settings.off=[...off];
     commit('«'+swName(f)+'» '+(t.checked?'άνοιξε.':'έκλεισε. Τα δεδομένα της μένουν.'));return}
   if(t.dataset.duty){S.dutyDone[t.dataset.duty]=t.checked?TODAY:false;if(!t.checked)delete S.dutyDone[t.dataset.duty];save();
