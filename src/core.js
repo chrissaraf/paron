@@ -167,6 +167,60 @@ function demo(){
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   return {v:2,sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
+/* ---------- Αρχεία Excel ----------
+   Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
+   sheets: [{name, rows:[[κελί]], widths:[πλάτος], freeze:γραμμές}], κελί: κείμενο, αριθμός, null ή {v, s:'b'|'m'|'bm'}
+   (b = έντονα, m = ποσό με δύο δεκαδικά). */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+function zipStore(files){
+  const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+  const u16=n=>[n&255,(n>>>8)&255],u32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+  for(const f of files){const nm=enc.encode(f.name),d=typeof f.data==='string'?enc.encode(f.data):f.data,c=crc32(d);
+    const head=[...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(c),...u32(d.length),...u32(d.length),...u16(nm.length),...u16(0)];
+    parts.push(Uint8Array.from([0x50,0x4b,3,4,...head]),nm,d);
+    cd.push(Uint8Array.from([0x50,0x4b,1,2,...u16(20),...head,...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=30+nm.length+d.length}
+  const cdl=cd.reduce((s,x)=>s+x.length,0);
+  const end=Uint8Array.from([0x50,0x4b,5,6,...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdl),...u32(off),...u16(0)]);
+  const all=[...parts,...cd,end],out=new Uint8Array(all.reduce((s,x)=>s+x.length,0));let i=0;for(const x of all){out.set(x,i);i+=x.length}
+  return out;
+}
+const xesc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');
+const colName=i=>{let s='';i++;while(i){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s};
+function xlsx(sheets){
+  const used=new Set(),names=sheets.map(sh=>{let n=String(sh.name||'Φύλλο').replace(/[\[\]:*?\/\\]/g,' ').trim().slice(0,31)||'Φύλλο',b=n,k=2;while(used.has(n.toLowerCase()))n=b.slice(0,28)+' '+k++;used.add(n.toLowerCase());return n});
+  const ST={b:1,m:2,bm:3};
+  const sheetXml=sh=>{const rows=(sh.rows||[]).map((r,ri)=>`<row r="${ri+1}">`+(r||[]).map((c,ci)=>{if(c==null||c==='')return '';const o=typeof c==='object'?c:{v:c},s=ST[o.s]?` s="${ST[o.s]}"`:'',ref=colName(ci)+(ri+1);
+      return typeof o.v==='number'&&isFinite(o.v)?`<c r="${ref}"${s}><v>${o.v}</v></c>`:`<c r="${ref}" t="inlineStr"${s}><is><t xml:space="preserve">${xesc(o.v)}</t></is></c>`}).join('')+'</row>').join('');
+    const fr=sh.freeze?`<sheetViews><sheetView workbookViewId="0"><pane ySplit="${sh.freeze}" topLeftCell="A${sh.freeze+1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`:'';
+    const cols=sh.widths&&sh.widths.length?'<cols>'+sh.widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')+'</cols>':'';
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${fr}${cols}<sheetData>${rows}</sheetData></worksheet>`};
+  const files=[
+    {name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${names.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+    {name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${names.map((n,i)=>`<sheet name="${xesc(n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${names.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${names.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="4" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`},
+    ...sheets.map((sh,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:sheetXml(sh)}))];
+  return zipStore(files);
+}
+/* ---------- Κατάσταση για τον λογιστή ----------
+   Οι μέρες κάθε εργαζόμενου σε κάθε έργο μέσα στον μήνα, μέχρι σήμερα, για την ΑΠΔ. Η εφαρμογή δεν υποβάλλει τίποτα στον e-ΕΦΚΑ.
+   Μισή μέρα (0,5) σημαίνει ότι την ίδια μέρα δούλεψε και σε άλλο έργο. */
+const okAmka=x=>/^\d{11}$/.test(String(x||'').replace(/\s/g,''));
+function accReport(R,ym){
+  const [y,m]=ym.split('-').map(Number),first=ds(new Date(y,m-1,1)),last=ds(new Date(y,m,0)),upto=last<TODAY?last:TODAY;
+  const dates=[];for(let d=first;d<=last;d=add(d,1))dates.push(d);
+  const A=first>TODAY?[]:R.asg.filter(a=>a.date>=first&&a.date<=upto),G={};
+  A.forEach(a=>{const w=W(a.workerId);if(!w||isExt(w))return;const g=G[a.projectId]=G[a.projectId]||{};const r=g[w.id]=g[w.id]||{};r[a.date]=Math.round(((r[a.date]||0)+(a.share||1))*100)/100});
+  const order=[...S.projects.map(p=>p.id),'gen','office'].filter(pid=>G[pid]);
+  const groups=order.map(pid=>{const p=P(pid);
+    const rows=S.workers.filter(w=>G[pid][w.id]).map(w=>{const d=G[pid][w.id];return {w,amka:(w.amka||'').replace(/\s/g,''),spec:(SP(w.specialtyId)||{}).name||'',d,n:Math.round(Object.values(d).reduce((s,x)=>s+x,0)*100)/100}});
+    return {pid,name:pname(pid),amoe:p?(p.amoe||'').trim():'',location:p?p.location||'':'',site:!!p,rows,n:Math.round(rows.reduce((s,r)=>s+r.n,0)*100)/100}});
+  const seen=new Set(),noAmka=[];groups.forEach(g=>g.rows.forEach(r=>{if(!okAmka(r.amka)&&!seen.has(r.w.id)){seen.add(r.w.id);noAmka.push(r.w)}}));
+  return {ym,first,last,upto,dates,groups,noAmka,noAmoe:groups.filter(g=>g.site&&!g.amoe).map(g=>P(g.pid))};
+}
 /* ---------- Οδηγός πρώτης ρύθμισης ----------
    Προτάσεις ανά κλάδο: ειδικότητες έργων και γραφείου. Σήμερα μόνο οι κατασκευές· άλλοι κλάδοι μπαίνουν εδώ ως νέο κλειδί. */
 const PRESETS={build:{name:'Κατασκευές',
@@ -768,7 +822,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,

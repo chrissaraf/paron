@@ -166,6 +166,21 @@ table.gantt td.dl{box-shadow:inset -2px 0 0 var(--bad)}
 .suml{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:2px 0 0;font-size:14px}.suml dt{color:var(--muted)}.suml dd{margin:0}
 .sumcard p{margin:0}
 .feats{display:grid;gap:4px}.feats h3{margin:14px 0 2px;font-size:13px;font-weight:650;color:var(--muted)}.feats h3:first-child{margin-top:4px}
+.acc-h{margin-bottom:6px}.acc-h h2{margin:0;display:flex;align-items:center;gap:8px}
+#print{display:none}
+@media print{
+  body.printing>*:not(#print){display:none!important}
+  body.printing{background:#fff!important;color:#000}
+  body.printing #print{display:block;font:10pt/1.35 'Fira Sans',Arial,sans-serif;color:#000}
+  #print p{margin:0 0 2pt}#print p.b{font-weight:700;font-size:12pt}#print p.pn{margin-top:6pt;font-size:8.5pt;color:#444}
+  #print section+section{break-before:page}
+  #print h2{font-size:12pt;margin:0 0 6pt}
+  #print table{border-collapse:collapse;width:100%;margin-top:8pt;font-size:9pt}
+  #print th,#print td{border:.5pt solid #999;padding:3pt 4pt;text-align:left;vertical-align:top}
+  #print th{background:#eee}#print .n{text-align:right;font-variant-numeric:tabular-nums}
+  #print section.wide table{font-size:7.5pt}#print section.wide td,#print section.wide th{padding:2pt 2.5pt}
+  #print tr{break-inside:avoid}
+}
 .modal.guide{width:min(820px,100%)}
 .modal.guide h2{margin:0}.modal.guide>p,.modal.guide .note{margin:0}
 .modal.guide .fs{display:grid;gap:8px;min-width:0}.modal.guide .fs>.fl{font-size:13px;color:var(--ink-2);font-weight:560}
@@ -617,6 +632,7 @@ body:not(.in) .app{display:none}
 </div>
 <div id="modal"></div>
 <div id="toast" hidden class="toast"></div>
+<div id="print" aria-hidden="true"></div><style id="pgsz"></style>
 
 <script>
 /* PARON: κοινή λογική για browser και server */
@@ -787,6 +803,60 @@ function demo(){
   sp.splice(sp.length-1,0,...x.specialties);workers.push(...x.workers);tasks.push(...x.tasks);
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   return {v:2,sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+}
+/* ---------- Αρχεία Excel ----------
+   Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
+   sheets: [{name, rows:[[κελί]], widths:[πλάτος], freeze:γραμμές}], κελί: κείμενο, αριθμός, null ή {v, s:'b'|'m'|'bm'}
+   (b = έντονα, m = ποσό με δύο δεκαδικά). */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+function zipStore(files){
+  const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+  const u16=n=>[n&255,(n>>>8)&255],u32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+  for(const f of files){const nm=enc.encode(f.name),d=typeof f.data==='string'?enc.encode(f.data):f.data,c=crc32(d);
+    const head=[...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(c),...u32(d.length),...u32(d.length),...u16(nm.length),...u16(0)];
+    parts.push(Uint8Array.from([0x50,0x4b,3,4,...head]),nm,d);
+    cd.push(Uint8Array.from([0x50,0x4b,1,2,...u16(20),...head,...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=30+nm.length+d.length}
+  const cdl=cd.reduce((s,x)=>s+x.length,0);
+  const end=Uint8Array.from([0x50,0x4b,5,6,...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdl),...u32(off),...u16(0)]);
+  const all=[...parts,...cd,end],out=new Uint8Array(all.reduce((s,x)=>s+x.length,0));let i=0;for(const x of all){out.set(x,i);i+=x.length}
+  return out;
+}
+const xesc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');
+const colName=i=>{let s='';i++;while(i){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s};
+function xlsx(sheets){
+  const used=new Set(),names=sheets.map(sh=>{let n=String(sh.name||'Φύλλο').replace(/[\[\]:*?\/\\]/g,' ').trim().slice(0,31)||'Φύλλο',b=n,k=2;while(used.has(n.toLowerCase()))n=b.slice(0,28)+' '+k++;used.add(n.toLowerCase());return n});
+  const ST={b:1,m:2,bm:3};
+  const sheetXml=sh=>{const rows=(sh.rows||[]).map((r,ri)=>`<row r="${ri+1}">`+(r||[]).map((c,ci)=>{if(c==null||c==='')return '';const o=typeof c==='object'?c:{v:c},s=ST[o.s]?` s="${ST[o.s]}"`:'',ref=colName(ci)+(ri+1);
+      return typeof o.v==='number'&&isFinite(o.v)?`<c r="${ref}"${s}><v>${o.v}</v></c>`:`<c r="${ref}" t="inlineStr"${s}><is><t xml:space="preserve">${xesc(o.v)}</t></is></c>`}).join('')+'</row>').join('');
+    const fr=sh.freeze?`<sheetViews><sheetView workbookViewId="0"><pane ySplit="${sh.freeze}" topLeftCell="A${sh.freeze+1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`:'';
+    const cols=sh.widths&&sh.widths.length?'<cols>'+sh.widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')+'</cols>':'';
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${fr}${cols}<sheetData>${rows}</sheetData></worksheet>`};
+  const files=[
+    {name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${names.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+    {name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${names.map((n,i)=>`<sheet name="${xesc(n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${names.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${names.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="4" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`},
+    ...sheets.map((sh,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:sheetXml(sh)}))];
+  return zipStore(files);
+}
+/* ---------- Κατάσταση για τον λογιστή ----------
+   Οι μέρες κάθε εργαζόμενου σε κάθε έργο μέσα στον μήνα, μέχρι σήμερα, για την ΑΠΔ. Η εφαρμογή δεν υποβάλλει τίποτα στον e-ΕΦΚΑ.
+   Μισή μέρα (0,5) σημαίνει ότι την ίδια μέρα δούλεψε και σε άλλο έργο. */
+const okAmka=x=>/^\d{11}$/.test(String(x||'').replace(/\s/g,''));
+function accReport(R,ym){
+  const [y,m]=ym.split('-').map(Number),first=ds(new Date(y,m-1,1)),last=ds(new Date(y,m,0)),upto=last<TODAY?last:TODAY;
+  const dates=[];for(let d=first;d<=last;d=add(d,1))dates.push(d);
+  const A=first>TODAY?[]:R.asg.filter(a=>a.date>=first&&a.date<=upto),G={};
+  A.forEach(a=>{const w=W(a.workerId);if(!w||isExt(w))return;const g=G[a.projectId]=G[a.projectId]||{};const r=g[w.id]=g[w.id]||{};r[a.date]=Math.round(((r[a.date]||0)+(a.share||1))*100)/100});
+  const order=[...S.projects.map(p=>p.id),'gen','office'].filter(pid=>G[pid]);
+  const groups=order.map(pid=>{const p=P(pid);
+    const rows=S.workers.filter(w=>G[pid][w.id]).map(w=>{const d=G[pid][w.id];return {w,amka:(w.amka||'').replace(/\s/g,''),spec:(SP(w.specialtyId)||{}).name||'',d,n:Math.round(Object.values(d).reduce((s,x)=>s+x,0)*100)/100}});
+    return {pid,name:pname(pid),amoe:p?(p.amoe||'').trim():'',location:p?p.location||'':'',site:!!p,rows,n:Math.round(rows.reduce((s,r)=>s+r.n,0)*100)/100}});
+  const seen=new Set(),noAmka=[];groups.forEach(g=>g.rows.forEach(r=>{if(!okAmka(r.amka)&&!seen.has(r.w.id)){seen.add(r.w.id);noAmka.push(r.w)}}));
+  return {ym,first,last,upto,dates,groups,noAmka,noAmoe:groups.filter(g=>g.site&&!g.amoe).map(g=>P(g.pid))};
 }
 /* ---------- Οδηγός πρώτης ρύθμισης ----------
    Προτάσεις ανά κλάδο: ειδικότητες έργων και γραφείου. Σήμερα μόνο οι κατασκευές· άλλοι κλάδοι μπαίνουν εδώ ως νέο κλειδί. */
@@ -1389,7 +1459,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
@@ -1399,10 +1469,10 @@ root.ErgoCore={PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,pa
 </script>
 <script>
 (()=>{
-const {PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
-const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
+const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['settings','Ρυθμίσεις']];
 
 
 const SERVER=!!window.ERGO_SERVER;
@@ -1735,6 +1805,8 @@ const ICONS={search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4
   undo:'<path d="M8.5 5 4 9.5 8.5 14"/><path d="M4 9.5h10.5a5.5 5.5 0 0 1 0 11H11"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  dl:'<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/>',
+  print:'<path d="M7 9V3.5h10V9M7 17.5H5a1.5 1.5 0 0 1-1.5-1.5v-5.5A1.5 1.5 0 0 1 5 9h14a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 1-1.5 1.5h-2"/><path d="M7 14h10v6.5H7z"/>',
   cl:'<path d="M14.5 5.5 8 12l6.5 6.5"/>',
   cr:'<path d="M9.5 5.5 16 12l-6.5 6.5"/>',
   menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
@@ -1751,13 +1823,13 @@ const ICONS={search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4
   meet:'<path d="M20.5 11V6.5a2 2 0 0 0-2-2h-13a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2H11"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.6v2l1.3.9"/>'};
 const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
-const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart'};
+const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
 const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
   {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['duties','Υπενθυμίσεις']]},
   {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα']]},
   {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες']]},
-  {k:'fin',l:'Οικονομικά',i:'eur',items:[['pay','Πληρωμές'],['costs','Κόστος']]}];
+  {k:'fin',l:'Οικονομικά',i:'eur',items:[['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή']]}];
 const isCur=(k,p)=>UI.tab===k&&(!p||UI.proj===p.id);
 function renderNav(){
   const chev='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
@@ -1791,7 +1863,7 @@ function render(){
   if(R&&freezePast(R))save();
   if(UI.tab==='project'&&!P(UI.proj))UI.tab='projects';
   renderNav();
-  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,settings:vSettings}[UI.tab]||vToday;
+  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,settings:vSettings}[UI.tab]||vToday;
   const lf=TAB_F[UI.tab];
   document.getElementById('main').innerHTML=lf&&!hasF(lf)?`<h1>${h(TABS.find(x=>x[0]===UI.tab)[1])}</h1><section class="panel">${upsell(lf)}</section>`:v(R);
   if(UI.sec){const x=document.getElementById(UI.sec);UI.sec='';x&&setTimeout(()=>x.scrollIntoView({block:'start'}),0)}
@@ -2027,7 +2099,7 @@ function vWeek(R){
   const nav=`<div class="bar"><h1 class="grow">Εβδομάδα ${fmtS(UI.week)} – ${fmtS(add(UI.week,6))}</h1>
     <div class="seg"><button data-act="wmode" data-m="workers"${UI.weekMode==='workers'?' aria-pressed="true"':''}>Ανά εργαζόμενο</button><button data-act="wmode" data-m="projects"${UI.weekMode==='projects'?' aria-pressed="true"':''}>Ανά έργο</button></div>
     <div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">Τρέχουσα</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>
-    <button class="btn pri" data-act="sendweek">${ico('send')}Εβδομαδιαίο σε όλους</button></div>`;
+    ${expBtns('week')}<button class="btn pri" data-act="sendweek">${ico('send')}Εβδομαδιαίο σε όλους</button></div>`;
   const legend=`<div class="legend">${S.projects.map(p=>`<span><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</span>`).join('')}<span><i class="dot" style="background:var(--gen)"></i>Αποθήκη</span><span><b>Έντονα</b> = υπεύθυνος</span><span>${ico('pin')}το όρισες εσύ</span></div>`;
   if(UI.weekMode==='projects'){
     const rows=[...S.projects.map(p=>p.id),'gen','office'].map(pid=>{
@@ -2400,6 +2472,7 @@ function projForm(p){
   <label class="full">Όνομα έργου<input id="g_name" value="${h(p.name)}" placeholder="π.χ. Ανακαίνιση γραφείων Πυλαίας"></label>
   <label class="full">Διεύθυνση<input id="g_loc" value="${h(p.location)}"></label>
   ${hasF('wx')?`<label class="full">Περιοχή για τον καιρό<span class="inl"><input id="g_place" value="${h(p.place||'')}" placeholder="π.χ. Καλαμαριά · κενό = η έδρα (${h(wxCfg().place||'')})" data-lat="${hasLL(p)?p.lat:''}" data-lon="${hasLL(p)?p.lon:''}" data-q="${h(p.place||'')}"><button type="button" class="btn" data-act="geo" data-t="g">Εύρεση</button></span><span class="note" id="g_geo">${hasLL(p)?h(geoNote(p)):''}</span></label>`:''}
+  ${hasF('acc')?`<label>ΑΜΟΕ<input id="g_amoe" value="${h(p.amoe||'')}"><span class="note">Αριθμός Μητρώου Οικοδομοτεχνικού Έργου, για τον λογιστή.</span></label>`:''}
   <label>Προϋπολογισμός εργατικών (€)<input id="g_budget" type="number" min="0" step="100" value="${+p.budget||0}"></label>
   ${hasF('deadline')?`<label>Παράδοση έργου<input id="g_due" type="date" value="${h(p.due||'')}"><span class="note">Σε προειδοποιεί αν το πρόγραμμα τελειώνει αργότερα.</span></label>`:''}
   ${!hasF('pm')?'':`<label class="full">Διαχειριστές έργου<div class="wd">${S.workers.filter(isPM).map(w=>`<label><input type="checkbox" data-mgr="${w.id}"${(p.managers||[]).includes(w.id)?' checked':''}> ${h(w.name)}</label>`).join('')||'<span class="note">Δεν υπάρχει κανείς με ειδικότητα διαχείρισης έργων.</span>'}</div></label>`}
@@ -2428,6 +2501,7 @@ function workerForm(w){
   <label>Ρόλος${sel('h_role',Object.entries(ROLES).filter(([k])=>k!=='ext'),w.role)}</label>
   <label>Βασικό μεροκάματο (€)<input id="h_wage" type="number" min="0" step="5" value="${+w.wage||0}"></label>
   <label>Τηλέφωνο (Viber)<input id="h_phone" value="${h(w.phone)}"></label>
+  ${hasF('acc')?`<label>ΑΜΚΑ<input id="h_amka" inputmode="numeric" maxlength="16" value="${h(w.amka||'')}"><span class="note">Για την κατάσταση του λογιστή.</span></label>`:''}
   ${hasF('avail')?`<label>Δεύτερη ειδικότητα${sel('h_spec2',[['','Καμία'],...siteSpecs().filter(x=>x.id!=='gen').map(x=>[x.id,x.name])],w.spec2||'')}<span class="note">Μπαίνει και εκεί όταν λείπουν άτομα.</span></label>
   <label class="full">Μέρες που δουλεύει<div class="wd">${[1,2,3,4,5,6,0].filter(d=>S.settings.workdays.includes(d)).map(d=>`<label><input type="checkbox" data-wday="${d}"${!Array.isArray(w.days)||!w.days.length||w.days.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div><span class="note">Τις άλλες εργάσιμες έχει ρεπό και δεν μπαίνει στο πρόγραμμα.</span></label>`:''}
   ${hasF('rating')&&!isOffice(w)?`<label>Βαθμός${sel('h_rate',[5,4,3,2,1].map(k=>[k,RATE_L[k]]),wRate(w))}<span class="note">Τον βλέπει μόνο το γραφείο, ποτέ ο εργαζόμενος.</span></label>`:''}
@@ -2619,7 +2693,7 @@ function vPay(R){
     +'\n\nΜεροκάματα: '+money(total)+(carry?'\nΑπό πριν: '+money(carry):'')+'\nΠληρώθηκαν: '+money(paid)+'\nΜένουν: '+money(left);
   return `<div class="bar"><h1 class="grow">Πληρωμές εβδομάδας</h1>
     <div class="bgrp"><button class="btn" data-act="pweek" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="pweek" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="pweek" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>
-    <button class="btn fillm" data-act="copypay">Αντιγραφή κατάστασης</button><button class="btn pri" data-act="payall"${nLeft?'':' disabled'}>Εξόφληση όλων</button></div>
+    ${expBtns('pay')}<button class="btn fillm" data-act="copypay">Αντιγραφή κατάστασης</button><button class="btn pri" data-act="payall"${nLeft?'':' disabled'}>Εξόφληση όλων</button></div>
   <p class="note paynote">${ico('info')}<span>${past?'Η μέρα πληρωμής ήταν':pday===TODAY?'Σήμερα είναι η μέρα πληρωμής,':'Μέρα πληρωμής:'} <b>${fmt(pday)}</b>. ${carryOn?'Μπορείς να δώσεις μέρος του ποσού: ό,τι μένει περνά στην επόμενη εβδομάδα, και ό,τι δοθεί παραπάνω αφαιρείται ως προκαταβολή.':'Η μεταφορά υπολοίπου είναι κλειστή στις Ρυθμίσεις, οπότε κάθε εβδομάδα μετρά μόνη της.'}</span></p>
   <textarea id="paytext" rows="8" hidden readonly>${h(txt)}</textarea>
   <div class="kpis">
@@ -2647,24 +2721,15 @@ function period(R){
   }
 }
 function vCosts(R){
-  const [from,to,label]=period(R);
-  const A=R.asg.filter(a=>a.date>=from&&a.date<=to);
-  const total=A.reduce((s,a)=>s+a.wage,0);
-  const byP={},byW={},byWP={};
-  A.forEach(a=>{byP[a.projectId]=byP[a.projectId]||{c:0,n:0,sp:{}};byP[a.projectId].c+=a.wage;byP[a.projectId].n+=a.share||1;
-    const sp=W(a.workerId)?.specialtyId;byP[a.projectId].sp[sp]=(byP[a.projectId].sp[sp]||0)+a.wage;
-    byW[a.workerId]=byW[a.workerId]||{c:0,n:0};byW[a.workerId].c+=a.wage;byW[a.workerId].n+=a.share||1;
-    const k=a.workerId+'|'+a.projectId;byWP[k]=(byWP[k]||0)+(a.share||1)});
+  const {from,to,label,A,total,byP,byW,byWP,pids,wl}=costData(R);
   const maxP=Math.max(1,...Object.values(byP).map(x=>x.c));
-  const pids=[...S.projects.map(p=>p.id),'gen','office'].filter(pid=>P(pid)||byP[pid]);
   const pRows=pids.map(pid=>{const x=byP[pid]||{c:0,n:0,sp:{}};return `<tr><td><div style="display:flex;gap:6px;align-items:center"><i class="dot" style="background:${pc(pid)}"></i>${h(pname(pid))}</div>
     <div class="note">${Object.entries(x.sp).sort((a,b)=>b[1]-a[1]).map(([s,c])=>h(SP(s)?.name)+' '+eur(c)).join(' · ')||'—'}</div></td>
     <td class="n mono">${nf(x.n)}</td><td style="min-width:140px"><div class="hbar"><div class="meter"><i style="width:${x.c/maxP*100}%;background:${pc(pid)}"></i></div></div></td><td class="n mono">${eur(x.c)}</td></tr>`}).join('');
-  const wl=S.workers.filter(w=>byW[w.id]).sort((a,b)=>byW[b.id].c-byW[a.id].c);
   const wRows=wl.map(w=>`<tr><td><b>${h(w.name)}</b><div class="note">${h(SP(w.specialtyId)?.name)} · ${ROLES[w.role]}</div></td>
     <td>${pids.filter(pid=>byWP[w.id+'|'+pid]).map(pid=>`<span class="chip"><i class="dot" style="background:${pc(pid)}"></i>${nf(byWP[w.id+'|'+pid])}</span>`).join(' ')}</td>
     <td class="n mono">${nf(byW[w.id].n)}</td><td class="n mono">${eur(byW[w.id].c)}</td></tr>`).join('');
-  return `<div class="bar"><h1 class="grow">Κόστος μεροκαμάτων</h1>${lockBtn('weekly','<button class="btn" data-act="weeksum">Σύνοψη εβδομάδας</button>')}
+  return `<div class="bar"><h1 class="grow">Κόστος μεροκαμάτων</h1>${lockBtn('weekly','<button class="btn" data-act="weeksum">Σύνοψη εβδομάδας</button>')}${expBtns('costs')}
     ${sel('period',[['week','Αυτή την εβδομάδα'],['next4','Επόμενες 4 εβδομάδες'],['month','Αυτός ο μήνας'],['all','Όλο το πρόγραμμα'],['custom','Επιλογή ημερομηνιών']],UI.period)}
     ${UI.period==='custom'?`<input type="date" id="pfrom" value="${from}"><input type="date" id="pto" value="${to}">`:''}</div>
   <div class="kpis">
@@ -2677,6 +2742,119 @@ function vCosts(R){
   <section class="panel scroll"><h2>Ανά εργαζόμενο</h2><table><thead><tr><th>Εργαζόμενος</th><th>Μέρες ανά έργο</th><th class="n">Μεροκ.</th><th class="n">Σύνολο</th></tr></thead><tbody>${wRows||'<tr><td colspan="4" class="empty">Κανένα μεροκάματο σε αυτή την περίοδο.</td></tr>'}<tr class="total"><td colspan="2">Σύνολο</td><td class="n mono">${nf(md(A))}</td><td class="n mono">${eur(total)}</td></tr></tbody></table>
   <div class="legend" style="margin-top:10px">${pids.map(pid=>`<span><i class="dot" style="background:${pc(pid)}"></i>${h(pname(pid))}</span>`).join('')}</div></section>`;
 }
+
+/* Για τον λογιστή */
+const MONTHS_F=['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const ymAdd=(ym,n)=>{const [y,m]=ym.split('-').map(Number),d=new Date(y,m-1+n,1);return d.getFullYear()+'-'+pad(d.getMonth()+1)};
+const ymName=ym=>{const [y,m]=ym.split('-').map(Number);return MONTHS_F[m-1]+' '+y};
+const half=n=>n===0.5?'½':nf(n);
+// οι μέρες ενός μήνα σε σύντομη μορφή: «1–3, 6, 8½»
+function dayList(d){const ks=Object.keys(d).sort(),out=[];
+  for(let i=0;i<ks.length;){let j=i;if(d[ks[i]]===1)while(j+1<ks.length&&d[ks[j+1]]===1&&add(ks[j],1)===ks[j+1])j++;
+    const a=+ks[i].slice(8),b=+ks[j].slice(8);out.push(j>i?a+'–'+b:a+(d[ks[i]]<1?'½':''));i=j+1}
+  return out.join(', ')}
+function vAcc(R){
+  if(!UI.accM)UI.accM=TODAY.slice(0,7);
+  const rep=accReport(R,UI.accM),cur=UI.accM===TODAY.slice(0,7),ppl=new Set(),halfs=rep.groups.some(g=>g.rows.some(r=>Object.values(r.d).some(x=>x<1)));
+  rep.groups.forEach(g=>g.rows.forEach(r=>ppl.add(r.w.id)));
+  const nd=rep.groups.reduce((s,g)=>s+g.n,0),nm=rep.noAmka.length,np=rep.noAmoe.length;
+  const groups=rep.groups.map(g=>`<section class="panel scroll"><div class="bar acc-h"><h2 class="grow"><i class="dot" style="background:${pc(g.pid)}"></i>${h(g.name)}</h2>
+      ${g.site?(g.amoe?`<span class="tag mute mono">ΑΜΟΕ ${h(g.amoe)}</span>`:`<button class="btn sm" data-act="editproj" data-id="${g.pid}">${ico('plus')}ΑΜΟΕ</button>`):`<span class="note">${g.pid==='office'?'Γραφείο':'Αποθήκη'}, χωρίς ΑΜΟΕ</span>`}</div>
+    <table><thead><tr><th>Εργαζόμενος</th><th>ΑΜΚΑ</th><th>Ειδικότητα</th><th class="n">Μέρες</th><th>Ημερομηνίες</th></tr></thead><tbody>
+    ${g.rows.map(r=>`<tr><td><b>${h(r.w.name)}</b></td><td class="mono">${okAmka(r.amka)?h(r.amka):`<button class="btn sm" data-act="editworker" data-id="${r.w.id}">${ico('plus')}ΑΜΚΑ</button>`}</td><td>${h(r.spec)}</td><td class="n mono">${half(r.n)}</td><td class="note">${dayList(r.d)}</td></tr>`).join('')}
+    <tr class="total"><td colspan="3">Σύνολο</td><td class="n mono">${nf(g.n)}</td><td></td></tr></tbody></table></section>`).join('');
+  return `<div class="bar"><h1 class="grow">Για τον λογιστή</h1>
+    <div class="bgrp"><button class="btn" data-act="accm" data-dir="-1" aria-label="Προηγούμενος μήνας">${ico('cl')}</button><button class="btn" data-act="accm" data-dir="0">${h(ymName(UI.accM))}</button><button class="btn" data-act="accm" data-dir="1" aria-label="Επόμενος μήνας">${ico('cr')}</button></div>
+    <button class="btn" data-act="prn" data-k="acc"${rep.groups.length?'':' disabled'}>${ico('print')}PDF</button><button class="btn pri" data-act="xls" data-k="acc"${rep.groups.length?'':' disabled'}>${ico('dl')}Excel</button></div>
+  <p class="note paynote">${ico('info')}<span>Οι μέρες κάθε εργαζόμενου σε κάθε έργο, για την ΑΠΔ των οικοδομοτεχνικών έργων. ${cur?`Μετράει μέχρι σήμερα, ${h(fmt(TODAY))}. `:''}Η εφαρμογή δεν υποβάλλει τίποτα στον e-ΕΦΚΑ: το Excel το στέλνεις στον λογιστή σου.</span></p>
+  ${nm||np?`<p class="warnline">${ico('info')}<span>Λείπει ${[nm?'ΑΜΚΑ από '+(nm===1?'1 άτομο':nm+' άτομα'):'',np?'ΑΜΟΕ από '+(np===1?'1 έργο':np+' έργα'):''].filter(Boolean).join(' και ')}. Πάτα το κουμπί δίπλα στο όνομα για να το συμπληρώσεις.</span></p>`:''}
+  ${rep.groups.length?`<div class="kpis">
+    <div class="kpi"><span class="lbl">Άτομα</span><span class="v">${ppl.size}</span><span class="s">εργαζόμενοι, χωρίς συνεργάτες</span></div>
+    <div class="kpi"><span class="lbl">Μέρες εργασίας</span><span class="v">${nf(nd)}</span><span class="s">${h(ymName(UI.accM))}</span></div>
+    <div class="kpi"><span class="lbl">Έργα</span><span class="v">${rep.groups.filter(g=>g.site).length}</span><span class="s">${np?np+' χωρίς ΑΜΟΕ':'όλα με ΑΜΟΕ'}</span></div></div>
+  ${halfs?'<p class="note">½ σημαίνει ότι την ίδια μέρα δούλεψε και σε άλλο έργο. Ο λογιστής αποφασίζει σε ποιο δηλώνεται.</p>':''}
+  ${groups}`:`<section class="panel"><p class="empty">${rep.first>TODAY?'Ο μήνας δεν έχει ξεκινήσει ακόμη.':'Δεν υπάρχουν μέρες εργασίας σε αυτόν τον μήνα.'}</p></section>`}`;
+}
+/* ---------- Εξαγωγή σε Excel και εκτύπωση ----------
+   Κάθε εξαγωγή φτιάχνει φύλλα (ίδια δομή με το xlsx του core) που γίνονται είτε αρχείο Excel είτε σελίδα για εκτύπωση ή PDF. */
+const xHead=(...cols)=>cols.map(v=>({v,s:'b'}));
+const xTop=t=>[[{v:t,s:'b'}],[company().name||''],['Από το '+BRAND.name+', '+fmt(TODAY)],[]];
+function accSheets(rep){const t='Μέρες εργασίας '+ymName(rep.ym)+(rep.upto<rep.last?' (μέχρι '+fmtS(rep.upto)+')':'');
+  const sum={top:true,name:'Σύνοψη',widths:[30,16,28,28,14,20,9],freeze:5,rows:[...xTop(t),xHead('Έργο','ΑΜΟΕ','Διεύθυνση','Εργαζόμενος','ΑΜΚΑ','Ειδικότητα','Μέρες'),
+    ...rep.groups.flatMap(g=>g.rows.map(r=>[g.name,g.amoe||(g.site?'λείπει':'—'),g.location,r.w.name,r.amka||'λείπει',r.spec,r.n])),
+    [],['Δεν έχει υποβληθεί στον e-ΕΦΚΑ. 0,5 σημαίνει ότι την ίδια μέρα δούλεψε και σε άλλο έργο.']]};
+  // ανά εργαζόμενο: διαφορετικές μέρες μέσα στον μήνα, όσα έργα κι αν είχε
+  const byW={};rep.groups.forEach(g=>g.rows.forEach(r=>{const x=byW[r.w.id]=byW[r.w.id]||{r,d:new Set(),p:[]};Object.keys(r.d).forEach(d=>x.d.add(d));x.p.push(g.name)}));
+  const wsh={top:true,name:'Ανά εργαζόμενο',widths:[28,14,20,10,60],freeze:5,rows:[...xTop(t),xHead('Εργαζόμενος','ΑΜΚΑ','Ειδικότητα','Μέρες','Πού δούλεψε'),
+    ...S.workers.filter(w=>byW[w.id]).map(w=>{const x=byW[w.id];return [w.name,x.r.amka||'λείπει',x.r.spec,x.d.size,x.p.join(', ')]})]};
+  const per=rep.groups.map(g=>({name:g.name,wide:true,widths:[26,13,16,...rep.dates.map(()=>4),8],freeze:6,rows:[[{v:g.name,s:'b'}],[g.site?'ΑΜΟΕ: '+(g.amoe||'λείπει'):(g.pid==='office'?'Γραφείο':'Αποθήκη και συντήρηση')+', χωρίς ΑΜΟΕ'],[g.location||''],[],
+    ['','','',...rep.dates.map(d=>DAYS[dow(d)].slice(0,2))],xHead('Εργαζόμενος','ΑΜΚΑ','Ειδικότητα',...rep.dates.map(d=>+d.slice(8)),'Σύνολο'),
+    ...g.rows.map(r=>[r.w.name,r.amka,r.spec,...rep.dates.map(d=>r.d[d]||null),{v:r.n,s:'b'}]),
+    [{v:'Σύνολο',s:'b'},null,null,...rep.dates.map(d=>{const x=g.rows.reduce((s,r)=>s+(r.d[d]||0),0);return x?Math.round(x*100)/100:null}),{v:g.n,s:'b'}]]}));
+  return {title:t,file:'Μέρες εργασίας '+ymName(rep.ym)+'.xlsx',wide:true,sheets:[sum,wsh,...per]}}
+function weekSheets(R,ws){const days=weekDays(ws),t='Πρόγραμμα εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6));
+  const cell=(w,d)=>{const x=whatDoes(R,w.id,d);if(x.off)return offWord(w,d);
+    if(x.jobs.length)return x.jobs.map(({job,lead})=>P(job.task.projectId).name+': '+job.task.title+(lead?' (υπεύθυνος)':'')).join(' / ');
+    if(x.gen)return 'Αποθήκη';if(x.pm.length)return 'Διαχείριση: '+x.pm.map(pid=>P(pid).name).join(', ');return isOffice(w)?'Γραφείο':''};
+  const ppl=S.workers.filter(w=>!isExt(w)||hasJob(R,w.id,days));
+  const a={top:true,name:'Ανά εργαζόμενο',widths:[24,18,...days.map(()=>32)],freeze:5,rows:[...xTop(t),xHead('Εργαζόμενος','Ειδικότητα',...days.map(fmt)),...ppl.map(w=>[w.name,(SP(w.specialtyId)||{}).name||'',...days.map(d=>cell(w,d))])]};
+  const b={top:true,name:'Ανά έργο',widths:[26,...days.map(()=>36)],freeze:5,rows:[...xTop(t),xHead('Έργο',...days.map(fmt)),
+    ...S.projects.map(p=>[p.name,...days.map(d=>((R.byDay[d]||{jobs:[]}).jobs.filter(j=>j.task.projectId===p.id).map(j=>j.task.title+': '+[j.lead,...j.helpers].filter(Boolean).map(w=>short(w.name)).join(', ')).join(' / ')))]),
+    ['Αποθήκη',...days.map(d=>((R.byDay[d]||{gen:[]}).gen||[]).map(g=>short(g.w.name)).join(', '))]]};
+  return {title:t,file:'Πρόγραμμα '+ws+'.xlsx',wide:true,sheets:[a,b]}}
+function paySheets(R,ws){const rows=payData(R,ws),t='Πληρωμές εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6)),m=v=>({v:r2(v),s:'m'});
+  const tot=f=>({v:r2(rows.reduce((s,r)=>s+f(r),0)),s:'bm'});
+  return {title:t,file:'Πληρωμές '+ws+'.xlsx',wide:true,sheets:[{top:true,name:'Πληρωμές',widths:[28,20,8,14,14,14,14,40],freeze:5,rows:[...xTop(t),xHead('Εργαζόμενος','Ειδικότητα','Μέρες','Εβδομάδα','Από πριν','Πληρώθηκαν','Υπόλοιπο','Έργα'),
+    ...rows.map(r=>[isExt(r.w)?r.w.company||r.w.name:r.w.name,(SP(r.w.specialtyId)||{}).name||'',r.days,m(r.amount),m(r.carry),m(r.paid),m(r.rest),r.parts.map(p=>pname(p.pid)+' '+nf(p.n)+' × '+money(p.rate)).join(', ')]),
+    [{v:'Σύνολο',s:'b'},null,{v:rows.reduce((s,r)=>s+r.days,0),s:'b'},tot(r=>r.amount),tot(r=>r.carry),tot(r=>r.paid),tot(r=>r.rest)]]}]}}
+function costData(R){const [from,to,label]=period(R);
+  const A=R.asg.filter(a=>a.date>=from&&a.date<=to),byP={},byW={},byWP={};
+  A.forEach(a=>{byP[a.projectId]=byP[a.projectId]||{c:0,n:0,sp:{}};byP[a.projectId].c+=a.wage;byP[a.projectId].n+=a.share||1;
+    const sp=W(a.workerId)?.specialtyId;byP[a.projectId].sp[sp]=(byP[a.projectId].sp[sp]||0)+a.wage;
+    byW[a.workerId]=byW[a.workerId]||{c:0,n:0};byW[a.workerId].c+=a.wage;byW[a.workerId].n+=a.share||1;
+    const k=a.workerId+'|'+a.projectId;byWP[k]=(byWP[k]||0)+(a.share||1)});
+  const pids=[...S.projects.map(p=>p.id),'gen','office'].filter(pid=>P(pid)||byP[pid]);
+  const wl=S.workers.filter(w=>byW[w.id]).sort((a,b)=>byW[b.id].c-byW[a.id].c);
+  return {from,to,label,A,total:A.reduce((s,a)=>s+a.wage,0),byP,byW,byWP,pids,wl}}
+function costSheets(R){const c=costData(R),t='Κόστος μεροκαμάτων '+fmtS(c.from)+' – '+fmtS(c.to);
+  const p={top:true,name:'Ανά έργο',widths:[30,12,14],freeze:5,rows:[...xTop(t),xHead('Έργο','Μεροκάματα','Κόστος'),...c.pids.map(pid=>[pname(pid),r2((c.byP[pid]||{n:0}).n),{v:r2((c.byP[pid]||{c:0}).c),s:'m'}]),
+    [{v:'Σύνολο',s:'b'},{v:r2(md(c.A)),s:'b'},{v:r2(c.total),s:'bm'}]]};
+  const w={top:true,name:'Ανά εργαζόμενο',widths:[28,20,16,12,14,...c.pids.map(()=>14)],freeze:5,rows:[...xTop(t),xHead('Εργαζόμενος','Ειδικότητα','Ρόλος','Μεροκάματα','Κόστος',...c.pids.map(pname)),
+    ...c.wl.map(x=>[x.name,(SP(x.specialtyId)||{}).name||'',ROLES[x.role]||'',r2(c.byW[x.id].n),{v:r2(c.byW[x.id].c),s:'m'},...c.pids.map(pid=>c.byWP[x.id+'|'+pid]?r2(c.byWP[x.id+'|'+pid]):null)])]};
+  return {title:t,file:'Κόστος '+c.from+' έως '+c.to+'.xlsx',sheets:[p,w]}}
+function exportData(k){const R=schedule();
+  if(k==='acc')return hasF('acc')?accSheets(accReport(R,UI.accM||TODAY.slice(0,7))):null;
+  if(!hasF('export'))return null;
+  if(k==='week')return weekSheets(R,UI.week||weekStart(UI.day||TODAY));
+  if(k==='pay')return paySheets(R,UI.payWeek||weekStart(TODAY));
+  if(k==='costs')return costSheets(R);
+  return null}
+const expBtns=k=>offF('export')?'':hasF('export')?`<button class="btn" data-act="prn" data-k="${k}">${ico('print')}PDF</button><button class="btn" data-act="xls" data-k="${k}">${ico('dl')}Excel</button>`
+  :`<button class="btn locked" data-act="upsell" data-f="export">${ico('lock')}Excel και PDF</button>`;
+// στο claude.ai το αρχείο περνά από την άδεια λήψης της σελίδας· αλλού κατεβαίνει κανονικά από τον browser
+let DL=null;try{if(window.claude&&window.claude.use)window.claude.use('downloads').then(d=>{DL=d}).catch(()=>{})}catch(e){}
+async function saveFile(name,bytes){
+  if(DL){try{await DL.save({filename:name,data:new Blob([bytes])});return true}
+    catch(e){if(e&&e.code==='declined')return false;if(e&&e.code==='rate_limited'){toast('Περίμενε λίγο και ξαναδοκίμασε.');return false}}}
+  try{const u=URL.createObjectURL(new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})),a=document.createElement('a');
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);return true}
+  catch(e){toast('Το αρχείο δεν κατέβηκε σε αυτή την προβολή.');return false}}
+// φύλλο σε πίνακα για εκτύπωση: οι πρώτες γραμμές με ένα κελί γίνονται τίτλοι, η πρώτη γραμμή με πολλά κελιά επικεφαλίδα
+function sheetHTML(sh,noTop){let pre='',rows='',post='',head=false;
+  const cv=c=>c==null?{v:''}:typeof c==='object'?c:{v:c},show=c=>typeof c.v==='number'?((c.s||'').includes('m')?money(c.v):c.v===0.5?'½':nf(c.v)):h(String(c.v));
+  for(const r of sh.rows||[]){const cs=(r||[]).map(cv),n=cs.filter(c=>c.v!=='').length;if(!n)continue;
+    if(!head&&n===1&&cs[0].v!==''&&!rows){if(!noTop)pre+=`<p${(cs[0].s||'').includes('b')?' class="b"':''}>${show(cs[0])}</p>`;continue}
+    if(head&&n===1&&cs.length===1){post+=`<p class="pn">${show(cs[0])}</p>`;continue}
+    const th=!head&&cs.every(c=>c.v===''||(c.s||'').includes('b'))&&cs.filter(c=>c.v!=='').length>1;
+    rows+='<tr>'+cs.map(c=>`<${th?'th':'td'}${typeof c.v==='number'?' class="n"':''}${!th&&(c.s||'').includes('b')?' style="font-weight:700"':''}>${show(c)}</${th?'th':'td'}>`).join('')+'</tr>';if(th)head=true}
+  return pre+(rows?`<table>${rows}</table>`:'')+post}
+function printSheets(x){const el=document.getElementById('print');
+  // τα επόμενα φύλλα με τον ίδιο τίτλο παίρνουν μόνο το όνομά τους· τα φύλλα έργων έχουν δικό τους τίτλο
+  el.innerHTML=x.sheets.map((sh,i)=>`<section class="${sh.wide||x.wide?'wide':''}">${i&&sh.top?`<h2>${h(sh.name)}</h2>`:''}${sheetHTML(sh,i&&sh.top)}</section>`).join('');
+  document.getElementById('pgsz').textContent=`@page{size:A4 ${x.wide?'landscape':'portrait'};margin:10mm}`;
+  document.body.classList.add('printing');
+  try{window.print()}catch(e){toast('Η εκτύπωση δεν άνοιξε εδώ. Κατέβασε το Excel.')}
+  finally{document.body.classList.remove('printing');el.innerHTML=''}}
 
 /* Ρυθμίσεις */
 function vAccount(){const u=AUTH.user;
@@ -2750,11 +2928,11 @@ function vSettings(){
 
 /* ---------- Πακέτα συνδρομής ---------- */
 // σελίδες που ανοίγουν από συγκεκριμένο πακέτο (τα πακέτα και οι λειτουργίες τους είναι στο core)
-const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs'};
+const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs',acc:'acc'};
 // κλειστή από τον διαχειριστή (όχι από το πακέτο): δεν φαίνεται καθόλου
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -2779,7 +2957,7 @@ const SW=[
   ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.']]],
   ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.']]],
   ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.']]],
-  ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.']]],
+  ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
   ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
 const swName=f=>{for(const [,xs] of SW)for(const x of xs)if(x[0]===f)return x[1];return f};
 function featPanel(){const ad=isAdmin();
@@ -3084,6 +3262,9 @@ document.addEventListener('click',e=>{
         if(v==='auto')delete S.overrides[k];else if(v==='tasks')S.overrides[k]={type:'tasks',taskIds:ids};else S.overrides[k]={type:v}});
       commit(v==='tasks'&&ids.length>1?w.name+': '+ids.length+' εργασίες την ίδια μέρα. Το μεροκάματο μοιράστηκε.':v==='auto'?'Επέστρεψε στο αυτόματο πρόγραμμα.':v==='off'?w.name+': άδεια. Το πρόγραμμα ξαναστήθηκε.':w.name+': η ανάθεση ορίστηκε. Τα υπόλοιπα προσαρμόστηκαν.');break}
     case 'newappt':apptForm(null);break;
+    case 'accm':{const dir=+el.dataset.dir;UI.accM=dir===0?TODAY.slice(0,7):ymAdd(UI.accM||TODAY.slice(0,7),dir);render();break}
+    case 'xls':case 'prn':{const x=exportData(el.dataset.k);if(!x)break;if(a==='prn'){printSheets(x);break}
+      el.disabled=true;saveFile(x.file,xlsx(x.sheets)).then(ok=>{el.disabled=false;if(ok)toast('Έτοιμο το αρχείο «'+x.file+'».')});break}
     case 'guide':closeModal();guideOpen();break;
     case 'g-next':{guideRead();const g=UI.g;if(g.step===0&&!g.wd.length){toast('Διάλεξε τουλάχιστον μία εργάσιμη μέρα.');break}g.step++;guideRender();break}
     case 'g-back':guideRead();UI.g.step--;guideRender();break;
@@ -3152,7 +3333,7 @@ document.addEventListener('click',e=>{
     case 'remday':{const dir=+el.dataset.dir,cur=UI.remDay||nextWork(TODAY);UI.remDay=dir===0?nextWork(TODAY):nextWork(add(cur,dir),dir);render();break}
     case 'newproj':projForm(null);break;
     case 'editproj':projForm(P(id));break;
-    case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color'),...(document.getElementById('g_due')?{due:g('g_due')}:{})};
+    case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color'),...(document.getElementById('g_due')?{due:g('g_due')}:{}),...(document.getElementById('g_amoe')?{amoe:g('g_amoe').trim()}:{})};
       // κλειδωμένα πεδία του πακέτου δεν υπάρχουν στη φόρμα: κρατούν ό,τι είχε το έργο
       if(hasF('pm'))v.managers=[...f.querySelectorAll('[data-mgr]:checked')].map(x=>x.dataset.mgr);else if(f.dataset.new==='1')v.managers=[];
       if(!v.name){toast('Γράψε όνομα έργου.');break}
@@ -3179,10 +3360,11 @@ document.addEventListener('click',e=>{
     case 'rates':ratesForm(W(id));break;
     case 'saverates':{const f=document.getElementById('rf');const w=W(f.dataset.id);w.rates={};f.querySelectorAll('[data-rate]').forEach(i=>{if(i.value!=='')w.rates[i.dataset.rate]=+i.value});UI.hmsg='Μεροκάματα ανά έργο: '+w.name;commit('Τα μεροκάματα ανά έργο αποθηκεύτηκαν.');break}
     case 'saveworker':{const f=document.getElementById('wf');const g=x=>document.getElementById(x).value;
-      const v={id:f.dataset.id,name:g('h_name').trim(),specialtyId:g('h_spec'),role:g('h_role'),wage:+g('h_wage')||0,phone:g('h_phone').trim(),off:g('h_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)),...(document.getElementById('h_rate')?{rating:+g('h_rate')}:{})};
+      const v={id:f.dataset.id,name:g('h_name').trim(),specialtyId:g('h_spec'),role:g('h_role'),wage:+g('h_wage')||0,phone:g('h_phone').trim(),...(document.getElementById('h_amka')?{amka:g('h_amka').replace(/\s/g,'')}:{}),off:g('h_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)),...(document.getElementById('h_rate')?{rating:+g('h_rate')}:{})};
       if(document.getElementById('h_spec2')){v.spec2=g('h_spec2')===v.specialtyId?'':g('h_spec2');const dd=[...f.querySelectorAll('[data-wday]:checked')].map(x=>+x.dataset.wday);
         if(!dd.length){toast('Διάλεξε τουλάχιστον μία μέρα που δουλεύει.');break}v.days=S.settings.workdays.every(d=>dd.includes(d))?null:dd}
       if(!v.name){toast('Γράψε ονοματεπώνυμο.');break}
+      if(v.amka&&!okAmka(v.amka)){toast('Ο ΑΜΚΑ έχει 11 ψηφία.');break}
       if(SP(v.specialtyId)?.office)v.role='ypal';else if(v.role==='ypal'||v.role==='ext')v.role='voith';
       UI.hmsg=(f.dataset.new==='1'?'Νέος εργαζόμενος: ':'Αλλαγές στον εργαζόμενο ')+v.name;if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else Object.assign(W(v.id),v);commit('Ο εργαζόμενος αποθηκεύτηκε.');break}
     case 'delworker':if(el.dataset.sure){UI.hmsg='Διαγραφή εργαζόμενου: '+(W(id)?.name||'');S.workers=S.workers.filter(w=>w.id!==id);S.duties=S.duties.filter(x=>x.workerId!==id);(S.appts||[]).forEach(a=>{a.people=(a.people||[]).filter(x=>x!==id)});
