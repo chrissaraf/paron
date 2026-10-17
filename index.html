@@ -166,6 +166,30 @@ table.gantt td.dl{box-shadow:inset -2px 0 0 var(--bad)}
 .suml{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:2px 0 0;font-size:14px}.suml dt{color:var(--muted)}.suml dd{margin:0}
 .sumcard p{margin:0}
 .feats{display:grid;gap:4px}.feats h3{margin:14px 0 2px;font-size:13px;font-weight:650;color:var(--muted)}.feats h3:first-child{margin-top:4px}
+.modal.guide{width:min(820px,100%)}
+.modal.guide h2{margin:0}.modal.guide>p,.modal.guide .note{margin:0}
+.modal.guide .fs{display:grid;gap:8px;min-width:0}.modal.guide .fs>.fl{font-size:13px;color:var(--ink-2);font-weight:560}
+.modal.guide .radios{max-height:none}.modal.guide .radios .note{display:block;margin-top:2px}.gwarn{color:var(--bad)!important}
+.gstep{display:grid;gap:8px;font-size:13px;color:var(--muted);font-weight:600;padding-top:4px}
+.gbar{height:6px;border-radius:999px;background:var(--line);overflow:hidden}.gbar i{display:block;height:100%;background:var(--brand);border-radius:inherit}
+@media (prefers-reduced-motion:no-preference){.gbar i{transition:width .25s ease-out}}
+.gps{display:grid;gap:10px}
+.gp{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.5fr) minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1.3fr) auto;gap:8px;align-items:end}
+.gpr{grid-template-columns:minmax(0,2fr) minmax(0,2fr) minmax(0,1.1fr) auto}.gpr.nodl{grid-template-columns:minmax(0,2fr) minmax(0,2fr) auto}
+.gp label{display:grid;gap:4px;min-width:0;font-size:12.5px;color:var(--muted);font-weight:560}
+.gp input,.gp select{width:100%;min-width:0}
+.gp .gx{min-height:42px;width:42px;padding:0;justify-content:center;color:var(--muted)}.gp .gx svg{width:18px;height:18px;margin:0}
+@media (min-width:641px){.gps .gp:not(:first-child) .gl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
+.gpaste{border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--sunk)}.gpaste textarea{width:100%;font-family:inherit}
+.gdone{display:grid;justify-items:start;gap:8px}.gdone h2{font-size:21px;font-weight:760}.gok{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent-soft-ink)}.gok svg{width:24px;height:24px}
+.gnext{margin:4px 0 0;font-size:15px}
+.gsteps{margin:0;padding-left:22px;display:grid;gap:12px}.gsteps li{padding-left:4px}.gsteps li>div{margin-top:8px}
+.gcard{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-color:var(--accent-strong);background:var(--accent-soft)}.gcard h2{margin:0 0 4px}.gcard .note{color:var(--accent-soft-ink)}.gcard .bar{margin:0}
+@media (max-width:640px){
+  .gp,.gpr,.gpr.nodl{grid-template-columns:1fr 1fr;position:relative;border:1px solid var(--line);border-radius:var(--r);padding:12px;gap:10px}
+  .gp .gn{grid-column:1/-1;padding-right:46px}.gp .gx{position:absolute;top:8px;right:8px}
+  .gcard .bar{width:100%}.gcard .bar .btn{flex:1}
+}
 .fsw{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}.fsw>span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.fsw.ro{cursor:default}
 input[type=checkbox].sw{appearance:none;-webkit-appearance:none;flex:none;width:44px;min-width:44px;height:26px;padding:0;border:0;border-radius:999px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .15s}
 input[type=checkbox].sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
@@ -764,6 +788,47 @@ function demo(){
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   return {v:2,sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
+/* ---------- Οδηγός πρώτης ρύθμισης ----------
+   Προτάσεις ανά κλάδο: ειδικότητες έργων και γραφείου. Σήμερα μόνο οι κατασκευές· άλλοι κλάδοι μπαίνουν εδώ ως νέο κλειδί. */
+const PRESETS={build:{name:'Κατασκευές',
+  site:['Χτίστες','Σοβατζήδες','Ηλεκτρολόγοι','Υδραυλικοί','Πλακάδες','Ελαιοχρωματιστές','Καλουπατζήδες','Σιδεράδες','Μονωτές','Γυψοσανιδάδες','Αλουμινάδες'],
+  office:[['Γραμματεία'],['Διαχείριση έργων',true],['Ταμείο και λογιστήριο'],['Εξωτερικός υπάλληλος']]}};
+const GEN={id:'gen',name:'Γενικοί βοηθοί'};
+// άδεια δεδομένα για νέα εταιρεία: κρατά τις ρυθμίσεις (πακέτο, λειτουργίες, καιρό, αργίες…) και το ιστορικό αλλαγών
+function blankState(cur){
+  const o=demo(),st=(cur&&cur.settings)||{};
+  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{}});
+  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});
+  if(cur&&cur.hist)o.hist=cur.hist;
+  return o;
+}
+// σύγκριση ονομάτων χωρίς τόνους και πεζά/κεφαλαία· οι ειδικότητες ταιριάζουν και σε ενικό («Χτίστης» = «Χτίστες»)
+const fold=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ς/g,'σ').replace(/\s+/g,' ').trim();
+const sameSpec=(a,b)=>{a=fold(a);b=fold(b);if(!a||!b)return false;if(a===b)return true;return a.length>=5&&b.length>=5&&a.slice(0,5)===b.slice(0,5)};
+const ROLE_W=[['αρχιεργατ','arxi'],['αρχιτεχνιτ','arxi'],['εργοδηγ','arxi'],['τεχνιτ','texn'],['μαστορ','texn'],['βοηθ','voith'],['εργατ','voith'],['υπαλληλ','ypal']];
+// γραμμές από Excel ή λίστα: όνομα, ειδικότητα, ρόλος, μεροκάματο, κινητό, με όποια σειρά. Επιστρέφει [{name,spec,role,wage,phone}]
+function parsePeople(text,specs){
+  const out=[];
+  String(text||'').split(/\r?\n/).forEach(line=>{
+    if(!line.trim())return;
+    let cells=line.includes('\t')?line.split('\t'):line.includes(';')?line.split(';'):line.includes(',')?line.split(','):[line];
+    cells=cells.map(c=>c.trim()).filter(Boolean);
+    const r={name:'',spec:'',role:'',wage:'',phone:''};
+    if(cells.length===1){const m=cells[0].match(/(\+?\d[\d ]{8,}\d)\s*$/);if(m){r.phone=m[1].trim();cells=[cells[0].slice(0,m.index).trim()].filter(Boolean)}}
+    if(cells.some(c=>/^(ονομα|ονοματεπωνυμο|επωνυμο)/.test(fold(c))))return;   // γραμμή επικεφαλίδων
+    for(const c of cells){
+      const dg=c.replace(/\D/g,''),f=fold(c);
+      if(!r.phone&&dg.length>=10&&/^[\d\s+().-]+$/.test(c)){r.phone=c;continue}
+      if(!r.wage&&/^\d{1,3}([.,]\d{1,2})?\s*(€|ευρω)?$/.test(f)){r.wage=+c.replace(',','.').replace(/[^\d.]/g,'');continue}
+      const rl=!r.role&&ROLE_W.find(([k])=>f.startsWith(k)&&f.split(' ').length<=2);if(rl){r.role=rl[1];continue}
+      const sp=!r.spec&&(specs||[]).find(x=>sameSpec(x,c));if(sp&&(r.name||cells.length>1)){r.spec=sp;continue}
+      if(!r.name){r.name=c.replace(/\s+/g,' ');continue}
+      if(!r.spec&&/^[^\d]+$/.test(c)){r.spec=c.charAt(0).toUpperCase()+c.slice(1);continue}
+    }
+    if(r.name)out.push(r);
+  });
+  return out;
+}
 function migrate(o){
   if(o.v===1){
     const d=officeDemo();
@@ -1324,7 +1389,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
@@ -1334,7 +1399,7 @@ root.ErgoCore={planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,we
 </script>
 <script>
 (()=>{
-const {planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
 const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['settings','Ρυθμίσεις']];
@@ -1354,7 +1419,9 @@ function logChange(msg){if(!msg||isWorker())return null;S.hist=S.hist||[];const 
   if(!SERVER&&LAST){try{const r=undoRing().slice(-4),o=JSON.parse(LAST);delete o.past;r.push({id:e.id,snap:JSON.stringify(o)});localStorage.setItem(ULS,JSON.stringify(r))}catch(err){}}
   return e}
 async function push(){if(isWorker())return;try{const r=await fetch('api/state',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(S)});if(r.status===401)return expired();if(!r.ok)throw 0;if(UI.tab==='today')loadChanges(true)}catch(e){toast('Η αλλαγή δεν αποθηκεύτηκε στον server. Έλεγξε τη σύνδεση.')}}
-async function pull(){if(isWorker())return false;try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));LAST=JSON.stringify(S);return true}push();return false}catch(e){toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
+async function pull(again){if(isWorker())return false;try{const r=await fetch('api/state',{cache:'no-store'});if(r.status===401){expired();return false}if(!r.ok)throw 0;const o=await r.json();if(o&&o.v){setS(migrate(o));LAST=JSON.stringify(S);return true}
+  // πρώτη φορά: ο server δεν έχει δεδομένα. Ανεβαίνουν αυτά του browser και ξαναδιαβάζονται, ώστε να ισχύσει το πακέτο της συνδρομής.
+  if(again)return false;await push();return pull(true)}catch(e){toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
 setS(load());LAST=JSON.stringify(S);
 
 let UI={proj:'',closed:[],tab:'today',day:null,week:null,weekMode:'workers',person:'',taskMode:'site',fProj:'',fSpec:'',fStat:'open',period:'week',from:'',to:'',payWeek:null};
@@ -1484,7 +1551,7 @@ function enter(u){
   document.body.classList.add('in');
   if(u.role==='worker'){UI.tab='mine';UI.week=null}else if(UI.tab==='mine')UI.tab='today';
   render();fitLogo();window.scrollTo(0,0);
-  if(SERVER&&u.role!=='worker')pull().then(ok=>{ok&&render();wxRefresh()});else wxRefresh();
+  if(SERVER&&u.role!=='worker')pull().then(ok=>{ok&&render();wxRefresh();guideAuto()});else{wxRefresh();guideAuto()}
 }
 const expired=()=>showAuth('login','Η σύνδεση έληξε. Μπες ξανά.');
 
@@ -1667,6 +1734,7 @@ const ICONS={search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   undo:'<path d="M8.5 5 4 9.5 8.5 14"/><path d="M4 9.5h10.5a5.5 5.5 0 0 1 0 11H11"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
   cl:'<path d="M14.5 5.5 8 12l6.5 6.5"/>',
   cr:'<path d="M9.5 5.5 16 12l-6.5 6.5"/>',
   menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
@@ -1878,6 +1946,7 @@ function vToday(R){
     <button class="btn" data-act="copyday">Αντιγραφή για Viber</button>
     <button class="btn pri" data-act="sendnext">${ico('send')}Αποστολή σε όλους για ${fmt(nextDay())}</button></div>
   <textarea id="daytext" rows="8" hidden readonly>${h(viber)}</textarea>
+  ${guideCard()}
   ${chgBanner()}
   ${(n=>n&&d!==TODAY&&d===nextWork(TODAY)&&S.settings.workdays.includes(dow(TODAY))?`<p class="note">${ico('cal','pin')}Σήμερα ${n==='Κλειστά'?'η εταιρεία είναι κλειστή':'είναι αργία, '+h(n)}, οπότε δεν υπάρχει πρόγραμμα. Βλέπεις την επόμενη εργάσιμη.</p>`:'')(holName(TODAY))}
   ${payDayPanel(R,d)}
@@ -2615,7 +2684,7 @@ function vAccount(){const u=AUTH.user;
     <div class="me" style="border:0;padding:0 0 12px;margin:0"><span class="av" aria-hidden="true">${h(initials(u.name))}</span><span class="me-t"><b>${h(u.name)}</b><small>Όνομα χρήστη: ${h(u.username)} · ${ROLE_L[u.role]||''}, ${ROLE_D[u.role]||''}</small></span></div>
     <div class="bar"><button class="btn" data-act="pwform">Αλλαγή κωδικού</button><button class="btn" data-act="logout">Αποσύνδεση</button></div>
     ${SERVER?'':'<p class="note" style="margin-top:10px">Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Όταν η εφαρμογή τρέχει από τον server της εταιρείας, φυλάγονται κεντρικά και ο κάθε εργαζόμενος μπαίνει από το κινητό του.</p>'}</section>
-  ${isAdmin()?`<section class="panel"><div class="bar" style="margin-bottom:8px"><h2 class="grow" style="margin:0">Χρήστες</h2><button class="btn pri" data-act="newuser">${ico('plus')}Νέος χρήστης</button></div>
+  ${isAdmin()?`<section class="panel" id="usersec"><div class="bar" style="margin-bottom:8px"><h2 class="grow" style="margin:0">Χρήστες</h2><button class="btn pri" data-act="newuser">${ico('plus')}Νέος χρήστης</button></div>
     <p class="note" style="margin:0 0 10px">Ο εργαζόμενος βλέπει μόνο το δικό του πρόγραμμα, χωρίς αλλαγές, έργα, προσωπικό ή οικονομικά. Το γραφείο (γραμματεία, ταμείο, λογιστήριο, διαχειριστές έργων) έχει πρόσβαση σε όλα.</p>
     <div id="users" class="scroll"><p class="note">Φόρτωση χρηστών…</p></div></section>`:''}`;
 }
@@ -2629,6 +2698,7 @@ function vSettings(){
   if(isWorker())return `<h1>Ο λογαριασμός μου</h1>${vAccount()}`;
   const hol=S.settings.hol||holDefaults(),hon=hol.on!==false,skip=hol.skip||[],cr=closedRanges().filter(([,b])=>b>=add(TODAY,-31)),co=company();
   return `<h1>Ρυθμίσεις</h1>${vAccount()}
+  ${guidePanel()}
   ${planPanel()}
   ${featPanel()}
   <section class="panel"><h2>Εταιρεία</h2><p class="note">Η επωνυμία μπαίνει στο τέλος κάθε μηνύματος στο Viber και στις καταστάσεις πληρωμών.</p><div class="form" style="margin-top:10px">
@@ -2684,7 +2754,7 @@ const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay
 // κλειστή από τον διαχειριστή (όχι από το πακέτο): δεν φαίνεται καθόλου
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -2710,7 +2780,7 @@ const SW=[
   ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.']]],
   ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.']]],
-  ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.']]]];
+  ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
 const swName=f=>{for(const [,xs] of SW)for(const x of xs)if(x[0]===f)return x[1];return f};
 function featPanel(){const ad=isAdmin();
   return `<section class="panel" id="feats"><h2>Λειτουργίες</h2>
@@ -2729,6 +2799,136 @@ function planPanel(){const cur=planOf(),ci=planIx(cur.id);
       <ul>${feats(p)}</ul>
       ${i===ci?'<span class="tag ok">'+ico('check')+'Το πακέτο σου</span>':isAdmin()&&!planLock()?`<button class="btn${i>ci?' pri':''}" data-act="planpick" data-plan="${p.id}">${i>ci?'Αναβάθμιση':'Αλλαγή'} σε ${h(p.name)}</button>`:''}</div>`).join('')}</div>
     <p class="note" style="margin-top:10px">${planLock()?'Το πακέτο ορίζεται από τη συνδρομή της εταιρείας.':'Για παρουσιάσεις: άλλαξε πακέτο και δες τι βλέπει κάθε πελάτης. Δεν σβήνεται κανένα δεδομένο, απλώς κλειδώνουν ή ανοίγουν σελίδες. Πάνω από 40 άτομα ετοιμάζουμε προσφορά.'}</p></section>`}
+
+/* ---------- Οδηγός πρώτης ρύθμισης ----------
+   Τέσσερα βήματα (εταιρεία, ειδικότητες, άτομα, έργα). Το πρόχειρο μένει στο UI.g μέχρι την ολοκλήρωση,
+   που περνά όλα μαζί ως μία αλλαγή στο ιστορικό, ώστε να αναιρείται με ένα πάτημα. */
+const G_STEPS=['Εταιρεία','Ειδικότητες','Άτομα','Έργα'];
+const isDemoData=()=>S.workers.some(w=>w.id==='w1'&&w.name==='Γιώργος Παπαδόπουλος')&&S.projects.some(p=>p.id==='p1'&&p.name==='Πολυκατοικία Καλαμαριάς');
+const gPerson=()=>({name:'',spec:'',role:'',wage:'',phone:''}),gProj=()=>({name:'',location:'',due:''});
+function guideInit(){
+  const pre=PRESETS.build,demoD=isDemoData(),specs=[];
+  const has=(n,o)=>S.specialties.some(s=>s.id!=='gen'&&!!s.office===o&&sameSpec(s.name,n));
+  const addS=(n,o,pm,on)=>{if(!specs.some(x=>x.o===o&&sameSpec(x.n,n)))specs.push({n,o,pm:!!pm,on,ex:has(n,o)})};
+  if(!demoD)S.specialties.filter(s=>s.id!=='gen').forEach(s=>addS(s.name,!!s.office,s.pm,true));
+  pre.site.forEach((n,i)=>addS(n,false,false,demoD&&i<6));
+  pre.office.forEach(([n,pm])=>addS(n,true,pm,demoD));
+  UI.g={step:0,mode:demoD?'fresh':'keep',demo:demoD,co:company().name||'',owner:S.settings.ownerName||'',oph:S.settings.ownerPhone||'',wd:S.settings.workdays.slice(),
+    specs,people:[gPerson(),gPerson(),gPerson()],projs:[gProj(),gProj()],paste:false,res:null};
+}
+function guideOpen(){if(!hasF('setup')){openModal(upsell('setup')+'<div class="acts"><span class="grow"></span><button class="btn" data-act="close">Κλείσιμο</button></div>');return}
+  if(!UI.g||UI.g.res)guideInit();guideRender()}
+// οι ειδικότητες που φαίνονται στα άτομα: όσες είναι τσεκαρισμένες ή υπάρχουν ήδη (όταν κρατάμε τα δεδομένα)
+const gSpecs=g=>g.specs.filter(x=>x.on||(g.mode==='keep'&&x.ex));
+function guideRead(){const g=UI.g,m=document.querySelector('.modal.guide');if(!g||!m)return;const v=id=>(m.querySelector('#'+id)||{}).value||'';
+  if(g.step===0){g.co=v('g1_co');g.owner=v('g1_own');g.oph=v('g1_oph');g.wd=[...m.querySelectorAll('[data-gwd]:checked')].map(x=>+x.dataset.gwd);const md=m.querySelector('[name=g1_mode]:checked');if(md)g.mode=md.value}
+  if(g.step===1)m.querySelectorAll('[data-gsp]').forEach(x=>{if(!x.disabled)g.specs[+x.dataset.gsp].on=x.checked});
+  if(g.step===2)g.people=[...m.querySelectorAll('[data-gp]')].map(r=>{const o={};r.querySelectorAll('[data-k]').forEach(x=>o[x.dataset.k]=x.value.trim());return o});
+  if(g.step===3)g.projs=[...m.querySelectorAll('[data-gpr]')].map(r=>{const o={};r.querySelectorAll('[data-k]').forEach(x=>o[x.dataset.k]=x.value.trim());return o});
+}
+function guideStep(){const g=UI.g;
+  if(g.step===0){const n=S.projects.length,nw=S.workers.length;
+    return `<h2>Η εταιρεία σου</h2><p class="note">Τέσσερα σύντομα βήματα: εταιρεία, ειδικότητες, άτομα και έργα. Ό,τι δεν ξέρεις τώρα, το συμπληρώνεις αργότερα από τις σελίδες της εφαρμογής.</p>
+    <div class="form">
+      <label class="full">Επωνυμία<input id="g1_co" value="${h(g.co)}" placeholder="π.χ. Παπαδόπουλος Κατασκευαστική"><span class="note">Μπαίνει στο τέλος κάθε μηνύματος στο Viber.</span></label>
+      <label>Όνομα του εργολάβου<input id="g1_own" value="${h(g.owner)}" autocomplete="name"></label>
+      <label>Κινητό του εργολάβου<input id="g1_oph" type="tel" value="${h(g.oph)}" placeholder="π.χ. 694 123 4567"></label>
+      <div class="fs full"><span class="fl">Εργάσιμες μέρες</span><div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-gwd="${d}"${g.wd.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></div>
+      <div class="fs full"><span class="fl">Τα δεδομένα που υπάρχουν τώρα</span><div class="radios">
+        ${g.demo?`<label class="ck"><input type="radio" name="g1_mode" value="fresh"${g.mode==='fresh'?' checked':''}> <span><b>Ξεκινάω από την αρχή</b><span class="note">Σβήνουν τα παραδείγματα (${n} έργα, ${nw} άτομα). Οι λογαριασμοί χρηστών μένουν.</span></span></label>
+          <label class="ck"><input type="radio" name="g1_mode" value="keep"${g.mode==='keep'?' checked':''}> <span><b>Κρατάω τα παραδείγματα</b><span class="note">Τα δικά σου μπαίνουν δίπλα τους. Τα σβήνεις όποτε θες.</span></span></label>`
+        :`<label class="ck"><input type="radio" name="g1_mode" value="keep"${g.mode==='keep'?' checked':''}> <span><b>Προσθέτω σε όσα υπάρχουν</b><span class="note">${n} έργα και ${nw} άτομα μένουν όπως είναι.</span></span></label>
+          <label class="ck"><input type="radio" name="g1_mode" value="fresh"${g.mode==='fresh'?' checked':''}> <span><b>Σβήνω όλα και ξεκινάω από την αρχή</b><span class="note gwarn">Σβήνουν ${n} έργα, ${nw} άτομα, οι εργασίες, τα ραντεβού και οι πληρωμές. Οι λογαριασμοί χρηστών μένουν.</span></span></label>`}
+      </div></div></div>`}
+  if(g.step===1){const grp=o=>g.specs.map((x,i)=>x.o!==o?'':`<label><input type="checkbox" data-gsp="${i}"${x.on||(g.mode==='keep'&&x.ex)?' checked':''}${g.mode==='keep'&&x.ex?' disabled':''}> ${h(x.n)}</label>`).join('');
+    return `<h2>Ειδικότητες</h2><p class="note">Τσέκαρε όσες έχει η εταιρεία. Από αυτές βγαίνουν τα συνεργεία και ο υπεύθυνος κάθε εργασίας. Οι γενικοί βοηθοί υπάρχουν πάντα.</p>
+    <div class="fs"><span class="fl">Στα έργα</span><div class="wd">${grp(false)}</div></div>
+    <div class="fs"><span class="fl">Στο γραφείο</span><div class="wd">${grp(true)}</div><span class="note">Το γραφείο δεν μπαίνει σε συνεργεία. Η διαχείριση έργων ορίζεται ανά έργο.</span></div>
+    <div class="fs"><span class="fl">Άλλη ειδικότητα</span><span class="inl"><input id="g2_new" placeholder="π.χ. Ξυλουργοί"><select id="g2_where"><option value="0">Στα έργα</option><option value="1">Στο γραφείο</option></select><button type="button" class="btn" data-act="g-spec">${ico('plus')}Προσθήκη</button></span></div>`}
+  if(g.step===2){const sp=gSpecs(g),lim=planOf().people;
+    const nSite=g.people.filter(r=>r.name&&!sp.some(x=>x.o&&sameSpec(x.n,r.spec))).length;
+    const siteO=[...sp.filter(x=>!x.o).map(x=>x.n),GEN.name],offO=sp.filter(x=>x.o).map(x=>x.n),all=[...siteO,...offO];
+    const og=(l,xs,cur)=>xs.length?`<optgroup label="${h(l)}">${xs.map(v=>`<option value="${h(v)}"${v===cur?' selected':''}>${h(v)}</option>`).join('')}</optgroup>`:'';
+    const row=(r,i)=>{const nw=r.spec&&!all.some(v=>sameSpec(v,r.spec))?[r.spec]:[],cur=[...nw,...all].find(v=>sameSpec(v,r.spec))||siteO[0],off=offO.includes(cur);
+      return `<div class="gp" data-gp="${i}">
+      <label class="gn"><span class="gl">Ονοματεπώνυμο</span><input data-k="name" value="${h(r.name)}"></label>
+      <label><span class="gl">Ειδικότητα</span><select data-k="spec">${og('Νέα',nw,cur)}${og('Στα έργα',siteO,cur)}${og('Στο γραφείο',offO,cur)}</select></label>
+      <label><span class="gl">Ρόλος</span><select data-k="role"${off?' disabled':''}>${[['voith',ROLES.voith],['texn',ROLES.texn],['arxi',ROLES.arxi],['ypal','Γραφείο']].map(([k,l])=>`<option value="${k}"${(off?'ypal':r.role&&r.role!=='ypal'?r.role:'voith')===k?' selected':''}${k==='ypal'&&!off?' hidden':''}>${h(l)}</option>`).join('')}</select></label>
+      <label><span class="gl">Μεροκάματο</span><input data-k="wage" type="number" min="0" step="5" inputmode="decimal" value="${h(r.wage)}" placeholder="${defWage(off?'ypal':r.role||'voith')}"></label>
+      <label><span class="gl">Κινητό</span><input data-k="phone" type="tel" value="${h(r.phone)}"></label>
+      <button type="button" class="btn sm ghost gx" data-act="g-del" data-i="${i}" aria-label="Αφαίρεση γραμμής">${ico('x')}</button></div>`};
+    return `<h2>Τα άτομα της εταιρείας</h2><p class="note">Όσοι δουλεύουν στα έργα και στο γραφείο. Αν αφήσεις κενό το μεροκάματο, μπαίνει το συνηθισμένο για τον ρόλο. Τους εξωτερικούς συνεργάτες τους βάζεις μετά, από τη σελίδα Συνεργάτες.</p>
+    ${nSite>lim?`<p class="warnline">${ico('info')}<span>${nSite} άτομα στα έργα, και το πακέτο ${h(planOf().name)} φτάνει έως ${lim}. Η εφαρμογή δουλεύει κανονικά.</span></p>`:''}
+    <div class="gps">${g.people.map(row).join('')}</div>
+    <div class="bar"><button type="button" class="btn" data-act="g-add">${ico('plus')}Άλλο άτομο</button><button type="button" class="btn" data-act="g-paste">Επικόλληση από Excel</button></div>
+    ${g.paste?`<div class="fs gpaste"><span class="fl">Επικόλληση από Excel</span><textarea id="g3_paste" rows="5" placeholder="Γιώργος Παπαδόπουλος	Χτίστης	95	694 120 3381"></textarea>
+      <span class="note">Αντέγραψε τις γραμμές από το Excel και επικόλλησέ τες εδώ: όνομα, ειδικότητα, ρόλο, μεροκάματο και κινητό, με όποια σειρά. Νέες ειδικότητες προστίθενται μόνες τους.</span>
+      <div class="bar"><button type="button" class="btn pri" data-act="g-parse">Πρόσθεσε στη λίστα</button></div></div>`:''}`}
+  if(g.step===3){const dl=hasF('deadline');
+    return `<h2>Τα έργα</h2><p class="note">Όσα τρέχουν τώρα ή ξεκινούν σύντομα. Τις εργασίες κάθε έργου τις βάζεις μετά, από τη σελίδα του.</p>
+    <div class="gps">${g.projs.map((r,i)=>`<div class="gp gpr${dl?'':' nodl'}" data-gpr="${i}">
+      <label class="gn"><span class="gl">Όνομα έργου</span><input data-k="name" value="${h(r.name)}" placeholder="π.χ. Ανακαίνιση γραφείων Πυλαίας"></label>
+      <label><span class="gl">Διεύθυνση</span><input data-k="location" value="${h(r.location)}"></label>
+      ${dl?`<label><span class="gl">Παράδοση</span><input data-k="due" type="date" value="${h(r.due)}"></label>`:''}
+      <button type="button" class="btn sm ghost gx" data-act="g-del" data-i="${i}" aria-label="Αφαίρεση γραμμής">${ico('x')}</button></div>`).join('')}</div>
+    <div class="bar"><button type="button" class="btn" data-act="g-add">${ico('plus')}Άλλο έργο</button></div>`}
+  const r=g.res,p1=S.projects.find(p=>p.id===r.p1)||S.projects[0];
+  return `<div class="gdone"><span class="gok">${ico('check')}</span><h2>Έτοιμο</h2>
+    <p>${r.fresh?'Ξεκίνησες από την αρχή. ':''}${gSum(r)}${r.skip?` ${r.skip===1?'Ένα άτομο υπήρχε ήδη και δεν μπήκε ξανά.':r.skip+' άτομα υπήρχαν ήδη και δεν μπήκαν ξανά.'}`:''}</p></div>
+    <h3 class="gnext">Τι μένει</h3>
+    <ol class="gsteps">
+      <li><b>Εργασίες.</b> Για κάθε έργο, οι εργασίες με ειδικότητα, υπεύθυνο και μέρες. Από αυτές βγαίνει το πρόγραμμα κάθε μέρας.${p1?`<div><button class="btn sm pri" data-act="g-task" data-p="${p1.id}">${ico('plus')}Εργασία στο «${h(p1.name)}»</button></div>`:''}</li>
+      <li><b>Λογαριασμοί.</b> Για το γραφείο και για όσους εργάτες θα βλέπουν το πρόγραμμά τους στο κινητό.<div><button class="btn sm" data-act="g-users">Χρήστες</button></div></li>
+      <li><b>Αποστολή.</b> Από το Σήμερα στέλνεις το πρόγραμμα της επόμενης μέρας σε όλους στο Viber.</li>
+    </ol>`;
+}
+// «Πέρασαν 3 ειδικότητες, 6 άτομα και 2 έργα.» χωρίς τα μηδενικά
+const gSum=r=>{const x=[r.sp?(r.sp===1?'1 ειδικότητα':r.sp+' ειδικότητες'):'',r.w?(r.w===1?'1 άτομο':r.w+' άτομα'):'',r.p?(r.p===1?'1 έργο':r.p+' έργα'):''].filter(Boolean);
+  if(!x.length)return 'Δεν πέρασε κάτι νέο.';
+  return (x.length===1&&/^1 /.test(x[0])?'Πέρασε ':'Πέρασαν ')+(x.length>1?x.slice(0,-1).join(', ')+' και '+x[x.length-1]:x[0])+'.'};
+function guideRender(){const g=UI.g,last=g.step===G_STEPS.length-1,done=g.step>=G_STEPS.length;
+  const html=`${done?'':`<div class="gstep"><span>Βήμα ${g.step+1} από ${G_STEPS.length} · ${G_STEPS[g.step]}</span><div class="gbar"><i style="width:${(g.step+1)/G_STEPS.length*100}%"></i></div></div>`}
+    ${guideStep()}
+    <div class="acts">${done?`<span class="grow"></span><button class="btn pri" data-act="close">Κλείσιμο</button>`
+      :`${g.step?'<button class="btn" data-act="g-back">Πίσω</button>':'<button class="btn" data-act="g-later">Αργότερα</button>'}<span class="grow"></span><button class="btn pri" data-act="${last?'g-finish':'g-next'}">${last?'Ολοκλήρωση':'Επόμενο'}</button>`}</div>`;
+  // από βήμα σε βήμα αλλάζει μόνο το περιεχόμενο, χωρίς να ξανανοίγει το παράθυρο
+  const m=document.querySelector('.modal.guide');
+  if(m){m.innerHTML=html;m.scrollTop=0;const f=m.querySelector('input:not([type=radio]):not([type=checkbox]),select');if(f&&g.step!==1)f.focus({preventScroll:true})}else openModal(html,'guide');
+}
+function guideFinish(){const g=UI.g,fresh=g.mode==='fresh',o=fresh?blankState(S):S;
+  o.settings.company=Object.assign({},o.settings.company||{},{name:g.co.trim()});
+  o.settings.ownerName=g.owner.trim();o.settings.ownerPhone=g.oph.trim();o.settings.workdays=g.wd.slice();
+  const sp=o.specialties;let nsp=0;
+  if(!sp.some(s=>s.id==='gen'))sp.push({...GEN});
+  const mkS=(n,off,pm)=>{let s=sp.find(x=>!!x.office===!!off&&sameSpec(x.name,n))||sp.find(x=>sameSpec(x.name,n));
+    if(!s){s={id:uid('s'),name:n,...(off?{office:true}:{}),...(pm?{pm:true}:{})};const gi=sp.findIndex(x=>x.id==='gen');if(!off&&gi>=0)sp.splice(gi,0,s);else sp.push(s);nsp++}
+    return s};
+  g.specs.filter(x=>x.on).forEach(x=>mkS(x.n,x.o,x.pm));
+  let nw=0,skip=0;const fw=x=>fold(x).replace(/\s+/g,' ');
+  g.people.filter(r=>r.name).forEach(r=>{
+    if(o.workers.some(w=>fw(w.name)===fw(r.name))){skip++;return}
+    const off=!!r.spec&&g.specs.some(x=>x.o&&sameSpec(x.n,r.spec)),s=r.spec&&!sameSpec(r.spec,GEN.name)?mkS(r.spec,off,false):sp.find(x=>x.id==='gen');
+    const role=s.office?'ypal':(r.role&&r.role!=='ypal'?r.role:'voith');
+    o.workers.push({id:uid('w'),name:r.name.replace(/\s+/g,' '),specialtyId:s.id,role,wage:r.wage!==''&&r.wage!=null?+r.wage||0:defWage(role),phone:r.phone||'',off:[],rates:{}});nw++});
+  const pms=o.workers.filter(w=>(sp.find(s=>s.id===w.specialtyId)||{}).pm),cols=['p1','p2','p3','p4','p5','p6'];let p1='',np=0;
+  g.projs.filter(r=>r.name).forEach(r=>{const p={id:uid('p'),name:r.name,location:r.location||'',budget:0,color:cols[o.projects.length%6],managers:pms.length===1?[pms[0].id]:[],...(r.due?{due:r.due}:{})};
+    o.projects.push(p);np++;if(!p1)p1=p.id});
+  o.setup={done:TODAY};
+  g.res={fresh,sp:nsp,w:nw,p:np,skip,p1};g.step=G_STEPS.length;
+  if(fresh){setS(o);UI.day=null;UI.week=null;UI.proj='';UI.person=''}
+  UI.hmsg='Οδηγός πρώτης ρύθμισης'+(fresh?' από την αρχή':'')+`: ${nw} άτομα, ${np} έργα`;
+  commit('Ο οδηγός πέρασε '+(nw===1?'1 άτομο':nw+' άτομα')+' και '+(np===1?'1 έργο':np+' έργα')+'.');
+  guideRender();
+}
+// κάρτα στο Σήμερα μέχρι να ολοκληρωθεί ή να κλειστεί ο οδηγός
+function guideCard(){if(!isAdmin()||!hasF('setup')||S.setup)return '';
+  return `<section class="panel gcard"><div class="grow"><h2>Ξεκίνα με τα δικά σου</h2><p class="note">${isDemoData()?'Αυτά που βλέπεις είναι παραδείγματα. ':''}Ο οδηγός περνά την εταιρεία, τις ειδικότητες, τα άτομα και τα έργα σου σε λίγα λεπτά. Τα άτομα μπαίνουν και με επικόλληση από Excel.</p></div>
+    <div class="bar"><button class="btn" data-act="g-hide">Όχι τώρα</button><button class="btn pri" data-act="guide">Ξεκίνα τον οδηγό</button></div></section>`}
+function guidePanel(){if(!isAdmin()||offF('setup'))return '';
+  return `<section class="panel" id="guide"><h2>Οδηγός πρώτης ρύθμισης</h2><p class="note">Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα. Μπορείς να ξεκινήσεις από την αρχή ή να προσθέσεις σε όσα υπάρχουν.${S.setup&&S.setup.done?' Τον ολοκλήρωσες '+h(fmt(S.setup.done))+'.':''}</p>
+    <div class="bar" style="margin-top:10px">${lockBtn('setup',`<button class="btn" data-act="guide">Άνοιγμα οδηγού</button>`)}</div></section>`}
+// μετά τον πρώτο λογαριασμό διαχειριστή ο οδηγός ανοίγει μόνος του
+function guideAuto(){if(UI.firstRun&&isAdmin()){UI.firstRun=false;if(hasF('setup')&&!S.setup)guideOpen()}}
 
 /* ---------- Χρήστες ---------- */
 async function loadUsers(){const el=document.getElementById('users');if(!el)return;
@@ -2783,7 +2983,7 @@ function sendForm(d,week){
   <div class="scroll" style="max-height:50vh;margin-top:10px"><table>${rows}</table></div>
   ${SERVER?'':'<div class="acts"><span class="grow"></span><button class="btn" data-act="close">Κλείσιμο</button></div>'}`);
 }
-function openModal(html){document.getElementById('modal').innerHTML=`<div class="modal-bg" data-act="bg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;const f=document.querySelector('.modal input:not([type=radio]):not([type=checkbox]):not([hidden]),.modal select,.modal input:checked');f&&f.focus()}
+function openModal(html,cls){document.getElementById('modal').innerHTML=`<div class="modal-bg" data-act="bg"><div class="modal${cls?' '+cls:''}" role="dialog" aria-modal="true">${html}</div></div>`;const f=document.querySelector('.modal input:not([type=radio]):not([type=checkbox]):not([hidden]),.modal select,.modal input:checked');f&&f.focus()}
 function closeModal(){document.getElementById('modal').innerHTML='';if(UI.wxDirty&&UI.tab!=='settings'){UI.wxDirty=false;render()}}
 
 /* ---------- Ενέργειες ---------- */
@@ -2830,7 +3030,7 @@ document.addEventListener('click',e=>{
   const a=el.dataset.act,id=el.dataset.id;
   if(a==='bg'&&e.target!==el)return;
   switch(a){
-    case 'bg':case 'close':closeModal();break;
+    case 'bg':case 'close':guideRead();closeModal();break;
     case 'day':{const dir=+el.dataset.dir;UI.day=dir===0?nextWork(TODAY):nextWork(add(UI.day,dir),dir);render();break}
     case 'week':{const dir=+el.dataset.dir;UI.week=dir===0?weekStart(TODAY):add(UI.week,7*dir);render();break}
     case 'pweek':{const dir=+el.dataset.dir;UI.payWeek=dir===0?weekStart(TODAY):add(UI.payWeek,7*dir);render();break}
@@ -2884,6 +3084,24 @@ document.addEventListener('click',e=>{
         if(v==='auto')delete S.overrides[k];else if(v==='tasks')S.overrides[k]={type:'tasks',taskIds:ids};else S.overrides[k]={type:v}});
       commit(v==='tasks'&&ids.length>1?w.name+': '+ids.length+' εργασίες την ίδια μέρα. Το μεροκάματο μοιράστηκε.':v==='auto'?'Επέστρεψε στο αυτόματο πρόγραμμα.':v==='off'?w.name+': άδεια. Το πρόγραμμα ξαναστήθηκε.':w.name+': η ανάθεση ορίστηκε. Τα υπόλοιπα προσαρμόστηκαν.');break}
     case 'newappt':apptForm(null);break;
+    case 'guide':closeModal();guideOpen();break;
+    case 'g-next':{guideRead();const g=UI.g;if(g.step===0&&!g.wd.length){toast('Διάλεξε τουλάχιστον μία εργάσιμη μέρα.');break}g.step++;guideRender();break}
+    case 'g-back':guideRead();UI.g.step--;guideRender();break;
+    case 'g-later':guideRead();closeModal();break;
+    case 'g-hide':S.setup={later:TODAY};save();render();toast('Ο οδηγός είναι πάντα στις Ρυθμίσεις.');break;
+    case 'g-spec':{guideRead();const n=document.getElementById('g2_new').value.trim().replace(/\s+/g,' '),o=document.getElementById('g2_where').value==='1';if(!n){toast('Γράψε όνομα ειδικότητας.');break}
+      const x=UI.g.specs.find(s=>s.o===o&&sameSpec(s.n,n));if(x)x.on=true;else UI.g.specs.push({n:n.charAt(0).toUpperCase()+n.slice(1),o,pm:false,on:true,ex:false});guideRender();break}
+    case 'g-add':{guideRead();const pp=UI.g.step===2;(pp?UI.g.people:UI.g.projs).push(pp?gPerson():gProj());guideRender();const r=[...document.querySelectorAll('.modal .gp')].pop();if(r){r.scrollIntoView({block:'nearest'});r.querySelector('input').focus()}break}
+    case 'g-del':{guideRead();const pp=UI.g.step===2,L=pp?UI.g.people:UI.g.projs;L.splice(+el.dataset.i,1);if(!L.length)L.push(pp?gPerson():gProj());guideRender();break}
+    case 'g-paste':{guideRead();UI.g.paste=!UI.g.paste;guideRender();const t=document.getElementById('g3_paste');if(t){t.scrollIntoView({block:'nearest'});t.focus()}break}
+    case 'g-parse':{const txt=document.getElementById('g3_paste').value;guideRead();const g=UI.g,rs=parsePeople(txt,[...g.specs.map(x=>x.n),GEN.name]);
+      if(!rs.length){toast('Δεν βρέθηκαν ονόματα. Βάλε κάθε άτομο σε δική του γραμμή.');break}
+      rs.forEach(r=>{if(!r.spec||sameSpec(r.spec,GEN.name))return;const x=g.specs.find(x=>sameSpec(x.n,r.spec));if(x)x.on=true;else g.specs.push({n:r.spec,o:false,pm:false,on:true,ex:false})});
+      g.people=[...g.people.filter(r=>r.name),...rs.map(r=>({...r,spec:r.spec||GEN.name,wage:r.wage===''?'':String(r.wage)}))];g.paste=false;guideRender();
+      toast(rs.length===1?'Μπήκε 1 άτομο στη λίστα.':'Μπήκαν '+rs.length+' άτομα στη λίστα.');break}
+    case 'g-finish':guideRead();guideFinish();break;
+    case 'g-task':closeModal();UI.tab='project';UI.proj=el.dataset.p;window.scrollTo(0,0);render();taskForm(null,el.dataset.p);break;
+    case 'g-users':closeModal();UI.tab='settings';UI.sec='usersec';window.scrollTo(0,0);render();break;
     case 'upsell':openModal(upsell(el.dataset.f)+'<div class="acts"><span class="grow"></span><button class="btn" data-act="close">Κλείσιμο</button></div>');break;
     case 'planpick':{if(planLock()||!isAdmin())break;const p=PLANS[planIx(el.dataset.plan)];S.settings.plan=p.id;commit('Το πακέτο άλλαξε σε '+p.name+'.');break}
     case 'editappt':apptForm((S.appts||[]).find(a=>a.id===id));break;
@@ -3018,6 +3236,9 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
+  if(t.closest('.modal.guide .gp')&&(t.dataset.k==='spec'||t.dataset.k==='role')){const r=t.closest('.gp'),rl=r.querySelector('[data-k=role]'),wg=r.querySelector('[data-k=wage]');
+    if(t.dataset.k==='spec'){const off=t.selectedOptions[0]?.parentElement?.label==='Στο γραφείο';rl.disabled=off;rl.querySelector('[value=ypal]').hidden=!off;if(off)rl.value='ypal';else if(rl.value==='ypal')rl.value='voith'}
+    if(wg)wg.placeholder=defWage(rl.value);return}
   if(t.dataset.at!=null){const r=document.querySelector('#af input[name=asg][value=tasks]');if(r)r.checked=true;return}
   if(t.dataset.feat){if(!isAdmin()){t.checked=!t.checked;return}const f=t.dataset.feat,off=new Set(S.settings.off||[]);t.checked?off.delete(f):off.add(f);S.settings.off=[...off];
     commit('«'+swName(f)+'» '+(t.checked?'άνοιξε.':'έκλεισε. Τα δεδομένα της μένουν.'));return}
@@ -3080,7 +3301,7 @@ document.addEventListener('change',e=>{
 function updPay(){const f=document.getElementById('payf'),o=document.getElementById('p_after');if(f&&o)o.innerHTML=payAfter(+f.dataset.rest,num(document.getElementById('p_amount').value))}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='q')searchRun(t.value);else if(t.id==='p_amount')updPay();
   else if(t.id==='c_amount'){const f=document.getElementById('cpf'),o=document.getElementById('c_after');if(f&&o)o.innerHTML=cAfter(+f.dataset.rest,num(t.value))}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();document.body.classList.remove('nav-open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){guideRead();closeModal();document.body.classList.remove('nav-open')}
   else if(e.key==='Enter'&&e.target.id==='q'){const r=document.querySelector('#qres .qrow');if(r){e.preventDefault();r.click()}}
   // «/» ανοίγει την αναζήτηση, όταν δεν γράφεις κάπου
   else if(e.key==='/'&&AUTH.user&&!isWorker()&&hasF('search')&&!e.target.closest('input,textarea,select,[contenteditable]')&&!document.querySelector('.modal')){e.preventDefault();searchForm()}});
@@ -3090,7 +3311,7 @@ document.addEventListener('submit',async e=>{
   const g=id=>{const x=document.getElementById(id);return x?x.value:''},err=document.getElementById('a_err'),btn=f.querySelector('.auth-go');
   err.textContent='';btn.disabled=true;
   try{
-    if(f.dataset.mode==='setup'){if(g('a_pw')!==g('a_pw2'))throw new Error('Οι δύο κωδικοί δεν είναι ίδιοι.');enter(await authSetup({name:g('a_name'),username:g('a_user'),password:g('a_pw')}))}
+    if(f.dataset.mode==='setup'){if(g('a_pw')!==g('a_pw2'))throw new Error('Οι δύο κωδικοί δεν είναι ίδιοι.');UI.firstRun=true;enter(await authSetup({name:g('a_name'),username:g('a_user'),password:g('a_pw')}))}
     else{if(!g('a_user')||!g('a_pw'))throw new Error('Γράψε όνομα χρήστη και κωδικό.');enter(await authLogin(g('a_user'),g('a_pw'),document.getElementById('a_rem').checked))}
   }catch(x){if(document.getElementById('a_err')){err.textContent=x.message||'Κάτι πήγε στραβά. Δοκίμασε ξανά.';btn.disabled=false}}
 });

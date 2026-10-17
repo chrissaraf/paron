@@ -167,6 +167,47 @@ function demo(){
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   return {v:2,sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio'},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
+/* ---------- Οδηγός πρώτης ρύθμισης ----------
+   Προτάσεις ανά κλάδο: ειδικότητες έργων και γραφείου. Σήμερα μόνο οι κατασκευές· άλλοι κλάδοι μπαίνουν εδώ ως νέο κλειδί. */
+const PRESETS={build:{name:'Κατασκευές',
+  site:['Χτίστες','Σοβατζήδες','Ηλεκτρολόγοι','Υδραυλικοί','Πλακάδες','Ελαιοχρωματιστές','Καλουπατζήδες','Σιδεράδες','Μονωτές','Γυψοσανιδάδες','Αλουμινάδες'],
+  office:[['Γραμματεία'],['Διαχείριση έργων',true],['Ταμείο και λογιστήριο'],['Εξωτερικός υπάλληλος']]}};
+const GEN={id:'gen',name:'Γενικοί βοηθοί'};
+// άδεια δεδομένα για νέα εταιρεία: κρατά τις ρυθμίσεις (πακέτο, λειτουργίες, καιρό, αργίες…) και το ιστορικό αλλαγών
+function blankState(cur){
+  const o=demo(),st=(cur&&cur.settings)||{};
+  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{}});
+  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});
+  if(cur&&cur.hist)o.hist=cur.hist;
+  return o;
+}
+// σύγκριση ονομάτων χωρίς τόνους και πεζά/κεφαλαία· οι ειδικότητες ταιριάζουν και σε ενικό («Χτίστης» = «Χτίστες»)
+const fold=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ς/g,'σ').replace(/\s+/g,' ').trim();
+const sameSpec=(a,b)=>{a=fold(a);b=fold(b);if(!a||!b)return false;if(a===b)return true;return a.length>=5&&b.length>=5&&a.slice(0,5)===b.slice(0,5)};
+const ROLE_W=[['αρχιεργατ','arxi'],['αρχιτεχνιτ','arxi'],['εργοδηγ','arxi'],['τεχνιτ','texn'],['μαστορ','texn'],['βοηθ','voith'],['εργατ','voith'],['υπαλληλ','ypal']];
+// γραμμές από Excel ή λίστα: όνομα, ειδικότητα, ρόλος, μεροκάματο, κινητό, με όποια σειρά. Επιστρέφει [{name,spec,role,wage,phone}]
+function parsePeople(text,specs){
+  const out=[];
+  String(text||'').split(/\r?\n/).forEach(line=>{
+    if(!line.trim())return;
+    let cells=line.includes('\t')?line.split('\t'):line.includes(';')?line.split(';'):line.includes(',')?line.split(','):[line];
+    cells=cells.map(c=>c.trim()).filter(Boolean);
+    const r={name:'',spec:'',role:'',wage:'',phone:''};
+    if(cells.length===1){const m=cells[0].match(/(\+?\d[\d ]{8,}\d)\s*$/);if(m){r.phone=m[1].trim();cells=[cells[0].slice(0,m.index).trim()].filter(Boolean)}}
+    if(cells.some(c=>/^(ονομα|ονοματεπωνυμο|επωνυμο)/.test(fold(c))))return;   // γραμμή επικεφαλίδων
+    for(const c of cells){
+      const dg=c.replace(/\D/g,''),f=fold(c);
+      if(!r.phone&&dg.length>=10&&/^[\d\s+().-]+$/.test(c)){r.phone=c;continue}
+      if(!r.wage&&/^\d{1,3}([.,]\d{1,2})?\s*(€|ευρω)?$/.test(f)){r.wage=+c.replace(',','.').replace(/[^\d.]/g,'');continue}
+      const rl=!r.role&&ROLE_W.find(([k])=>f.startsWith(k)&&f.split(' ').length<=2);if(rl){r.role=rl[1];continue}
+      const sp=!r.spec&&(specs||[]).find(x=>sameSpec(x,c));if(sp&&(r.name||cells.length>1)){r.spec=sp;continue}
+      if(!r.name){r.name=c.replace(/\s+/g,' ');continue}
+      if(!r.spec&&/^[^\d]+$/.test(c)){r.spec=c.charAt(0).toUpperCase()+c.slice(1);continue}
+    }
+    if(r.name)out.push(r);
+  });
+  return out;
+}
 function migrate(o){
   if(o.v===1){
     const d=officeDemo();
@@ -727,7 +768,7 @@ function personWeek(R,w,ws){
       with:(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>p.name)}));
     return o})};
 }
-root.ErgoCore={planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
