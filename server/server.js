@@ -248,7 +248,8 @@ async function runSend(date, trigger, week = false, changed = false) {
       if (!only && C.isExt(w) && !C.hasJob(R, w.id, days)) continue;
       if (!week && !only && C.isRest(w, date) && !C.isLeave(w, date)) continue;
       const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date, !!only);
-      const title = week ? 'Το πρόγραμμά σου για την εβδομάδα ' + C.fmtS(C.weekStart(date)) : (only ? 'Άλλαξε το πρόγραμμά σου για ' : 'Το πρόγραμμά σου για ') + C.fmt(date);
+      const l = C.langOf(w);   // στη γλώσσα του εργαζόμενου, όπως και το μήνυμα
+      const title = week ? C.I18N.tx(l, 'Το πρόγραμμά σου για την εβδομάδα {d}', { d: C.fmtSX(l, C.weekStart(date)) }) : C.I18N.tx(l, only ? 'Άλλαξε το πρόγραμμά σου για {d}' : 'Το πρόγραμμά σου για {d}', { d: C.fmtX(l, date) });
       pushed += (await pushTo(us, 'day', { title, body: pushBody(text), url: '/', tag: 'day-' + (week ? 'w' : '') + date })).sent;
     }
     const what = only ? ' με την αλλαγή' : '';
@@ -409,6 +410,8 @@ const pushKinds = u => [...(u.workerId ? ['day', 'leave'] : []), ...(u.role !== 
 const pushOn = S => { if (!S || !S.settings) return false; C.setState(withPlan({ ...S, settings: { ...S.settings } })); return C.hasF('push'); };
 // το κείμενο της ειδοποίησης: χωρίς τον χαιρετισμό, την υπογραφή και κενές γραμμές
 const pushBody = t => { const L = String(t || '').split('\n').map(x => x.trim()).filter(Boolean); return L.slice(1, L.length > 2 ? -1 : undefined).join('\n').slice(0, 400); };
+// η γλώσσα ενός λογαριασμού εργαζόμενου (οι λογαριασμοί γραφείου μένουν στα ελληνικά)
+const langU = u => { const S = readJSON(F.state, null), w = S && u.workerId && (S.workers || []).find(x => x.id === u.workerId); return w ? C.langOf(w, S.settings) : 'el'; };
 // kind null = δοκιμή, πάει σε όλες τις συσκευές του χρήστη
 async function pushTo(users, kind, msg) {
   const db = readJSON(F.push, {}), dead = [];
@@ -534,7 +537,7 @@ http.createServer(async (req, res) => {
         if (url.pathname === '/api/push/test') {
           if (!on) return send(res, 403, off);
           if (!(mine.subs || []).length) return send(res, 400, { error: 'Δεν υπάρχει συσκευή με ειδοποιήσεις για τον λογαριασμό σου.' });
-          const r = await pushTo([me], null, { title: C.BRAND.name + ': δοκιμή', body: 'Οι ειδοποιήσεις φτάνουν σε αυτή τη συσκευή.', url: '/', tag: 'test' });
+          const l = langU(me), r = await pushTo([me], null, { title: C.I18N.tx(l, '{app}: δοκιμή', { app: C.BRAND.name }), body: C.I18N.tx(l, 'Οι ειδοποιήσεις φτάνουν σε αυτή τη συσκευή.'), url: '/', tag: 'test' });
           return send(res, 200, { ok: r.sent > 0, ...r });
         }
       }
@@ -564,6 +567,15 @@ http.createServer(async (req, res) => {
         const q = url.searchParams.get('week') || '';
         return send(res, 200, C.myView(C.schedule(), w, C.weekStart(/^\d{4}-\d{2}-\d{2}$/.test(q) ? q : C.ds(new Date()))));
       }
+      // η γλώσσα του: η σελίδα του, τα μηνύματα Viber και οι ειδοποιήσεις έρχονται σε αυτή
+      if (url.pathname === '/api/my/lang' && req.method === 'POST') {
+        if (!w) return send(res, 400, { error: 'Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο.' });
+        const b = await body(), l = String(b.lang || '');
+        if (!C.I18N.okLang(l)) return send(res, 400, { error: 'Άγνωστη γλώσσα.' });
+        if ((w.lang || '') !== l) { w.lang = l; w.langAt = new Date().toISOString();   // ίδια μορφή (UTC) με την εφαρμογή, για τη σύγκριση στη mergeLang
+          delete S.settings.planLock; saveState(S); console.log(now(), 'γλώσσα', me.username, l); }
+        return send(res, 200, { ok: true, lang: w.lang });
+      }
       // ο εργάτης γράφει μόνο δύο πράγματα και μόνο για τον εαυτό του: πρόοδο της εργασίας του σήμερα και αίτημα άδειας
       const mine = ['/api/my/progress', '/api/my/leave', '/api/my/leave/cancel', '/api/my/att', '/api/my/diary'];
       if (mine.includes(url.pathname) && req.method === 'POST') {
@@ -579,7 +591,7 @@ http.createServer(async (req, res) => {
           const n = v => (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) && isFinite(v) ? +v : NaN;
           const pos = isFinite(n(b.lat)) && isFinite(n(b.lon)) ? { lat: n(b.lat), lon: n(b.lon), acc: n(b.acc) } : null;
           out = C.addAtt(C.schedule(), w, String(b.k || ''), pos, new Date(), typeof b.why === 'string' ? b.why : '');
-          if (out.err) return send(res, 400, { error: out.err });
+          if (out.err) return send(res, 400, { error: out.err, ek: out.ek, ep: out.ep });
           delete S.settings.planLock;
           saveState(S);
           console.log(now(), 'παρουσία', me.username, b.k, pos ? 'με θέση' : 'χωρίς θέση');
@@ -589,7 +601,7 @@ http.createServer(async (req, res) => {
           // φωτογραφία ή σημείωση για το ημερολόγιο του έργου όπου δουλεύει σήμερα· σβήνει μόνο δικά του και μόνο την ίδια μέρα
           const R = C.schedule();
           if (b.del) {
-            out = C.delMyDiary(w, String(b.del)); if (out.err) return send(res, 400, { error: out.err });
+            out = C.delMyDiary(w, String(b.del)); if (out.err) return send(res, 400, { error: out.err, ek: out.ek, ep: out.ep });
             delete S.settings.planLock; saveState(S); return send(res, 200, { ok: true, diary: C.myDiary(R, w) });
           }
           const md = C.myDiary(R, w), pid = md.ps.some(x => x.id === b.p) ? b.p : (md.ps[0] || {}).id;
@@ -598,7 +610,7 @@ http.createServer(async (req, res) => {
           let ph = null;
           if (b.data) { const x = savePhoto(b); if (x.err) return send(res, x.full ? 507 : 400, { error: x.err }); ph = x.ph; }
           out = C.addDiary({ p: pid, d: C.today(), text: typeof b.text === 'string' ? b.text : '', ph, by: 'w', bw: w.id, bn: w.name });
-          if (out.err) return send(res, 400, { error: out.err });
+          if (out.err) return send(res, 400, { error: out.err, ek: out.ek, ep: out.ep });
           delete S.settings.planLock; saveState(S);
           console.log(now(), 'ημερολόγιο', me.username, ph ? 'φωτογραφία ' + ph.kb + ' KB' : 'σημείωση');
           if (pushOn(S)) {
@@ -610,7 +622,7 @@ http.createServer(async (req, res) => {
         if (feat === 'progress') out = C.addProgress(C.schedule(), w, String(b.task || ''), b.kind, b.note, C.ds(new Date()));
         else if (url.pathname === '/api/my/leave') out = C.addLeave(w, b.from, b.to, b.note);
         else out = C.cancelLeave(w, String(b.id || ''));
-        if (out.err) return send(res, 400, { error: out.err });
+        if (out.err) return send(res, 400, { error: out.err, ek: out.ek, ep: out.ep });
         if (out.e) saveUndo([out.e.id], before);   // το γραφείο μπορεί να την αναιρέσει από το ιστορικό
         delete S.settings.planLock;
         saveState(S);
@@ -662,13 +674,15 @@ http.createServer(async (req, res) => {
         const fresh = (Array.isArray(o.hist) ? o.hist : []).filter(e => e && e.id && !known.has(e.id));
         fresh.forEach(e => { e.by = me.name; });
         if (cur && fresh.length && !fresh.some(e => e.undo)) saveUndo(fresh.map(e => String(e.id)), cur);
-        if (cur) { C.mergeField(o, cur); C.mergeAtt(o, cur); C.mergeDiary(o, cur); }   // ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι δεν χάνεται
+        if (cur) { C.mergeField(o, cur); C.mergeAtt(o, cur); C.mergeDiary(o, cur); C.mergeLang(o, cur); }   // ό,τι έστειλαν στο μεταξύ οι εργαζόμενοι δεν χάνεται
         // αιτήματα άδειας που μόλις απαντήθηκαν: ειδοποίηση στον εργαζόμενο
         const was = new Map(((cur && cur.field) || []).map(r => [r.id, r.st]));
         const decided = (o.field || []).filter(r => r.k === 'leave' && (r.st === 'ok' || r.st === 'no') && was.get(r.id) === 'new');
         saveState(o);
-        if (decided.length && pushOn(o)) for (const r of decided)
-          pushTo(usersOf(r.w), 'leave', { title: r.st === 'ok' ? 'Η άδειά σου εγκρίθηκε' : 'Η άδειά σου δεν εγκρίθηκε', body: C.fmt(r.from) + (r.to && r.to !== r.from ? ' έως ' + C.fmt(r.to) : ''), url: '/', tag: 'leave-' + r.id }).catch(e => console.error('push', e));
+        if (decided.length && pushOn(o)) for (const r of decided) {
+          const l = C.langOf((o.workers || []).find(x => x.id === r.w), o.settings), T0 = C.I18N.tx, f = d => C.fmtX(l, d);
+          pushTo(usersOf(r.w), 'leave', { title: T0(l, r.st === 'ok' ? 'Η άδειά σου εγκρίθηκε' : 'Η άδειά σου δεν εγκρίθηκε'), body: r.to && r.to !== r.from ? T0(l, '{a} έως {b}', { a: f(r.from), b: f(r.to) }) : f(r.from), url: '/', tag: 'leave-' + r.id }).catch(e => console.error('push', e));
+        }
         return send(res, 200, { ok: true });
       }
     }
@@ -683,7 +697,7 @@ http.createServer(async (req, res) => {
       o.past = cur.past || {};           // και οι μέρες που πέρασαν
       // αναφορές και αιτήματα από το εργοτάξιο που ήρθαν μετά μένουν· αν αναιρείται η ίδια η αναφορά, μένει ως αναιρεμένη
       const fids = new Set((cur.hist || []).filter(e => e && e.fid && u.ids.includes(e.id)).map(e => e.fid));
-      C.mergeField(o, cur, fids, true); C.mergeAtt(o, cur, true); C.mergeDiary(o, cur, true);
+      C.mergeField(o, cur, fids, true); C.mergeAtt(o, cur, true); C.mergeDiary(o, cur, true); C.mergeLang(o, cur);
       if (o.settings) { delete o.settings.planLock; if (CFG.plan) o.settings.plan = CFG.plan; }
       saveState(o); try { fs.unlinkSync(u.file); } catch {}
       console.log(now(), 'αναίρεση', me.username, t.msg);

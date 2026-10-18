@@ -14,7 +14,7 @@
   --accent:#C2CF7E; --accent-2:#D0DB93; --accent-ink:#0E3B34; --accent-soft:#E8EDCD; --accent-soft-ink:#2E5310; --accent-strong:#6B7D22; --gen:#6B7D22;
   --ok:#1B7041; --warn:#8A5000; --bad:#B8342A; --ok-bg:#DDF0E3; --warn-bg:#FAEBCF; --bad-bg:#F9E0DC; --rain:#2A62A0; --rain-bg:#E1EBF5;
   --p1:#2f6db0; --p2:#c9622a; --p3:#2f8a57; --p4:#8a4fb0; --p5:#b8395c; --p6:#3f7f8c;
-  --f-ui:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-display:var(--f-ui);
+  --f-ui:"Commissioner","Noto Sans Arabic","Noto Sans Hebrew",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-display:var(--f-ui);
   --f-logo:"Fira Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --logo-ink:#0E3B34; --logo-dot:#C2CF7E; --logo-fig:#0E3B34;
   --r-sm:8px; --r:10px; --r-lg:16px;
@@ -830,6 +830,23 @@ body:not(.in) .app{display:none}
 .auth-go:disabled{opacity:.6;cursor:wait}
 .auth-help{text-align:center;font-size:13.5px;margin:0}
 .auth-foot{margin:0;font-size:12.5px;color:#98a2ab;text-align:center;max-width:340px}
+/* γλώσσα: επιλογή στη σύνδεση και στον λογαριασμό, γραμμή με λατινικούς χαρακτήρες κάτω από έργα και εργασίες */
+.auth-card label.auth-lang{display:flex;align-items:center;gap:8px;justify-self:end;margin:-8px -8px -4px 0;color:var(--ink-2)}
+.auth-lang svg{width:18px;height:18px;flex:none}
+.auth-lang select{min-height:38px;font-size:14.5px;padding:6px 10px;width:auto}
+.tl{font-size:12.5px;color:var(--muted);line-height:1.35;unicode-bidi:isolate}
+.mi .tl{margin-top:-4px}
+.mduties .tl{margin-top:2px}
+.langp{display:grid;gap:6px;max-width:360px}
+.langp .fl{display:flex;align-items:center;gap:6px}
+.langp svg{width:18px;height:18px;flex:none}
+.langp select{min-height:44px;font-size:16px}
+/* δεξιά προς αριστερά (αραβικά, περσικά, κουρδικά σορανί, εβραϊκά): η σελίδα του εργαζόμενου */
+[dir=rtl] .auth-card label.auth-lang{justify-self:start;margin:-8px 0 -4px -8px}
+[dir=rtl] .matt .btn.out,[dir=rtl] .mi .btn{justify-self:end}
+[dir=rtl] .pw input{padding-right:14px!important;padding-left:104px!important}
+[dir=rtl] .pwt{right:auto;left:6px}
+[dir=rtl] .tl{text-align:right}
 </style>
 
 <div id="auth" class="auth" hidden></div>
@@ -900,14 +917,35 @@ const LU=LS+'.users',LSESS=LS+'.session';
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const lsDel=(...ks)=>{try{ks.forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k)})}catch(e){}};
+// --- γλώσσα της σελίδας του εργαζόμενου (μεταφράσεις στο src/i18n.js). Το γραφείο μένει πάντα στα ελληνικά (UL = 'el') ---
+const I18N=ErgoCore.I18N;
+let UL='el';
+const TR=(s,p)=>I18N.tx(UL,s,p);
+const TRH=(s,p)=>I18N.fill(h(I18N.tx(UL,s)),p);   // για HTML: η μετάφραση περνά από h(), οι παράμετροι είναι ήδη ασφαλείς
+const isR=()=>I18N.isRTL(UL);
+const fD=s=>UL==='el'?fmt(s):I18N.fmtD(UL,s);
+const fS=s=>UL==='el'?fmtS(s):I18N.fmtM(UL,s);
+const TL=s=>UL!=='el'&&I18N.hasGreek(s)?I18N.tlit(s):'';
+const tlN=s=>TL(s)||String(s||'');                                               // ονόματα ανθρώπων με λατινικούς χαρακτήρες
+const tlD=s=>{const t=TL(s);return t?`<div class="tl" dir="ltr">${h(t)}</div>`:''};   // κάτω από έργο και εργασία, όπως τα γράφει το γραφείο
+const distL=m=>UL==='el'?distS(m):I18N.dist(UL,m);
+const hrsLL=m=>UL==='el'?hrsL(m):TR('{t} ώρες',{t:hrsS(m)});
+const RTL_F={ar:'Noto+Sans+Arabic',fa:'Noto+Sans+Arabic',ckb:'Noto+Sans+Arabic',he:'Noto+Sans+Hebrew'};
+// keep: η επιλογή μένει σε αυτή τη συσκευή (και για τη σελίδα σύνδεσης)
+function setLang(l,keep){l=I18N.okLang(l)?l:'el';UL=l;const de=document.documentElement,rtl=I18N.isRTL(l);
+  de.lang=l;de.dir=rtl?'rtl':'ltr';document.body.classList.toggle('rtl',rtl);
+  const f=RTL_F[l];if(f&&!document.getElementById('fnt-'+f)){const k=document.createElement('link');k.id='fnt-'+f;k.rel='stylesheet';k.href='https://fonts.googleapis.com/css2?family='+f+':wght@400;500;600;700&display=swap';document.head.appendChild(k)}
+  if(keep)lsSet(LS+'.lang',l)}
+const langOpts=()=>I18N.LANGS.map(([k,n])=>`<option value="${k}"${k===UL?' selected':''}>${h(n)}</option>`).join('');
 const normU=s=>String(s||'').trim().toLowerCase();
 const pubU=u=>({id:u.id,username:u.username,name:u.name,role:u.role,workerId:u.workerId||''});
 const initials=n=>upGR(String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join(''));
 async function api(path,body){
   let r;try{r=await fetch('api/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,cache:'no-store'})}
-  catch(e){const x=new Error('Δεν υπάρχει σύνδεση με τον server.');x.status=0;throw x}
+  catch(e){const x=new Error(TR('Δεν υπάρχει σύνδεση με τον server.'));x.status=0;throw x}
   let o={};try{o=await r.json()}catch(e){}
-  if(!r.ok){const x=new Error(o.error||'Σφάλμα '+r.status);x.status=r.status;x.data=o;throw x}
+  // τα μηνύματα του server είναι στα ελληνικά· μεταφράζονται εδώ (ek/ep: σφάλμα με παραμέτρους)
+  if(!r.ok){const x=new Error(o.error?TR(o.ek||o.error,o.ep):TR('Σφάλμα {n}',{n:r.status}));x.status=r.status;x.data=o;throw x}
   return o;
 }
 // κρυπτογράφηση κωδικού στον browser (PBKDF2), όταν δεν υπάρχει server
@@ -943,7 +981,7 @@ async function authMe(){
 async function authLogin(username,password,remember){
   if(SERVER)return (await api('login',{username,password,remember})).user;
   const u=localUsers().find(x=>x.username===normU(username));
-  if(!u||await pbk(password,u.salt)!==u.hash)throw new Error('Λάθος όνομα χρήστη ή κωδικός.');
+  if(!u||await pbk(password,u.salt)!==u.hash)throw new Error(TR('Λάθος όνομα χρήστη ή κωδικός.'));
   localStart(u,remember);return pubU(u);
 }
 async function authSetup(v){
@@ -955,7 +993,7 @@ async function authSetup(v){
 }
 async function authLogout(){
   if(SERVER){try{await api('logout',{})}catch(e){}lsDel(LS,LS+'.me',LS+'.my');location.reload();return}
-  lsDel(LSESS);showAuth('login','');
+  lsDel(LSESS);setLang(lsGet(LS+'.lang','el'));showAuth('login','');
 }
 async function usersList(){return SERVER?(await api('users')).users:localUsers().map(pubU)}
 async function userSave(v){
@@ -973,10 +1011,10 @@ async function userDelete(id){
   lsSet(LU,localUsers().filter(x=>x.id!==id));
 }
 async function changePw(current,password){
-  if(String(password||'').length<8)throw new Error('Ο κωδικός θέλει τουλάχιστον 8 χαρακτήρες.');
+  if(String(password||'').length<8)throw new Error(TR('Ο κωδικός θέλει τουλάχιστον 8 χαρακτήρες.'));
   if(SERVER)return api('password',{current,password});
   const us=localUsers(),u=us.find(x=>x.id===AUTH.user.id);
-  if(!u||await pbk(current,u.salt)!==u.hash)throw new Error('Ο τωρινός κωδικός δεν είναι σωστός.');
+  if(!u||await pbk(current,u.salt)!==u.hash)throw new Error(TR('Ο τωρινός κωδικός δεν είναι σωστός.'));
   u.salt=newSalt();u.hash=await pbk(password,u.salt);lsSet(LU,us);
 }
 // το λογότυπο φτιάχνεται από το BRAND (core): όνομα, σύνθημα και ποιο γράμμα γίνεται το σήμα
@@ -989,23 +1027,27 @@ const LOGO_HTML=document.querySelector('.side-top .logo').outerHTML;
 function showAuth(mode,msg){
   AUTH.user=null;closeModal();document.body.classList.remove('in','nav-open');document.getElementById('toast').hidden=true;
   const setup=mode==='setup',a=document.getElementById('auth');
+  if(setup)setLang('el');   // ο πρώτος λογαριασμός είναι του διαχειριστή
   a.innerHTML=`<div class="auth-in">${LOGO_HTML}
   <form class="auth-card" id="authf" data-mode="${mode}" novalidate>
-    <h1>${setup?'Καλώς ήρθες στο '+h(BRAND.name):'Σύνδεση'}</h1>
+    ${setup?'':`<label class="auth-lang">${ico('globe')}<select id="a_lang" aria-label="${h(TR('Γλώσσα'))}${UL==='el'?'':' / Γλώσσα'}">${langOpts()}</select></label>`}
+    <h1>${setup?'Καλώς ήρθες στο '+h(BRAND.name):TRH('Σύνδεση')}</h1>
     ${setup?'<p class="note">Φτιάξε τον λογαριασμό του διαχειριστή. Με αυτόν μπαίνεις και δίνεις λογαριασμούς στο γραφείο και στους εργαζόμενους.</p><label>Ονοματεπώνυμο<input id="a_name" autocomplete="name"></label>':''}
-    <label>Όνομα χρήστη<input id="a_user" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
-    <label>Κωδικός${setup?' (τουλάχιστον 8 χαρακτήρες)':''}<span class="pw"><input id="a_pw" type="password" autocomplete="${setup?'new-password':'current-password'}"><button type="button" class="pwt" data-act="pwshow">Εμφάνιση</button></span></label>
-    ${setup?'<label>Ξανά ο κωδικός<input id="a_pw2" type="password" autocomplete="new-password"></label>':'<label class="ck"><input type="checkbox" id="a_rem" checked> <span>Να με θυμάσαι σε αυτή τη συσκευή</span></label>'}
+    <label>${TRH('Όνομα χρήστη')}<input id="a_user" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" dir="ltr"></label>
+    <label>${TRH('Κωδικός')}${setup?' (τουλάχιστον 8 χαρακτήρες)':''}<span class="pw"><input id="a_pw" type="password" dir="ltr" autocomplete="${setup?'new-password':'current-password'}"><button type="button" class="pwt" data-act="pwshow">${TRH('Εμφάνιση')}</button></span></label>
+    ${setup?'<label>Ξανά ο κωδικός<input id="a_pw2" type="password" autocomplete="new-password"></label>':`<label class="ck"><input type="checkbox" id="a_rem" checked> <span>${TRH('Να με θυμάσαι σε αυτή τη συσκευή')}</span></label>`}
     <p class="auth-err" id="a_err" role="alert">${h(msg||'')}</p>
-    <button class="btn auth-go" type="submit">${setup?'Δημιουργία και είσοδος':'Σύνδεση'}</button>
-    ${setup?'':'<p class="note auth-help">Ξέχασες τον κωδικό; Ζήτα από το γραφείο να σου βάλει νέο.</p>'}
+    <button class="btn auth-go" type="submit">${setup?'Δημιουργία και είσοδος':TRH('Σύνδεση')}</button>
+    ${setup?'':`<p class="note auth-help">${TRH('Ξέχασες τον κωδικό; Ζήτα από το γραφείο να σου βάλει νέο.')}</p>`}
   </form>
-  ${SERVER?'':'<p class="auth-foot">Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Στον server της εταιρείας φυλάγονται κεντρικά.</p>'}</div>`;
+  ${SERVER?'':`<p class="auth-foot">${TRH('Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Στον server της εταιρείας φυλάγονται κεντρικά.')}</p>`}</div>`;
   a.hidden=false;fitLogo();
   const f=document.getElementById(setup?'a_name':'a_user');if(f)f.focus();
 }
 function enter(u){
   AUTH.user=u;PUSH.st=null;SYNC=!SERVER;
+  // το γραφείο δουλεύει στα ελληνικά· ο εργαζόμενος στη γλώσσα της συσκευής, μέχρι να έρθει η δική του από το πρόγραμμα
+  setLang(u.role==='worker'?lsGet(LS+'.lang',UL):'el');langSync.sent=0;
   if(SERVER){lsSet(LS+'.me',u);if(u.role==='worker')lsDel(LS)}   // ο εργάτης δεν κρατά αντίγραφο των δεδομένων της εταιρείας
   const a=document.getElementById('auth');a.hidden=true;a.innerHTML='';document.getElementById('toast').hidden=true;
   document.body.classList.add('in');
@@ -1015,7 +1057,7 @@ function enter(u){
   render();fitLogo();window.scrollTo(0,0);
   if(SERVER&&u.role!=='worker')pull().then(ok=>{ok&&render();wxRefresh();guideAuto()});else{wxRefresh();guideAuto()}
 }
-const expired=()=>showAuth('login','Η σύνδεση έληξε. Μπες ξανά.');
+const expired=()=>{if(!isWorker())setLang(lsGet(LS+'.lang','el'));showAuth('login',TR('Η σύνδεση έληξε. Μπες ξανά.'))};
 
 const pc=p=>'var(--'+((typeof p==='string'?(PSEUDO[p]||P(p)):p)?.color||'p6')+')';
 
@@ -1159,6 +1201,7 @@ const RATE_L={5:'Άριστος',4:'Πολύ καλός',3:'Καλός',2:'Μέ�
 const DIFF_L={5:'Πολύ δύσκολη',4:'Δύσκολη',3:'Κανονική',2:'Εύκολη',1:'Πολύ εύκολη'};
 const stars=w=>{const n=wRate(w);return `<span class="stars" title="Βαθμός ${n} από 5: ${RATE_L[n]}" aria-label="Βαθμός ${n} από 5">${[1,2,3,4,5].map(i=>`<svg viewBox="0 0 24 24" class="${i<=n?'':'e'}" fill="currentColor" aria-hidden="true">${ICONS.star}</svg>`).join('')}</span>`};
 // δεύτερη ειδικότητα και μέρες εργασίας κάτω από το όνομα
+const langTag=w=>hasF('lang')&&w.lang&&w.lang!=='el'&&I18N.okLang(w.lang)?` <span class="tag mute" title="Γλώσσα σελίδας και μηνυμάτων">${ico('globe')}${h(I18N.langName(w.lang))}</span>`:'';
 const availNote=w=>{if(!availOn())return '';const x=[];if(sp2(w)&&SP(sp2(w)))x.push('και '+SP(sp2(w)).name);
   if(Array.isArray(w.days)&&w.days.length&&!S.settings.workdays.every(d=>w.days.includes(d)))x.push('δουλεύει '+[1,2,3,4,5,6,0].filter(d=>w.days.includes(d)).map(d=>DAYS[d]).join(', '));
   return x.length?`<div class="note">${h(x.join(' · '))}</div>`:''};
@@ -1173,7 +1216,7 @@ const nextOn=(R,tid,d)=>Object.keys(R.byDay).sort().find(x=>x>d&&R.byDay[x].jobs
 const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?'Κάθε '+(x.days||[]).map(d=>DAYS[d]).join(', '):x.freq==='month'?'Κάθε μήνα στις '+(+x.dom||1):'Μία φορά, '+fmt(x.date);
 
 /* ---------- Καρτέλες ---------- */
-const ICONS={link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',cam:'<path d="M3.5 8.5h3.2l1.7-2.6h7.2l1.7 2.6h3.2v10.6h-17z"/><circle cx="12" cy="13.4" r="3.5"/>',loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+const ICONS={globe:'<circle cx="12" cy="12" r="8.8"/><path d="M3.2 12h17.6M12 3.2c2.4 2.4 3.6 5.3 3.6 8.8s-1.2 6.4-3.6 8.8c-2.4-2.4-3.6-5.3-3.6-8.8s1.2-6.4 3.6-8.8z"/>',link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',cam:'<path d="M3.5 8.5h3.2l1.7-2.6h7.2l1.7 2.6h3.2v10.6h-17z"/><circle cx="12" cy="13.4" r="3.5"/>',loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
   proj:'<path d="M3 21h18M5 21V9.5l7-5 7 5V21"/><path d="M10 21v-5h4v5"/>',
   ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.2" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 2 5 5.4"/>',
   eur:'<circle cx="12" cy="12" r="9"/><path d="M15.6 8.6a4.6 4.6 0 1 0 0 6.8M7.5 10.6h6M7.5 13.4h6"/>',
@@ -1220,7 +1263,7 @@ const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" st
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
 const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck',att:'loc',diary:'cam',clients:'card'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
-const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
+const navGroups=()=>isWorker()?[{k:'plan',l:TRH('Πρόγραμμα'),i:'cal',items:[['mine',TRH('Το πρόγραμμά μου')]]}]:[
   {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['duties','Υπενθυμίσεις']]},
   {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['clients','Πελάτες'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο'],['equip','Εξοπλισμός']]},
   {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες'],['att','Παρουσίες']]},
@@ -1236,15 +1279,15 @@ function renderNav(){
       ?`<button class="ni sub" data-tab="project" data-p="${p.id}"${isCur(k,p)?' aria-current="page"':''}><i class="dot" style="background:${pc(p)}"></i><span>${h(l)}</span></button>`
       :TAB_F[k]&&offF(TAB_F[k])?''
       :`<button class="ni" data-tab="${k}"${isCur(k)?' aria-current="page"':''}>${ico(NAVI[k]||'day')}<span>${l}</span>${TAB_F[k]?lockTag(TAB_F[k]):''}</button>`).join('')}</div></div>`}).join('');
-  document.getElementById('navb').innerHTML=`${AUTH.user?`<div class="me"><span class="av" aria-hidden="true">${h(initials(AUTH.user.name))}</span><span class="me-t"><b>${h(AUTH.user.name)}</b><small>${ROLE_L[AUTH.user.role]||''}</small></span><button class="iconbtn" data-act="logout" title="Αποσύνδεση" aria-label="Αποσύνδεση">${ico('out')}</button></div>`:''}
-      <button class="ni top" data-tab="settings"${UI.tab==='settings'?' aria-current="page"':''}>${ico(isWorker()?'user':'gear')}<span>${isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'}</span></button>`;
-  const tabs=isWorker()?[['mine','Πρόγραμμα','day'],['settings','Λογαριασμός','user']]:[['today','Σήμερα','day'],['week','Εβδομάδα','week'],['projects','Έργα','bld'],['tasks','Εργασίες','list']];
+  document.getElementById('navb').innerHTML=`${AUTH.user?`<div class="me"><span class="av" aria-hidden="true">${h(initials(AUTH.user.name))}</span><span class="me-t"><b>${h(AUTH.user.name)}</b><small>${TRH(ROLE_L[AUTH.user.role]||'')}</small></span><button class="iconbtn" data-act="logout" title="${TRH('Αποσύνδεση')}" aria-label="${TRH('Αποσύνδεση')}">${ico('out')}</button></div>`:''}
+      <button class="ni top" data-tab="settings"${UI.tab==='settings'?' aria-current="page"':''}>${ico(isWorker()?'user':'gear')}<span>${isWorker()?TRH('Ο λογαριασμός μου'):'Ρυθμίσεις'}</span></button>`;
+  const tabs=isWorker()?[['mine',TRH('Πρόγραμμα'),'day'],['settings',TRH('Λογαριασμός'),'user']]:[['today','Σήμερα','day'],['week','Εβδομάδα','week'],['projects','Έργα','bld'],['tasks','Εργασίες','list']];
   const onTab=k=>UI.tab===k||(k==='projects'&&UI.tab==='project');
   document.getElementById('tabbar').innerHTML=tabs.map(([k,l,i])=>`<button class="tb" data-tab="${k}"${onTab(k)?' aria-current="page"':''}>${ico(i)}<span>${l}</span></button>`).join('')
     +(isWorker()?'':`<button class="tb${tabs.some(([k])=>onTab(k))?'':' on'}" data-act="navopen" aria-label="Όλο το μενού">${ico('menu')}<span>Μενού</span></button>`);
   const mav=document.getElementById('mav');if(mav)mav.textContent=AUTH.user?initials(AUTH.user.name):'';
   const g=navGroups().find(g=>g.items.some(([k,,p])=>isCur(k,p)));
-  document.getElementById('mtitle').textContent=UI.tab==='project'?P(UI.proj)?.name||'':UI.tab==='client'?cliById(UI.cli)?.name||'':UI.tab==='settings'?(isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'):(g?g.items.find(([k,,p])=>isCur(k,p))[1]:'');
+  document.getElementById('mtitle').textContent=UI.tab==='project'?P(UI.proj)?.name||'':UI.tab==='client'?cliById(UI.cli)?.name||'':UI.tab==='settings'?(isWorker()?TR('Ο λογαριασμός μου'):'Ρυθμίσεις'):(g?g.items.find(([k,,p])=>isCur(k,p))[1].replace(/&amp;/g,'&'):'');
 }
 function render(){
   if(!AUTH.user)return;
@@ -1283,7 +1326,7 @@ const isApp=()=>matchMedia('(display-mode: standalone)').matches||navigator.stan
 const u8=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((s.length+3)%4)),c=>c.charCodeAt(0));
 // ο service worker γράφεται στη φόρτωση της σελίδας· αν δεν έχει γραφτεί ακόμη, γράφεται εδώ
 const swReady=()=>Promise.race([navigator.serviceWorker.getRegistration().then(r=>r||navigator.serviceWorker.register('/sw.js')).then(()=>navigator.serviceWorker.ready),
-  new Promise((_,no)=>setTimeout(()=>no(new Error('Η εφαρμογή δεν ετοιμάστηκε για ειδοποιήσεις. Ξαναφόρτωσε τη σελίδα.')),8000))]);
+  new Promise((_,no)=>setTimeout(()=>no(new Error(TR('Η εφαρμογή δεν ετοιμάστηκε για ειδοποιήσεις. Ξαναφόρτωσε τη σελίδα.'))),8000))]);
 async function pushLoad(force){if(PUSH.load||(PUSH.st&&!force))return;PUSH.load=true;
   try{let sub=null;if(pushCan()){const reg=await swReady();sub=await reg.pushManager.getSubscription()}
     PUSH.st={...await api('push'+(sub?'?ep='+encodeURIComponent(sub.endpoint):'')),sub}}
@@ -1293,126 +1336,140 @@ async function pushLoad(force){if(PUSH.load||(PUSH.st&&!force))return;PUSH.load=
 function pushPaint(){const a=document.getElementById('pushp');if(a)a.outerHTML=pushPanel();const b=document.getElementById('pushinv');if(b)b.outerHTML=pushInvite()}
 // τι μπορεί να γίνει σε αυτή τη συσκευή· κενό = μπορεί να ενεργοποιηθεί
 function pushWhy(){
-  if(isIOS()&&!isApp())return 'Στο iPhone οι ειδοποιήσεις έρχονται όταν η εφαρμογή είναι στην αρχική οθόνη. Στο Safari πάτα Κοινοποίηση και «Προσθήκη στην οθόνη Αφετηρίας», και άνοιξέ την από εκεί.';
-  if(!pushCan())return 'Αυτός ο browser δεν δέχεται ειδοποιήσεις. Άνοιξε την εφαρμογή στο κινητό από Chrome ή Safari.';
-  if(Notification.permission==='denied')return 'Οι ειδοποιήσεις είναι μπλοκαρισμένες για την εφαρμογή. Άνοιξέ τες από τις ρυθμίσεις του κινητού ή του browser και ξαναδοκίμασε.';
+  if(isIOS()&&!isApp())return TR('Στο iPhone οι ειδοποιήσεις έρχονται όταν η εφαρμογή είναι στην αρχική οθόνη. Στο Safari πάτα Κοινοποίηση και «Προσθήκη στην οθόνη Αφετηρίας», και άνοιξέ την από εκεί.');
+  if(!pushCan())return TR('Αυτός ο browser δεν δέχεται ειδοποιήσεις. Άνοιξε την εφαρμογή στο κινητό από Chrome ή Safari.');
+  if(Notification.permission==='denied')return TR('Οι ειδοποιήσεις είναι μπλοκαρισμένες για την εφαρμογή. Άνοιξέ τες από τις ρυθμίσεις του κινητού ή του browser και ξαναδοκίμασε.');
   return ''}
 function pushPanel(){
-  const head='<section class="panel" id="pushp"><h2>Ειδοποιήσεις στο κινητό</h2>',end='</section>';
+  const head=`<section class="panel" id="pushp"><h2>${TRH('Ειδοποιήσεις στο κινητό')}</h2>`,end='</section>';
   if(!isWorker()){if(offF('push'))return '<div id="pushp" hidden></div>';
     if(!planHas('push'))return head+`<p class="note">Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση στο κινητό, χωρίς χρέωση ανά μήνυμα.</p><div class="bar" style="margin-top:8px">${lockBtn('push','<button>Ειδοποιήσεις στο κινητό</button>')}</div>`+end}
-  if(!SERVER)return head+'<p class="note">Ο καθένας τις ενεργοποιεί στο κινητό του, και του έρχονται το πρόγραμμα της μέρας, οι αλλαγές του και η απάντηση στις άδειες. Στο γραφείο έρχονται η πρόοδος και τα αιτήματα άδειας από το εργοτάξιο. Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.</p>'+end;
+  if(!SERVER)return head+(isWorker()?`<p class="note">${TRH('Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.')} ${TRH('Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.')}</p>`:'<p class="note">Ο καθένας τις ενεργοποιεί στο κινητό του, και του έρχονται το πρόγραμμα της μέρας, οι αλλαγές του και η απάντηση στις άδειες. Στο γραφείο έρχονται η πρόοδος και τα αιτήματα άδειας από το εργοτάξιο. Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.</p>')+end;
   const st=PUSH.st;
-  if(!st)return head+'<p class="note">Φόρτωση…</p>'+end;
+  if(!st)return head+`<p class="note">${TRH('Φόρτωση…')}</p>`+end;
   if(st.err)return head+`<p class="note">${h(st.err)}</p>`+end;
   if(!st.on)return isWorker()?'<div id="pushp" hidden></div>':head+'<p class="note">Οι ειδοποιήσεις είναι κλειστές για την εταιρεία.</p>'+end;
   const why=pushWhy(),busy=PUSH.busy?' disabled':'';
-  return head+`<p class="note">${isWorker()?'Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.':'Ενεργοποίησέ τες σε κάθε κινητό ή υπολογιστή που θέλεις. Κάθε χρήστης τις ανοίγει στη δική του συσκευή.'}</p>
-    <div class="bar pushst">${st.here?`<span class="tag ok">${ico('check')}Ενεργές σε αυτή τη συσκευή</span><button class="btn" data-act="pushtest"${busy}>Δοκιμή</button><button class="btn ghost" data-act="pushoff"${busy}>Απενεργοποίηση</button>`
-      :why?`<p class="warnline">${ico('info')}<span>${h(why)}</span></p>`:`<button class="btn pri" data-act="pushon"${busy}>${ico('bell')}Ενεργοποίηση σε αυτή τη συσκευή</button>`}</div>
-    ${st.devices&&!(st.here&&st.devices===1)?`<p class="note">${st.devices===1?'1 συσκευή':st.devices+' συσκευές'} με ειδοποιήσεις για τον λογαριασμό σου.</p>`:''}
-    ${st.devices&&st.kinds&&st.kinds.length>1?`<div class="fs" style="margin-top:12px"><span class="fl">Τι θέλω να μου έρχεται</span><div class="wd">${st.kinds.map(k=>`<label><input type="checkbox" data-pk="${h(k.k)}"${k.on?' checked':''}> ${h(k.name)}</label>`).join('')}</div></div>`:''}`+end}
+  return head+`<p class="note">${isWorker()?TRH('Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.'):'Ενεργοποίησέ τες σε κάθε κινητό ή υπολογιστή που θέλεις. Κάθε χρήστης τις ανοίγει στη δική του συσκευή.'}</p>
+    <div class="bar pushst">${st.here?`<span class="tag ok">${ico('check')}${TRH('Ενεργές σε αυτή τη συσκευή')}</span><button class="btn" data-act="pushtest"${busy}>${TRH('Δοκιμή')}</button><button class="btn ghost" data-act="pushoff"${busy}>${TRH('Απενεργοποίηση')}</button>`
+      :why?`<p class="warnline">${ico('info')}<span>${h(why)}</span></p>`:`<button class="btn pri" data-act="pushon"${busy}>${ico('bell')}${TRH('Ενεργοποίηση σε αυτή τη συσκευή')}</button>`}</div>
+    ${st.devices&&!(st.here&&st.devices===1)?`<p class="note">${st.devices===1?TRH('1 συσκευή με ειδοποιήσεις για τον λογαριασμό σου.'):TRH('{n} συσκευές με ειδοποιήσεις για τον λογαριασμό σου.',{n:st.devices})}</p>`:''}
+    ${st.devices&&st.kinds&&st.kinds.length>1?`<div class="fs" style="margin-top:12px"><span class="fl">${TRH('Τι θέλω να μου έρχεται')}</span><div class="wd">${st.kinds.map(k=>`<label><input type="checkbox" data-pk="${h(k.k)}"${k.on?' checked':''}> ${TRH(k.name)}</label>`).join('')}</div></div>`:''}`+end}
 // στο «Το πρόγραμμά μου»: πρόταση μία φορά, μέχρι να την ενεργοποιήσει ή να πει «Όχι τώρα»
 function pushInvite(){const st=PUSH.st,none='<div id="pushinv" hidden></div>';
   if(!SERVER||!st||st.err||!st.on||st.here||st.devices||lsGet(LS+'.pushinv',0)||pushWhy()&&!(isIOS()&&!isApp()))return none;
-  return `<section class="panel pinv" id="pushinv"><div class="pinv-t">${ico('bell')}<div class="grow"><b>Να σου έρχεται το πρόγραμμα ως ειδοποίηση;</b><div class="note">${isIOS()&&!isApp()?h(pushWhy()):'Μόλις βγαίνει το πρόγραμμα της μέρας ή αλλάζει, το βλέπεις στο κινητό χωρίς να ανοίξεις την εφαρμογή.'}</div></div></div>
-    <div class="bar">${isIOS()&&!isApp()?'':`<button class="btn pri" data-act="pushon">Ενεργοποίηση</button>`}<button class="btn ghost" data-act="pushlater">Όχι τώρα</button></div></section>`}
+  return `<section class="panel pinv" id="pushinv"><div class="pinv-t">${ico('bell')}<div class="grow"><b>${TRH('Να σου έρχεται το πρόγραμμα ως ειδοποίηση;')}</b><div class="note">${isIOS()&&!isApp()?h(pushWhy()):TRH('Μόλις βγαίνει το πρόγραμμα της μέρας ή αλλάζει, το βλέπεις στο κινητό χωρίς να ανοίξεις την εφαρμογή.')}</div></div></div>
+    <div class="bar">${isIOS()&&!isApp()?'':`<button class="btn pri" data-act="pushon">${TRH('Ενεργοποίηση')}</button>`}<button class="btn ghost" data-act="pushlater">${TRH('Όχι τώρα')}</button></div></section>`}
 async function pushEnable(){if(PUSH.busy)return;PUSH.busy=true;pushPaint();
   try{const perm=await Notification.requestPermission();
-    if(perm!=='granted'){toast(perm==='denied'?'Οι ειδοποιήσεις μπλοκαρίστηκαν. Άνοιξέ τες από τις ρυθμίσεις του κινητού.':'Δεν δόθηκε άδεια για ειδοποιήσεις.');return}
+    if(perm!=='granted'){toast(TR(perm==='denied'?'Οι ειδοποιήσεις μπλοκαρίστηκαν. Άνοιξέ τες από τις ρυθμίσεις του κινητού.':'Δεν δόθηκε άδεια για ειδοποιήσεις.'));return}
     const reg=await swReady();let sub=await reg.pushManager.getSubscription();
     try{if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(PUSH.st.key)})}
     catch(e){if(sub)await sub.unsubscribe();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(PUSH.st.key)})}
     await api('push/sub',{sub:sub.toJSON()});lsSet(LS+'.pushinv',1);
-    toast('Οι ειδοποιήσεις ενεργοποιήθηκαν σε αυτή τη συσκευή.')}
-  catch(e){if(e.status===401)return expired();toast(e.status?e.message:'Δεν ενεργοποιήθηκαν οι ειδοποιήσεις σε αυτή τη συσκευή. Δοκίμασε ξανά.')}
+    toast(TR('Οι ειδοποιήσεις ενεργοποιήθηκαν σε αυτή τη συσκευή.'))}
+  catch(e){if(e.status===401)return expired();toast(e.status?e.message:TR('Δεν ενεργοποιήθηκαν οι ειδοποιήσεις σε αυτή τη συσκευή. Δοκίμασε ξανά.'))}
   finally{PUSH.busy=false;await pushLoad(true)}}
 async function pushDisable(){if(PUSH.busy)return;PUSH.busy=true;pushPaint();
   try{const reg=await swReady(),sub=await reg.pushManager.getSubscription();if(sub){await api('push/unsub',{endpoint:sub.endpoint});await sub.unsubscribe()}
-    toast('Οι ειδοποιήσεις σταμάτησαν σε αυτή τη συσκευή.')}
-  catch(e){toast(e.message||'Δεν έγινε η αλλαγή. Δοκίμασε ξανά.')}
+    toast(TR('Οι ειδοποιήσεις σταμάτησαν σε αυτή τη συσκευή.'))}
+  catch(e){toast(e.message||TR('Δεν έγινε η αλλαγή. Δοκίμασε ξανά.'))}
   finally{PUSH.busy=false;await pushLoad(true)}}
-async function pushTest(){try{const r=await api('push/test',{});toast(r.sent?'Στάλθηκε δοκιμαστική ειδοποίηση. Θα έρθει σε λίγα δευτερόλεπτα.':'Δεν έφτασε σε καμία συσκευή. Απενεργοποίησέ τες και ενεργοποίησέ τες ξανά.')}
+async function pushTest(){try{const r=await api('push/test',{});toast(TR(r.sent?'Στάλθηκε δοκιμαστική ειδοποίηση. Θα έρθει σε λίγα δευτερόλεπτα.':'Δεν έφτασε σε καμία συσκευή. Απενεργοποίησέ τες και ενεργοποίησέ τες ξανά.'))}
   catch(e){toast(e.message)}}
 async function pushPrefs(){const off=[...document.querySelectorAll('[data-pk]')].filter(c=>!c.checked).map(c=>c.dataset.pk);
-  try{await api('push/prefs',{off});if(PUSH.st&&PUSH.st.kinds)PUSH.st.kinds.forEach(k=>k.on=!off.includes(k.k));toast('Αποθηκεύτηκε.')}catch(e){toast(e.message)}}
+  try{await api('push/prefs',{off});if(PUSH.st&&PUSH.st.kinds)PUSH.st.kinds.forEach(k=>k.on=!off.includes(k.k));toast(TR('Αποθηκεύτηκε.'))}catch(e){toast(e.message)}}
 /* Το πρόγραμμά μου (λογαριασμός εργαζόμενου) */
 const MY={};
 function myData(ws){
-  if(!SERVER){const w=W(AUTH.user.workerId);return w?myView(schedule(),w,ws):{unlinked:true}}
+  if(!SERVER){const w=W(AUTH.user.workerId),o=w?myView(schedule(),w,ws):{unlinked:true};if(langSync(o))return myView(schedule(),w,ws);return o}
   if(MY[ws])return MY[ws];
   if(!MY['_'+ws]){MY['_'+ws]=1;
     // κρατά τις τελευταίες εβδομάδες στο κινητό, για να φαίνονται και χωρίς σήμα
-    api('my?week='+ws).then(o=>{MY[ws]=o;if(o.days){const c=lsGet(LS+'.my',{});c[ws]=o;lsSet(LS+'.my',Object.fromEntries(Object.entries(c).filter(([k])=>/^\d{4}-/.test(k)).sort().slice(-6)))}})
-      .catch(e=>{if(e.status===401)return expired();const c=lsGet(LS+'.my',{})[ws];MY[ws]=c?{...c,offline:true}:{error:e.message+' Δεν υπάρχει αποθηκευμένο πρόγραμμα για αυτή την εβδομάδα.'}})
+    api('my?week='+ws).then(o=>{MY[ws]=o;if(o.days){const c=lsGet(LS+'.my',{});c[ws]=o;lsSet(LS+'.my',Object.fromEntries(Object.entries(c).filter(([k])=>/^\d{4}-/.test(k)).sort().slice(-6)))}
+        if(langSync(o))Object.keys(MY).forEach(k=>{if(k[0]!=='_'&&k!==ws)delete MY[k]})})
+      .catch(e=>{if(e.status===401)return expired();const c=lsGet(LS+'.my',{})[ws];MY[ws]=c?{...c,offline:true}:{error:e.message+' '+TR('Δεν υπάρχει αποθηκευμένο πρόγραμμα για αυτή την εβδομάδα.')}})
       .finally(()=>{delete MY['_'+ws];if(AUTH.user&&UI.tab==='mine')render()})}
   return null;
 }
+// η γλώσσα που όρισε ο ίδιος ή το γραφείο έρχεται με το πρόγραμμα· αν δεν έχει οριστεί ακόμη, στέλνεται αυτή της συσκευής
+function langSync(o){if(!o||!o.days||o.offline)return false;
+  if(o.lang&&o.lang!==UL){setLang(o.lang,true);setTimeout(render,0);return true}
+  if(!o.lang&&UL!=='el'&&!langSync.sent){langSync.sent=1;myLang(UL,true)}
+  return false}
+async function myLang(l,quiet){
+  if(SERVER){try{await api('my/lang',{lang:l})}catch(e){if(e.status===401)return expired();if(!quiet)toast(e.message);return}
+    Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});if(!quiet&&AUTH.user)render();return}
+  const w=W(AUTH.user.workerId);if(!w)return;if((w.lang||'')!==l){w.lang=l;w.langAt=new Date().toISOString();const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}}}
 function vMine(){
   if(!UI.week)UI.week=weekStart(TODAY);
-  const ws=UI.week,o=myData(ws);
-  const head=`<div class="bar"><h1 class="grow">Το πρόγραμμά μου</h1><div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div></div>`;
-  if(!o)return head+'<section class="panel"><p class="note">Φόρτωση προγράμματος…</p></section>';
-  if(o.unlinked)return head+'<section class="panel"><p>Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο. Ζήτα από το γραφείο να το κάνει.</p></section>';
-  if(o.error||!o.days)return head+`<section class="panel"><p>${h(o.error||'Δεν φορτώθηκε το πρόγραμμα.')}</p></section>`;
+  const ws=UI.week,o=myData(ws),R0=isR();
+  const head=`<div class="bar"><h1 class="grow">${TRH('Το πρόγραμμά μου')}</h1><div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="${TRH('Προηγούμενη εβδομάδα')}">${ico(R0?'cr':'cl')}</button><button class="btn" data-act="week" data-dir="0"><bdi>${fS(ws)} – ${fS(add(ws,6))}</bdi></button><button class="btn" data-act="week" data-dir="1" aria-label="${TRH('Επόμενη εβδομάδα')}">${ico(R0?'cl':'cr')}</button></div></div>`;
+  if(!o)return head+`<section class="panel"><p class="note">${TRH('Φόρτωση προγράμματος…')}</p></section>`;
+  if(o.unlinked)return head+`<section class="panel"><p>${TRH('Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο. Ζήτα από το γραφείο να το κάνει.')}</p></section>`;
+  if(o.error||!o.days)return head+`<section class="panel"><p>${h(o.error||TR('Δεν φορτώθηκε το πρόγραμμα.'))}</p></section>`;
   // ο υπεύθυνος της εργασίας δηλώνει στο τέλος της μέρας αν τελείωσε ή αν θέλει μία μέρα ακόμη
-  const repBox=it=>{const r=it.rep;return `<div class="mrep"><div class="mrep-h"><span>Πώς πήγε σήμερα;</span><span class="note">Μέρα ${r.day||1} από ${r.days}</span></div>
-      <div class="mbtns">${r.done?`<span class="tag ok">${ico('check')}Το δήλωσες: τελείωσε</span>`
-        :`<button class="btn" data-act="myrep" data-k="done" data-t="${h(it.tid)}">${ico('check')}Τελείωσε</button>${r.more?`<span class="tag warn">Δηλώθηκε μία μέρα ακόμη</span>`:`<button class="btn out" data-act="myrep" data-k="more" data-t="${h(it.tid)}">+1 μέρα</button>`}`}</div></div>`};
-  const item=(it,hero)=>it.project?`<div class="mi"><div class="t"><i class="dot" style="background:var(--${h(it.color||'p6')})"></i><b>${h(it.project)}</b></div>${it.location?`<div class="note">${h(it.location)}</div>`:''}
-      <div>${h(it.task)}${it.lead?' <span class="tag hv">Υπεύθυνος</span>':''}</div>${it.with&&it.with.length?`<div class="chips">${it.with.map(n=>`<span class="chip">${h(n)}</span>`).join('')}</div>`:''}
-      ${it.location?`<a class="btn sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.location)}" target="_blank" rel="noopener">Οδηγίες στον χάρτη</a>`:''}${hero&&it.rep&&!o.offline?repBox(it):''}</div>`
+  const repBox=it=>{const r=it.rep;return `<div class="mrep"><div class="mrep-h"><span>${TRH('Πώς πήγε σήμερα;')}</span><span class="note">${TRH('Μέρα {a} από {b}',{a:r.day||1,b:r.days})}</span></div>
+      <div class="mbtns">${r.done?`<span class="tag ok">${ico('check')}${TRH('Το δήλωσες: τελείωσε')}</span>`
+        :`<button class="btn" data-act="myrep" data-k="done" data-t="${h(it.tid)}">${ico('check')}${TRH('Τελείωσε')}</button>${r.more?`<span class="tag warn">${TRH('Δηλώθηκε μία μέρα ακόμη')}</span>`:`<button class="btn out" data-act="myrep" data-k="more" data-t="${h(it.tid)}">${TRH('+1 μέρα').replace('+1','<bdi dir="ltr">+1</bdi>')}</button>`}`}</div></div>`};
+  const chips=xs=>xs&&xs.length?`<div class="chips">${xs.map(n=>`<span class="chip"><bdi>${h(tlN(n))}</bdi></span>`).join('')}</div>`:'';
+  const item=(it,hero)=>it.project?`<div class="mi"><div class="t"><i class="dot" style="background:var(--${h(it.color||'p6')})"></i><b><bdi>${h(it.project)}</bdi></b></div>${tlD(it.project)}${it.location?`<div class="note"><bdi>${h(it.location)}</bdi></div>`:''}
+      <div><bdi>${h(it.task)}</bdi>${it.lead?` <span class="tag hv">${TRH('Υπεύθυνος')}</span>`:''}</div>${tlD(it.task)}${chips(it.with)}
+      ${it.location?`<a class="btn sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.location)}" target="_blank" rel="noopener">${TRH('Οδηγίες στον χάρτη')}</a>`:''}${hero&&it.rep&&!o.offline?repBox(it):''}</div>`
     :`<div class="mi"><b>${h(it.title)}</b></div>`;
-  const apItem=a=>`<div class="mi"><div class="t">${ico('meet')}<b>Ραντεβού ${h(a.time)}</b></div><div>${h(a.title)}${a.client?` <span class="note">· ${h(a.client)}</span>`:''}</div>
-      ${a.with&&a.with.length?`<div class="chips">${a.with.map(n=>`<span class="chip">${h(n)}</span>`).join('')}</div>`:''}
-      <div class="mbtns">${a.place?`<a class="btn sm" href="${mapsUrl(a.place)}" target="_blank" rel="noopener">Οδηγίες στον χάρτη</a>`:''}${a.phone?`<a class="btn sm" href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">Κλήση πελάτη</a>`:''}</div></div>`;
-  const body=(d,hero)=>d.off?`<span class="tag ${d.rest?'mute':'warn'}">${d.rest?'Ρεπό':d.absent?'Απουσία':'Άδεια'}</span>`:d.items.map(it=>item(it,hero)).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<div class="mrem"><span class="lbl">Υπενθυμίσεις</span><ul class="mduties">${d.duties.map(t=>`<li>${t.time?`<b>${h(t.time)}</b> `:''}${h(t.title)}${t.project?` <span class="note">(${h(t.project)})</span>`:''}${t.late?` <span class="tag warn">από ${h(fmt(t.late))}</span>`:''}${t.notes?`<div class="note">${h(t.notes)}</div>`:''}</li>`).join('')}</ul></div>`:'');
-  const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span>${h(d.wx.text)}</span></div>`:'';
+  const apItem=a=>`<div class="mi"><div class="t">${ico('meet')}<b>${TRH('Ραντεβού {t}',{t:`<bdi>${h(a.time)}</bdi>`})}</b></div><div><bdi>${h(a.title)}</bdi>${a.client?` <span class="note">· <bdi>${h(a.client)}</bdi></span>`:''}</div>${tlD(a.title+(a.client?', '+a.client:''))}
+      ${chips(a.with)}
+      <div class="mbtns">${a.place?`<a class="btn sm" href="${mapsUrl(a.place)}" target="_blank" rel="noopener">${TRH('Οδηγίες στον χάρτη')}</a>`:''}${a.phone?`<a class="btn sm" href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">${TRH('Κλήση πελάτη')}</a>`:''}</div></div>`;
+  const body=(d,hero)=>d.off?`<span class="tag ${d.rest?'mute':'warn'}">${TRH(d.rest?'Ρεπό':d.absent?'Απουσία':'Άδεια')}</span>`:d.items.map(it=>item(it,hero)).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<div class="mrem"><span class="lbl">${TRH('Υπενθυμίσεις')}</span><ul class="mduties">${d.duties.map(t=>`<li>${t.time?`<b><bdi>${h(t.time)}</bdi></b> `:''}<bdi>${h(t.title)}</bdi>${t.project?` <span class="note"><bdi>(${h(t.project)})</bdi></span>`:''}${t.late?` <span class="tag warn">${TRH('από {d}',{d:`<bdi>${h(fD(t.late))}</bdi>`})}</span>`:''}${tlD(t.title+(t.project?' ('+t.project+')':''))}${t.notes?`<div class="note"><bdi>${h(t.notes)}</bdi></div>`:''}</li>`).join('')}</ul></div>`:'');
+  const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span><bdi>${h(d.wx.text)}</bdi></span></div>`:'';
   const next=o.days.find(d=>d.date>=TODAY);
-  return head+`<p class="note" style="margin:-8px 0 0">${h(o.name)}${o.specialty?' · '+h(o.specialty):''}${o.offline?' · <span class="tag warn">Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε</span>':''}</p>
-  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${o.feats&&o.feats.gps&&next.date===TODAY&&!next.off&&next.items.length&&!o.offline?attBox(next):''}${body(next,true)}${o.feats&&o.feats.diary&&next.date===TODAY&&!next.off&&!o.offline?myDiaryBox(o):''}${wx(next,'hwx')}</section>`:''}
+  return head+`<p class="note" style="margin:-8px 0 0"><bdi>${h(tlN(o.name))}</bdi>${o.specialty?' · <bdi>'+h(o.specialty)+'</bdi>':''}${o.offline?` · <span class="tag warn">${TRH('Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε')}</span>`:''}</p>
+  ${next?`<section class="panel hero"><div class="when">${TRH(next.date===TODAY?'Σήμερα':'Επόμενη μέρα')} · <bdi>${fD(next.date)}</bdi></div>${o.feats&&o.feats.gps&&next.date===TODAY&&!next.off&&next.items.length&&!o.offline?attBox(next):''}${body(next,true)}${o.feats&&o.feats.diary&&next.date===TODAY&&!next.off&&!o.offline?myDiaryBox(o):''}${wx(next,'hwx')}</section>`:''}
   ${o.feats&&o.feats.push?pushInvite():''}
-  <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}${attLine(d)}${wx(d,'wx')}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
+  <section class="panel"><h2>${TRH('Όλη η εβδομάδα')}</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl"><bdi>${fD(d.date)}</bdi></div><div class="db">${body(d)}${attLine(d)}${wx(d,'wx')}</div></div>`).join('')||`<p class="empty">${TRH('Δεν υπάρχουν εργάσιμες μέρες.')}</p>`}</div></section>
   ${o.feats&&o.feats.leave?myLeavePanel(o):''}
-  <p class="note">Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.</p>`;
+  <p class="note">${TRH('Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.')}</p>`;
 }
 const LV_ST={new:['warn','Περιμένει το γραφείο'],ok:['ok','Εγκρίθηκε'],no:['bad','Δεν εγκρίθηκε'],x:['mute','Ακυρώθηκε']};
-const lvRange=r=>r.from===r.to?fmt(r.from):fmtS(r.from)+' – '+fmtS(r.to);
+const lvRange=r=>r.from===r.to?fD(r.from):fS(r.from)+' – '+fS(r.to);
+// το ίδιο στη γλώσσα του εργαζόμενου, για το μήνυμα που του στέλνει το γραφείο
+const lvRangeX=(r,l)=>r.from===r.to?ErgoCore.fmtX(l,r.from):ErgoCore.fmtSX(l,r.from)+' – '+ErgoCore.fmtSX(l,r.to);
 function myLeavePanel(o){const xs=o.leave||[];
-  return `<section class="panel" id="myleave"><div class="bar"><h2 class="grow" style="margin:0">Άδειες</h2>${o.offline?'':`<button class="btn pri" data-act="myleave">${ico('plus')}Ζήτα άδεια</button>`}</div>
-    ${xs.length?`<div class="lvlist">${xs.map(r=>`<div class="lvrow"><div class="grow"><b>${h(lvRange(r))}</b><span class="note">${r.days==1?'1 εργάσιμη':r.days+' εργάσιμες'}${r.note?' · '+h(r.note):''}</span></div>
-      <span class="tag ${LV_ST[r.st][0]}">${LV_ST[r.st][1]}</span>${r.st==='new'&&!o.offline?`<button class="btn sm ghost" data-act="mylvx" data-id="${h(r.id)}">Ακύρωση</button>`:''}</div>`).join('')}</div>`
-    :'<p class="note">Ζήτα άδεια από εδώ. Μόλις την εγκρίνει το γραφείο, το πρόγραμμα αλλάζει μόνο του.</p>'}</section>`}
+  return `<section class="panel" id="myleave"><div class="bar"><h2 class="grow" style="margin:0">${TRH('Άδειες')}</h2>${o.offline?'':`<button class="btn pri" data-act="myleave">${ico('plus')}${TRH('Ζήτα άδεια')}</button>`}</div>
+    ${xs.length?`<div class="lvlist">${xs.map(r=>`<div class="lvrow"><div class="grow"><b><bdi>${h(lvRange(r))}</bdi></b><span class="note">${r.days==1?TRH('1 εργάσιμη'):TRH('{n} εργάσιμες',{n:r.days})}${r.note?' · <bdi>'+h(r.note)+'</bdi>':''}</span></div>
+      <span class="tag ${LV_ST[r.st][0]}">${TRH(LV_ST[r.st][1])}</span>${r.st==='new'&&!o.offline?`<button class="btn sm ghost" data-act="mylvx" data-id="${h(r.id)}">${TRH('Ακύρωση')}</button>`:''}</div>`).join('')}</div>`
+    :`<p class="note">${TRH('Ζήτα άδεια από εδώ. Μόλις την εγκρίνει το γραφείο, το πρόγραμμα αλλάζει μόνο του.')}</p>`}</section>`}
 // οι αλλαγές του εργαζόμενου: με τον server στέλνονται εκεί, χωρίς server γράφονται στα δεδομένα αυτού του browser
 async function myAct(path,body){const w=W(AUTH.user.workerId);
   // φωτογραφία: με τον server ανεβαίνει μαζί με το αίτημα, χωρίς server φυλάγεται πρώτα σε αυτή τη συσκευή
-  if(path==='diary'&&body.pp){const pp=body.pp;body={p:body.p,text:body.text};try{if(SERVER)Object.assign(body,{data:await b64(pp.full),thumb:await b64(pp.thumb),w:pp.w,h:pp.h});else body.ph=await phLocal(pp)}catch(e){toast('Η φωτογραφία δεν ετοιμάστηκε. Δοκίμασε ξανά.');return false}}
+  if(path==='diary'&&body.pp){const pp=body.pp;body={p:body.p,text:body.text};try{if(SERVER)Object.assign(body,{data:await b64(pp.full),thumb:await b64(pp.thumb),w:pp.w,h:pp.h});else body.ph=await phLocal(pp)}catch(e){toast(TR('Η φωτογραφία δεν ετοιμάστηκε. Δοκίμασε ξανά.'));return false}}
   if(SERVER){try{await api('my/'+path,body)}catch(e){if(e.status===401)return expired(),false;toast(e.message);return false}
     Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});try{MY[UI.week]=await api('my?week='+UI.week)}catch(e){}   // χωρίς ενδιάμεσο «Φόρτωση»
     return true}
-  if(!w){toast('Ο λογαριασμός σου δεν έχει συνδεθεί με εργαζόμενο.');return false}
+  if(!w){toast(TR('Ο λογαριασμός σου δεν έχει συνδεθεί με εργαζόμενο.'));return false}
   const out=path==='diary'?myDiaryLocal(w,body):path==='att'?addAtt(schedule(),w,body.k,body.lat!=null?body:null,new Date(),body.why):path==='progress'?addProgress(schedule(),w,body.task,body.kind,body.note,TODAY):path==='leave'?addLeave(w,body.from,body.to,body.note):cancelLeave(w,body.id);
-  if(out.err){toast(out.err);return false}
+  if(out.err){toast(TR(out.ek||out.err,out.ep));return false}
   if(out.e)ringPush(out.e.id);
   const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}
   return true}
 function myRepForm(tid,k){const o=myData(UI.week),it=o&&o.days&&o.days.flatMap(d=>d.items).find(x=>x.tid===tid);if(!it)return;
-  openModal(`<h2>${k==='done'?'Τελείωσε η εργασία;':'Θέλει μία μέρα ακόμη;'}</h2>
-  <p style="margin:0 0 6px"><b>${h(it.task)}</b> <span class="note">· ${h(it.project)}</span></p>
-  <p class="note">${k==='done'?'Από αύριο η εργασία βγαίνει από το πρόγραμμα και το συνεργείο πηγαίνει σε άλλη δουλειά. Το γραφείο το βλέπει αμέσως.':'Το πρόγραμμα κρατά την εργασία μία μέρα παραπάνω και μεταθέτει όσες περιμένουν. Το γραφείο το βλέπει αμέσως.'}</p>
-  <form class="form" id="myrepf" data-t="${h(tid)}" data-k="${k}"><label class="full">${k==='done'?'Σημείωση για το γραφείο (προαιρετικά)':'Τι έμεινε ή γιατί αργεί (προαιρετικά)'}<textarea id="mr_note" rows="2" maxlength="300" placeholder="${k==='done'?'π.χ. έμειναν υλικά στο εργοτάξιο':'π.χ. δεν ήρθαν τα υλικά'}"></textarea></label></form>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="myrepsave">${k==='done'?'Ναι, τελείωσε':'Ναι, μία μέρα ακόμη'}</button></div>`)}
+  const d=k==='done';
+  openModal(`<h2>${TRH(d?'Τελείωσε η εργασία;':'Θέλει μία μέρα ακόμη;')}</h2>
+  <p style="margin:0 0 6px"><b><bdi>${h(it.task)}</bdi></b> <span class="note">· <bdi>${h(it.project)}</bdi></span></p>${tlD(it.task)}
+  <p class="note">${TRH(d?'Από αύριο η εργασία βγαίνει από το πρόγραμμα και το συνεργείο πηγαίνει σε άλλη δουλειά. Το γραφείο το βλέπει αμέσως.':'Το πρόγραμμα κρατά την εργασία μία μέρα παραπάνω και μεταθέτει όσες περιμένουν. Το γραφείο το βλέπει αμέσως.')}</p>
+  <form class="form" id="myrepf" data-t="${h(tid)}" data-k="${k}"><label class="full">${TRH(d?'Σημείωση για το γραφείο (προαιρετικά)':'Τι έμεινε ή γιατί αργεί (προαιρετικά)')}<textarea id="mr_note" rows="2" maxlength="300" placeholder="${TRH(d?'π.χ. έμειναν υλικά στο εργοτάξιο':'π.χ. δεν ήρθαν τα υλικά')}"></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="myrepsave">${TRH(d?'Ναι, τελείωσε':'Ναι, μία μέρα ακόμη')}</button></div>`)}
 function myLeaveForm(){const d=nextWork(add(TODAY,1));
-  openModal(`<h2>Αίτημα άδειας</h2>
-  <form class="form" id="mylvf"><label>Από<input id="ml_from" type="date" value="${d}" min="${TODAY}"></label><label>Έως<input id="ml_to" type="date" value="${d}" min="${TODAY}"></label>
-  <label class="full">Λόγος (προαιρετικά)<input id="ml_note" maxlength="300" placeholder="π.χ. γάμος, ιατρείο"></label></form>
+  openModal(`<h2>${TRH('Αίτημα άδειας')}</h2>
+  <form class="form" id="mylvf"><label>${TRH('Από')}<input id="ml_from" type="date" value="${d}" min="${TODAY}"></label><label>${TRH('Έως')}<input id="ml_to" type="date" value="${d}" min="${TODAY}"></label>
+  <label class="full">${TRH('Λόγος (προαιρετικά)')}<input id="ml_note" maxlength="300" placeholder="${TRH('π.χ. γάμος, ιατρείο')}"></label></form>
   <p class="note" id="ml_days">${lvCount()}</p>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mylvsave">${ico('send')}Στείλε στο γραφείο</button></div>`)}
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="mylvsave">${ico('send')}${TRH('Στείλε στο γραφείο')}</button></div>`)}
 // πόσες εργάσιμες πιάνει η άδεια (χωρίς server υπολογίζεται εδώ, με τον server το λέει μετά η λίστα)
 function lvCount(){const f=document.getElementById('ml_from'),t=document.getElementById('ml_to'),a=f?f.value:nextWork(add(TODAY,1)),b=t?t.value:a;
-  if(!a||!b||b<a)return '';const w=SERVER?null:W(AUTH.user.workerId),span=a===b?fmt(a):fmt(a)+' έως '+fmt(b);
-  if(!w){const n=Math.round((pd(b)-pd(a))/864e5)+1;return span+(n>1?' · '+n+' μέρες':'')}
-  const n=leaveDays(w,a,b).length;return span+' · '+(n==1?'1 εργάσιμη':n+' εργάσιμες')}
+  if(!a||!b||b<a)return '';const w=SERVER?null:W(AUTH.user.workerId),span=a===b?fD(a):TR('{a} έως {b}',{a:fD(a),b:fD(b)});
+  if(!w){const n=Math.round((pd(b)-pd(a))/864e5)+1;return span+(n>1?' · '+TR('{n} μέρες',{n}):'')}
+  const n=leaveDays(w,a,b).length;return span+' · '+(n==1?TR('1 εργάσιμη'):TR('{n} εργάσιμες',{n}))}
 
 /* Σήμερα */
 /* Από το εργοτάξιο: πρόοδος που έστειλαν οι υπεύθυνοι εργασιών και αιτήματα άδειας, με έγκριση σε ένα πάτημα */
@@ -2028,7 +2085,7 @@ function vWorkers(R){
   const mdw={};R.asg.filter(a=>a.date>=ws_&&a.date<=we_).forEach(a=>mdw[a.workerId]=(mdw[a.workerId]||0)+(a.share||1));
   const rateInfo=w=>{const r=Object.entries(w.rates||{}).filter(([,v])=>v!==''&&v!=null);return r.length?`<div class="note">${r.map(([pid,v])=>h(short(pname(pid)))+' '+eur(v)).join(' · ')}</div>`:''};
   const rows=S.specialties.map(sp=>{const ws=S.workers.filter(w=>w.specialtyId===sp.id&&!isExt(w));if(!ws.length&&S.workers.some(w=>w.specialtyId===sp.id))return '';
-    return `<tr class="grp"><td colspan="6">${h(sp.name)} <span class="note">· ${ws.length}${sp.office?' · γραφείο':''}</span></td></tr>`+(ws.length?ws.map(w=>`<tr><td><b>${h(w.name)}</b>${rateOn()&&!sp.office?stars(w):''}${availNote(w)}${isPM(w)?`<div class="note">${S.projects.filter(p=>(p.managers||[]).includes(w.id)).map(p=>h(p.name)).join(', ')||'Χωρίς έργο'}</div>`:''}</td><td>${roleTag(w.role)}</td><td class="n mono">${eur(w.wage)}${rateInfo(w)}</td><td class="mono">${h(w.phone||'')}</td><td class="n mono">${nf(mdw[w.id]||0)}</td>
+    return `<tr class="grp"><td colspan="6">${h(sp.name)} <span class="note">· ${ws.length}${sp.office?' · γραφείο':''}</span></td></tr>`+(ws.length?ws.map(w=>`<tr><td><b>${h(w.name)}</b>${langTag(w)}${rateOn()&&!sp.office?stars(w):''}${availNote(w)}${isPM(w)?`<div class="note">${S.projects.filter(p=>(p.managers||[]).includes(w.id)).map(p=>h(p.name)).join(', ')||'Χωρίς έργο'}</div>`:''}</td><td>${roleTag(w.role)}</td><td class="n mono">${eur(w.wage)}${rateInfo(w)}</td><td class="mono">${h(w.phone||'')}</td><td class="n mono">${nf(mdw[w.id]||0)}</td>
       <td style="white-space:nowrap"><button class="btn sm" data-act="editworker" data-id="${w.id}">Επεξεργασία</button>${isPM(w)&&hasF('pm')?` <button class="btn sm" data-act="pmw" data-id="${w.id}">Έργα</button>`:isOffice(w)?'':` <button class="btn sm" data-act="rates" data-id="${w.id}">Μεροκάματο ανά έργο</button>`}</td></tr>`).join(''):'<tr><td colspan="6" class="note">Κανένας εργαζόμενος.</td></tr>')}).join('');
   return `<div class="bar"><h1 class="grow">Προσωπικό</h1><button class="btn" data-act="newspec">${ico('plus')}Ειδικότητα</button><button class="btn pri" data-act="newworker">${ico('plus')}Νέος εργαζόμενος</button></div>
   ${peopleNote()}
@@ -2043,6 +2100,7 @@ function workerForm(w){
   <label>Ρόλος${sel('h_role',Object.entries(ROLES).filter(([k])=>k!=='ext'),w.role)}</label>
   <label>Βασικό μεροκάματο (€)<input id="h_wage" type="number" min="0" step="5" value="${+w.wage||0}"></label>
   <label>Τηλέφωνο (Viber)<input id="h_phone" value="${h(w.phone)}"></label>
+  ${hasF('lang')?`<label>Γλώσσα${sel('h_lang',I18N.LANGS.map(([k,n,g])=>[k,k==='el'?g:n+' · '+g]),w.lang||'el')}<span class="note">Η σελίδα του και τα μηνύματα Viber και κινητού. Οι μεταφράσεις θέλουν ακόμη έλεγχο από κάποιον που μιλά τη γλώσσα.</span></label>`:''}
   ${hasF('acc')?`<label>ΑΜΚΑ<input id="h_amka" inputmode="numeric" maxlength="16" value="${h(w.amka||'')}"><span class="note">Για την κατάσταση του λογιστή.</span></label>`:''}
   ${hasF('avail')?`<label>Δεύτερη ειδικότητα${sel('h_spec2',[['','Καμία'],...siteSpecs().filter(x=>x.id!=='gen').map(x=>[x.id,x.name])],w.spec2||'')}<span class="note">Μπαίνει και εκεί όταν λείπουν άτομα.</span></label>
   <label class="full">Μέρες που δουλεύει<div class="wd">${[1,2,3,4,5,6,0].filter(d=>S.settings.workdays.includes(d)).map(d=>`<label><input type="checkbox" data-wday="${d}"${!Array.isArray(w.days)||!w.days.length||w.days.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div><span class="note">Τις άλλες εργάσιμες έχει ρεπό και δεν μπαίνει στο πρόγραμμα.</span></label>`:''}
@@ -2220,18 +2278,18 @@ const getPos=()=>new Promise(res=>{if(!navigator.geolocation)return res({err:'τ
     e=>res({err:e.code===1?'δεν δόθηκε άδεια για τη θέση':e.code===3?'η θέση άργησε να βρεθεί':'δεν βρέθηκε θέση'}),{enableHighAccuracy:true,timeout:15000,maximumAge:60000})}
   catch(e){res({err:'δεν βρέθηκε θέση'})}});
 // --- στο κινητό του εργαζόμενου ---
-function attBox(d){const a=d.att,busy=UI.attBusy?' disabled':'',wait='Βρίσκω τη θέση…';
-  const where=pt=>pt&&pt.where==='ok'?(pt.yard?' · στην αποθήκη':' · στο εργοτάξιο'):pt&&pt.where==='far'?' · '+distS(pt.m)+(pt.yard?' από την αποθήκη':' από το εργοτάξιο'):pt&&pt.where==='nopos'?' · χωρίς θέση':'';
-  if(!a||!a.in)return `<div class="matt"><button class="btn big" data-act="myatt" data-k="in"${busy}>${ico('loc')}${UI.attBusy?wait:'Ήρθα στο εργοτάξιο'}</button>
-    <div class="note">Η θέση σου διαβάζεται μόνο τη στιγμή που πατάς, όχι όλη τη μέρα.</div></div>`;
-  if(!a.out)return `<div class="matt"><div class="matt-h">${ico('check')}<span>Ήρθες στις <b>${h(a.in.t)}</b>${h(where(a.in))}</span></div>
-    <button class="btn out" data-act="myatt" data-k="out"${busy}>${UI.attBusy?wait:'Έφυγα'}</button></div>`;
-  return `<div class="matt"><div class="matt-h">${ico('check')}<span><b>${h(a.in.t)} – ${h(a.out.t)}</b>${a.min!=null?' · '+h(hrsL(a.min)):''}</span></div></div>`}
-const attLine=d=>d.att&&d.att.in?`<div class="matt-s">${ico('clock')}${h(d.att.in.t)}${d.att.out?' – '+h(d.att.out.t)+(d.att.min!=null?' · '+h(hrsS(d.att.min))+' ώρες':''):''}</div>`:'';
+function attBox(d){const a=d.att,busy=UI.attBusy?' disabled':'',wait=TRH('Βρίσκω τη θέση…');
+  const where=pt=>pt&&pt.where==='ok'?' · '+TR(pt.yard?'στην αποθήκη':'στο εργοτάξιο'):pt&&pt.where==='far'?' · '+TR(pt.yard?'{d} από την αποθήκη':'{d} από το εργοτάξιο',{d:distL(pt.m)}):pt&&pt.where==='nopos'?' · '+TR('χωρίς θέση'):'';
+  if(!a||!a.in)return `<div class="matt"><button class="btn big" data-act="myatt" data-k="in"${busy}>${ico('loc')}${UI.attBusy?wait:TRH('Ήρθα στο εργοτάξιο')}</button>
+    <div class="note">${TRH('Η θέση σου διαβάζεται μόνο τη στιγμή που πατάς, όχι όλη τη μέρα.')}</div></div>`;
+  if(!a.out)return `<div class="matt"><div class="matt-h">${ico('check')}<span>${TRH('Ήρθες στις {t}',{t:`<b><bdi>${h(a.in.t)}</bdi></b>`})}${h(where(a.in))}</span></div>
+    <button class="btn out" data-act="myatt" data-k="out"${busy}>${UI.attBusy?wait:TRH('Έφυγα')}</button></div>`;
+  return `<div class="matt"><div class="matt-h">${ico('check')}<span><b><bdi>${h(a.in.t)} – ${h(a.out.t)}</bdi></b>${a.min!=null?' · '+h(hrsLL(a.min)):''}</span></div></div>`}
+const attLine=d=>d.att&&d.att.in?`<div class="matt-s">${ico('clock')}<bdi>${h(d.att.in.t)}${d.att.out?' – '+h(d.att.out.t):''}</bdi>${d.att.out&&d.att.min!=null?' · '+TRH('{t} ώρες',{t:h(hrsS(d.att.min))}):''}</div>`:'';
 async function myAtt(k){if(UI.attBusy)return;UI.attBusy=true;render();
   const pos=await getPos(),body={k,...(pos.lat!=null?{lat:pos.lat,lon:pos.lon,acc:pos.acc}:{why:pos.err})};
   const ok=await myAct('att',body);UI.attBusy=false;render();
-  if(ok)toast((k==='in'?'Καταγράφηκε η άφιξή σου':'Καταγράφηκε η αποχώρησή σου')+(pos.lat!=null?'.':', χωρίς θέση: '+pos.err+'.'))}
+  if(ok)toast(pos.lat!=null?TR(k==='in'?'Καταγράφηκε η άφιξή σου.':'Καταγράφηκε η αποχώρησή σου.'):TR(k==='in'?'Καταγράφηκε η άφιξή σου, χωρίς θέση: {x}.':'Καταγράφηκε η αποχώρησή σου, χωρίς θέση: {x}.',{x:TR(pos.err)}))}
 // --- γραφείο ---
 const attCame=x=>x.r&&x.r.in;
 const attOdd=x=>{if(!attCame(x))return false;const k=attWhere(x.r,x.r.in)?.k;return k==='far'||k==='nopos'};
@@ -2336,13 +2394,13 @@ function phHydrate(root){if(SERVER)return;(root||document).querySelectorAll('img
     PHC.set(id,URL.createObjectURL(v.full));PHC.set(id+'_t',URL.createObjectURL(v.thumb||v.full))}
   img.src=PHC.get(k)})}
 // από το αρχείο του κινητού σε JPEG έως 1600 px και μικρή έως 400 px, ώστε να ανεβαίνει γρήγορα και να μη γεμίζει ο δίσκος
-async function phPrep(file){const bad=()=>new Error('Το αρχείο δεν ανοίγει ως φωτογραφία εδώ. Δοκίμασε JPEG ή PNG.');let src,u='';
+async function phPrep(file){const bad=()=>new Error(TR('Το αρχείο δεν ανοίγει ως φωτογραφία εδώ. Δοκίμασε JPEG ή PNG.'));let src,u='';
   try{src=await createImageBitmap(file,{imageOrientation:'from-image'})}
   catch(e){u=URL.createObjectURL(file);src=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(bad());i.src=u}).finally(()=>setTimeout(()=>URL.revokeObjectURL(u),1000))}
   const W0=src.naturalWidth||src.width,H0=src.naturalHeight||src.height;if(!W0||!H0)throw bad();
   const out=async(max,q)=>{const k=Math.min(1,max/Math.max(W0,H0)),w=Math.max(1,Math.round(W0*k)),hh=Math.max(1,Math.round(H0*k)),c=document.createElement('canvas');c.width=w;c.height=hh;
     const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,hh);x.drawImage(src,0,0,w,hh);
-    const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',q));if(!b)throw new Error('Η φωτογραφία δεν ετοιμάστηκε σε αυτόν τον browser.');return {b,w,h:hh}};
+    const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',q));if(!b)throw new Error(TR('Η φωτογραφία δεν ετοιμάστηκε σε αυτόν τον browser.'));return {b,w,h:hh}};
   const f=await out(1600,.82),t=await out(400,.72);if(src.close)src.close();
   return {full:f.b,thumb:t.b,w:f.w,h:f.h}}
 const b64=blob=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).replace(/^data:[^,]*,/,''));r.onerror=()=>no(r.error);r.readAsDataURL(blob)});
@@ -2518,19 +2576,19 @@ async function printDiary(pid,from,to,full,withPh){const R=schedule(),p=P(pid);i
 // --- στο κινητό του εργαζόμενου: φωτογραφία ή σημείωση για το έργο όπου δουλεύει σήμερα ---
 function myDiaryBox(o){const md=o.diary;if(!md||!md.ps.length)return '';const busy=!!UI.myPhBusy;
   if(!md.ps.some(x=>x.id===UI.mdP))UI.mdP=md.ps[0].id;
-  return `<div class="mrep mdiary"><div class="mrep-h"><span>Για το ημερολόγιο του έργου</span>${md.items.length?`<span class="note">${md.items.length==1?'1 σήμερα':md.items.length+' σήμερα'}</span>`:''}</div>
-    ${md.ps.length>1?`<select id="md_p" aria-label="Σε ποιο έργο">${md.ps.map(x=>`<option value="${h(x.id)}"${x.id===UI.mdP?' selected':''}>${h(x.name)}</option>`).join('')}</select>`:''}
-    <div class="mbtns"><label class="btn fpick${busy?' dis':''}">${ico('cam')}<span>${busy?'Ανεβαίνει…':'Φωτογραφία'}</span><input type="file" accept="image/*" data-myph${busy?' disabled':''} aria-label="Φωτογραφία για το ημερολόγιο"></label><button class="btn out" data-act="mynote"${busy?' disabled':''}>Σημείωση</button></div>
-    ${md.items.length?`<div class="mdph">${md.items.map(r=>`<span class="mdt${r.ph?'':' txt'}">${r.ph?phImg(r.ph,false,r.text||'Η φωτογραφία σου'):`<span>${h(r.text.slice(0,60))}</span>`}<button class="mdx" data-act="mydx" data-id="${h(r.id)}" aria-label="Σβήσιμο">${ico('x')}</button></span>`).join('')}</div>`:''}
-    <div class="note">Πηγαίνουν στο γραφείο και στο ημερολόγιο του έργου.</div></div>`}
+  return `<div class="mrep mdiary"><div class="mrep-h"><span>${TRH('Για το ημερολόγιο του έργου')}</span>${md.items.length?`<span class="note">${md.items.length==1?TRH('1 σήμερα'):TRH('{n} σήμερα',{n:md.items.length})}</span>`:''}</div>
+    ${md.ps.length>1?`<select id="md_p" aria-label="${TRH('Σε ποιο έργο')}">${md.ps.map(x=>`<option value="${h(x.id)}"${x.id===UI.mdP?' selected':''}>${h(x.name)}${TL(x.name)?' · '+h(TL(x.name)):''}</option>`).join('')}</select>`:''}
+    <div class="mbtns"><label class="btn fpick${busy?' dis':''}">${ico('cam')}<span>${TRH(busy?'Ανεβαίνει…':'Φωτογραφία')}</span><input type="file" accept="image/*" data-myph${busy?' disabled':''} aria-label="${TRH('Φωτογραφία για το ημερολόγιο')}"></label><button class="btn out" data-act="mynote"${busy?' disabled':''}>${TRH('Σημείωση')}</button></div>
+    ${md.items.length?`<div class="mdph">${md.items.map(r=>`<span class="mdt${r.ph?'':' txt'}">${r.ph?phImg(r.ph,false,r.text||TR('Η φωτογραφία σου')):`<span><bdi>${h(r.text.slice(0,60))}</bdi></span>`}<button class="mdx" data-act="mydx" data-id="${h(r.id)}" aria-label="${TRH('Σβήσιμο')}">${ico('x')}</button></span>`).join('')}</div>`:''}
+    <div class="note">${TRH('Πηγαίνουν στο γραφείο και στο ημερολόγιο του έργου.')}</div></div>`}
 async function myPhPick(file){let pp;try{pp=await phPrep(file)}catch(e){toast(e.message);return}
   UI.myPP=pp;const u=URL.createObjectURL(pp.thumb);
-  openModal(`<h2>Φωτογραφία για το ημερολόγιο</h2><div class="lbx-img sm"><img src="${u}" alt="Η φωτογραφία που διάλεξες"></div>
-  <form class="form" id="mphf"><label class="full">Τι δείχνει (προαιρετικά)<textarea id="mp_text" rows="2" maxlength="${DIARY_TXT}" placeholder="π.χ. τελείωσε η πλάκα του 3ου"></textarea></label></form>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mysend">${ico('send')}Στείλε</button></div>`)}
-function myNoteForm(){openModal(`<h2>Σημείωση για το ημερολόγιο</h2>
-  <form class="form" id="mphf"><label class="full">Τι έγινε<textarea id="mp_text" rows="4" maxlength="${DIARY_TXT}" placeholder="π.χ. Ήρθαν τα πλακάκια, λείπουν 2 κούτες."></textarea></label></form>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mysend" data-note="1">${ico('send')}Στείλε</button></div>`);const t=document.getElementById('mp_text');if(t)t.focus()}
+  openModal(`<h2>${TRH('Φωτογραφία για το ημερολόγιο')}</h2><div class="lbx-img sm"><img src="${u}" alt="${TRH('Η φωτογραφία που διάλεξες')}"></div>
+  <form class="form" id="mphf"><label class="full">${TRH('Τι δείχνει (προαιρετικά)')}<textarea id="mp_text" rows="2" maxlength="${DIARY_TXT}" placeholder="${TRH('π.χ. τελείωσε η πλάκα του 3ου')}"></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="mysend">${ico('send')}${TRH('Στείλε')}</button></div>`)}
+function myNoteForm(){openModal(`<h2>${TRH('Σημείωση για το ημερολόγιο')}</h2>
+  <form class="form" id="mphf"><label class="full">${TRH('Τι έγινε')}<textarea id="mp_text" rows="4" maxlength="${DIARY_TXT}" placeholder="${TRH('π.χ. Ήρθαν τα πλακάκια, λείπουν 2 κούτες.')}"></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="mysend" data-note="1">${ico('send')}${TRH('Στείλε')}</button></div>`);const t=document.getElementById('mp_text');if(t)t.focus()}
 // χωρίς server: η φωτογραφία ή η σημείωση του εργαζόμενου γράφεται στα δεδομένα αυτού του browser
 function myDiaryLocal(w,b){if(b.del)return delMyDiary(w,b.del);const md=myDiary(schedule(),w),pid=md.ps.some(x=>x.id===b.p)?b.p:(md.ps[0]||{}).id;
   if(!pid)return {err:'Σήμερα δεν είσαι σε έργο. Φωτογραφίες στέλνεις τη μέρα που δουλεύεις σε κάποιο.'};
@@ -2792,13 +2850,14 @@ function addPay(R,ws,r,p){
 const payAfter=(rest,v)=>{const left=r2(rest-v),carry=S.settings.payCarry!==false;
   return v<=0?'Γράψε πόσα πληρώνεις.':Math.abs(left)<0.5?'Εξοφλείται όλο το ποσό.':left>0?`Μένουν <b>${money(left)}</b>${carry?', περνούν στην επόμενη εβδομάδα.':' απλήρωτα σε αυτή την εβδομάδα.'}`
     :`Δίνεις <b>${money(-left)}</b> παραπάνω${carry?', αφαιρούνται ως προκαταβολή από την επόμενη εβδομάδα.':', μένουν ως προκαταβολή σε αυτή την εβδομάδα.'}`};
-function payText(r,ws){
-  let s='Γεια σου '+voc(r.w.name)+'!\nΠληρωμή εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n';
-  s+='Μέρες: '+nf(r.days)+'\nΜεροκάματα: '+money(r.wages)+'\n';
-  if(r.bonus)s+='Μπόνους για δύσκολη εργασία: '+money(r.bonus)+'\n';
-  if(Math.abs(r.carry)>=0.5)s+=(r.carry>0?'Από προηγούμενες εβδομάδες: ':'Προκαταβολή από πριν: −')+money(Math.abs(r.carry))+'\n';
-  r.pays.forEach(p=>s+='Πληρωμή '+fmt(p.date)+(p.method?' ('+payM(p.method).toLowerCase()+')':'')+': '+money(p.amount)+'\n');
-  s+=Math.abs(r.rest)<0.5?'Εξοφλήθηκε.\n':r.rest>0?'Υπόλοιπο: '+money(r.rest)+(carryWord()?', '+carryWord():'')+'.\n':'Προκαταβολή: '+money(-r.rest)+(carryWord()?', αφαιρείται την επόμενη εβδομάδα':'')+'.\n';
+// το μήνυμα πληρωμής προς τον εργαζόμενο, στη γλώσσα του
+function payText(r,ws){const l=ErgoCore.langOf(r.w),T0=(k,p)=>ErgoCore.tx(l,k,p),fx=d=>ErgoCore.fmtSX(l,d),cw=!!carryWord();
+  let s=T0('Γεια σου {n}!',{n:ErgoCore.hiName(r.w,l)})+'\n'+T0('Πληρωμή εβδομάδας {a} – {b}',{a:fx(ws),b:fx(add(ws,6))})+'\n\n';
+  s+=T0('Μέρες: {n}',{n:nf(r.days)})+'\n'+T0('Μεροκάματα: {x}',{x:money(r.wages)})+'\n';
+  if(r.bonus)s+=T0('Μπόνους για δύσκολη εργασία: {x}',{x:money(r.bonus)})+'\n';
+  if(Math.abs(r.carry)>=0.5)s+=T0(r.carry>0?'Από προηγούμενες εβδομάδες: {x}':'Προκαταβολή από πριν: −{x}',{x:money(Math.abs(r.carry))})+'\n';
+  r.pays.forEach(p=>s+=(p.method?T0('Πληρωμή {d} ({m}): {x}',{d:ErgoCore.fmtX(l,p.date),m:T0(payM(p.method).toLowerCase()),x:money(p.amount)}):T0('Πληρωμή {d}: {x}',{d:ErgoCore.fmtX(l,p.date),x:money(p.amount)}))+'\n');
+  s+=(Math.abs(r.rest)<0.5?T0('Εξοφλήθηκε.'):r.rest>0?T0(cw?'Υπόλοιπο: {x}, περνά στην επόμενη εβδομάδα.':'Υπόλοιπο: {x}.',{x:money(r.rest)}):T0(cw?'Προκαταβολή: {x}, αφαιρείται την επόμενη εβδομάδα.':'Προκαταβολή: {x}.',{x:money(-r.rest)}))+'\n';
   return s+sign();
 }
 function payForm(wid){
@@ -3028,11 +3087,17 @@ function printSheets(x){const el=document.getElementById('print');
   finally{document.body.classList.remove('printing');el.innerHTML=''}}
 
 /* Ρυθμίσεις */
+// η γλώσσα του εργαζόμενου: σε αυτή του έρχονται η σελίδα, τα μηνύματα Viber και οι ειδοποιήσεις
+function langPanel(){const m=MY[UI.week]||Object.values(MY).find(o=>o&&o.feats)||(SERVER?null:myData(UI.week||weekStart(TODAY)));
+  if(m&&m.feats&&m.feats.lang===false)return '';
+  return `<section class="panel"><label class="langp"><span class="fl">${ico('globe')} ${TRH('Γλώσσα')}</span><select id="my_lang">${langOpts()}</select></label>
+    <p class="note" style="margin:8px 0 0">${TRH('Η εφαρμογή και τα μηνύματα που σου έρχονται θα είναι σε αυτή τη γλώσσα.')}</p></section>`}
 function vAccount(){const u=AUTH.user;
-  return `<section class="panel"><h2>Ο λογαριασμός μου</h2>
-    <div class="me" style="border:0;padding:0 0 12px;margin:0"><span class="av" aria-hidden="true">${h(initials(u.name))}</span><span class="me-t"><b>${h(u.name)}</b><small>Όνομα χρήστη: ${h(u.username)} · ${ROLE_L[u.role]||''}, ${ROLE_D[u.role]||''}</small></span></div>
-    <div class="bar"><button class="btn" data-act="pwform">Αλλαγή κωδικού</button><button class="btn" data-act="logout">Αποσύνδεση</button></div>
-    ${SERVER?'':'<p class="note" style="margin-top:10px">Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Όταν η εφαρμογή τρέχει από τον server της εταιρείας, φυλάγονται κεντρικά και ο κάθε εργαζόμενος μπαίνει από το κινητό του.</p>'}</section>
+  return `<section class="panel"><h2>${TRH('Ο λογαριασμός μου')}</h2>
+    <div class="me" style="border:0;padding:0 0 12px;margin:0"><span class="av" aria-hidden="true">${h(initials(u.name))}</span><span class="me-t"><b><bdi>${h(isWorker()?tlN(u.name):u.name)}</bdi></b><small>${TRH('Όνομα χρήστη: {u}',{u:`<bdi>${h(u.username)}</bdi>`})} · ${TRH(ROLE_L[u.role]||'')}, ${TRH(ROLE_D[u.role]||'')}</small></span></div>
+    <div class="bar"><button class="btn" data-act="pwform">${TRH('Αλλαγή κωδικού')}</button><button class="btn" data-act="logout">${TRH('Αποσύνδεση')}</button></div>
+    ${SERVER?'':`<p class="note" style="margin-top:10px">${TRH('Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Όταν η εφαρμογή τρέχει από τον server της εταιρείας, φυλάγονται κεντρικά και ο κάθε εργαζόμενος μπαίνει από το κινητό του.')}</p>`}</section>
+  ${isWorker()?langPanel():''}
   ${isAdmin()?`<section class="panel" id="usersec"><div class="bar" style="margin-bottom:8px"><h2 class="grow" style="margin:0">Χρήστες</h2><button class="btn pri" data-act="newuser">${ico('plus')}Νέος χρήστης</button></div>
     <p class="note" style="margin:0 0 10px">Ο εργαζόμενος βλέπει μόνο το δικό του πρόγραμμα, χωρίς αλλαγές, έργα, προσωπικό ή οικονομικά. Το γραφείο (γραμματεία, ταμείο, λογιστήριο, διαχειριστές έργων) έχει πρόσβαση σε όλα.</p>
     <div id="users" class="scroll"><p class="note">Φόρτωση χρηστών…</p></div></section>`:''}`;
@@ -3044,7 +3109,7 @@ const holNext=f=>{const y=+TODAY.slice(0,4),d=f(y);return d>=TODAY?d:f(y+1)};
 function closedRanges(){const r=[];[...new Set(S.settings.closed||[])].sort().forEach(d=>{const l=r[r.length-1];if(l&&add(l[1],1)===d)l[1]=d;else r.push([d,d])});return r}
 const company=()=>S.settings.company||{};
 function vSettings(){
-  if(isWorker())return `<h1>Ο λογαριασμός μου</h1>${vAccount()}${pushPanel()}`;
+  if(isWorker())return `<h1>${TRH('Ο λογαριασμός μου')}</h1>${vAccount()}${pushPanel()}`;
   const hol=S.settings.hol||holDefaults(),hon=hol.on!==false,skip=hol.skip||[],cr=closedRanges().filter(([,b])=>b>=add(TODAY,-31)),co=company();
   return `<h1>Ρυθμίσεις</h1>${vAccount()}
   ${pushPanel()}
@@ -3105,7 +3170,7 @@ const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
 const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push','gps','diary','client','clients'];
-const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
+const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Γλώσσες για τους εργαζόμενους','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
 const lockTag=f=>planHas(f)?'':`<span class="ptag" title="Από το πακέτο ${h(needPlan(f).name)}">${ico('lock')}${h(needPlan(f).name)}</span>`;
@@ -3128,7 +3193,7 @@ function officeNote(){const p=planOf();if(!UI.users)return '';const n=officeUser
 const SW=[
   ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.'],['push','Ειδοποιήσεις στο κινητό','Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση, χωρίς χρέωση.']]],
   ['Έργα',[['clients','Πελάτες','Μία καρτέλα για κάθε πελάτη: στοιχεία, έργα, ραντεβού και ό,τι έχετε πει.'],['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['diary','Ημερολόγιο έργου','Κάθε μέρα του έργου: ποιοι δούλεψαν, τι έγινε, καιρός, σημειώσεις και φωτογραφίες από το εργοτάξιο, σε PDF για τον πελάτη.'],['client','Σελίδα για τον πελάτη','Ιδιωτικός σύνδεσμος ανά έργο όπου ο πελάτης βλέπει την πρόοδο, το ημερολόγιο και τις φωτογραφίες, χωρίς ονόματα και κόστη.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
-  ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.']]],
+  ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.'],['lang','Γλώσσες για τους εργαζόμενους','Η σελίδα του εργαζόμενου και τα μηνύματά του στη γλώσσα του: αλβανικά, αγγλικά, αραβικά, περσικά, τουρκικά, κουρδικά, εβραϊκά.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['profit','Κέρδος ανά έργο','Τιμή συμβολαίου, υλικά και έξοδα, με το κέρδος κάθε έργου.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
   ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
 const swName=f=>{for(const [,xs] of SW)for(const x of xs)if(x[0]===f)return x[1];return f};
@@ -3307,13 +3372,13 @@ function userForm(u){
   <div class="acts">${isNew||u.id===AUTH.user.id?'':`<button class="btn danger" data-act="deluser" data-id="${u.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveuser">Αποθήκευση</button></div>`);
 }
 function pwForm(){
-  openModal(`<h2>Αλλαγή κωδικού</h2><form class="form" id="pwf">
+  openModal(`<h2>${TRH('Αλλαγή κωδικού')}</h2><form class="form" id="pwf">
     <input type="text" autocomplete="username" value="${h(AUTH.user.username)}" hidden>
-    <label class="full">Τωρινός κωδικός<input id="pw_cur" type="password" autocomplete="current-password"></label>
-    <label>Νέος κωδικός (τουλάχιστον 8)<input id="pw_new" type="password" autocomplete="new-password"></label>
-    <label>Ξανά ο νέος κωδικός<input id="pw_new2" type="password" autocomplete="new-password"></label></form>
-  ${SERVER?'<p class="note">Οι άλλες συσκευές σου θα αποσυνδεθούν.</p>':''}
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savepw">Αλλαγή κωδικού</button></div>`);
+    <label class="full">${TRH('Τωρινός κωδικός')}<input id="pw_cur" type="password" autocomplete="current-password" dir="ltr"></label>
+    <label>${TRH('Νέος κωδικός (τουλάχιστον 8)')}<input id="pw_new" type="password" autocomplete="new-password" dir="ltr"></label>
+    <label>${TRH('Ξανά ο νέος κωδικός')}<input id="pw_new2" type="password" autocomplete="new-password" dir="ltr"></label></form>
+  ${SERVER?`<p class="note">${TRH('Οι άλλες συσκευές σου θα αποσυνδεθούν.')}</p>`:''}
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="savepw">${TRH('Αλλαγή κωδικού')}</button></div>`);
 }
 
 /* ---------- Modal ---------- */
@@ -3393,10 +3458,10 @@ document.addEventListener('click',e=>{
     case 'pushoff':pushDisable();break;
     case 'pushtest':pushTest();break;
     case 'pushlater':lsSet(LS+'.pushinv',1);pushPaint();break;
-    case 'pwshow':{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';el.textContent=show?'Απόκρυψη':'Εμφάνιση';i.focus();break}
+    case 'pwshow':{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';el.textContent=TR(show?'Απόκρυψη':'Εμφάνιση');i.focus();break}
     case 'pwform':pwForm();break;
-    case 'savepw':{const g=x=>document.getElementById(x).value;if(g('pw_new')!==g('pw_new2')){toast('Οι δύο νέοι κωδικοί δεν είναι ίδιοι.');break}
-      el.disabled=true;changePw(g('pw_cur'),g('pw_new')).then(()=>{closeModal();toast('Ο κωδικός άλλαξε.')}).catch(x=>{if(x.status===401)return expired();el.disabled=false;toast(x.message)});break}
+    case 'savepw':{const g=x=>document.getElementById(x).value;if(g('pw_new')!==g('pw_new2')){toast(TR('Οι δύο νέοι κωδικοί δεν είναι ίδιοι.'));break}
+      el.disabled=true;changePw(g('pw_cur'),g('pw_new')).then(()=>{closeModal();toast(TR('Ο κωδικός άλλαξε.'))}).catch(x=>{if(x.status===401)return expired();el.disabled=false;toast(x.message)});break}
     case 'newuser':userForm(null);break;
     case 'edituser':userForm((UI.users||[]).find(u=>u.id===id));break;
     case 'genpw':{const i=document.getElementById('u_pw');i.value=genPw();i.select();break}
@@ -3479,7 +3544,8 @@ document.addEventListener('click',e=>{
     case 'lvok':case 'lvno':{const r=decideLeave(id,a==='lvok',AUTH.user?AUTH.user.name:'');if(!r)break;const w=W(r.w);
       commit((a==='lvok'?'Εγκρίθηκε η άδεια: ':'Δεν εγκρίθηκε η άδεια: ')+(w?w.name:'')+', '+lvRange(r)+'.');break}
     case 'lvviber':{const r=(S.field||[]).find(x=>x.id===id),w=r&&W(r.w);if(!w)break;
-      openViber(w,'Γεια σου '+voc(w.name)+'! '+(r.st==='ok'?'Η άδειά σου για '+lvRange(r)+' εγκρίθηκε. Το πρόγραμμα έχει ήδη αλλάξει.':'Η άδεια που ζήτησες για '+lvRange(r)+' δεν εγκρίθηκε. Πάρε τηλέφωνο στο γραφείο να το δούμε μαζί.')+sign());break}
+      const l=ErgoCore.langOf(w),tx=ErgoCore.tx;   // στη γλώσσα του εργαζόμενου
+      openViber(w,tx(l,'Γεια σου {n}!',{n:ErgoCore.hiName(w,l)})+' '+tx(l,r.st==='ok'?'Η άδειά σου για {d} εγκρίθηκε. Το πρόγραμμα έχει ήδη αλλάξει.':'Η άδεια που ζήτησες για {d} δεν εγκρίθηκε. Πάρε τηλέφωνο στο γραφείο να το δούμε μαζί.',{d:lvRangeX(r,l)})+sign());break}
     case 'myrep':myRepForm(el.dataset.t,el.dataset.k);break;
     case 'myatt':myAtt(el.dataset.k);break;
     case 'dproj':UI.dP=el.dataset.p;UI.dN=10;render();break;
@@ -3530,11 +3596,11 @@ document.addEventListener('click',e=>{
     case 'coff':{const p=P(el.dataset.p);if(!p||!p.share)break;if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά';break}
       const {t,at,...rest}=p.share;p.share=rest;UI.hmsg='Σελίδα πελάτη: κλείσιμο συνδέσμου για «'+p.name+'»';commit('Ο σύνδεσμος έκλεισε. Ο πελάτης δεν βλέπει πια τη σελίδα.');break}
     case 'mynote':myNoteForm();break;
-    case 'mysend':{const t=(document.getElementById('mp_text')||{}).value||'',pp=el.dataset.note?null:UI.myPP;if(!pp&&!t.trim()){toast('Γράψε τη σημείωση.');break}
+    case 'mysend':{const t=(document.getElementById('mp_text')||{}).value||'',pp=el.dataset.note?null:UI.myPP;if(!pp&&!t.trim()){toast(TR('Γράψε τη σημείωση.'));break}
       el.disabled=true;UI.myPhBusy=true;myAct('diary',{p:UI.mdP,text:t,pp}).then(ok=>{UI.myPhBusy=false;el.disabled=false;if(!ok){render();return}UI.myPP=null;closeModal();render();
-        toast(pp?'Η φωτογραφία στάλθηκε στο γραφείο.':'Η σημείωση στάλθηκε στο γραφείο.')});break}
-    case 'mydx':openModal(`<h2>Να σβηστεί;</h2><p class="note">Φεύγει από το ημερολόγιο του έργου.</p><div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn danger" data-act="mydxok" data-id="${h(id)}">Σβήσιμο</button></div>`);break;
-    case 'mydxok':el.disabled=true;myAct('diary',{del:id}).then(ok=>{closeModal();render();if(ok)toast('Σβήστηκε.')});break;
+        toast(TR(pp?'Η φωτογραφία στάλθηκε στο γραφείο.':'Η σημείωση στάλθηκε στο γραφείο.'))});break}
+    case 'mydx':openModal(`<h2>${TRH('Να σβηστεί;')}</h2><p class="note">${TRH('Φεύγει από το ημερολόγιο του έργου.')}</p><div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn danger" data-act="mydxok" data-id="${h(id)}">${TRH('Σβήσιμο')}</button></div>`);break;
+    case 'mydxok':el.disabled=true;myAct('diary',{del:id}).then(ok=>{closeModal();render();if(ok)toast(TR('Σβήστηκε.'))});break;
     case 'attedit':attForm(el.dataset.w,el.dataset.d);break;
     case 'attno':{const w=W(el.dataset.w),d=el.dataset.d;if(!w)break;markAbsent(w.id,d);commit('Δεν ήρθε: '+w.name+', '+fmt(d));break}
     case 'attdel':{const r=delAtt(el.dataset.id);if(r)commit('Διαγραφή παρουσίας: '+(W(r.w)?.name||'')+', '+fmt(r.d));break}
@@ -3556,11 +3622,11 @@ document.addEventListener('click',e=>{
       if(k==='yard'){delete S.settings.yard;commit('Αφαίρεση σημείου αποθήκης')}else{const p=P(k);if(!p)break;delete p.site;commit('Αφαίρεση σημείου εργοταξίου: '+p.name)}break}
     case 'myrepsave':{const f=document.getElementById('myrepf');if(!f)break;el.disabled=true;
       myAct('progress',{task:f.dataset.t,kind:f.dataset.k,note:document.getElementById('mr_note').value}).then(ok=>{el.disabled=false;if(!ok)return;closeModal();render();
-        toast(f.dataset.k==='done'?'Στάλθηκε στο γραφείο: η εργασία τελείωσε. Το πρόγραμμα από αύριο άλλαξε.':'Στάλθηκε στο γραφείο: μία μέρα ακόμη. Το πρόγραμμα άλλαξε.')});break}
+        toast(TR(f.dataset.k==='done'?'Στάλθηκε στο γραφείο: η εργασία τελείωσε. Το πρόγραμμα από αύριο άλλαξε.':'Στάλθηκε στο γραφείο: μία μέρα ακόμη. Το πρόγραμμα άλλαξε.'))});break}
     case 'myleave':myLeaveForm();break;
     case 'mylvsave':{const g=x=>document.getElementById(x).value;el.disabled=true;
-      myAct('leave',{from:g('ml_from'),to:g('ml_to')||g('ml_from'),note:g('ml_note')}).then(ok=>{el.disabled=false;if(!ok)return;closeModal();UI.sec='myleave';render();toast('Το αίτημα στάλθηκε στο γραφείο.')});break}
-    case 'mylvx':myAct('leave/cancel',{id}).then(ok=>{if(ok){render();toast('Το αίτημα ακυρώθηκε.')}});break;
+      myAct('leave',{from:g('ml_from'),to:g('ml_to')||g('ml_from'),note:g('ml_note')}).then(ok=>{el.disabled=false;if(!ok)return;closeModal();UI.sec='myleave';render();toast(TR('Το αίτημα στάλθηκε στο γραφείο.'))});break}
+    case 'mylvx':myAct('leave/cancel',{id}).then(ok=>{if(ok){render();toast(TR('Το αίτημα ακυρώθηκε.'))}});break;
     case 'g-next':{guideRead();const g=UI.g;if(g.step===0&&!g.wd.length){toast('Διάλεξε τουλάχιστον μία εργάσιμη μέρα.');break}g.step++;guideRender();break}
     case 'g-back':guideRead();UI.g.step--;guideRender();break;
     case 'g-later':guideRead();closeModal();break;
@@ -3659,6 +3725,8 @@ document.addEventListener('click',e=>{
     case 'saveworker':{const f=document.getElementById('wf');const g=x=>document.getElementById(x).value;
       const v={id:f.dataset.id,name:g('h_name').trim(),specialtyId:g('h_spec'),role:g('h_role'),wage:+g('h_wage')||0,phone:g('h_phone').trim(),...(document.getElementById('h_amka')?{amka:g('h_amka').replace(/\s/g,'')}:{}),off:g('h_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)),...(document.getElementById('h_rate')?{rating:+g('h_rate')}:{})};
       if(f.querySelector('.xed'))v.exp=readExp(f);
+      // γλώσσα: γράφεται μόνο όταν αλλάξει, με την ώρα, ώστε να μη χαθεί αυτή που διάλεξε στο μεταξύ ο ίδιος από το κινητό
+      if(document.getElementById('h_lang')){const l=g('h_lang'),o=W(v.id);if(((o&&o.lang)||'el')!==l){v.lang=l;v.langAt=new Date().toISOString()}}
       if(document.getElementById('h_spec2')){v.spec2=g('h_spec2')===v.specialtyId?'':g('h_spec2');const dd=[...f.querySelectorAll('[data-wday]:checked')].map(x=>+x.dataset.wday);
         if(!dd.length){toast('Διάλεξε τουλάχιστον μία μέρα που δουλεύει.');break}v.days=S.settings.workdays.every(d=>dd.includes(d))?null:dd}
       if(!v.name){toast('Γράψε ονοματεπώνυμο.');break}
@@ -3724,6 +3792,9 @@ document.addEventListener('change',e=>{
   if(t.dataset.dph!=null){const pid=t.dataset.dph,d=t.dataset.dd||TODAY,files=[...(t.files||[])];t.value='';if(!files.length)return;diaryAddPhotos(files,pid,d,'',false).then(o=>diaryPhotosDone(o,pid,d));return}
   if(t.dataset.myph!=null){const f=t.files&&t.files[0];t.value='';if(f)myPhPick(f);return}
   if(t.id==='md_p'){UI.mdP=t.value;return}
+  // γλώσσα στη σύνδεση: ξαναγράφεται η φόρμα, κρατώντας ό,τι γράφτηκε
+  if(t.id==='a_lang'){const u=document.getElementById('a_user'),v=u?u.value:'',m=document.getElementById('authf')?.dataset.mode||'login';setLang(t.value,true);showAuth(m,'');const u2=document.getElementById('a_user');if(u2){u2.value=v;if(v)document.getElementById('a_pw')?.focus()}return}
+  if(t.id==='my_lang'){setLang(t.value,true);myLang(t.value);render();return}
   if(t.dataset.feat){if(!isAdmin()){t.checked=!t.checked;return}const f=t.dataset.feat,off=new Set(S.settings.off||[]);t.checked?off.delete(f):off.add(f);S.settings.off=[...off];
     commit('«'+swName(f)+'» '+(t.checked?'άνοιξε.':'έκλεισε. Τα δεδομένα της μένουν.'));return}
   if(t.dataset.duty){S.dutyDone[t.dataset.duty]=t.checked?TODAY:false;if(!t.checked)delete S.dutyDone[t.dataset.duty];save();
@@ -3799,8 +3870,8 @@ document.addEventListener('submit',async e=>{
   err.textContent='';btn.disabled=true;
   try{
     if(f.dataset.mode==='setup'){if(g('a_pw')!==g('a_pw2'))throw new Error('Οι δύο κωδικοί δεν είναι ίδιοι.');UI.firstRun=true;enter(await authSetup({name:g('a_name'),username:g('a_user'),password:g('a_pw')}))}
-    else{if(!g('a_user')||!g('a_pw'))throw new Error('Γράψε όνομα χρήστη και κωδικό.');enter(await authLogin(g('a_user'),g('a_pw'),document.getElementById('a_rem').checked))}
-  }catch(x){if(document.getElementById('a_err')){err.textContent=x.message||'Κάτι πήγε στραβά. Δοκίμασε ξανά.';btn.disabled=false}}
+    else{if(!g('a_user')||!g('a_pw'))throw new Error(TR('Γράψε όνομα χρήστη και κωδικό.'));enter(await authLogin(g('a_user'),g('a_pw'),document.getElementById('a_rem').checked))}
+  }catch(x){if(document.getElementById('a_err')){err.textContent=x.message||TR('Κάτι πήγε στραβά. Δοκίμασε ξανά.');btn.disabled=false}}
 });
 async function loadVStatus(){const el=document.getElementById('vstatus');if(!el)return;
   try{const r=await fetch('api/viber/status',{cache:'no-store'});const st=await r.json();
@@ -3818,8 +3889,9 @@ function fitLogo(){
 }
 fitLogo();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitLogo);addEventListener('resize',fitLogo);
 async function boot(){
+  setLang(lsGet(LS+'.lang','el'));   // η γλώσσα που διάλεξε ο εργαζόμενος σε αυτή τη συσκευή
   const a=await authMe();
-  if(a.user){enter(a.user);if(a.offline)toast('Χωρίς σύνδεση με τον server. Βλέπεις τα τελευταία δεδομένα.')}
+  if(a.user){enter(a.user);if(a.offline)toast(TR('Χωρίς σύνδεση με τον server. Βλέπεις τα τελευταία δεδομένα.'))}
   else showAuth(a.setup?'setup':'login',a.msg||'');
 }
 window.addEventListener('focus',()=>{if(!SERVER||!AUTH.user||document.querySelector('.modal'))return;

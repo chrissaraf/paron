@@ -14,7 +14,7 @@
   --accent:#C2CF7E; --accent-2:#D0DB93; --accent-ink:#0E3B34; --accent-soft:#E8EDCD; --accent-soft-ink:#2E5310; --accent-strong:#6B7D22; --gen:#6B7D22;
   --ok:#1B7041; --warn:#8A5000; --bad:#B8342A; --ok-bg:#DDF0E3; --warn-bg:#FAEBCF; --bad-bg:#F9E0DC; --rain:#2A62A0; --rain-bg:#E1EBF5;
   --p1:#2f6db0; --p2:#c9622a; --p3:#2f8a57; --p4:#8a4fb0; --p5:#b8395c; --p6:#3f7f8c;
-  --f-ui:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-display:var(--f-ui);
+  --f-ui:"Commissioner","Noto Sans Arabic","Noto Sans Hebrew",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-display:var(--f-ui);
   --f-logo:"Fira Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --logo-ink:#0E3B34; --logo-dot:#C2CF7E; --logo-fig:#0E3B34;
   --r-sm:8px; --r:10px; --r-lg:16px;
@@ -830,6 +830,23 @@ body:not(.in) .app{display:none}
 .auth-go:disabled{opacity:.6;cursor:wait}
 .auth-help{text-align:center;font-size:13.5px;margin:0}
 .auth-foot{margin:0;font-size:12.5px;color:#98a2ab;text-align:center;max-width:340px}
+/* γλώσσα: επιλογή στη σύνδεση και στον λογαριασμό, γραμμή με λατινικούς χαρακτήρες κάτω από έργα και εργασίες */
+.auth-card label.auth-lang{display:flex;align-items:center;gap:8px;justify-self:end;margin:-8px -8px -4px 0;color:var(--ink-2)}
+.auth-lang svg{width:18px;height:18px;flex:none}
+.auth-lang select{min-height:38px;font-size:14.5px;padding:6px 10px;width:auto}
+.tl{font-size:12.5px;color:var(--muted);line-height:1.35;unicode-bidi:isolate}
+.mi .tl{margin-top:-4px}
+.mduties .tl{margin-top:2px}
+.langp{display:grid;gap:6px;max-width:360px}
+.langp .fl{display:flex;align-items:center;gap:6px}
+.langp svg{width:18px;height:18px;flex:none}
+.langp select{min-height:44px;font-size:16px}
+/* δεξιά προς αριστερά (αραβικά, περσικά, κουρδικά σορανί, εβραϊκά): η σελίδα του εργαζόμενου */
+[dir=rtl] .auth-card label.auth-lang{justify-self:start;margin:-8px 0 -4px -8px}
+[dir=rtl] .matt .btn.out,[dir=rtl] .mi .btn{justify-self:end}
+[dir=rtl] .pw input{padding-right:14px!important;padding-left:104px!important}
+[dir=rtl] .pwt{right:auto;left:6px}
+[dir=rtl] .tl{text-align:right}
 </style>
 
 <div id="auth" class="auth" hidden></div>
@@ -851,9 +868,363 @@ body:not(.in) .app{display:none}
 <div id="print" aria-hidden="true"></div><style id="pgsz"></style>
 
 <script>
+/* PARON: γλώσσες για τους εργαζόμενους (σελίδα του εργαζόμενου, μηνύματα Viber και ειδοποιήσεις κινητού).
+   Οι οθόνες του γραφείου μένουν στα ελληνικά. Κάθε γραμμή του M: [ελληνικά, sq, en, ar, fa, tr, ckb, kmr, he].
+   Τα κείμενα με {x} παίρνουν τιμή στη θέση του {x}. Ό,τι λείπει από εδώ φαίνεται στα ελληνικά.
+   Οι μεταφράσεις έγιναν αυτόματα: θέλουν έλεγχο από άνθρωπο που μιλά κάθε γλώσσα πριν δοθούν σε εργαζόμενους. */
+(function(root){
+// [κωδικός, όνομα στη γλώσσα του, όνομα στα ελληνικά για το γραφείο]
+const LANGS=[['el','Ελληνικά','Ελληνικά'],['sq','Shqip','Αλβανικά'],['en','English','Αγγλικά'],['ar','العربية','Αραβικά'],['fa','فارسی','Περσικά (φαρσί)'],
+  ['tr','Türkçe','Τουρκικά'],['ckb','کوردی (سۆرانی)','Κουρδικά (σορανί)'],['kmr','Kurdî (Kurmancî)','Κουρδικά (κουρμαντζί)'],['he','עברית','Εβραϊκά']];
+const L8=['sq','en','ar','fa','tr','ckb','kmr','he'];   // η σειρά των στηλών στο M
+const RTL=['ar','fa','ckb','he'];                         // γράφονται από δεξιά προς αριστερά
+const okLang=l=>LANGS.some(x=>x[0]===l);
+const isRTL=l=>RTL.includes(l);
+const langName=l=>(LANGS.find(x=>x[0]===l)||LANGS[0])[2];
+const DAYS={
+  sq:['Die','Hën','Mar','Mër','Enj','Pre','Sht'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+  ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],fa:['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'],
+  tr:['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],ckb:['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'],
+  kmr:['Yekşem','Duşem','Sêşem','Çarşem','Pêncşem','În','Şemî'],he:['יום א׳','יום ב׳','יום ג׳','יום ד׳','יום ה׳','יום ו׳','שבת']};
+const MONS={
+  sq:['Jan','Shk','Mar','Pri','Maj','Qer','Kor','Gus','Sht','Tet','Nën','Dhj'],en:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  ar:['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+  fa:['ژانویه','فوریه','مارس','آوریل','مه','ژوئن','ژوئیه','اوت','سپتامبر','اکتبر','نوامبر','دسامبر'],
+  tr:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'],
+  ckb:['کانوونی دووەم','شوبات','ئازار','نیسان','ئایار','حوزەیران','تەمووز','ئاب','ئەیلوول','تشرینی یەکەم','تشرینی دووەم','کانوونی یەکەم'],
+  kmr:['Çile','Sibat','Adar','Nîsan','Gulan','Hezîran','Tîrmeh','Tebax','Îlon','Cotmeh','Mijdar','Kanûn'],
+  he:['ינו׳','פבר׳','מרץ','אפר׳','מאי','יוני','יולי','אוג׳','ספט׳','אוק׳','נוב׳','דצמ׳']};
+const M0=[
+// --- το πρόγραμμα της μέρας (μηνύματα και σελίδα) ---
+['Ρεπό','Ditë pushimi','Day off','يوم راحة','روز استراحت','Dinlenme günü','ڕۆژی پشوو','Roja bêhnvedanê','יום מנוחה'],
+['Άδεια','Leje','Leave','إجازة','مرخصی','İzin','مۆڵەت','Betlane','חופשה'],
+['Απουσία','Mungesë','Absent','غياب','غیبت','Devamsızlık','ئامادەنەبوون','Nehatin','היעדרות'],
+['{n} εργασίες σήμερα:','{n} punë sot:','{n} jobs today:','لديك {n} مهام اليوم:','{n} کار امروز:','Bugün {n} iş:','{n} کار ئەمڕۆ:','Îro {n} kar:','{n} משימות היום:'],
+[', υπεύθυνος',', përgjegjës',', in charge','، أنت المسؤول','، مسئول',', sorumlu','، بەرپرسیار',', berpirsiyar',', אחראי'],
+['Μαζί:','Me:','With:','معك:','همراه با:','Birlikte:','لەگەڵ:','Bi te re:','יחד עם:'],
+['Αποθήκη και συντήρηση εξοπλισμού','Magazina dhe mirëmbajtja e pajisjeve','Warehouse and equipment maintenance','المستودع وصيانة المعدات','انبار و نگهداری تجهیزات','Depo ve ekipman bakımı','کۆگا و چاککردنەوەی ئامێرەکان','Embar û lênêrîna alavan','מחסן ותחזוקת ציוד'],
+['Διαχείριση έργων:','Menaxhimi i projekteve:','Project management:','إدارة المشاريع:','مدیریت پروژه‌ها:','Proje yönetimi:','بەڕێوەبردنی پڕۆژەکان:','Rêveberiya projeyan:','ניהול פרויקטים:'],
+['Διαχείριση έργου','Menaxhimi i projektit','Project management','إدارة المشروع','مدیریت پروژه','Proje yönetimi','بەڕێوەبردنی پڕۆژە','Rêveberiya projeyê','ניהול הפרויקט'],
+['Γραφείο','Zyra','Office','المكتب','دفتر','Ofis','نووسینگە','Ofîs','משרד'],
+['Καμία εργασία','Asnjë punë','No work','لا يوجد عمل','بدون کار','İş yok','هیچ کارێک نییە','Kar tune','אין עבודה'],
+['Χωρίς ανάθεση (θα ενημερωθείς)','Pa caktim ende (do të njoftohesh)','Not assigned yet (you will be told)','لم يتم تعيينك بعد (سنبلغك)','هنوز کاری تعیین نشده (به شما خبر می‌دهیم)','Henüz görev yok (sana haber verilecek)','هێشتا کارت بۆ دانەنراوە (ئاگادار دەکرێیتەوە)','Hîn kar nehatiye dayîn (dê agahdar bibî)','עדיין לא שובצת (נעדכן אותך)'],
+['Χωρίς ανάθεση ακόμη. Θα ενημερωθείς.','Pa caktim ende. Do të njoftohesh.','Not assigned yet. You will be told.','لم يتم تعيينك بعد. سنبلغك.','هنوز کاری تعیین نشده. به شما خبر می‌دهیم.','Henüz görev yok. Sana haber verilecek.','هێشتا کارت بۆ دانەنراوە. ئاگادار دەکرێیتەوە.','Hîn kar nehatiye dayîn. Dê agahdar bibî.','עדיין לא שובצת. נעדכן אותך.'],
+['Ραντεβού {t}','Takim {t}','Appointment {t}','موعد {t}','قرار ملاقات {t}','Randevu {t}','چاوپێکەوتن {t}','Hevdîtin {t}','פגישה {t}'],
+['Υπενθυμίσεις:','Kujtesa:','Reminders:','تذكيرات:','یادآوری‌ها:','Hatırlatmalar:','بیرخستنەوەکان:','Bîranîn:','תזכורות:'],
+['Υπενθυμίσεις','Kujtesa','Reminders','تذكيرات','یادآوری‌ها','Hatırlatmalar','بیرخستنەوەکان','Bîranîn','תזכורות'],
+[', εκκρεμεί από {d}',', në pritje që nga {d}',', pending since {d}','، معلّق منذ {d}','، از {d} مانده',', bekliyor: {d}','، ماوە لە {d}',', ji {d} ve maye',', ממתין מאז {d}'],
+['ΠΡΟΓΡΑΜΜΑ ΕΒΔΟΜΑΔΑΣ {a} – {b}','ORARI I JAVËS {a} – {b}','WEEKLY SCHEDULE {a} – {b}','جدول الأسبوع {a} – {b}','برنامه هفته {a} – {b}','HAFTALIK PROGRAM {a} – {b}','خشتەی هەفتە {a} – {b}','BERNAMEYA HEFTEYÊ {a} – {b}','לוח זמנים שבועי {a} – {b}'],
+['Γεια σου {n}!','Përshëndetje {n}!','Hi {n}!','مرحباً {n}!','سلام {n}!','Merhaba {n}!','سڵاو {n}!','Silav {n}!','שלום {n}!'],
+['Το πρόγραμμά σου για {d}','Orari yt për {d}','Your schedule for {d}','جدولك ليوم {d}','برنامه شما برای {d}','{d} için programın','خشتەکەت بۆ {d}','Bernameya te ji bo {d}','לוח הזמנים שלך עבור {d}'],
+['Άλλαξε το πρόγραμμά σου για {d}','Ndryshoi orari yt për {d}','Your schedule changed for {d}','تغيّر جدولك ليوم {d}','برنامه شما برای {d} تغییر کرد','{d} için programın değişti','خشتەکەت بۆ {d} گۆڕا','Bernameya te ji bo {d} hate guhertin','לוח הזמנים שלך עבור {d} השתנה'],
+['Το πρόγραμμά σου για την εβδομάδα {d}','Orari yt për javën {d}','Your schedule for the week of {d}','جدولك لأسبوع {d}','برنامه شما برای هفته {d}','{d} haftası için programın','خشتەکەت بۆ هەفتەی {d}','Bernameya te ji bo hefteya {d}','לוח הזמנים שלך לשבוע {d}'],
+['Έναρξη: {t}','Fillimi: {t}','Start: {t}','البدء: {t}','شروع: {t}','Başlangıç: {t}','دەستپێک: {t}','Destpêk: {t}','התחלה: {t}'],
+['Καιρός: {x}','Moti: {x}','Weather: {x}','الطقس: {x}','هوا: {x}','Hava: {x}','کەشوهەوا: {x}','Hewa: {x}','מזג אוויר: {x}'],
+// --- καιρός ---
+['Χωρίς πρόγνωση','Pa parashikim','No forecast','لا توجد توقعات','بدون پیش‌بینی','Tahmin yok','پێشبینی نییە','Pêşbînî tune','אין תחזית'],
+['Λιακάδα','Me diell','Sunny','مشمس','آفتابی','Güneşli','خۆرەتاو','Tavî','שמשי'],
+['Λίγα σύννεφα','Pak re','Partly cloudy','غائم جزئياً','کمی ابری','Parçalı bulutlu','کەمێک هەور','Hinekî ewr','מעונן חלקית'],
+['Συννεφιά','Vranët','Cloudy','غائم','ابری','Bulutlu','هەورین','Ewrayî','מעונן'],
+['Ομίχλη','Mjegull','Fog','ضباب','مه','Sis','تەم','Mij','ערפל'],
+['Ψιχάλα','Shi i imët','Drizzle','رذاذ','نم‌نم باران','Çisenti','نمە باران','Barana hûr','טפטוף'],
+['Βροχή','Shi','Rain','مطر','باران','Yağmur','باران','Baran','גשם'],
+['Χιόνι','Borë','Snow','ثلج','برف','Kar','بەفر','Berf','שלג'],
+['Καταιγίδα','Stuhi','Storm','عاصفة','طوفان','Fırtına','زریان','Bahoz','סערה'],
+['(πιθανότητα βροχής {p}%)','(mundësi shiu {p}%)','(chance of rain {p}%)','(احتمال المطر {p}%)','(احتمال بارش {p}%)','(yağmur ihtimali %{p})','(ئەگەری باران {p}%)','(îhtîmala baranê {p}%)','(סיכוי לגשם {p}%)'],
+// --- ειδικότητες (οι προτεινόμενες της εφαρμογής· όσες έγραψε η εταιρεία φαίνονται όπως είναι) ---
+['Χτίστες','Muratorë','Masons','بنّاؤون','بنّاها','Duvarcılar','وەستاکانی بینا','Hostayên avahiyê','בנאים'],
+['Σοβατζήδες','Suvatues','Plasterers','عمال اللياسة','گچکارها','Sıvacılar','گەچکاران','Sîvakar','טייחים'],
+['Ηλεκτρολόγοι','Elektricistë','Electricians','كهربائيون','برق‌کارها','Elektrikçiler','کارەباچییەکان','Elektrîkvan','חשמלאים'],
+['Υδραυλικοί','Hidraulikë','Plumbers','سبّاكون','لوله‌کش‌ها','Tesisatçılar','بۆڕیچییەکان','Tesîsatkar','אינסטלטורים'],
+['Πλακάδες','Pllakashtrues','Tilers','مبلّطون','کاشی‌کارها','Fayansçılar','کاشیکاران','Kaşîkar','רצפים'],
+['Ελαιοχρωματιστές','Bojaxhinj','Painters','دهّانون','نقاش‌ها','Boyacılar','بۆیاخچییەکان','Boyaxkar','צבעים'],
+['Καλουπατζήδες','Kallëpxhinj','Formwork carpenters','نجارو القوالب','قالب‌بندها','Kalıpçılar','قاڵبچییەکان','Qalibkar','טפסנים'],
+['Σιδεράδες','Hekurkthyes','Steel fixers','حدّادو التسليح','آرماتوربندها','Demirciler','ئاسنکاران','Hesinkar','ברזלנים'],
+['Μονωτές','Izolues','Insulation workers','عمال العزل','عایق‌کارها','Yalıtımcılar','کرێکارانی عازل','Îzolasyonkar','עובדי איטום'],
+['Γυψοσανιδάδες','Montues të gipsit','Drywall installers','فنيو الجبس بورد','کناف‌کارها','Alçıpancılar','وەستاکانی جبسبۆرد','Hostayên alçîpanê','מתקיני גבס'],
+['Αλουμινάδες','Alumintistë','Aluminium fitters','فنيو الألمنيوم','آلومینیوم‌کارها','Alüminyumcular','وەستاکانی ئەلەمنیۆم','Hostayên aluminyûmê','מתקיני אלומיניום'],
+['Γενικοί βοηθοί','Ndihmës të përgjithshëm','General helpers','عمال مساعدون','کارگران عمومی','Genel yardımcılar','یارمەتیدەرانی گشتی','Alîkarên giştî','עוזרים כלליים'],
+// --- ειδοποιήσεις από τον server ---
+['Η άδειά σου εγκρίθηκε','Leja jote u miratua','Your leave was approved','تمت الموافقة على إجازتك','مرخصی شما تأیید شد','İznin onaylandı','مۆڵەتەکەت پەسەند کرا','Betlaneya te hate pejirandin','החופשה שלך אושרה'],
+['Η άδειά σου δεν εγκρίθηκε','Leja jote nuk u miratua','Your leave was not approved','لم تتم الموافقة على إجازتك','مرخصی شما تأیید نشد','İznin onaylanmadı','مۆڵەتەکەت پەسەند نەکرا','Betlaneya te nehat pejirandin','החופשה שלך לא אושרה'],
+['{a} έως {b}','{a} deri {b}','{a} to {b}','من {a} إلى {b}','از {a} تا {b}','{a} – {b}','لە {a} تا {b}','{a} heta {b}','{a} עד {b}'],
+['{app}: δοκιμή','{app}: provë','{app}: test','{app}: تجربة','{app}: آزمایش','{app}: deneme','{app}: تاقیکردنەوە','{app}: ceribandin','{app}: בדיקה'],
+['Οι ειδοποιήσεις φτάνουν σε αυτή τη συσκευή.','Njoftimet vijnë në këtë pajisje.','Notifications reach this device.','الإشعارات تصل إلى هذا الجهاز.','اعلان‌ها به این دستگاه می‌رسند.','Bildirimler bu cihaza ulaşıyor.','ئاگادارکردنەوەکان دەگەنە ئەم ئامێرە.','Agahdarî digihîjin vê amûrê.','ההתראות מגיעות למכשיר הזה.'],
+['Το πρόγραμμά μου','Orari im','My schedule','جدولي','برنامه من','Programım','خشتەکەم','Bernameya min','לוח הזמנים שלי'],
+['Απάντηση στις άδειές μου','Përgjigje për lejet e mia','Answers to my leave requests','الرد على طلبات إجازتي','پاسخ به مرخصی‌های من','İzin taleplerime cevap','وەڵام بۆ مۆڵەتەکانم','Bersiva betlaneyên min','תשובות לבקשות החופשה שלי'],
+// --- μηνύματα λάθους ---
+['Οι παρουσίες είναι για το προσωπικό των εργοταξίων.','Prania është për personelin e kantiereve.','Attendance is for site staff.','تسجيل الحضور مخصص لعمال المواقع.','ثبت حضور برای کارکنان کارگاه است.','Yoklama şantiye personeli içindir.','تۆماری ئامادەبوون بۆ کرێکارانی شوێنی کارە.','Tomarkirina amadebûnê ji bo karkerên şantiyeyê ye.','רישום נוכחות מיועד לעובדי האתר.'],
+['Έχεις ήδη δηλώσει ότι ήρθες στις {t}.','Ke deklaruar tashmë që erdhe në {t}.','You already checked in at {t}.','لقد سجّلت وصولك بالفعل الساعة {t}.','شما قبلاً ساعت {t} ورود خود را ثبت کرده‌اید.','Gelişini zaten bildirdin: {t}.','پێشتر هاتنت لە کاتژمێر {t} تۆمار کردووە.','Te berê hatina xwe di {t} de tomar kiriye.','כבר דיווחת שהגעת ב-{t}.'],
+['Πάτησε πρώτα «Ήρθα».','Shtyp më parë «Mbërrita në kantier».','Tap “I’m at the site” first.','اضغط أولاً على «وصلت إلى الموقع».','اول «به کارگاه رسیدم» را بزنید.','Önce «Şantiyeye geldim» düğmesine bas.','سەرەتا «گەیشتمە شوێنی کار» دابگرە.','Pêşî li «Ez gihiştim şantiyeyê» bitikîne.','קודם לחץ על «הגעתי לאתר».'],
+['Έχεις ήδη δηλώσει ότι έφυγες στις {t}.','Ke deklaruar tashmë që u largove në {t}.','You already checked out at {t}.','لقد سجّلت مغادرتك بالفعل الساعة {t}.','شما قبلاً ساعت {t} خروج خود را ثبت کرده‌اید.','Çıkışını zaten bildirdin: {t}.','پێشتر ڕۆیشتنت لە کاتژمێر {t} تۆمار کردووە.','Te berê çûyîna xwe di {t} de tomar kiriye.','כבר דיווחת שיצאת ב-{t}.'],
+['Άγνωστη ενέργεια.','Veprim i panjohur.','Unknown action.','إجراء غير معروف.','عملیات نامعلوم.','Bilinmeyen işlem.','کردارێکی نەناسراو.','Çalakiya nenas.','פעולה לא ידועה.'],
+['Διάλεξε έργο.','Zgjidh projektin.','Choose a project.','اختر المشروع.','پروژه را انتخاب کنید.','Bir proje seç.','پڕۆژەیەک هەڵبژێرە.','Projeyekê hilbijêre.','בחר פרויקט.'],
+['Το ημερολόγιο γράφεται για σήμερα ή για μέρες που πέρασαν.','Ditari shkruhet për sot ose për ditët që kaluan.','The diary is for today or past days.','يُكتب السجل لليوم أو للأيام الماضية.','دفتر روزانه فقط برای امروز یا روزهای گذشته نوشته می‌شود.','Günlük bugün veya geçmiş günler için yazılır.','ڕۆژانە تەنها بۆ ئەمڕۆ یان ڕۆژانی ڕابردوو دەنووسرێت.','Rojnivîsk ji bo îro an rojên borî tê nivîsandin.','היומן נכתב להיום או לימים שעברו.'],
+['Γράψε τη σημείωση.','Shkruaj shënimin.','Write the note.','اكتب الملاحظة.','یادداشت را بنویسید.','Notu yaz.','تێبینییەکە بنووسە.','Nîşeyê binivîse.','כתוב את ההערה.'],
+['Η φωτογραφία δεν ανέβηκε.','Fotoja nuk u ngarkua.','The photo was not uploaded.','لم يتم رفع الصورة.','عکس بارگذاری نشد.','Fotoğraf yüklenmedi.','وێنەکە بار نەکرا.','Wêne nehat barkirin.','התמונה לא הועלתה.'],
+['Δεν βρέθηκε.','Nuk u gjet.','Not found.','غير موجود.','پیدا نشد.','Bulunamadı.','نەدۆزرایەوە.','Nehat dîtin.','לא נמצא.'],
+['Δεν βρέθηκε','Nuk u gjet','Not found','غير موجود','پیدا نشد','Bulunamadı','نەدۆزرایەوە','Nehat dîtin','לא נמצא'],
+['Σβήνεται μόνο την ίδια μέρα. Πες το στο γραφείο.','Fshihet vetëm në të njëjtën ditë. Thuaji zyrës.','It can only be deleted on the same day. Tell the office.','يمكن الحذف في اليوم نفسه فقط. أخبر المكتب.','فقط در همان روز پاک می‌شود. به دفتر بگویید.','Sadece aynı gün silinebilir. Ofise söyle.','تەنها لە هەمان ڕۆژدا دەسڕدرێتەوە. بە نووسینگە بڵێ.','Tenê di heman rojê de tê jêbirin. Ji ofîsê re bêje.','אפשר למחוק רק באותו יום. תגיד למשרד.'],
+['Η εργασία δεν βρέθηκε.','Puna nuk u gjet.','The job was not found.','لم يتم العثور على المهمة.','کار پیدا نشد.','İş bulunamadı.','کارەکە نەدۆزرایەوە.','Kar nehat dîtin.','המשימה לא נמצאה.'],
+['Πρόοδο στέλνει ο υπεύθυνος της εργασίας, τη μέρα που δουλεύει σε αυτή.','Ecurinë e dërgon përgjegjësi i punës, ditën që punon në të.','Progress is sent by the person in charge of the job, on the day they work on it.','يرسل التقدّم مسؤول المهمة، في اليوم الذي يعمل فيه عليها.','پیشرفت کار را مسئول کار، در روزی که روی آن کار می‌کند، می‌فرستد.','İlerlemeyi işin sorumlusu, o işte çalıştığı gün gönderir.','بەرپرسی کارەکە لەو ڕۆژەی کاری تێدا دەکات پێشکەوتن دەنێرێت.','Pêşketinê berpirsiyarê karî dişîne, roja ku li ser wî karî dixebite.','את ההתקדמות שולח האחראי על המשימה, ביום שהוא עובד עליה.'],
+['Έχει ήδη δηλωθεί ότι η εργασία τελείωσε.','Është deklaruar tashmë që puna mbaroi.','The job has already been reported as finished.','تم الإبلاغ مسبقاً عن انتهاء المهمة.','پایان این کار قبلاً اعلام شده است.','İşin bittiği zaten bildirildi.','پێشتر ڕاگەیەنراوە کە کارەکە تەواو بووە.','Berê hatiye ragihandin ku kar qediya.','כבר דווח שהמשימה הסתיימה.'],
+['Η επιπλέον μέρα έχει ήδη δηλωθεί σήμερα.','Dita shtesë është deklaruar tashmë sot.','The extra day has already been reported today.','تم الإبلاغ عن اليوم الإضافي اليوم بالفعل.','روز اضافه امروز قبلاً اعلام شده است.','Ek gün bugün zaten bildirildi.','ڕۆژی زیادە ئەمڕۆ پێشتر ڕاگەیەنراوە.','Roja zêde îro berê hatiye ragihandin.','היום הנוסף כבר דווח היום.'],
+['Διάλεξε από ποια μέρα έως ποια.','Zgjidh nga cila ditë deri në cilën.','Choose the first and the last day.','اختر من أي يوم إلى أي يوم.','روز شروع و پایان را انتخاب کنید.','Hangi günden hangi güne kadar olduğunu seç.','لە چ ڕۆژێکەوە تا چ ڕۆژێک هەڵبژێرە.','Ji kîjan rojê heta kîjan rojê hilbijêre.','בחר מאיזה יום עד איזה יום.'],
+['Η τελευταία μέρα είναι πριν από την πρώτη.','Dita e fundit është para së parës.','The last day is before the first.','اليوم الأخير قبل اليوم الأول.','روز آخر قبل از روز اول است.','Son gün ilk günden önce.','دوا ڕۆژ پێش یەکەم ڕۆژە.','Roja dawî berî roja yekem e.','היום האחרון לפני הראשון.'],
+['Η άδεια δεν μπορεί να ξεκινά σε μέρα που πέρασε.','Leja nuk mund të fillojë në një ditë që ka kaluar.','Leave cannot start on a day that has passed.','لا يمكن أن تبدأ الإجازة في يوم مضى.','مرخصی نمی‌تواند از روزی که گذشته شروع شود.','İzin geçmiş bir günde başlayamaz.','مۆڵەت ناتوانێت لە ڕۆژێکی ڕابردوو دەست پێ بکات.','Betlane nikare di rojeke borî de dest pê bike.','החופשה לא יכולה להתחיל ביום שעבר.'],
+['Ζήτα έως 60 μέρες τη φορά.','Kërko deri në 60 ditë njëherësh.','Ask for up to 60 days at a time.','اطلب حتى 60 يوماً في كل مرة.','هر بار حداکثر 60 روز درخواست کنید.','Bir seferde en fazla 60 gün iste.','هەر جارێک تا 60 ڕۆژ داوا بکە.','Her carê heta 60 rojan bixwaze.','בקש עד 60 ימים בכל פעם.'],
+['Δεν υπάρχει εργάσιμη μέρα σε αυτές τις ημερομηνίες.','Nuk ka ditë pune në këto data.','There is no working day in these dates.','لا يوجد يوم عمل في هذه التواريخ.','در این تاریخ‌ها روز کاری وجود ندارد.','Bu tarihlerde iş günü yok.','لەم بەروارانەدا هیچ ڕۆژێکی کار نییە.','Di van dîrokan de roja kar tune.','אין יום עבודה בתאריכים האלה.'],
+['Έχεις ήδη ζητήσει άδεια για αυτές τις μέρες.','Ke kërkuar tashmë leje për këto ditë.','You have already asked for leave on these days.','لقد طلبت إجازة لهذه الأيام بالفعل.','شما قبلاً برای این روزها مرخصی خواسته‌اید.','Bu günler için zaten izin istedin.','پێشتر بۆ ئەم ڕۆژانە داوای مۆڵەتت کردووە.','Te berê ji bo van rojan betlane xwestiye.','כבר ביקשת חופשה לימים האלה.'],
+['Το αίτημα δεν βρέθηκε.','Kërkesa nuk u gjet.','The request was not found.','لم يتم العثور على الطلب.','درخواست پیدا نشد.','Talep bulunamadı.','داواکارییەکە نەدۆزرایەوە.','Daxwaz nehat dîtin.','הבקשה לא נמצאה.'],
+['Το γραφείο έχει ήδη απαντήσει στο αίτημα.','Zyra i është përgjigjur tashmë kërkesës.','The office has already answered the request.','لقد ردّ المكتب على الطلب بالفعل.','دفتر قبلاً به درخواست پاسخ داده است.','Ofis talebe zaten cevap verdi.','نووسینگە پێشتر وەڵامی داواکارییەکەی داوەتەوە.','Ofîsê berê bersiva daxwazê daye.','המשרד כבר ענה לבקשה.'],
+['Πολλές λάθος προσπάθειες. Δοκίμασε ξανά σε 15 λεπτά.','Shumë përpjekje të gabuara. Provo përsëri pas 15 minutash.','Too many wrong attempts. Try again in 15 minutes.','محاولات خاطئة كثيرة. حاول مرة أخرى بعد 15 دقيقة.','تلاش‌های نادرست زیاد. 15 دقیقه دیگر دوباره امتحان کنید.','Çok fazla hatalı deneme. 15 dakika sonra tekrar dene.','هەوڵی هەڵەی زۆر. دوای 15 خولەک دووبارە هەوڵ بدەوە.','Gelek hewldanên şaş. Piştî 15 deqeyan dîsa biceribîne.','יותר מדי ניסיונות שגויים. נסה שוב בעוד 15 דקות.'],
+['Λάθος όνομα χρήστη ή κωδικός.','Emër përdoruesi ose fjalëkalim i gabuar.','Wrong username or password.','اسم المستخدم أو كلمة المرور غير صحيحة.','نام کاربری یا رمز عبور اشتباه است.','Kullanıcı adı veya şifre yanlış.','ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە.','Navê bikarhêner an şîfre şaş e.','שם משתמש או סיסמה שגויים.'],
+['Χρειάζεται σύνδεση.','Duhet të hysh.','You need to sign in.','يجب تسجيل الدخول.','باید وارد شوید.','Giriş yapman gerekiyor.','پێویستە بچیتە ژوورەوە.','Divê tu têkevî.','צריך להתחבר.'],
+['Η φωτογραφία δεν βρέθηκε.','Fotoja nuk u gjet.','The photo was not found.','لم يتم العثور على الصورة.','عکس پیدا نشد.','Fotoğraf bulunamadı.','وێنەکە نەدۆزرایەوە.','Wêne nehat dîtin.','התמונה לא נמצאה.'],
+['Ο τωρινός κωδικός δεν είναι σωστός.','Fjalëkalimi aktual nuk është i saktë.','The current password is not correct.','كلمة المرور الحالية غير صحيحة.','رمز عبور فعلی درست نیست.','Mevcut şifre doğru değil.','وشەی نهێنی ئێستا ڕاست نییە.','Şîfreya niha ne rast e.','הסיסמה הנוכחית שגויה.'],
+['Ο κωδικός θέλει τουλάχιστον 8 χαρακτήρες.','Fjalëkalimi duhet të ketë të paktën 8 karaktere.','The password needs at least 8 characters.','يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.','رمز عبور باید حداقل 8 کاراکتر باشد.','Şifre en az 8 karakter olmalı.','وشەی نهێنی دەبێت لانیکەم 8 پیت بێت.','Divê şîfre herî kêm 8 tîp be.','הסיסמה צריכה לפחות 8 תווים.'],
+['Οι ειδοποιήσεις στο κινητό δεν είναι ανοιχτές για την εταιρεία σου.','Njoftimet në celular nuk janë aktive për kompaninë tënde.','Phone notifications are not turned on for your company.','إشعارات الهاتف غير مفعّلة لشركتك.','اعلان‌های گوشی برای شرکت شما فعال نیست.','Telefon bildirimleri şirketin için açık değil.','ئاگادارکردنەوەی مۆبایل بۆ کۆمپانیاکەت چالاک نییە.','Agahdariyên telefonê ji bo şirketa te ne vekirî ne.','התראות לטלפון לא מופעלות בחברה שלך.'],
+['Η συσκευή δεν έδωσε σωστά στοιχεία για ειδοποιήσεις.','Pajisja nuk dha të dhëna të sakta për njoftime.','The device did not give valid details for notifications.','لم يقدّم الجهاز بيانات صحيحة للإشعارات.','دستگاه اطلاعات درستی برای اعلان‌ها نداد.','Cihaz bildirimler için doğru bilgi vermedi.','ئامێرەکە زانیاری دروستی بۆ ئاگادارکردنەوە نەدا.','Amûrê ji bo agahdariyan agahiyên rast neda.','המכשיר לא מסר פרטים תקינים להתראות.'],
+['Δεν υπάρχει συσκευή με ειδοποιήσεις για τον λογαριασμό σου.','Nuk ka asnjë pajisje me njoftime për llogarinë tënde.','There is no device with notifications for your account.','لا يوجد جهاز مفعّل عليه الإشعارات لحسابك.','هیچ دستگاهی با اعلان برای حساب شما وجود ندارد.','Hesabın için bildirimleri açık bir cihaz yok.','هیچ ئامێرێک بە ئاگادارکردنەوە بۆ هەژمارەکەت نییە.','Ji bo hesabê te amûreke bi agahdariyan tune.','אין מכשיר עם התראות לחשבון שלך.'],
+['Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο.','Llogaria jote nuk është lidhur ende me një punonjës.','Your account is not linked to a worker yet.','حسابك غير مرتبط بعامل بعد.','حساب شما هنوز به یک کارگر وصل نشده است.','Hesabın henüz bir çalışana bağlanmadı.','هەژمارەکەت هێشتا بە کرێکارێکەوە نەبەستراوە.','Hesabê te hîn bi karkerekî ve nehatiye girêdan.','החשבון שלך עדיין לא מקושר לעובד.'],
+['Ο λογαριασμός σου δεν έχει συνδεθεί με εργαζόμενο.','Llogaria jote nuk është lidhur me një punonjës.','Your account is not linked to a worker.','حسابك غير مرتبط بعامل.','حساب شما به هیچ کارگری وصل نیست.','Hesabın bir çalışana bağlı değil.','هەژمارەکەت بە کرێکارێکەوە نەبەستراوە.','Hesabê te bi karkerekî ve ne girêdayî ye.','החשבון שלך לא מקושר לעובד.'],
+['Αυτή η λειτουργία δεν είναι ανοιχτή για την εταιρεία σου.','Ky funksion nuk është aktiv për kompaninë tënde.','This feature is not turned on for your company.','هذه الميزة غير مفعّلة لشركتك.','این قابلیت برای شرکت شما فعال نیست.','Bu özellik şirketin için açık değil.','ئەم تایبەتمەندییە بۆ کۆمپانیاکەت چالاک نییە.','Ev taybetmendî ji bo şirketa te ne vekirî ye.','התכונה הזו לא מופעלת בחברה שלך.'],
+['Σήμερα δεν είσαι σε έργο. Φωτογραφίες στέλνεις τη μέρα που δουλεύεις σε κάποιο.','Sot nuk je në asnjë projekt. Fotot i dërgon ditën që punon në ndonjë.','You are not on a project today. You can send photos on a day you work on one.','لست في أي مشروع اليوم. ترسل الصور في اليوم الذي تعمل فيه في مشروع.','امروز در هیچ پروژه‌ای نیستید. عکس را روزی می‌فرستید که در پروژه‌ای کار می‌کنید.','Bugün bir projede değilsin. Fotoğrafları bir projede çalıştığın gün gönderirsin.','ئەمڕۆ لە هیچ پڕۆژەیەکدا نیت. وێنە لەو ڕۆژەدا دەنێریت کە لە پڕۆژەیەکدا کار دەکەیت.','Îro tu ne li projeyekê yî. Wêneyan roja ku li projeyekê dixebitî dişînî.','היום אתה לא בפרויקט. שולחים תמונות ביום שעובדים בפרויקט.'],
+['Έστειλες ήδη 40 σήμερα. Τα υπόλοιπα στείλ’ τα στο γραφείο.','Ke dërguar tashmë 40 sot. Të tjerat dërgoji në zyrë.','You already sent 40 today. Send the rest to the office.','لقد أرسلت 40 اليوم. أرسل الباقي إلى المكتب.','امروز 40 مورد فرستاده‌اید. بقیه را به دفتر بفرستید.','Bugün zaten 40 tane gönderdin. Kalanları ofise gönder.','ئەمڕۆ 40 دانەت ناردووە. ئەوانی تر بۆ نووسینگە بنێرە.','Te îro 40 heb şandin. Yên mayî ji ofîsê re bişîne.','כבר שלחת 40 היום. את השאר שלח למשרד.'],
+['Ο λογαριασμός σου βλέπει μόνο το πρόγραμμά σου.','Llogaria jote sheh vetëm orarin tënd.','Your account can only see your schedule.','حسابك يرى جدولك فقط.','حساب شما فقط برنامه خودتان را می‌بیند.','Hesabın sadece kendi programını görür.','هەژمارەکەت تەنها خشتەی خۆت دەبینێت.','Hesabê te tenê bernameya te dibîne.','החשבון שלך רואה רק את לוח הזמנים שלך.'],
+['Μη επιτρεπτό αίτημα','Kërkesë e palejuar','Request not allowed','طلب غير مسموح','درخواست غیرمجاز','İzin verilmeyen istek','داواکاری ڕێگەپێنەدراو','Daxwaza nedestûrdayî','בקשה לא מורשית'],
+['Σφάλμα server','Gabim në server','Server error','خطأ في الخادم','خطای سرور','Sunucu hatası','هەڵەی سێرڤەر','Çewtiya serverê','שגיאת שרת'],
+['Σφάλμα {n}','Gabim {n}','Error {n}','خطأ {n}','خطای {n}','Hata {n}','هەڵە {n}','Çewtî {n}','שגיאה {n}'],
+['Η φωτογραφία δεν ανέβηκε: δεν είναι εικόνα JPEG ή είναι πολύ μεγάλη.','Fotoja nuk u ngarkua: nuk është imazh JPEG ose është shumë e madhe.','The photo was not uploaded: it is not a JPEG image or it is too large.','لم يتم رفع الصورة: ليست بصيغة JPEG أو حجمها كبير جداً.','عکس بارگذاری نشد: تصویر JPEG نیست یا خیلی بزرگ است.','Fotoğraf yüklenmedi: JPEG değil ya da çok büyük.','وێنەکە بار نەکرا: وێنەی JPEG نییە یان زۆر گەورەیە.','Wêne nehat barkirin: ne wêneyê JPEG e an pir mezin e.','התמונה לא הועלתה: היא לא JPEG או שהיא גדולה מדי.'],
+['Δεν υπάρχει άλλος χώρος για φωτογραφίες στον server. Μίλησε με τον διαχειριστή.','Nuk ka më hapësirë për foto në server. Fol me administratorin.','There is no more space for photos on the server. Talk to the administrator.','لا توجد مساحة أخرى للصور على الخادم. تحدّث مع المسؤول.','فضای دیگری برای عکس روی سرور نیست. با مدیر صحبت کنید.','Sunucuda fotoğraflar için yer kalmadı. Yöneticiyle konuş.','شوێنی تر بۆ وێنە لە سێرڤەرەکەدا نییە. قسە لەگەڵ بەڕێوەبەر بکە.','Li serverê ji bo wêneyan cih nemaye. Bi rêveberî re biaxive.','אין עוד מקום לתמונות בשרת. דבר עם המנהל.'],
+['Άγνωστη γλώσσα.','Gjuhë e panjohur.','Unknown language.','لغة غير معروفة.','زبان نامعلوم.','Bilinmeyen dil.','زمانێکی نەناسراو.','Zimanê nenas.','שפה לא ידועה.'],
+['Δεν υπάρχει σύνδεση με τον server.','Nuk ka lidhje me serverin.','There is no connection to the server.','لا يوجد اتصال بالخادم.','اتصال به سرور برقرار نیست.','Sunucuya bağlantı yok.','پەیوەندی بە سێرڤەرەوە نییە.','Girêdana bi serverê re tune.','אין חיבור לשרת.'],
+['Χωρίς σύνδεση με τον server. Βλέπεις τα τελευταία δεδομένα.','Pa lidhje me serverin. Po sheh të dhënat e fundit.','No connection to the server. You are seeing the latest saved data.','لا يوجد اتصال بالخادم. أنت ترى آخر البيانات.','اتصال به سرور نیست. آخرین اطلاعات را می‌بینید.','Sunucuya bağlantı yok. Son verileri görüyorsun.','پەیوەندی بە سێرڤەرەوە نییە. دوایین زانیارییەکان دەبینیت.','Girêdana bi serverê re tune. Tu daneyên dawî dibînî.','אין חיבור לשרת. אתה רואה את הנתונים האחרונים.'],
+['Κάτι πήγε στραβά. Δοκίμασε ξανά.','Diçka shkoi keq. Provo përsëri.','Something went wrong. Try again.','حدث خطأ ما. حاول مرة أخرى.','مشکلی پیش آمد. دوباره امتحان کنید.','Bir şeyler ters gitti. Tekrar dene.','هەڵەیەک ڕوویدا. دووبارە هەوڵ بدەوە.','Tiştek çewt çû. Dîsa biceribîne.','משהו השתבש. נסה שוב.'],
+// --- σύνδεση ---
+['Σύνδεση','Hyrje','Sign in','تسجيل الدخول','ورود','Giriş','چوونەژوورەوە','Têketin','כניסה'],
+['Όνομα χρήστη','Emri i përdoruesit','Username','اسم المستخدم','نام کاربری','Kullanıcı adı','ناوی بەکارهێنەر','Navê bikarhêner','שם משתמש'],
+['Κωδικός','Fjalëkalimi','Password','كلمة المرور','رمز عبور','Şifre','وشەی نهێنی','Şîfre','סיסמה'],
+['Εμφάνιση','Shfaq','Show','إظهار','نمایش','Göster','پیشاندان','Nîşan bide','הצג'],
+['Απόκρυψη','Fshih','Hide','إخفاء','پنهان','Gizle','شاردنەوە','Veşêre','הסתר'],
+['Να με θυμάσαι σε αυτή τη συσκευή','Më mbaj mend në këtë pajisje','Remember me on this device','تذكّرني على هذا الجهاز','مرا در این دستگاه به خاطر بسپار','Bu cihazda beni hatırla','لەم ئامێرەدا بیرم بێت','Li ser vê amûrê min bi bîr bîne','זכור אותי במכשיר הזה'],
+['Ξέχασες τον κωδικό; Ζήτα από το γραφείο να σου βάλει νέο.','Harrove fjalëkalimin? Kërkoji zyrës të të vendosë një të ri.','Forgot your password? Ask the office to set a new one.','نسيت كلمة المرور؟ اطلب من المكتب أن يضع لك واحدة جديدة.','رمز عبور را فراموش کرده‌اید؟ از دفتر بخواهید رمز جدیدی برایتان بگذارد.','Şifreni mi unuttun? Ofisten yeni bir şifre koymasını iste.','وشەی نهێنیت لەبیر کردووە؟ داوا لە نووسینگە بکە وشەیەکی نوێت بۆ دابنێت.','Te şîfre ji bîr kir? Ji ofîsê bixwaze ku şîfreyeke nû ji te re deyne.','שכחת את הסיסמה? בקש מהמשרד לקבוע לך חדשה.'],
+['Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Στον server της εταιρείας φυλάγονται κεντρικά.','Në këtë version llogaritë mbeten në këtë shfletues. Në serverin e kompanisë ruhen në qendër.','In this version accounts stay in this browser. On the company server they are kept centrally.','في هذه النسخة تبقى الحسابات في هذا المتصفح. على خادم الشركة تُحفظ مركزياً.','در این نسخه حساب‌ها در همین مرورگر می‌مانند. روی سرور شرکت به‌صورت مرکزی نگهداری می‌شوند.','Bu sürümde hesaplar bu tarayıcıda kalır. Şirket sunucusunda merkezi olarak saklanır.','لەم وەشانەدا هەژمارەکان لەم وێبگەڕەدا دەمێننەوە. لە سێرڤەری کۆمپانیادا بە ناوەندی پارێزراون.','Di vê guhertoyê de hesab di vê gerokê de dimînin. Li ser serverê şirketê navendî têne parastin.','בגרסה הזו החשבונות נשמרים בדפדפן הזה. בשרת של החברה הם נשמרים במרכז.'],
+['Γράψε όνομα χρήστη και κωδικό.','Shkruaj emrin e përdoruesit dhe fjalëkalimin.','Enter your username and password.','اكتب اسم المستخدم وكلمة المرور.','نام کاربری و رمز عبور را بنویسید.','Kullanıcı adını ve şifreni yaz.','ناوی بەکارهێنەر و وشەی نهێنی بنووسە.','Navê bikarhêner û şîfreyê binivîse.','כתוב שם משתמש וסיסמה.'],
+['Η σύνδεση έληξε. Μπες ξανά.','Seanca skadoi. Hyr përsëri.','Your session expired. Sign in again.','انتهت الجلسة. سجّل الدخول مرة أخرى.','زمان ورود شما تمام شد. دوباره وارد شوید.','Oturumun sona erdi. Tekrar giriş yap.','کاتی چوونەژوورەوە تەواو بوو. دووبارە بچۆ ژوورەوە.','Danişîna te qediya. Dîsa têkeve.','החיבור פג. התחבר שוב.'],
+['Γλώσσα','Gjuha','Language','اللغة','زبان','Dil','زمان','Ziman','שפה'],
+// --- μενού και λογαριασμός ---
+['Πρόγραμμα','Orari','Schedule','الجدول','برنامه','Program','خشتە','Bername','לוח זמנים'],
+['Λογαριασμός','Llogaria','Account','الحساب','حساب','Hesap','هەژمار','Hesab','חשבון'],
+['Ο λογαριασμός μου','Llogaria ime','My account','حسابي','حساب من','Hesabım','هەژمارەکەم','Hesabê min','החשבון שלי'],
+['Αποσύνδεση','Dil','Sign out','تسجيل الخروج','خروج','Çıkış yap','چوونەدەرەوە','Derketin','התנתקות'],
+['Εργαζόμενος','Punonjës','Worker','عامل','کارگر','Çalışan','کرێکار','Karker','עובד'],
+['βλέπει μόνο το πρόγραμμά του','sheh vetëm orarin e vet','sees only their own schedule','يرى جدوله فقط','فقط برنامه خودش را می‌بیند','sadece kendi programını görür','تەنها خشتەی خۆی دەبینێت','tenê bernameya xwe dibîne','רואה רק את לוח הזמנים שלו'],
+['Όνομα χρήστη: {u}','Emri i përdoruesit: {u}','Username: {u}','اسم المستخدم: {u}','نام کاربری: {u}','Kullanıcı adı: {u}','ناوی بەکارهێنەر: {u}','Navê bikarhêner: {u}','שם משתמש: {u}'],
+['Αλλαγή κωδικού','Ndrysho fjalëkalimin','Change password','تغيير كلمة المرور','تغییر رمز عبور','Şifreyi değiştir','گۆڕینی وشەی نهێنی','Şîfreyê biguherîne','שינוי סיסמה'],
+['Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Όταν η εφαρμογή τρέχει από τον server της εταιρείας, φυλάγονται κεντρικά και ο κάθε εργαζόμενος μπαίνει από το κινητό του.','Në këtë version llogaritë mbeten në këtë shfletues. Kur aplikacioni punon nga serveri i kompanisë, ruhen në qendër dhe çdo punonjës hyn nga celulari i vet.','In this version accounts stay in this browser. When the app runs from the company server, they are kept centrally and each worker signs in from their own phone.','في هذه النسخة تبقى الحسابات في هذا المتصفح. عندما يعمل التطبيق من خادم الشركة، تُحفظ مركزياً ويدخل كل عامل من هاتفه.','در این نسخه حساب‌ها در همین مرورگر می‌مانند. وقتی برنامه از سرور شرکت اجرا شود، به‌صورت مرکزی نگهداری می‌شوند و هر کارگر از گوشی خودش وارد می‌شود.','Bu sürümde hesaplar bu tarayıcıda kalır. Uygulama şirket sunucusundan çalıştığında merkezi olarak saklanır ve her çalışan kendi telefonundan girer.','لەم وەشانەدا هەژمارەکان لەم وێبگەڕەدا دەمێننەوە. کاتێک ئەپەکە لە سێرڤەری کۆمپانیاوە کار دەکات، بە ناوەندی پارێزراون و هەر کرێکارێک لە مۆبایلی خۆیەوە دەچێتە ژوورەوە.','Di vê guhertoyê de hesab di vê gerokê de dimînin. Dema ku sepan ji serverê şirketê dixebite, navendî têne parastin û her karker ji telefona xwe dikeve.','בגרסה הזו החשבונות נשמרים בדפדפן הזה. כשהאפליקציה רצה מהשרת של החברה, הם נשמרים במרכז וכל עובד נכנס מהטלפון שלו.'],
+['Η εφαρμογή και τα μηνύματα που σου έρχονται θα είναι σε αυτή τη γλώσσα.','Aplikacioni dhe mesazhet që të vijnë do të jenë në këtë gjuhë.','The app and the messages you get will be in this language.','سيكون التطبيق والرسائل التي تصلك بهذه اللغة.','برنامه و پیام‌هایی که برایتان می‌آید به این زبان خواهد بود.','Uygulama ve sana gelen mesajlar bu dilde olacak.','ئەپەکە و ئەو نامانەی بۆت دێن بەم زمانە دەبن.','Sepan û peyamên ku ji te re tên dê bi vî zimanî bin.','האפליקציה וההודעות שתקבל יהיו בשפה הזו.'],
+['Τωρινός κωδικός','Fjalëkalimi aktual','Current password','كلمة المرور الحالية','رمز عبور فعلی','Mevcut şifre','وشەی نهێنی ئێستا','Şîfreya niha','הסיסמה הנוכחית'],
+['Νέος κωδικός (τουλάχιστον 8)','Fjalëkalim i ri (të paktën 8)','New password (at least 8)','كلمة مرور جديدة (8 على الأقل)','رمز عبور جدید (حداقل 8)','Yeni şifre (en az 8)','وشەی نهێنی نوێ (لانیکەم 8)','Şîfreya nû (herî kêm 8)','סיסמה חדשה (לפחות 8)'],
+['Ξανά ο νέος κωδικός','Fjalëkalimi i ri përsëri','New password again','كلمة المرور الجديدة مرة أخرى','تکرار رمز عبور جدید','Yeni şifre tekrar','دووبارە وشەی نهێنی نوێ','Dîsa şîfreya nû','שוב הסיסמה החדשה'],
+['Οι άλλες συσκευές σου θα αποσυνδεθούν.','Pajisjet e tua të tjera do të dalin nga llogaria.','Your other devices will be signed out.','سيتم تسجيل الخروج من أجهزتك الأخرى.','دستگاه‌های دیگر شما از حساب خارج می‌شوند.','Diğer cihazlarında oturum kapanacak.','ئامێرەکانی ترت دەچنە دەرەوە.','Amûrên te yên din dê derkevin.','המכשירים האחרים שלך יתנתקו.'],
+['Οι δύο νέοι κωδικοί δεν είναι ίδιοι.','Dy fjalëkalimet e reja nuk janë të njëjta.','The two new passwords are not the same.','كلمتا المرور الجديدتان غير متطابقتين.','دو رمز عبور جدید یکسان نیستند.','İki yeni şifre aynı değil.','دوو وشە نهێنییە نوێیەکە وەک یەک نین.','Du şîfreyên nû ne wek hev in.','שתי הסיסמאות החדשות לא זהות.'],
+['Ο κωδικός άλλαξε.','Fjalëkalimi u ndryshua.','The password was changed.','تم تغيير كلمة المرور.','رمز عبور تغییر کرد.','Şifre değişti.','وشەی نهێنی گۆڕا.','Şîfre hate guhertin.','הסיסמה שונתה.'],
+['Άκυρο','Anulo','Cancel','إلغاء','انصراف','Vazgeç','پاشگەزبوونەوە','Dev jê berde','ביטול'],
+['Αποθηκεύτηκε.','U ruajt.','Saved.','تم الحفظ.','ذخیره شد.','Kaydedildi.','پاشەکەوت کرا.','Hate tomarkirin.','נשמר.'],
+// --- το πρόγραμμά μου ---
+['Προηγούμενη εβδομάδα','Java e kaluar','Previous week','الأسبوع السابق','هفته قبل','Önceki hafta','هەفتەی پێشوو','Hefteya berê','השבוע הקודם'],
+['Επόμενη εβδομάδα','Java tjetër','Next week','الأسبوع التالي','هفته بعد','Sonraki hafta','هەفتەی داهاتوو','Hefteya bê','השבוע הבא'],
+['Φόρτωση προγράμματος…','Po ngarkohet orari…','Loading schedule…','جارٍ تحميل الجدول…','در حال بارگذاری برنامه…','Program yükleniyor…','خشتە بار دەکرێت…','Bername tê barkirin…','טוען את לוח הזמנים…'],
+['Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο. Ζήτα από το γραφείο να το κάνει.','Llogaria jote nuk është lidhur ende me një punonjës. Kërkoji zyrës ta bëjë.','Your account is not linked to a worker yet. Ask the office to do it.','حسابك غير مرتبط بعامل بعد. اطلب من المكتب أن يفعل ذلك.','حساب شما هنوز به یک کارگر وصل نشده است. از دفتر بخواهید این کار را انجام دهد.','Hesabın henüz bir çalışana bağlanmadı. Ofisten bunu yapmasını iste.','هەژمارەکەت هێشتا بە کرێکارێکەوە نەبەستراوە. داوا لە نووسینگە بکە ئەمە بکات.','Hesabê te hîn bi karkerekî ve nehatiye girêdan. Ji ofîsê bixwaze ku vê bike.','החשבון שלך עדיין לא מקושר לעובד. בקש מהמשרד לעשות את זה.'],
+['Δεν φορτώθηκε το πρόγραμμα.','Orari nuk u ngarkua.','The schedule did not load.','لم يتم تحميل الجدول.','برنامه بارگذاری نشد.','Program yüklenmedi.','خشتەکە بار نەبوو.','Bername nehat barkirin.','לוח הזמנים לא נטען.'],
+['Δεν υπάρχει αποθηκευμένο πρόγραμμα για αυτή την εβδομάδα.','Nuk ka orar të ruajtur për këtë javë.','There is no saved schedule for this week.','لا يوجد جدول محفوظ لهذا الأسبوع.','برای این هفته برنامه ذخیره‌شده‌ای نیست.','Bu hafta için kayıtlı program yok.','هیچ خشتەیەکی پاشەکەوتکراو بۆ ئەم هەفتەیە نییە.','Ji bo vê hefteyê bernameyeke tomarkirî tune.','אין לוח זמנים שמור לשבוע הזה.'],
+['Πώς πήγε σήμερα;','Si shkoi sot?','How did it go today?','كيف سار العمل اليوم؟','امروز کار چطور پیش رفت؟','Bugün nasıl geçti?','ئەمڕۆ چۆن ڕۆیشت؟','Îro çawa çû?','איך היה היום?'],
+['Μέρα {a} από {b}','Dita {a} nga {b}','Day {a} of {b}','اليوم {a} من {b}','روز {a} از {b}','{b} günün {a}. günü','ڕۆژی {a} لە {b}','Roja {a} ji {b}','יום {a} מתוך {b}'],
+['Το δήλωσες: τελείωσε','E deklarove: mbaroi','You reported it: finished','أبلغت: انتهت','اعلام کردید: تمام شد','Bildirdin: bitti','ڕاتگەیاند: تەواو بوو','Te ragihand: qediya','דיווחת: הסתיים'],
+['Τελείωσε','Mbaroi','Finished','انتهت','تمام شد','Bitti','تەواو بوو','Qediya','הסתיים'],
+['Δηλώθηκε μία μέρα ακόμη','U deklarua edhe një ditë','One more day reported','تم الإبلاغ عن يوم إضافي','یک روز دیگر اعلام شد','Bir gün daha bildirildi','ڕۆژێکی تر ڕاگەیەنرا','Rojek din hate ragihandin','דווח יום נוסף'],
+['+1 μέρα','+1 ditë','+1 day','+1 يوم','+1 روز','+1 gün','+1 ڕۆژ','+1 roj','+1 יום'],
+['Υπεύθυνος','Përgjegjës','In charge','المسؤول','مسئول','Sorumlu','بەرپرسیار','Berpirsiyar','אחראי'],
+['Οδηγίες στον χάρτη','Udhëzime në hartë','Directions on the map','الاتجاهات على الخريطة','مسیر روی نقشه','Haritada yol tarifi','ڕێنمایی لەسەر نەخشە','Rêdan li ser nexşeyê','הוראות הגעה במפה'],
+['Κλήση πελάτη','Telefono klientin','Call the client','اتصل بالعميل','تماس با مشتری','Müşteriyi ara','پەیوەندی بە کڕیار بکە','Telefonî xerîdar bike','התקשר ללקוח'],
+['από {d}','që nga {d}','since {d}','منذ {d}','از {d}','bekliyor: {d}','ماوە لە {d}','ji {d} ve','מאז {d}'],
+['Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε','Pa lidhje: orari i fundit që u ngarkua','Offline: the last schedule that loaded','بدون اتصال: آخر جدول تم تحميله','آفلاین: آخرین برنامه‌ای که بارگذاری شد','Bağlantı yok: en son yüklenen program','بێ پەیوەندی: دوایین خشتە کە بار کرا','Bê girêdan: bernameya dawî ya ku hate barkirin','ללא חיבור: לוח הזמנים האחרון שנטען'],
+['Σήμερα','Sot','Today','اليوم','امروز','Bugün','ئەمڕۆ','Îro','היום'],
+['Επόμενη μέρα','Dita tjetër','Next day','اليوم التالي','روز بعد','Sonraki gün','ڕۆژی دواتر','Roja din','היום הבא'],
+['Όλη η εβδομάδα','Gjithë java','The whole week','الأسبوع كله','کل هفته','Bütün hafta','هەموو هەفتەکە','Hemû hefte','כל השבוע'],
+['Δεν υπάρχουν εργάσιμες μέρες.','Nuk ka ditë pune.','There are no working days.','لا توجد أيام عمل.','روز کاری وجود ندارد.','İş günü yok.','هیچ ڕۆژێکی کار نییە.','Rojên kar tune ne.','אין ימי עבודה.'],
+['Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.','Ndryshimet në orar i bën zyra. Do të njoftohesh edhe në Viber.','The office makes the changes to the schedule. You will also be told on Viber.','المكتب هو من يغيّر الجدول. سيتم إبلاغك أيضاً على Viber.','تغییرات برنامه را دفتر انجام می‌دهد. در Viber هم به شما خبر داده می‌شود.','Programdaki değişiklikleri ofis yapar. Viber’dan da haber alacaksın.','گۆڕانکاری لە خشتەدا نووسینگە دەیکات. لە Viber یش ئاگادار دەکرێیتەوە.','Guhertinên bernameyê ofîs dike. Dê li ser Viber jî agahdar bibî.','שינויים בלוח הזמנים עושה המשרד. תקבל עדכון גם ב-Viber.'],
+// --- άδειες ---
+['Περιμένει το γραφείο','Në pritje të zyrës','Waiting for the office','بانتظار المكتب','در انتظار دفتر','Ofisi bekliyor','چاوەڕێی نووسینگەیە','Li benda ofîsê ye','ממתין למשרד'],
+['Εγκρίθηκε','U miratua','Approved','تمت الموافقة','تأیید شد','Onaylandı','پەسەند کرا','Hate pejirandin','אושר'],
+['Δεν εγκρίθηκε','Nuk u miratua','Not approved','لم تتم الموافقة','تأیید نشد','Onaylanmadı','پەسەند نەکرا','Nehat pejirandin','לא אושר'],
+['Ακυρώθηκε','U anulua','Cancelled','أُلغي','لغو شد','İptal edildi','هەڵوەشێنرایەوە','Hate betalkirin','בוטל'],
+['Άδειες','Lejet','Leave','الإجازات','مرخصی‌ها','İzinler','مۆڵەتەکان','Betlane','חופשות'],
+['Ζήτα άδεια','Kërko leje','Ask for leave','اطلب إجازة','درخواست مرخصی','İzin iste','داوای مۆڵەت بکە','Betlane bixwaze','בקש חופשה'],
+['1 εργάσιμη','1 ditë pune','1 working day','يوم عمل واحد','1 روز کاری','1 iş günü','1 ڕۆژی کار','1 roja kar','יום עבודה אחד'],
+['{n} εργάσιμες','{n} ditë pune','{n} working days','أيام العمل: {n}','{n} روز کاری','{n} iş günü','{n} ڕۆژی کار','{n} rojên kar','{n} ימי עבודה'],
+['{n} μέρες','{n} ditë','{n} days','الأيام: {n}','{n} روز','{n} gün','{n} ڕۆژ','{n} roj','{n} ימים'],
+['Ακύρωση','Anulo','Cancel','إلغاء','لغو','İptal','هەڵوەشاندنەوە','Betal bike','ביטול'],
+['Ζήτα άδεια από εδώ. Μόλις την εγκρίνει το γραφείο, το πρόγραμμα αλλάζει μόνο του.','Kërko leje nga këtu. Sapo ta miratojë zyra, orari ndryshon vetë.','Ask for leave here. As soon as the office approves it, the schedule changes by itself.','اطلب الإجازة من هنا. بمجرد موافقة المكتب، يتغيّر الجدول تلقائياً.','از اینجا مرخصی بخواهید. وقتی دفتر تأیید کند، برنامه خودبه‌خود تغییر می‌کند.','İzni buradan iste. Ofis onaylar onaylamaz program kendiliğinden değişir.','لێرەوە داوای مۆڵەت بکە. هەر کە نووسینگە پەسەندی کرد، خشتەکە خۆی دەگۆڕێت.','Betlaneyê ji vir bixwaze. Gava ofîs pejirand, bername bi xwe diguhere.','בקש חופשה מכאן. ברגע שהמשרד מאשר, לוח הזמנים משתנה מעצמו.'],
+['Αίτημα άδειας','Kërkesë për leje','Leave request','طلب إجازة','درخواست مرخصی','İzin talebi','داوای مۆڵەت','Daxwaza betlaneyê','בקשת חופשה'],
+['Από','Nga','From','من','از','Başlangıç','لە','Ji','מתאריך'],
+['Έως','Deri','To','إلى','تا','Bitiş','تا','Heta','עד תאריך'],
+['Λόγος (προαιρετικά)','Arsyeja (opsionale)','Reason (optional)','السبب (اختياري)','دلیل (اختیاری)','Sebep (isteğe bağlı)','هۆکار (ئارەزوومەندانە)','Sedem (ne mecbûrî)','סיבה (לא חובה)'],
+['π.χ. γάμος, ιατρείο','p.sh. dasmë, mjek','e.g. wedding, doctor','مثلاً: زفاف، طبيب','مثلاً: عروسی، دکتر','ör. düğün, doktor','بۆ نموونە: ئاهەنگی هاوسەرگیری، دکتۆر','mînak: dawet, doktor','לדוגמה: חתונה, רופא'],
+['Στείλε στο γραφείο','Dërgoje në zyrë','Send to the office','أرسل إلى المكتب','ارسال به دفتر','Ofise gönder','بنێرە بۆ نووسینگە','Ji ofîsê re bişîne','שלח למשרד'],
+['Το αίτημα στάλθηκε στο γραφείο.','Kërkesa u dërgua në zyrë.','The request was sent to the office.','تم إرسال الطلب إلى المكتب.','درخواست به دفتر فرستاده شد.','Talep ofise gönderildi.','داواکارییەکە نێردرا بۆ نووسینگە.','Daxwaz ji ofîsê re hate şandin.','הבקשה נשלחה למשרד.'],
+['Το αίτημα ακυρώθηκε.','Kërkesa u anulua.','The request was cancelled.','تم إلغاء الطلب.','درخواست لغو شد.','Talep iptal edildi.','داواکارییەکە هەڵوەشێنرایەوە.','Daxwaz hate betalkirin.','הבקשה בוטלה.'],
+// --- πρόοδος της εργασίας ---
+['Τελείωσε η εργασία;','Mbaroi puna?','Is the job finished?','هل انتهت المهمة؟','کار تمام شد؟','İş bitti mi?','کارەکە تەواو بوو؟','Kar qediya?','המשימה הסתיימה?'],
+['Θέλει μία μέρα ακόμη;','Do edhe një ditë?','Does it need one more day?','هل تحتاج يوماً إضافياً؟','یک روز دیگر لازم دارد؟','Bir gün daha mı gerekiyor?','ڕۆژێکی تری پێویستە؟','Rojek din divê?','צריך עוד יום?'],
+['Από αύριο η εργασία βγαίνει από το πρόγραμμα και το συνεργείο πηγαίνει σε άλλη δουλειά. Το γραφείο το βλέπει αμέσως.','Nga nesër puna del nga orari dhe ekipi shkon në një punë tjetër. Zyra e sheh menjëherë.','From tomorrow the job leaves the schedule and the crew moves to other work. The office sees it right away.','من الغد تخرج المهمة من الجدول وينتقل الفريق إلى عمل آخر. يرى المكتب ذلك فوراً.','از فردا این کار از برنامه خارج می‌شود و گروه سراغ کار دیگری می‌رود. دفتر فوراً آن را می‌بیند.','Yarından itibaren iş programdan çıkar ve ekip başka işe geçer. Ofis bunu hemen görür.','لە سبەینێوە کارەکە لە خشتە دەردەچێت و تیمەکە دەچێتە سەر کارێکی تر. نووسینگە یەکسەر دەیبینێت.','Ji sibê ve kar ji bernameyê derdikeve û tîm diçe ser karekî din. Ofîs yekser dibîne.','ממחר המשימה יוצאת מלוח הזמנים והצוות עובר לעבודה אחרת. המשרד רואה את זה מיד.'],
+['Το πρόγραμμα κρατά την εργασία μία μέρα παραπάνω και μεταθέτει όσες περιμένουν. Το γραφείο το βλέπει αμέσως.','Orari e mban punën edhe një ditë dhe shtyn ato që presin. Zyra e sheh menjëherë.','The schedule keeps the job one more day and moves the jobs that are waiting. The office sees it right away.','يبقي الجدول المهمة يوماً إضافياً ويؤجّل المهام المنتظرة. يرى المكتب ذلك فوراً.','برنامه این کار را یک روز بیشتر نگه می‌دارد و کارهای منتظر را عقب می‌اندازد. دفتر فوراً آن را می‌بیند.','Program işi bir gün daha tutar ve bekleyen işleri kaydırır. Ofis bunu hemen görür.','خشتەکە کارەکە ڕۆژێکی تر دەهێڵێتەوە و کارە چاوەڕوانەکان دوا دەخات. نووسینگە یەکسەر دەیبینێت.','Bername karî rojekê din digire û karên li bendê paş dixe. Ofîs yekser dibîne.','לוח הזמנים משאיר את המשימה עוד יום ודוחה את המשימות שממתינות. המשרד רואה את זה מיד.'],
+['Σημείωση για το γραφείο (προαιρετικά)','Shënim për zyrën (opsionale)','Note for the office (optional)','ملاحظة للمكتب (اختياري)','یادداشت برای دفتر (اختیاری)','Ofis için not (isteğe bağlı)','تێبینی بۆ نووسینگە (ئارەزوومەندانە)','Nîşe ji bo ofîsê (ne mecbûrî)','הערה למשרד (לא חובה)'],
+['Τι έμεινε ή γιατί αργεί (προαιρετικά)','Çfarë mbeti ose pse vonon (opsionale)','What is left or why it is late (optional)','ما الذي بقي أو لماذا التأخير (اختياري)','چه مانده یا چرا طول کشیده (اختیاری)','Ne kaldı ya da neden gecikiyor (isteğe bağlı)','چی ماوە یان بۆچی دوا کەوتووە (ئارەزوومەندانە)','Çi maye an çima dereng dimîne (ne mecbûrî)','מה נשאר או למה מתעכב (לא חובה)'],
+['π.χ. έμειναν υλικά στο εργοτάξιο','p.sh. mbetën materiale në kantier','e.g. materials were left at the site','مثلاً: بقيت مواد في الموقع','مثلاً: مصالح در کارگاه ماند','ör. şantiyede malzeme kaldı','بۆ نموونە: کەرەستە لە شوێنی کار مایەوە','mînak: malzeme li şantiyeyê man','לדוגמה: נשארו חומרים באתר'],
+['π.χ. δεν ήρθαν τα υλικά','p.sh. nuk erdhën materialet','e.g. the materials did not arrive','مثلاً: لم تصل المواد','مثلاً: مصالح نرسید','ör. malzemeler gelmedi','بۆ نموونە: کەرەستەکان نەگەیشتن','mînak: malzeme negihiştin','לדוגמה: החומרים לא הגיעו'],
+['Ναι, τελείωσε','Po, mbaroi','Yes, it is finished','نعم، انتهت','بله، تمام شد','Evet, bitti','بەڵێ، تەواو بوو','Erê, qediya','כן, הסתיימה'],
+['Ναι, μία μέρα ακόμη','Po, edhe një ditë','Yes, one more day','نعم، يوم إضافي','بله، یک روز دیگر','Evet, bir gün daha','بەڵێ، ڕۆژێکی تر','Erê, rojek din','כן, עוד יום'],
+['Στάλθηκε στο γραφείο: η εργασία τελείωσε. Το πρόγραμμα από αύριο άλλαξε.','U dërgua në zyrë: puna mbaroi. Orari nga nesër ndryshoi.','Sent to the office: the job is finished. The schedule from tomorrow has changed.','أُرسل إلى المكتب: انتهت المهمة. تغيّر الجدول ابتداءً من الغد.','به دفتر فرستاده شد: کار تمام شد. برنامه از فردا تغییر کرد.','Ofise gönderildi: iş bitti. Yarından itibaren program değişti.','نێردرا بۆ نووسینگە: کارەکە تەواو بوو. خشتەکە لە سبەینێوە گۆڕا.','Ji ofîsê re hate şandin: kar qediya. Bername ji sibê ve hate guhertin.','נשלח למשרד: המשימה הסתיימה. לוח הזמנים ממחר השתנה.'],
+['Στάλθηκε στο γραφείο: μία μέρα ακόμη. Το πρόγραμμα άλλαξε.','U dërgua në zyrë: edhe një ditë. Orari ndryshoi.','Sent to the office: one more day. The schedule has changed.','أُرسل إلى المكتب: يوم إضافي. تغيّر الجدول.','به دفتر فرستاده شد: یک روز دیگر. برنامه تغییر کرد.','Ofise gönderildi: bir gün daha. Program değişti.','نێردرا بۆ نووسینگە: ڕۆژێکی تر. خشتەکە گۆڕا.','Ji ofîsê re hate şandin: rojek din. Bername hate guhertin.','נשלח למשרד: עוד יום. לוח הזמנים השתנה.'],
+// --- παρουσίες ---
+['Ήρθα στο εργοτάξιο','Mbërrita në kantier','I’m at the site','وصلت إلى الموقع','به کارگاه رسیدم','Şantiyeye geldim','گەیشتمە شوێنی کار','Ez gihiştim şantiyeyê','הגעתי לאתר'],
+['Έφυγα','U largova','I’m leaving','غادرت','خارج شدم','Çıktım','ڕۆیشتم','Ez çûm','יצאתי'],
+['Βρίσκω τη θέση…','Po gjej vendndodhjen…','Finding your location…','جارٍ تحديد الموقع…','در حال پیدا کردن موقعیت…','Konum bulunuyor…','شوێنەکە دەدۆزرێتەوە…','Cih tê dîtin…','מאתר מיקום…'],
+['στην αποθήκη','në magazinë','at the warehouse','في المستودع','در انبار','depoda','لە کۆگا','li embarê','במחסן'],
+['στο εργοτάξιο','në kantier','at the site','في الموقع','در کارگاه','şantiyede','لە شوێنی کار','li şantiyeyê','באתר'],
+['{d} από την αποθήκη','{d} nga magazina','{d} from the warehouse','على بعد {d} من المستودع','{d} از انبار','depoya {d}','{d} لە کۆگاوە','{d} ji embarê','{d} מהמחסן'],
+['{d} από το εργοτάξιο','{d} nga kantieri','{d} from the site','على بعد {d} من الموقع','{d} از کارگاه','şantiyeye {d}','{d} لە شوێنی کارەوە','{d} ji şantiyeyê','{d} מהאתר'],
+['χωρίς θέση','pa vendndodhje','no location','بدون موقع','بدون موقعیت','konum yok','بێ شوێن','bê cih','ללא מיקום'],
+['Η θέση σου διαβάζεται μόνο τη στιγμή που πατάς, όχι όλη τη μέρα.','Vendndodhja jote lexohet vetëm në çastin që shtyp, jo gjithë ditën.','Your location is read only at the moment you tap, not all day.','يُقرأ موقعك فقط لحظة الضغط، وليس طوال اليوم.','موقعیت شما فقط لحظه‌ای که دکمه را می‌زنید خوانده می‌شود، نه تمام روز.','Konumun sadece bastığın anda okunur, gün boyu değil.','شوێنەکەت تەنها ئەو کاتە دەخوێنرێتەوە کە دەست دەنێیت، نەک هەموو ڕۆژ.','Cihê te tenê wê gavê tê xwendin ku tu ditikînî, ne hemû rojê.','המיקום שלך נקרא רק ברגע שאתה לוחץ, לא כל היום.'],
+['Ήρθες στις {t}','Erdhe në {t}','You arrived at {t}','وصلت الساعة {t}','ساعت {t} رسیدید','Geliş saatin: {t}','لە کاتژمێر {t} گەیشتیت','Tu di {t} de hatî','הגעת ב-{t}'],
+['{t} ώρες','{t} orë','{t} hours','{t} ساعة','{t} ساعت','{t} saat','{t} کاتژمێر','{t} saet','{t} שעות'],
+['Καταγράφηκε η άφιξή σου.','Mbërritja jote u regjistrua.','Your arrival was recorded.','تم تسجيل وصولك.','ورود شما ثبت شد.','Gelişin kaydedildi.','گەیشتنەکەت تۆمار کرا.','Hatina te hate tomarkirin.','ההגעה שלך נרשמה.'],
+['Καταγράφηκε η άφιξή σου, χωρίς θέση: {x}.','Mbërritja jote u regjistrua, pa vendndodhje: {x}.','Your arrival was recorded, without location: {x}.','تم تسجيل وصولك بدون موقع: {x}.','ورود شما بدون موقعیت ثبت شد: {x}.','Gelişin konumsuz kaydedildi: {x}.','گەیشتنەکەت بێ شوێن تۆمار کرا: {x}.','Hatina te bê cih hate tomarkirin: {x}.','ההגעה שלך נרשמה ללא מיקום: {x}.'],
+['Καταγράφηκε η αποχώρησή σου.','Largimi yt u regjistrua.','Your departure was recorded.','تم تسجيل مغادرتك.','خروج شما ثبت شد.','Çıkışın kaydedildi.','ڕۆیشتنەکەت تۆمار کرا.','Çûyîna te hate tomarkirin.','היציאה שלך נרשמה.'],
+['Καταγράφηκε η αποχώρησή σου, χωρίς θέση: {x}.','Largimi yt u regjistrua, pa vendndodhje: {x}.','Your departure was recorded, without location: {x}.','تم تسجيل مغادرتك بدون موقع: {x}.','خروج شما بدون موقعیت ثبت شد: {x}.','Çıkışın konumsuz kaydedildi: {x}.','ڕۆیشتنەکەت بێ شوێن تۆمار کرا: {x}.','Çûyîna te bê cih hate tomarkirin: {x}.','היציאה שלך נרשמה ללא מיקום: {x}.'],
+['το κινητό δεν δίνει θέση','celulari nuk jep vendndodhje','the phone does not give a location','الهاتف لا يعطي الموقع','گوشی موقعیت نمی‌دهد','telefon konum vermiyor','مۆبایلەکە شوێن نادات','telefon cih nade','הטלפון לא נותן מיקום'],
+['δεν δόθηκε άδεια για τη θέση','nuk u dha leje për vendndodhjen','location permission was not given','لم يتم منح إذن الموقع','اجازه موقعیت داده نشد','konum izni verilmedi','ڕێگەپێدان بۆ شوێن نەدرا','destûra cih nehat dayîn','לא ניתנה הרשאת מיקום'],
+['η θέση άργησε να βρεθεί','vendndodhja vonoi të gjendet','finding the location took too long','تأخر تحديد الموقع','پیدا کردن موقعیت طول کشید','konumun bulunması çok uzun sürdü','دۆزینەوەی شوێن دواکەوت','dîtina cih dereng ma','איתור המיקום לקח יותר מדי זמן'],
+['δεν βρέθηκε θέση','nuk u gjet vendndodhje','no location was found','لم يتم العثور على الموقع','موقعیتی پیدا نشد','konum bulunamadı','شوێن نەدۆزرایەوە','cih nehat dîtin','לא נמצא מיקום'],
+['{n} μ.','{n} m','{n} m','{n} م','{n} متر','{n} m','{n} م','{n} m','{n} מ׳'],
+['{n} χλμ.','{n} km','{n} km','{n} كم','{n} کیلومتر','{n} km','{n} کم','{n} km','{n} ק״מ'],
+// --- ημερολόγιο έργου ---
+['Για το ημερολόγιο του έργου','Për ditarin e projektit','For the project diary','لسجل المشروع','برای دفتر روزانه پروژه','Proje günlüğü için','بۆ ڕۆژانەی پڕۆژە','Ji bo rojnivîska projeyê','ליומן הפרויקט'],
+['1 σήμερα','1 sot','1 today','1 اليوم','1 امروز','bugün 1','1 ئەمڕۆ','1 îro','1 היום'],
+['{n} σήμερα','{n} sot','{n} today','{n} اليوم','{n} امروز','bugün {n}','{n} ئەمڕۆ','{n} îro','{n} היום'],
+['Σε ποιο έργο','Në cilin projekt','Which project','أي مشروع','کدام پروژه','Hangi proje','کام پڕۆژە','Kîjan proje','איזה פרויקט'],
+['Ανεβαίνει…','Po ngarkohet…','Uploading…','جارٍ الرفع…','در حال بارگذاری…','Yükleniyor…','بار دەکرێت…','Tê barkirin…','מעלה…'],
+['Φωτογραφία','Foto','Photo','صورة','عکس','Fotoğraf','وێنە','Wêne','תמונה'],
+['Φωτογραφία για το ημερολόγιο','Foto për ditarin','Photo for the diary','صورة للسجل','عکس برای دفتر روزانه','Günlük için fotoğraf','وێنە بۆ ڕۆژانە','Wêne ji bo rojnivîskê','תמונה ליומן'],
+['Σημείωση','Shënim','Note','ملاحظة','یادداشت','Not','تێبینی','Nîşe','הערה'],
+['Η φωτογραφία σου','Fotoja jote','Your photo','صورتك','عکس شما','Fotoğrafın','وێنەکەت','Wêneyê te','התמונה שלך'],
+['Σβήσιμο','Fshi','Delete','حذف','حذف','Sil','سڕینەوە','Jê bibe','מחיקה'],
+['Πηγαίνουν στο γραφείο και στο ημερολόγιο του έργου.','Shkojnë në zyrë dhe në ditarin e projektit.','They go to the office and to the project diary.','تذهب إلى المكتب وإلى سجل المشروع.','به دفتر و دفتر روزانه پروژه می‌روند.','Ofise ve proje günlüğüne gider.','دەچن بۆ نووسینگە و ڕۆژانەی پڕۆژە.','Diçin ofîsê û rojnivîska projeyê.','הם נשלחים למשרד וליומן הפרויקט.'],
+['Η φωτογραφία που διάλεξες','Fotoja që zgjodhe','The photo you chose','الصورة التي اخترتها','عکسی که انتخاب کردید','Seçtiğin fotoğraf','ئەو وێنەیەی هەڵتبژارد','Wêneyê ku te hilbijart','התמונה שבחרת'],
+['Τι δείχνει (προαιρετικά)','Çfarë tregon (opsionale)','What it shows (optional)','ماذا تُظهر (اختياري)','چه چیزی نشان می‌دهد (اختیاری)','Ne gösteriyor (isteğe bağlı)','چی پیشان دەدات (ئارەزوومەندانە)','Çi nîşan dide (ne mecbûrî)','מה רואים בה (לא חובה)'],
+['π.χ. τελείωσε η πλάκα του 3ου','p.sh. mbaroi soleta e katit të 3-të','e.g. the 3rd floor slab is finished','مثلاً: انتهت بلاطة الطابق الثالث','مثلاً: سقف طبقه سوم تمام شد','ör. 3. katın döşemesi bitti','بۆ نموونە: سەقفی نهۆمی سێیەم تەواو بوو','mînak: banê qata 3an qediya','לדוגמה: התקרה של קומה 3 הסתיימה'],
+['Στείλε','Dërgo','Send','أرسل','ارسال','Gönder','بنێرە','Bişîne','שלח'],
+['Σημείωση για το ημερολόγιο','Shënim për ditarin','Note for the diary','ملاحظة للسجل','یادداشت برای دفتر روزانه','Günlük için not','تێبینی بۆ ڕۆژانە','Nîşe ji bo rojnivîskê','הערה ליומן'],
+['Τι έγινε','Çfarë ndodhi','What happened','ماذا حدث','چه اتفاقی افتاد','Ne oldu','چی ڕوویدا','Çi qewimî','מה קרה'],
+['π.χ. Ήρθαν τα πλακάκια, λείπουν 2 κούτες.','p.sh. Erdhën pllakat, mungojnë 2 kuti.','e.g. The tiles arrived, 2 boxes are missing.','مثلاً: وصل البلاط، ينقص صندوقان.','مثلاً: کاشی‌ها رسید، 2 کارتن کم است.','ör. Fayanslar geldi, 2 koli eksik.','بۆ نموونە: کاشییەکان گەیشتن، 2 سندوق کەمە.','mînak: Kaşî hatin, 2 qutî kêm in.','לדוגמה: האריחים הגיעו, חסרות 2 קופסאות.'],
+['Η φωτογραφία στάλθηκε στο γραφείο.','Fotoja u dërgua në zyrë.','The photo was sent to the office.','تم إرسال الصورة إلى المكتب.','عکس به دفتر فرستاده شد.','Fotoğraf ofise gönderildi.','وێنەکە نێردرا بۆ نووسینگە.','Wêne ji ofîsê re hate şandin.','התמונה נשלחה למשרד.'],
+['Η σημείωση στάλθηκε στο γραφείο.','Shënimi u dërgua në zyrë.','The note was sent to the office.','تم إرسال الملاحظة إلى المكتب.','یادداشت به دفتر فرستاده شد.','Not ofise gönderildi.','تێبینییەکە نێردرا بۆ نووسینگە.','Nîşe ji ofîsê re hate şandin.','ההערה נשלחה למשרד.'],
+['Να σβηστεί;','Ta fshij?','Delete it?','هل تريد حذفها؟','پاک شود؟','Silinsin mi?','بسڕدرێتەوە؟','Bila jê bibe?','למחוק?'],
+['Φεύγει από το ημερολόγιο του έργου.','Do të hiqet nga ditari i projektit.','It will be removed from the project diary.','ستُحذف من سجل المشروع.','از دفتر روزانه پروژه حذف می‌شود.','Proje günlüğünden çıkarılır.','لە ڕۆژانەی پڕۆژە لادەبرێت.','Dê ji rojnivîska projeyê were rakirin.','זה יוסר מיומן הפרויקט.'],
+['Σβήστηκε.','U fshi.','Deleted.','تم الحذف.','پاک شد.','Silindi.','سڕایەوە.','Hate jêbirin.','נמחק.'],
+['Η φωτογραφία δεν ετοιμάστηκε. Δοκίμασε ξανά.','Fotoja nuk u përgatit. Provo përsëri.','The photo could not be prepared. Try again.','لم يتم تجهيز الصورة. حاول مرة أخرى.','عکس آماده نشد. دوباره امتحان کنید.','Fotoğraf hazırlanamadı. Tekrar dene.','وێنەکە ئامادە نەکرا. دووبارە هەوڵ بدەوە.','Wêne amade nebû. Dîsa biceribîne.','התמונה לא הוכנה. נסה שוב.'],
+['Το αρχείο δεν ανοίγει ως φωτογραφία εδώ. Δοκίμασε JPEG ή PNG.','Skedari nuk hapet si foto këtu. Provo JPEG ose PNG.','The file does not open as a photo here. Try JPEG or PNG.','لا يُفتح الملف كصورة هنا. جرّب JPEG أو PNG.','این فایل اینجا به‌عنوان عکس باز نمی‌شود. JPEG یا PNG را امتحان کنید.','Dosya burada fotoğraf olarak açılmıyor. JPEG veya PNG dene.','فایلەکە لێرە وەک وێنە ناکرێتەوە. JPEG یان PNG تاقی بکەرەوە.','Pel li vir wek wêne venabe. JPEG an PNG biceribîne.','הקובץ לא נפתח כתמונה כאן. נסה JPEG או PNG.'],
+['Η φωτογραφία δεν ετοιμάστηκε σε αυτόν τον browser.','Fotoja nuk u përgatit në këtë shfletues.','The photo could not be prepared in this browser.','لم يتم تجهيز الصورة في هذا المتصفح.','عکس در این مرورگر آماده نشد.','Fotoğraf bu tarayıcıda hazırlanamadı.','وێنەکە لەم وێبگەڕەدا ئامادە نەکرا.','Wêne di vê gerokê de amade nebû.','התמונה לא הוכנה בדפדפן הזה.'],
+// --- ειδοποιήσεις στο κινητό ---
+['Ειδοποιήσεις στο κινητό','Njoftime në celular','Phone notifications','إشعارات الهاتف','اعلان‌های گوشی','Telefon bildirimleri','ئاگادارکردنەوەی مۆبایل','Agahdariyên telefonê','התראות לטלפון'],
+['Φόρτωση…','Po ngarkohet…','Loading…','جارٍ التحميل…','در حال بارگذاری…','Yükleniyor…','بار دەکرێت…','Tê barkirin…','טוען…'],
+['Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.','Të vjen orari i ditës, çdo ndryshim i tij dhe përgjigja për lejet e tua.','You get the day’s schedule, every change to it and the answer to your leave requests.','يصلك جدول اليوم وكل تغيير عليه والرد على طلبات إجازتك.','برنامه روز، هر تغییر آن و پاسخ مرخصی‌هایتان برایتان می‌آید.','Günün programı, her değişikliği ve izin taleplerinin cevabı sana gelir.','خشتەی ڕۆژ، هەر گۆڕانکارییەکی و وەڵامی مۆڵەتەکانت بۆت دێت.','Bernameya rojê, her guhertina wê û bersiva betlaneyên te ji te re tê.','מגיעים אליך לוח הזמנים של היום, כל שינוי בו והתשובה לבקשות החופשה שלך.'],
+['Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.','Funksionojnë kur aplikacioni punon në serverin e kompanisë.','They work when the app runs on the company server.','تعمل عندما يعمل التطبيق على خادم الشركة.','وقتی برنامه روی سرور شرکت اجرا شود کار می‌کنند.','Uygulama şirket sunucusunda çalışırken çalışır.','کار دەکەن کاتێک ئەپەکە لەسەر سێرڤەری کۆمپانیا کار دەکات.','Dema ku sepan li ser serverê şirketê dixebite, dixebitin.','הן פועלות כשהאפליקציה רצה בשרת של החברה.'],
+['Ενεργές σε αυτή τη συσκευή','Aktive në këtë pajisje','On for this device','مفعّلة على هذا الجهاز','روی این دستگاه فعال است','Bu cihazda açık','لەم ئامێرەدا چالاکە','Li ser vê amûrê vekirî ye','פעילות במכשיר הזה'],
+['Δοκιμή','Provë','Test','تجربة','آزمایش','Dene','تاقیکردنەوە','Ceribandin','בדיקה'],
+['Απενεργοποίηση','Çaktivizo','Turn off','إيقاف','غیرفعال کردن','Kapat','ناچالاککردن','Bigire','כיבוי'],
+['Ενεργοποίηση σε αυτή τη συσκευή','Aktivizo në këtë pajisje','Turn on for this device','تفعيل على هذا الجهاز','فعال کردن روی این دستگاه','Bu cihazda aç','چالاککردن لەم ئامێرەدا','Li ser vê amûrê veke','הפעלה במכשיר הזה'],
+['Ενεργοποίηση','Aktivizo','Turn on','تفعيل','فعال کردن','Aç','چالاککردن','Veke','הפעלה'],
+['Όχι τώρα','Jo tani','Not now','ليس الآن','الان نه','Şimdi değil','ئێستا نا','Ne niha','לא עכשיו'],
+['1 συσκευή με ειδοποιήσεις για τον λογαριασμό σου.','1 pajisje me njoftime për llogarinë tënde.','1 device with notifications for your account.','جهاز واحد مفعّل عليه الإشعارات لحسابك.','1 دستگاه با اعلان برای حساب شما.','Hesabın için bildirimleri açık 1 cihaz.','1 ئامێر بە ئاگادارکردنەوە بۆ هەژمارەکەت.','Ji bo hesabê te 1 amûr bi agahdariyan.','מכשיר אחד עם התראות לחשבון שלך.'],
+['{n} συσκευές με ειδοποιήσεις για τον λογαριασμό σου.','{n} pajisje me njoftime për llogarinë tënde.','{n} devices with notifications for your account.','عدد الأجهزة المفعّل عليها الإشعارات لحسابك: {n}.','{n} دستگاه با اعلان برای حساب شما.','Hesabın için bildirimleri açık {n} cihaz.','{n} ئامێر بە ئاگادارکردنەوە بۆ هەژمارەکەت.','Ji bo hesabê te {n} amûr bi agahdariyan.','{n} מכשירים עם התראות לחשבון שלך.'],
+['Τι θέλω να μου έρχεται','Çfarë dua të më vijë','What I want to receive','ما أريد أن يصلني','چه چیزهایی برایم بیاید','Bana ne gelsin','چی دەمەوێت بۆم بێت','Ez dixwazim çi ji min re were','מה אני רוצה לקבל'],
+['Στο iPhone οι ειδοποιήσεις έρχονται όταν η εφαρμογή είναι στην αρχική οθόνη. Στο Safari πάτα Κοινοποίηση και «Προσθήκη στην οθόνη Αφετηρίας», και άνοιξέ την από εκεί.','Në iPhone njoftimet vijnë kur aplikacioni është në ekranin kryesor. Në Safari shtyp Share dhe «Add to Home Screen», pastaj hape prej andej.','On iPhone, notifications arrive when the app is on the Home Screen. In Safari tap Share and “Add to Home Screen”, then open it from there.','على iPhone تصل الإشعارات عندما يكون التطبيق على الشاشة الرئيسية. في Safari اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية»، وافتحه من هناك.','در iPhone اعلان‌ها وقتی می‌آیند که برنامه روی صفحه اصلی باشد. در Safari دکمه Share و سپس «Add to Home Screen» را بزنید و برنامه را از آنجا باز کنید.','iPhone’da bildirimler, uygulama ana ekrandayken gelir. Safari’de Paylaş’a ve «Ana Ekrana Ekle»ye bas, sonra oradan aç.','لە iPhone ئاگادارکردنەوەکان دێن کاتێک ئەپەکە لەسەر شاشەی سەرەکی بێت. لە Safari دوگمەی Share و پاشان «Add to Home Screen» دابگرە و لەوێوە بیکەرەوە.','Li ser iPhone agahdarî tên dema ku sepan li ser ekrana sereke be. Di Safari de li Share û paşê li «Add to Home Screen» bitikîne û ji wir veke.','ב-iPhone ההתראות מגיעות כשהאפליקציה במסך הבית. ב-Safari לחץ על «שיתוף» ואז «הוספה למסך הבית», ופתח אותה משם.'],
+['Αυτός ο browser δεν δέχεται ειδοποιήσεις. Άνοιξε την εφαρμογή στο κινητό από Chrome ή Safari.','Ky shfletues nuk pranon njoftime. Hape aplikacionin në celular me Chrome ose Safari.','This browser does not accept notifications. Open the app on your phone in Chrome or Safari.','هذا المتصفح لا يقبل الإشعارات. افتح التطبيق على هاتفك من Chrome أو Safari.','این مرورگر اعلان قبول نمی‌کند. برنامه را در گوشی با Chrome یا Safari باز کنید.','Bu tarayıcı bildirim kabul etmiyor. Uygulamayı telefonda Chrome veya Safari ile aç.','ئەم وێبگەڕە ئاگادارکردنەوە وەرناگرێت. ئەپەکە لە مۆبایلدا بە Chrome یان Safari بکەرەوە.','Ev gerok agahdariyan qebûl nake. Sepanê li ser telefonê bi Chrome an Safari veke.','הדפדפן הזה לא מקבל התראות. פתח את האפליקציה בטלפון ב-Chrome או ב-Safari.'],
+['Οι ειδοποιήσεις είναι μπλοκαρισμένες για την εφαρμογή. Άνοιξέ τες από τις ρυθμίσεις του κινητού ή του browser και ξαναδοκίμασε.','Njoftimet janë të bllokuara për aplikacionin. Lejoji nga cilësimet e celularit ose të shfletuesit dhe provo përsëri.','Notifications are blocked for the app. Allow them in your phone or browser settings and try again.','الإشعارات محظورة لهذا التطبيق. فعّلها من إعدادات الهاتف أو المتصفح وحاول مرة أخرى.','اعلان‌ها برای این برنامه مسدود شده‌اند. آن‌ها را از تنظیمات گوشی یا مرورگر باز کنید و دوباره امتحان کنید.','Bildirimler uygulama için engellenmiş. Telefonun veya tarayıcının ayarlarından aç ve tekrar dene.','ئاگادارکردنەوەکان بۆ ئەپەکە بلۆک کراون. لە ڕێکخستنەکانی مۆبایل یان وێبگەڕەوە چالاکیان بکە و دووبارە هەوڵ بدەوە.','Agahdarî ji bo sepanê hatine astengkirin. Ji mîhengên telefonê an gerokê veke û dîsa biceribîne.','ההתראות חסומות לאפליקציה. אפשר אותן בהגדרות הטלפון או הדפדפן ונסה שוב.'],
+['Να σου έρχεται το πρόγραμμα ως ειδοποίηση;','Të të vijë orari si njoftim?','Get your schedule as a notification?','هل تريد أن يصلك الجدول كإشعار؟','برنامه به‌صورت اعلان برایتان بیاید؟','Program sana bildirim olarak gelsin mi?','خشتەکە وەک ئاگادارکردنەوە بۆت بێت؟','Bila bername wek agahdarî ji te re were?','לקבל את לוח הזמנים כהתראה?'],
+['Μόλις βγαίνει το πρόγραμμα της μέρας ή αλλάζει, το βλέπεις στο κινητό χωρίς να ανοίξεις την εφαρμογή.','Sapo del orari i ditës ose ndryshon, e sheh në celular pa hapur aplikacionin.','As soon as the day’s schedule is out or changes, you see it on your phone without opening the app.','بمجرد صدور جدول اليوم أو تغيّره، تراه على هاتفك دون فتح التطبيق.','به محض اینکه برنامه روز آماده شود یا تغییر کند، بدون باز کردن برنامه آن را در گوشی می‌بینید.','Günün programı çıkar çıkmaz ya da değişince, uygulamayı açmadan telefonunda görürsün.','هەر کە خشتەی ڕۆژ دەرچوو یان گۆڕا، بێ کردنەوەی ئەپەکە لە مۆبایلەکەتدا دەیبینیت.','Gava bernameya rojê derkeve an biguhere, bêyî vekirina sepanê li ser telefonê dibînî.','ברגע שלוח הזמנים של היום יוצא או משתנה, אתה רואה אותו בטלפון בלי לפתוח את האפליקציה.'],
+['Οι ειδοποιήσεις μπλοκαρίστηκαν. Άνοιξέ τες από τις ρυθμίσεις του κινητού.','Njoftimet u bllokuan. Lejoji nga cilësimet e celularit.','Notifications were blocked. Allow them in your phone settings.','تم حظر الإشعارات. فعّلها من إعدادات الهاتف.','اعلان‌ها مسدود شدند. آن‌ها را از تنظیمات گوشی باز کنید.','Bildirimler engellendi. Telefonun ayarlarından aç.','ئاگادارکردنەوەکان بلۆک کران. لە ڕێکخستنەکانی مۆبایلەوە چالاکیان بکە.','Agahdarî hatin astengkirin. Ji mîhengên telefonê veke.','ההתראות נחסמו. אפשר אותן בהגדרות הטלפון.'],
+['Δεν δόθηκε άδεια για ειδοποιήσεις.','Nuk u dha leje për njoftime.','Permission for notifications was not given.','لم يتم منح إذن الإشعارات.','اجازه اعلان داده نشد.','Bildirim izni verilmedi.','ڕێگەپێدان بۆ ئاگادارکردنەوە نەدرا.','Destûra agahdariyan nehat dayîn.','לא ניתנה הרשאה להתראות.'],
+['Οι ειδοποιήσεις ενεργοποιήθηκαν σε αυτή τη συσκευή.','Njoftimet u aktivizuan në këtë pajisje.','Notifications are now on for this device.','تم تفعيل الإشعارات على هذا الجهاز.','اعلان‌ها روی این دستگاه فعال شدند.','Bildirimler bu cihazda açıldı.','ئاگادارکردنەوەکان لەم ئامێرەدا چالاک کران.','Agahdarî li ser vê amûrê hatin vekirin.','ההתראות הופעלו במכשיר הזה.'],
+['Δεν ενεργοποιήθηκαν οι ειδοποιήσεις σε αυτή τη συσκευή. Δοκίμασε ξανά.','Njoftimet nuk u aktivizuan në këtë pajisje. Provo përsëri.','Notifications were not turned on for this device. Try again.','لم يتم تفعيل الإشعارات على هذا الجهاز. حاول مرة أخرى.','اعلان‌ها روی این دستگاه فعال نشدند. دوباره امتحان کنید.','Bildirimler bu cihazda açılamadı. Tekrar dene.','ئاگادارکردنەوەکان لەم ئامێرەدا چالاک نەکران. دووبارە هەوڵ بدەوە.','Agahdarî li ser vê amûrê nehatin vekirin. Dîsa biceribîne.','ההתראות לא הופעלו במכשיר הזה. נסה שוב.'],
+['Οι ειδοποιήσεις σταμάτησαν σε αυτή τη συσκευή.','Njoftimet u ndalën në këtë pajisje.','Notifications stopped on this device.','توقفت الإشعارات على هذا الجهاز.','اعلان‌ها روی این دستگاه متوقف شدند.','Bu cihazda bildirimler durduruldu.','ئاگادارکردنەوەکان لەم ئامێرەدا ڕاگیران.','Agahdarî li ser vê amûrê hatin rawestandin.','ההתראות הופסקו במכשיר הזה.'],
+['Δεν έγινε η αλλαγή. Δοκίμασε ξανά.','Ndryshimi nuk u bë. Provo përsëri.','The change was not made. Try again.','لم يتم التغيير. حاول مرة أخرى.','تغییر انجام نشد. دوباره امتحان کنید.','Değişiklik yapılmadı. Tekrar dene.','گۆڕانکارییەکە نەکرا. دووبارە هەوڵ بدەوە.','Guhertin nehat kirin. Dîsa biceribîne.','השינוי לא בוצע. נסה שוב.'],
+['Στάλθηκε δοκιμαστική ειδοποίηση. Θα έρθει σε λίγα δευτερόλεπτα.','U dërgua një njoftim prove. Do të vijë pas pak sekondash.','A test notification was sent. It will arrive in a few seconds.','تم إرسال إشعار تجريبي. سيصل خلال ثوانٍ.','یک اعلان آزمایشی فرستاده شد. تا چند ثانیه دیگر می‌رسد.','Deneme bildirimi gönderildi. Birkaç saniye içinde gelir.','ئاگادارکردنەوەیەکی تاقیکاری نێردرا. لە چەند چرکەیەکدا دەگات.','Agahdariyeke ceribandinê hate şandin. Di çend saniyeyan de tê.','נשלחה התראת בדיקה. היא תגיע בעוד כמה שניות.'],
+['Δεν έφτασε σε καμία συσκευή. Απενεργοποίησέ τες και ενεργοποίησέ τες ξανά.','Nuk arriti në asnjë pajisje. Çaktivizoji dhe aktivizoji përsëri.','It did not reach any device. Turn them off and on again.','لم يصل إلى أي جهاز. أوقفها ثم فعّلها مرة أخرى.','به هیچ دستگاهی نرسید. آن‌ها را غیرفعال و دوباره فعال کنید.','Hiçbir cihaza ulaşmadı. Kapatıp yeniden aç.','نەگەیشتە هیچ ئامێرێک. ناچالاکیان بکە و دووبارە چالاکیان بکەرەوە.','Negihişt tu amûrê. Bigire û dîsa veke.','זה לא הגיע לאף מכשיר. כבה אותן והפעל שוב.'],
+['Η εφαρμογή δεν ετοιμάστηκε για ειδοποιήσεις. Ξαναφόρτωσε τη σελίδα.','Aplikacioni nuk u përgatit për njoftime. Ringarko faqen.','The app is not ready for notifications. Reload the page.','التطبيق غير جاهز للإشعارات. أعد تحميل الصفحة.','برنامه برای اعلان آماده نشد. صفحه را دوباره بارگذاری کنید.','Uygulama bildirimler için hazırlanamadı. Sayfayı yenile.','ئەپەکە بۆ ئاگادارکردنەوە ئامادە نەبوو. پەڕەکە دووبارە بار بکەرەوە.','Sepan ji bo agahdariyan amade nebû. Rûpelê ji nû ve bar bike.','האפליקציה לא מוכנה להתראות. טען מחדש את הדף.'],
+// μηνύματα του γραφείου προς τον εργαζόμενο: απάντηση σε άδεια και πληρωμή εβδομάδας
+['Η άδειά σου για {d} εγκρίθηκε. Το πρόγραμμα έχει ήδη αλλάξει.','Leja jote për {d} u miratua. Orari është ndryshuar tashmë.','Your leave for {d} was approved. The schedule has already been updated.','تمت الموافقة على إجازتك في {d}. تم تعديل الجدول بالفعل.','مرخصی تو برای {d} تأیید شد. برنامه از قبل تغییر کرده است.','{d} için iznin onaylandı. Program zaten güncellendi.','مۆڵەتەکەت بۆ {d} پەسەند کرا. خشتەکە پێشتر گۆڕدراوە.','Destûra te ji bo {d} hate pejirandin. Bername jixwe hate guhertin.','החופשה שלך ל-{d} אושרה. לוח הזמנים כבר עודכן.'],
+['Η άδεια που ζήτησες για {d} δεν εγκρίθηκε. Πάρε τηλέφωνο στο γραφείο να το δούμε μαζί.','Leja që kërkove për {d} nuk u miratua. Telefono zyrën që ta shohim bashkë.','The leave you asked for on {d} was not approved. Call the office so we can look at it together.','لم تتم الموافقة على الإجازة التي طلبتها في {d}. اتصل بالمكتب لننظر في الأمر معاً.','مرخصی‌ای که برای {d} خواستی تأیید نشد. با دفتر تماس بگیر تا با هم بررسی کنیم.','{d} için istediğin izin onaylanmadı. Birlikte bakmak için ofisi ara.','ئەو مۆڵەتەی بۆ {d} داوات کرد پەسەند نەکرا. پەیوەندی بە ئۆفیسەوە بکە با پێکەوە سەیری بکەین.','Destûra ku te ji bo {d} xwest nehat pejirandin. Li ofîsê telefon bike da ku em bi hev re lê binêrin.','החופשה שביקשת ל-{d} לא אושרה. התקשר למשרד כדי שנבדוק את זה יחד.'],
+['Πληρωμή εβδομάδας {a} – {b}','Pagesa e javës {a} – {b}','Pay for the week {a} – {b}','أجر الأسبوع {a} – {b}','دستمزد هفته {a} – {b}','Hafta ödemesi {a} – {b}','کرێی هەفتە {a} – {b}','Heqê hefteyê {a} – {b}','תשלום לשבוע {a} – {b}'],
+['Μέρες: {n}','Ditë: {n}','Days: {n}','الأيام: {n}','روزها: {n}','Gün: {n}','ڕۆژەکان: {n}','Roj: {n}','ימים: {n}'],
+['Μεροκάματα: {x}','Pagat ditore: {x}','Day wages: {x}','الأجور اليومية: {x}','دستمزد روزانه: {x}','Yevmiyeler: {x}','کرێی ڕۆژانە: {x}','Heqê rojane: {x}','שכר יומי: {x}'],
+['Μπόνους για δύσκολη εργασία: {x}','Shpërblim për punë të vështirë: {x}','Bonus for hard work: {x}','مكافأة العمل الصعب: {x}','پاداش کار سخت: {x}','Zor iş primi: {x}','پاداشتی کاری قورس: {x}','Prîma karê dijwar: {x}','בונוס על עבודה קשה: {x}'],
+['Από προηγούμενες εβδομάδες: {x}','Nga javët e mëparshme: {x}','From previous weeks: {x}','من الأسابيع السابقة: {x}','از هفته‌های قبل: {x}','Önceki haftalardan: {x}','لە هەفتەکانی پێشووەوە: {x}','Ji hefteyên berê: {x}','משבועות קודמים: {x}'],
+['Προκαταβολή από πριν: −{x}','Paradhënie nga më parë: −{x}','Advance paid earlier: −{x}','سلفة سابقة: −{x}','پیش‌پرداخت قبلی: −{x}','Önceki avans: −{x}','پێشەکی پێشوو: −{x}','Pêşdayîna berê: −{x}','מקדמה קודמת: −{x}'],
+['Πληρωμή {d}: {x}','Pagesë {d}: {x}','Payment {d}: {x}','دفعة {d}: {x}','پرداخت {d}: {x}','Ödeme {d}: {x}','پارەدان {d}: {x}','Dayîn {d}: {x}','תשלום {d}: {x}'],
+['Πληρωμή {d} ({m}): {x}','Pagesë {d} ({m}): {x}','Payment {d} ({m}): {x}','دفعة {d} ({m}): {x}','پرداخت {d} ({m}): {x}','Ödeme {d} ({m}): {x}','پارەدان {d} ({m}): {x}','Dayîn {d} ({m}): {x}','תשלום {d} ({m}): {x}'],
+['μετρητά','para në dorë','cash','نقداً','نقدی','nakit','نەختینە','pere bi dest','מזומן'],
+['τράπεζα','bankë','bank','تحويل بنكي','بانکی','banka','بانک','bank','העברה בנקאית'],
+['επιταγή','çek','cheque','شيك','چک','çek','چەک','çek','צ׳ק'],
+['Εξοφλήθηκε.','U pagua plotësisht.','Paid in full.','تم الدفع بالكامل.','به‌طور کامل پرداخت شد.','Tamamı ödendi.','بە تەواوی درا.','Bi temamî hate dayîn.','שולם במלואו.'],
+['Υπόλοιπο: {x}.','Mbetja: {x}.','Balance: {x}.','المتبقي: {x}.','مانده: {x}.','Kalan: {x}.','ماوە: {x}.','Mayî: {x}.','יתרה: {x}.'],
+['Υπόλοιπο: {x}, περνά στην επόμενη εβδομάδα.','Mbetja: {x}, kalon në javën e ardhshme.','Balance: {x}, carried over to next week.','المتبقي: {x}، يُنقل إلى الأسبوع القادم.','مانده: {x}، به هفته بعد منتقل می‌شود.','Kalan: {x}, gelecek haftaya aktarılır.','ماوە: {x}، دەچێتە سەر هەفتەی داهاتوو.','Mayî: {x}, derbasî hefteya bê dibe.','יתרה: {x}, עוברת לשבוע הבא.'],
+['Προκαταβολή: {x}.','Paradhënie: {x}.','Advance: {x}.','سلفة: {x}.','پیش‌پرداخت: {x}.','Avans: {x}.','پێشەکی: {x}.','Pêşdayîn: {x}.','מקדמה: {x}.'],
+['Προκαταβολή: {x}, αφαιρείται την επόμενη εβδομάδα.','Paradhënie: {x}, zbritet javën e ardhshme.','Advance: {x}, deducted next week.','سلفة: {x}، تُخصم في الأسبوع القادم.','پیش‌پرداخت: {x}، هفته بعد کسر می‌شود.','Avans: {x}, gelecek hafta düşülür.','پێشەکی: {x}، هەفتەی داهاتوو دەبڕدرێت.','Pêşdayîn: {x}, hefteya bê tê jêbirin.','מקדמה: {x}, תנוכה בשבוע הבא.']];
+const M=new Map(M0.map(r=>[r[0],r.slice(1)]));
+const fill=(s,p)=>p?String(s).replace(/\{(\w+)\}/g,(m,k)=>p[k]!=null?String(p[k]):m):String(s);
+// το κείμενο στη γλώσσα l· χωρίς μετάφραση μένει ελληνικό
+function tx(l,s,p){let t=s;if(l&&l!=='el'){const r=M.get(s),i=L8.indexOf(l);if(r&&i>=0&&r[i])t=r[i]}return fill(t,p)}
+const has=s=>M.has(s);
+// ημερομηνίες: «Δευ 19/10» και «19 Οκτ» σε κάθε γλώσσα
+const pd0=s=>{const[y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d)};
+const fmtD=(l,s)=>{if(!s)return '—';const d=pd0(s);return (DAYS[l]||DAYS.en)[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)};
+const fmtM=(l,s)=>{if(!s)return '—';const d=pd0(s);return d.getDate()+' '+(MONS[l]||MONS.en)[d.getMonth()]};
+// απόσταση: μέτρα ως 1 χλμ., μετά χιλιόμετρα με ένα δεκαδικό
+const COMMA=['el','sq','tr','kmr'];
+const dist=(l,m)=>m<1000?tx(l,'{n} μ.',{n:Math.round(m/10)*10}):tx(l,'{n} χλμ.',{n:String(Math.round(m/100)/10).replace('.',COMMA.includes(l)?',':'.')});
+// μεταγραφή ελληνικών με λατινικά (κατά ΕΛΟΤ 743, απλοποιημένη), για ονόματα έργων, διευθύνσεις και εργασίες
+const GR=/[Ͱ-Ͽἀ-῿]/;
+const hasGreek=s=>GR.test(String(s||''));
+const TL={α:'a',β:'v',γ:'g',δ:'d',ε:'e',ζ:'z',η:'i',θ:'th',ι:'i',ϊ:'i',κ:'k',λ:'l',μ:'m',ν:'n',ξ:'x',ο:'o',π:'p',ρ:'r',σ:'s',ς:'s',τ:'t',υ:'y',ϋ:'y',φ:'f',χ:'ch',ψ:'ps',ω:'o'};
+const VLESS='θκξπσςτφχψ';
+function tlit(s){
+  // χωρίς τόνους, με τα διαλυτικά (ϊ, ϋ) για να μη γίνονται δίφθογγοι
+  const n=String(s||'').normalize('NFD').replace(/[̀́͂̓̔ͅ]/g,'').normalize('NFC');
+  let out='';
+  for(let i=0;i<n.length;i++){
+    const c=n[i],lc=c.toLowerCase(),nx=(n[i+1]||'').toLowerCase(),nx2=(n[i+2]||'').toLowerCase();
+    let r=null,k=0;
+    if(lc==='ο'&&nx==='υ'){r='ou';k=1}
+    else if((lc==='α'||lc==='ε')&&nx==='υ'){r=(lc==='α'?'a':'e')+(!nx2||!TL[nx2]||VLESS.includes(nx2)?'f':'v');k=1}
+    else if(lc==='γ'&&'γξχ'.includes(nx)&&nx)r='n';
+    else r=TL[lc];
+    if(r==null){out+=c;continue}
+    if(c!==lc){const nu=n[i+1+k]||'',all=nu&&nu!==nu.toLowerCase();r=all?r.toUpperCase():r[0].toUpperCase()+r.slice(1)}
+    out+=r;i+=k}
+  return out}
+root.ErgoI18n={LANGS,L8,RTL,okLang,isRTL,langName,DAYS,MONS,M0,tx,fill,has,fmtD,fmtM,dist,hasGreek,tlit};
+if(typeof module!=='undefined'&&module.exports)module.exports=root.ErgoI18n;
+})(typeof window!=='undefined'?window:globalThis);
+
 /* PARON: κοινή λογική για browser και server */
 (function(root){
 let S=null;
+// μεταφράσεις για ό,τι βλέπει και λαμβάνει ο εργαζόμενος (src/i18n.js· στον browser μπαίνει πριν από αυτό το αρχείο)
+const I18N=root.ErgoI18n||(typeof require==='function'?require('./i18n.js'):null);
 // όνομα και σύνθημα της εφαρμογής σε ένα σημείο, για εύκολη μετονομασία
 const BRAND={name:'PARON',tag:'ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ',mark:3,site:'paron.gr'};   // mark: ποιο γράμμα του ονόματος γίνεται ο κύκλος με το άτομο
 const setState=s=>{S=s;today()};   // και ανανεώνει τη σημερινή μέρα (ο server τρέχει για μέρες)
@@ -1204,14 +1575,14 @@ function addAtt(R,w,k,pos,at,why){at=at||new Date();const d=ds(at),t=hmOf(at);S.
   if(pos&&isFinite(pos.lat)&&isFinite(pos.lon)&&Math.abs(pos.lat)<=90&&Math.abs(pos.lon)<=180){pt.lat=Math.round(pos.lat*1e5)/1e5;pt.lon=Math.round(pos.lon*1e5)/1e5;if(isFinite(pos.acc))pt.acc=Math.round(Math.min(pos.acc,1e5))}
   else if(why)pt.why=String(why).slice(0,60);   // γιατί δεν δόθηκε θέση, όπως το είπε το κινητό
   let r=attOf(d,w.id);
-  if(k==='in'){if(r&&r.in)return {err:'Έχεις ήδη δηλώσει ότι ήρθες στις '+r.in.t+'.'};
+  if(k==='in'){if(r&&r.in)return ER('Έχεις ήδη δηλώσει ότι ήρθες στις {t}.',{t:r.in.t});
     // σε ποιο έργο: όπου είναι στο πρόγραμμα· με δύο έργα, το πιο κοντινό
     const ps=attProjects(R,w.id,d),near=xs=>hasLL(pt)?xs.map(id=>({id,s:siteOf(P(id))})).filter(x=>x.s).sort((a,b)=>distM(a.s,pt)-distM(b.s,pt))[0]:null;
     let p=ps.length>1?(near(ps)||{id:ps[0]}).id:ps[0]||null;
     if(!p){const n=near(S.projects.filter(x=>!x.closed).map(x=>x.id));if(n&&distM(n.s,pt)<=2000)p=n.id}
     if(!r){r={id:uid('a'),d,w:w.id,p,in:null,out:null,by:'w'};S.att.push(r)}
     r.in=pt;if(!r.p)r.p=p}
-  else if(k==='out'){if(!r||!r.in)return {err:'Πάτησε πρώτα «Ήρθα».'};if(r.out)return {err:'Έχεις ήδη δηλώσει ότι έφυγες στις '+r.out.t+'.'};r.out=pt}
+  else if(k==='out'){if(!r||!r.in)return {err:'Πάτησε πρώτα «Ήρθα».'};if(r.out)return ER('Έχεις ήδη δηλώσει ότι έφυγες στις {t}.',{t:r.out.t});r.out=pt}
   else return {err:'Άγνωστη ενέργεια.'};
   const s=siteFor(r.p);if(s&&hasLL(pt))pt.m=distM(s,pt);
   r.u=stamp();r.n=(r.n||0)+1;attPrune(S);return {r}}
@@ -1794,7 +2165,7 @@ const availOn=()=>hasF('avail');
 const isRest=(w,d)=>availOn()&&Array.isArray(w.days)&&w.days.length>0&&!w.days.includes(dow(d));
 const isLeave=(w,d)=>(w.off||[]).includes(d)||ov(d,w.id)?.type==='off';
 const isOff=(w,d)=>isLeave(w,d)||isRest(w,d);
-const offWord=(w,d)=>isLeave(w,d)?(S.overrides[d+'|'+w.id]?.why==='absent'?'Απουσία':'Άδεια'):'Ρεπό';
+const offWord=(w,d,l)=>tx(l,isLeave(w,d)?(S.overrides[d+'|'+w.id]?.why==='absent'?'Απουσία':'Άδεια'):'Ρεπό');
 // δεύτερη ειδικότητα: μπαίνει βοηθός ή αναπληρωτής υπεύθυνος και σε αυτή
 const sp2=w=>availOn()&&w&&w.spec2&&w.spec2!==w.specialtyId?w.spec2:null;
 const canSpec=(w,sid)=>w.specialtyId===sid||sp2(w)===sid;
@@ -1873,10 +2244,10 @@ function wxKind(code){
   return {k:'cloud',l:'Συννεφιά'};
 }
 // η πρόγνωση σε σύντομο κείμενο, π.χ. «Βροχή (πιθανότητα βροχής 80%), 12–18°C»
-function wxText(f){
+function wxText(f,l){
   if(!f)return '';
   const k=wxKind(f.code);
-  return k.l+(f.p!=null&&f.p>=20?' (πιθανότητα βροχής '+Math.round(f.p)+'%)':'')+(f.tmin!=null&&f.tmax!=null?', '+Math.round(f.tmin)+'–'+Math.round(f.tmax)+'°C':'');
+  return tx(l,k.l)+(f.p!=null&&f.p>=20?' '+tx(l,'(πιθανότητα βροχής {p}%)',{p:Math.round(f.p)}):'')+(f.tmin!=null&&f.tmax!=null?', '+Math.round(f.tmin)+'–'+Math.round(f.tmax)+'°C':'');
 }
 
 /* ---------- Ραντεβού ----------
@@ -2093,33 +2464,54 @@ function whatDoes(R,wid,d){
 // έχει δουλειά σε έργο κάποια από αυτές τις μέρες (για να μη στέλνεται κενό μήνυμα σε συνεργάτες)
 const hasJob=(R,wid,days)=>days.some(d=>whatDoes(R,wid,d).jobs.length>0||apptsOn(d,wid).length>0);
 const weekDays=ws=>{const a=[];for(let i=0;i<7;i++){const d=add(ws,i);if(isWork(d))a.push(d)}return a};
+// --- γλώσσα του εργαζόμενου (όλα τα πακέτα· κλείνει από Ρυθμίσεις → Λειτουργίες) ---
+// w.lang: κωδικός γλώσσας ('' = ελληνικά)· w.langAt: πότε άλλαξε, για να μη χάνεται όταν αποθηκεύει το γραφείο παλιότερα δεδομένα
+const langOn=st=>isOn('lang',st);
+const langOf=(w,st)=>langOn(st)&&w&&w.id!==OWNER&&w.lang&&w.lang!=='el'&&I18N.okLang(w.lang)?w.lang:'el';
+const tx=(l,s,p)=>I18N.tx(l,s,p);
+const ER=(k,p)=>({err:I18N.fill(k,p),ek:k,ep:p});   // σφάλμα με παραμέτρους: η εφαρμογή το μεταφράζει από το ek
+const fmtX=(l,s)=>!l||l==='el'?fmt(s):I18N.fmtD(l,s);
+const fmtSX=(l,s)=>!l||l==='el'?fmtS(s):I18N.fmtM(l,s);
+const tlitL=(l,s)=>l&&l!=='el'&&I18N.hasGreek(s)?I18N.tlit(s):'';
+const nameL=(l,n)=>tlitL(l,n)||String(n||'');
+const spL=(l,n)=>!l||l==='el'?n:I18N.has(n)?tx(l,n):nameL(l,n);
+// το όνομα στον χαιρετισμό: στα ελληνικά στην κλητική, αλλιώς το μικρό όνομα με λατινικούς χαρακτήρες
+const hiName=(w,l)=>!l||l==='el'?voc(w.name):nameL(l,String(w.name||'').trim().split(/\s+/)[0]);
+function mergeLang(o,cur){if(!o||!cur||!Array.isArray(o.workers)||!Array.isArray(cur.workers))return o;
+  const m=new Map(cur.workers.map(w=>[w.id,w]));
+  o.workers.forEach(w=>{const c=m.get(w.id);if(c&&String(c.langAt||'')>String(w.langAt||'')){if(c.lang)w.lang=c.lang;else delete w.lang;w.langAt=c.langAt}});
+  return o}
 // μία μέρα ενός εργαζόμενου σε κείμενο
-function dayBlock(R,w,d){
-  const x=whatDoes(R,w.id,d);let s='';
-  if(x.off)return offWord(w,d)+'\n';
-  if(x.jobs.length){if(x.jobs.length>1)s+=x.jobs.length+' εργασίες σήμερα:\n';
-    x.jobs.forEach(({job,lead})=>{const p=P(job.task.projectId);s+=p.name+' ('+p.location+')\n  '+job.task.title+(lead?', υπεύθυνος':'')+'\n';
-    const others=[job.lead,...job.helpers].filter(o=>o&&o.id!==w.id).map(o=>short(o.name));if(others.length)s+='  Μαζί: '+others.join(', ')+'\n'})}
-  else if(x.gen)s+='Αποθήκη και συντήρηση εξοπλισμού\n';
-  else if(x.pm.length)s+='Διαχείριση έργων:\n'+x.pm.map(pid=>'  '+P(pid).name+' ('+P(pid).location+')\n').join('');
+// l: η γλώσσα του εργαζόμενου· σε άλλη γλώσσα από τα ελληνικά, κάτω από κάθε έργο και εργασία μπαίνει μια γραμμή με λατινικούς χαρακτήρες
+// (τα ονόματα μένουν όπως τα γράφει το γραφείο, ώστε να συνεννοούνται)
+function dayBlock(R,w,d,l){
+  const x=whatDoes(R,w.id,d);let s='';const Z=(ind,str)=>{const t=tlitL(l,str);return t?ind+t+'\n':''},nm=n=>short(nameL(l,n));
+  const pl=p=>p.name+' ('+p.location+')';
+  if(x.off)return offWord(w,d,l)+'\n';
+  if(x.jobs.length){if(x.jobs.length>1)s+=tx(l,'{n} εργασίες σήμερα:',{n:x.jobs.length})+'\n';
+    x.jobs.forEach(({job,lead})=>{const p=P(job.task.projectId);s+=pl(p)+'\n'+Z('    ',pl(p))+'  '+job.task.title+(lead?tx(l,', υπεύθυνος'):'')+'\n'+Z('    ',job.task.title);
+    const others=[job.lead,...job.helpers].filter(o=>o&&o.id!==w.id).map(o=>nm(o.name));if(others.length)s+='  '+tx(l,'Μαζί:')+' '+others.join(', ')+'\n'})}
+  else if(x.gen)s+=tx(l,'Αποθήκη και συντήρηση εξοπλισμού')+'\n';
+  else if(x.pm.length)s+=tx(l,'Διαχείριση έργων:')+'\n'+x.pm.map(pid=>'  '+pl(P(pid))+'\n'+Z('    ',pl(P(pid)))).join('');
   else if(w.id===OWNER);
-  else if(isOffice(w))s+=(SP(w.specialtyId)?.name||'Γραφείο')+'\n';
-  else if(isExt(w))s+='Καμία εργασία\n';
-  else s+='Χωρίς ανάθεση (θα ενημερωθείς)\n';
-  x.appts.forEach(a=>{s+='Ραντεβού '+apTime(a)+': '+a.title+(a.client?', '+a.client:'')+(a.place?' ('+a.place+')':'')+'\n';
-    const o=(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>short(p.name));if(o.length)s+='  Μαζί: '+o.join(', ')+'\n'});
-  if(x.duties.length)s+='Υπενθυμίσεις:\n'+x.duties.map(dutyLine).join('');
+  else if(isOffice(w))s+=spL(l,SP(w.specialtyId)?.name||'Γραφείο')+'\n';
+  else if(isExt(w))s+=tx(l,'Καμία εργασία')+'\n';
+  else s+=tx(l,'Χωρίς ανάθεση (θα ενημερωθείς)')+'\n';
+  x.appts.forEach(a=>{const ln=a.title+(a.client?', '+a.client:'')+(a.place?' ('+a.place+')':'');s+=tx(l,'Ραντεβού {t}',{t:apTime(a)})+': '+ln+'\n'+Z('    ',ln);
+    const o=(a.people||[]).filter(id=>id!==w.id).map(apPerson).filter(Boolean).map(p=>nm(p.name));if(o.length)s+='  '+tx(l,'Μαζί:')+' '+o.join(', ')+'\n'});
+  if(x.duties.length)s+=tx(l,'Υπενθυμίσεις:')+'\n'+x.duties.map(t=>dutyLine(t,l)).join('');
   return s;
 }
-const dutyLine=t=>'  • '+(t.time?t.time+' ':'')+t.title+(t.projectId&&P(t.projectId)?' ('+P(t.projectId).name+')':'')+(t.late?', εκκρεμεί από '+fmt(t.late):'')+'\n';
+const dutyLine=(t,l)=>{const ln=t.title+(t.projectId&&P(t.projectId)?' ('+P(t.projectId).name+')':''),z=tlitL(l,ln);
+  return '  • '+(t.time?t.time+' ':'')+ln+(t.late?tx(l,', εκκρεμεί από {d}',{d:fmtX(l,t.late)}):'')+'\n'+(z?'    '+z+'\n':'')};
 // ό,τι μετρά για να μάθει ένας εργαζόμενος ότι άλλαξε η μέρα του: πού, τι και με ποιον ρόλο (όχι ποιοι άλλοι είναι στο συνεργείο)
 const dayKey=(R,w,d)=>dayBlock(R,w,d).split('\n').filter(l=>!/^\s+Μαζί:/.test(l)).join('\n');
 // υπογραφή σε κάθε μήνυμα προς το προσωπικό
 const SIGN0='\n'+BRAND.name+' · '+BRAND.tag;
 const sign=()=>(S&&S.settings&&S.settings.company&&S.settings.company.name?'\n'+S.settings.company.name:'')+SIGN0;
-function personText(R,w,ws){
-  let s='ΠΡΟΓΡΑΜΜΑ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n'+w.name+'\n';
-  weekDays(ws).forEach(d=>{s+='\n'+fmt(d)+': '+(dayBlock(R,w,d)||'—\n')});
+function personText(R,w,ws){const l=langOf(w);
+  let s=tx(l,'ΠΡΟΓΡΑΜΜΑ ΕΒΔΟΜΑΔΑΣ {a} – {b}',{a:fmtSX(l,ws),b:fmtSX(l,add(ws,6))})+'\n'+nameL(l,w.name)+'\n';
+  weekDays(ws).forEach(d=>{s+='\n'+fmtX(l,d)+': '+(dayBlock(R,w,d,l)||'—\n')});
   return s+sign();
 }
 // σύνοψη εβδομάδας για τον εργολάβο: τι τελείωσε, τι προχωρά, πόσο κόστισε κάθε έργο και αν προλαβαίνει την παράδοση
@@ -2171,12 +2563,12 @@ function weekSumText(X){
 // ο καιρός της μέρας εκεί που δουλεύει (στο πρώτο έργο του, αλλιώς στην έδρα)
 function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.pm.length?x.pm[0]:'',d)}
 function personDayText(R,w,d,upd){
-  const f=wxFor(R,w.id,d);
-  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':'Γεια σου '+voc(w.name)+'! ';
+  const f=wxFor(R,w.id,d),l=langOf(w);
+  const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':tx(l,'Γεια σου {n}!',{n:hiName(w,l)})+' ';
   // ώρα έναρξης από τις Ρυθμίσεις, μόνο για όσους πάνε σε εργοτάξιο ή αποθήκη
   const x=whatDoes(R,w.id,d),st=S.settings&&S.settings.startTime;
-  const start=st&&!x.off&&(x.jobs.length||x.gen)?'Έναρξη: '+st+'\n':'';
-  return hi+(upd?'Άλλαξε το πρόγραμμά σου για ':'Το πρόγραμμά σου για ')+fmt(d)+':\n\n'+start+dayBlock(R,w,d)+(f?'\nΚαιρός: '+wxText(f)+'\n':'')+sign();
+  const start=st&&!x.off&&(x.jobs.length||x.gen)?tx(l,'Έναρξη: {t}',{t:st})+'\n':'';
+  return hi+tx(l,upd?'Άλλαξε το πρόγραμμά σου για {d}':'Το πρόγραμμά σου για {d}',{d:fmtX(l,d)})+':\n\n'+start+dayBlock(R,w,d,l)+(f?'\n'+tx(l,'Καιρός: {x}',{x:wxText(f,l)})+'\n':'')+sign();
 }
 // --- από το εργοτάξιο: πρόοδος από τον υπεύθυνο της εργασίας και αιτήματα άδειας από τον εργαζόμενο ---
 // S.field = [{id,k:'done'|'more'|'leave',w,t,d,from,to,note,at,st,by,dec}]
@@ -2248,21 +2640,21 @@ function mergeField(o,cur,skip,onlyNew){
 }
 // η εβδομάδα ενός εργαζόμενου σε δεδομένα, για τη σελίδα «Το πρόγραμμά μου».
 // Περιέχει μόνο ό,τι χρειάζεται ο ίδιος: πού, τι και με ποιους. Όχι μεροκάματα ή κόστη.
-function personWeek(R,w,ws){
-  return {name:w.name,specialty:SP(w.specialtyId)?.name||'',weekStart:ws,days:weekDays(ws).map(d=>{
+function personWeek(R,w,ws,l){
+  return {name:w.name,specialty:spL(l,SP(w.specialtyId)?.name||''),weekStart:ws,days:weekDays(ws).map(d=>{
     const x=whatDoes(R,w.id,d),o={date:d,off:x.off,rest:x.off&&!isLeave(w,d),items:[],duties:[]};
     if(x.off)return o;
-    const f=wxFor(R,w.id,d);if(f){const k=wxKind(f.code);o.wx={k:k.k,text:wxText(f),wet:isWet(f,wxCfg())}}
+    const f=wxFor(R,w.id,d);if(f){const k=wxKind(f.code);o.wx={k:k.k,text:wxText(f,l),wet:isWet(f,wxCfg())}}
     x.jobs.forEach(({job,lead})=>{const p=P(job.task.projectId),t=job.task;
       // ο υπεύθυνος της εργασίας στέλνει πρόοδο μόνο για σήμερα
       const rep=d===TODAY&&hasF('progress')&&(lead||t.responsibleId===w.id)?{done:t.status==='done',more:progressOf(t.id,d).some(r=>r.k==='more'),day:job.dayNo,days:+t.days||1}:null;
       o.items.push({kind:'job',tid:t.id,project:p.name,location:p.location||'',color:p.color||'',task:t.title,lead,rep,
       with:[job.lead,...job.helpers].filter(q=>q&&q.id!==w.id).map(q=>q.name)})});
     if(!x.jobs.length){
-      if(x.gen)o.items.push({kind:'gen',title:'Αποθήκη και συντήρηση εξοπλισμού'});
-      else if(x.pm.length)x.pm.forEach(pid=>{const p=P(pid);o.items.push({kind:'pm',project:p.name,location:p.location||'',color:p.color||'',task:'Διαχείριση έργου'})});
-      else if(isOffice(w))o.items.push({kind:'office',title:SP(w.specialtyId)?.name||'Γραφείο'});
-      else o.items.push({kind:'none',title:isExt(w)?'Καμία εργασία':'Χωρίς ανάθεση ακόμη. Θα ενημερωθείς.'});
+      if(x.gen)o.items.push({kind:'gen',title:tx(l,'Αποθήκη και συντήρηση εξοπλισμού')});
+      else if(x.pm.length)x.pm.forEach(pid=>{const p=P(pid);o.items.push({kind:'pm',project:p.name,location:p.location||'',color:p.color||'',task:tx(l,'Διαχείριση έργου')})});
+      else if(isOffice(w))o.items.push({kind:'office',title:spL(l,SP(w.specialtyId)?.name||'Γραφείο')});
+      else o.items.push({kind:'none',title:tx(l,isExt(w)?'Καμία εργασία':'Χωρίς ανάθεση ακόμη. Θα ενημερωθείς.')});
     }
     o.duties=x.duties.map(t=>({title:t.title,project:t.projectId?P(t.projectId)?.name||'':'',time:t.time||'',late:t.late||'',notes:t.notes||''}));
     o.appts=x.appts.map(a=>({time:apTime(a),title:a.title,client:a.client||'',phone:a.phone||'',place:a.place||'',done:a.status==='done',
@@ -2270,12 +2662,12 @@ function personWeek(R,w,ws){
     return o})};
 }
 // ό,τι βλέπει ο εργαζόμενος στο «Το πρόγραμμά μου»: η εβδομάδα του και τα δικά του αιτήματα άδειας
-function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progress'),leave:hasF('leave'),push:hasF('push'),gps:hasF('gps')&&!isOffice(w)&&!isExt(w),diary:hasF('diary')&&!isOffice(w)};
+function myView(R,w,ws,l){l=l||langOf(w);const o=personWeek(R,w,ws,l);o.lang=isOn('lang')?(w.lang||''):'el';o.feats={lang:isOn('lang'),progress:hasF('progress'),leave:hasF('leave'),push:hasF('push'),gps:hasF('gps')&&!isOffice(w)&&!isExt(w),diary:hasF('diary')&&!isOffice(w)};
   o.days.forEach(d=>{if(d.off&&isAbsent(w.id,d.date))d.absent=true;const r=o.feats.gps&&attOf(d.date,w.id);if(r)d.att=attPub(r)});
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
@@ -2330,14 +2722,35 @@ const LU=LS+'.users',LSESS=LS+'.session';
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const lsDel=(...ks)=>{try{ks.forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k)})}catch(e){}};
+// --- γλώσσα της σελίδας του εργαζόμενου (μεταφράσεις στο src/i18n.js). Το γραφείο μένει πάντα στα ελληνικά (UL = 'el') ---
+const I18N=ErgoCore.I18N;
+let UL='el';
+const TR=(s,p)=>I18N.tx(UL,s,p);
+const TRH=(s,p)=>I18N.fill(h(I18N.tx(UL,s)),p);   // για HTML: η μετάφραση περνά από h(), οι παράμετροι είναι ήδη ασφαλείς
+const isR=()=>I18N.isRTL(UL);
+const fD=s=>UL==='el'?fmt(s):I18N.fmtD(UL,s);
+const fS=s=>UL==='el'?fmtS(s):I18N.fmtM(UL,s);
+const TL=s=>UL!=='el'&&I18N.hasGreek(s)?I18N.tlit(s):'';
+const tlN=s=>TL(s)||String(s||'');                                               // ονόματα ανθρώπων με λατινικούς χαρακτήρες
+const tlD=s=>{const t=TL(s);return t?`<div class="tl" dir="ltr">${h(t)}</div>`:''};   // κάτω από έργο και εργασία, όπως τα γράφει το γραφείο
+const distL=m=>UL==='el'?distS(m):I18N.dist(UL,m);
+const hrsLL=m=>UL==='el'?hrsL(m):TR('{t} ώρες',{t:hrsS(m)});
+const RTL_F={ar:'Noto+Sans+Arabic',fa:'Noto+Sans+Arabic',ckb:'Noto+Sans+Arabic',he:'Noto+Sans+Hebrew'};
+// keep: η επιλογή μένει σε αυτή τη συσκευή (και για τη σελίδα σύνδεσης)
+function setLang(l,keep){l=I18N.okLang(l)?l:'el';UL=l;const de=document.documentElement,rtl=I18N.isRTL(l);
+  de.lang=l;de.dir=rtl?'rtl':'ltr';document.body.classList.toggle('rtl',rtl);
+  const f=RTL_F[l];if(f&&!document.getElementById('fnt-'+f)){const k=document.createElement('link');k.id='fnt-'+f;k.rel='stylesheet';k.href='https://fonts.googleapis.com/css2?family='+f+':wght@400;500;600;700&display=swap';document.head.appendChild(k)}
+  if(keep)lsSet(LS+'.lang',l)}
+const langOpts=()=>I18N.LANGS.map(([k,n])=>`<option value="${k}"${k===UL?' selected':''}>${h(n)}</option>`).join('');
 const normU=s=>String(s||'').trim().toLowerCase();
 const pubU=u=>({id:u.id,username:u.username,name:u.name,role:u.role,workerId:u.workerId||''});
 const initials=n=>upGR(String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join(''));
 async function api(path,body){
   let r;try{r=await fetch('api/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,cache:'no-store'})}
-  catch(e){const x=new Error('Δεν υπάρχει σύνδεση με τον server.');x.status=0;throw x}
+  catch(e){const x=new Error(TR('Δεν υπάρχει σύνδεση με τον server.'));x.status=0;throw x}
   let o={};try{o=await r.json()}catch(e){}
-  if(!r.ok){const x=new Error(o.error||'Σφάλμα '+r.status);x.status=r.status;x.data=o;throw x}
+  // τα μηνύματα του server είναι στα ελληνικά· μεταφράζονται εδώ (ek/ep: σφάλμα με παραμέτρους)
+  if(!r.ok){const x=new Error(o.error?TR(o.ek||o.error,o.ep):TR('Σφάλμα {n}',{n:r.status}));x.status=r.status;x.data=o;throw x}
   return o;
 }
 // κρυπτογράφηση κωδικού στον browser (PBKDF2), όταν δεν υπάρχει server
@@ -2373,7 +2786,7 @@ async function authMe(){
 async function authLogin(username,password,remember){
   if(SERVER)return (await api('login',{username,password,remember})).user;
   const u=localUsers().find(x=>x.username===normU(username));
-  if(!u||await pbk(password,u.salt)!==u.hash)throw new Error('Λάθος όνομα χρήστη ή κωδικός.');
+  if(!u||await pbk(password,u.salt)!==u.hash)throw new Error(TR('Λάθος όνομα χρήστη ή κωδικός.'));
   localStart(u,remember);return pubU(u);
 }
 async function authSetup(v){
@@ -2385,7 +2798,7 @@ async function authSetup(v){
 }
 async function authLogout(){
   if(SERVER){try{await api('logout',{})}catch(e){}lsDel(LS,LS+'.me',LS+'.my');location.reload();return}
-  lsDel(LSESS);showAuth('login','');
+  lsDel(LSESS);setLang(lsGet(LS+'.lang','el'));showAuth('login','');
 }
 async function usersList(){return SERVER?(await api('users')).users:localUsers().map(pubU)}
 async function userSave(v){
@@ -2403,10 +2816,10 @@ async function userDelete(id){
   lsSet(LU,localUsers().filter(x=>x.id!==id));
 }
 async function changePw(current,password){
-  if(String(password||'').length<8)throw new Error('Ο κωδικός θέλει τουλάχιστον 8 χαρακτήρες.');
+  if(String(password||'').length<8)throw new Error(TR('Ο κωδικός θέλει τουλάχιστον 8 χαρακτήρες.'));
   if(SERVER)return api('password',{current,password});
   const us=localUsers(),u=us.find(x=>x.id===AUTH.user.id);
-  if(!u||await pbk(current,u.salt)!==u.hash)throw new Error('Ο τωρινός κωδικός δεν είναι σωστός.');
+  if(!u||await pbk(current,u.salt)!==u.hash)throw new Error(TR('Ο τωρινός κωδικός δεν είναι σωστός.'));
   u.salt=newSalt();u.hash=await pbk(password,u.salt);lsSet(LU,us);
 }
 // το λογότυπο φτιάχνεται από το BRAND (core): όνομα, σύνθημα και ποιο γράμμα γίνεται το σήμα
@@ -2419,23 +2832,27 @@ const LOGO_HTML=document.querySelector('.side-top .logo').outerHTML;
 function showAuth(mode,msg){
   AUTH.user=null;closeModal();document.body.classList.remove('in','nav-open');document.getElementById('toast').hidden=true;
   const setup=mode==='setup',a=document.getElementById('auth');
+  if(setup)setLang('el');   // ο πρώτος λογαριασμός είναι του διαχειριστή
   a.innerHTML=`<div class="auth-in">${LOGO_HTML}
   <form class="auth-card" id="authf" data-mode="${mode}" novalidate>
-    <h1>${setup?'Καλώς ήρθες στο '+h(BRAND.name):'Σύνδεση'}</h1>
+    ${setup?'':`<label class="auth-lang">${ico('globe')}<select id="a_lang" aria-label="${h(TR('Γλώσσα'))}${UL==='el'?'':' / Γλώσσα'}">${langOpts()}</select></label>`}
+    <h1>${setup?'Καλώς ήρθες στο '+h(BRAND.name):TRH('Σύνδεση')}</h1>
     ${setup?'<p class="note">Φτιάξε τον λογαριασμό του διαχειριστή. Με αυτόν μπαίνεις και δίνεις λογαριασμούς στο γραφείο και στους εργαζόμενους.</p><label>Ονοματεπώνυμο<input id="a_name" autocomplete="name"></label>':''}
-    <label>Όνομα χρήστη<input id="a_user" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
-    <label>Κωδικός${setup?' (τουλάχιστον 8 χαρακτήρες)':''}<span class="pw"><input id="a_pw" type="password" autocomplete="${setup?'new-password':'current-password'}"><button type="button" class="pwt" data-act="pwshow">Εμφάνιση</button></span></label>
-    ${setup?'<label>Ξανά ο κωδικός<input id="a_pw2" type="password" autocomplete="new-password"></label>':'<label class="ck"><input type="checkbox" id="a_rem" checked> <span>Να με θυμάσαι σε αυτή τη συσκευή</span></label>'}
+    <label>${TRH('Όνομα χρήστη')}<input id="a_user" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" dir="ltr"></label>
+    <label>${TRH('Κωδικός')}${setup?' (τουλάχιστον 8 χαρακτήρες)':''}<span class="pw"><input id="a_pw" type="password" dir="ltr" autocomplete="${setup?'new-password':'current-password'}"><button type="button" class="pwt" data-act="pwshow">${TRH('Εμφάνιση')}</button></span></label>
+    ${setup?'<label>Ξανά ο κωδικός<input id="a_pw2" type="password" autocomplete="new-password"></label>':`<label class="ck"><input type="checkbox" id="a_rem" checked> <span>${TRH('Να με θυμάσαι σε αυτή τη συσκευή')}</span></label>`}
     <p class="auth-err" id="a_err" role="alert">${h(msg||'')}</p>
-    <button class="btn auth-go" type="submit">${setup?'Δημιουργία και είσοδος':'Σύνδεση'}</button>
-    ${setup?'':'<p class="note auth-help">Ξέχασες τον κωδικό; Ζήτα από το γραφείο να σου βάλει νέο.</p>'}
+    <button class="btn auth-go" type="submit">${setup?'Δημιουργία και είσοδος':TRH('Σύνδεση')}</button>
+    ${setup?'':`<p class="note auth-help">${TRH('Ξέχασες τον κωδικό; Ζήτα από το γραφείο να σου βάλει νέο.')}</p>`}
   </form>
-  ${SERVER?'':'<p class="auth-foot">Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Στον server της εταιρείας φυλάγονται κεντρικά.</p>'}</div>`;
+  ${SERVER?'':`<p class="auth-foot">${TRH('Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Στον server της εταιρείας φυλάγονται κεντρικά.')}</p>`}</div>`;
   a.hidden=false;fitLogo();
   const f=document.getElementById(setup?'a_name':'a_user');if(f)f.focus();
 }
 function enter(u){
   AUTH.user=u;PUSH.st=null;SYNC=!SERVER;
+  // το γραφείο δουλεύει στα ελληνικά· ο εργαζόμενος στη γλώσσα της συσκευής, μέχρι να έρθει η δική του από το πρόγραμμα
+  setLang(u.role==='worker'?lsGet(LS+'.lang',UL):'el');langSync.sent=0;
   if(SERVER){lsSet(LS+'.me',u);if(u.role==='worker')lsDel(LS)}   // ο εργάτης δεν κρατά αντίγραφο των δεδομένων της εταιρείας
   const a=document.getElementById('auth');a.hidden=true;a.innerHTML='';document.getElementById('toast').hidden=true;
   document.body.classList.add('in');
@@ -2445,7 +2862,7 @@ function enter(u){
   render();fitLogo();window.scrollTo(0,0);
   if(SERVER&&u.role!=='worker')pull().then(ok=>{ok&&render();wxRefresh();guideAuto()});else{wxRefresh();guideAuto()}
 }
-const expired=()=>showAuth('login','Η σύνδεση έληξε. Μπες ξανά.');
+const expired=()=>{if(!isWorker())setLang(lsGet(LS+'.lang','el'));showAuth('login',TR('Η σύνδεση έληξε. Μπες ξανά.'))};
 
 const pc=p=>'var(--'+((typeof p==='string'?(PSEUDO[p]||P(p)):p)?.color||'p6')+')';
 
@@ -2589,6 +3006,7 @@ const RATE_L={5:'Άριστος',4:'Πολύ καλός',3:'Καλός',2:'Μέ�
 const DIFF_L={5:'Πολύ δύσκολη',4:'Δύσκολη',3:'Κανονική',2:'Εύκολη',1:'Πολύ εύκολη'};
 const stars=w=>{const n=wRate(w);return `<span class="stars" title="Βαθμός ${n} από 5: ${RATE_L[n]}" aria-label="Βαθμός ${n} από 5">${[1,2,3,4,5].map(i=>`<svg viewBox="0 0 24 24" class="${i<=n?'':'e'}" fill="currentColor" aria-hidden="true">${ICONS.star}</svg>`).join('')}</span>`};
 // δεύτερη ειδικότητα και μέρες εργασίας κάτω από το όνομα
+const langTag=w=>hasF('lang')&&w.lang&&w.lang!=='el'&&I18N.okLang(w.lang)?` <span class="tag mute" title="Γλώσσα σελίδας και μηνυμάτων">${ico('globe')}${h(I18N.langName(w.lang))}</span>`:'';
 const availNote=w=>{if(!availOn())return '';const x=[];if(sp2(w)&&SP(sp2(w)))x.push('και '+SP(sp2(w)).name);
   if(Array.isArray(w.days)&&w.days.length&&!S.settings.workdays.every(d=>w.days.includes(d)))x.push('δουλεύει '+[1,2,3,4,5,6,0].filter(d=>w.days.includes(d)).map(d=>DAYS[d]).join(', '));
   return x.length?`<div class="note">${h(x.join(' · '))}</div>`:''};
@@ -2603,7 +3021,7 @@ const nextOn=(R,tid,d)=>Object.keys(R.byDay).sort().find(x=>x>d&&R.byDay[x].jobs
 const freqText=x=>x.freq==='daily'?'Κάθε εργάσιμη':x.freq==='days'?'Κάθε '+(x.days||[]).map(d=>DAYS[d]).join(', '):x.freq==='month'?'Κάθε μήνα στις '+(+x.dom||1):'Μία φορά, '+fmt(x.date);
 
 /* ---------- Καρτέλες ---------- */
-const ICONS={link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',cam:'<path d="M3.5 8.5h3.2l1.7-2.6h7.2l1.7 2.6h3.2v10.6h-17z"/><circle cx="12" cy="13.4" r="3.5"/>',loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+const ICONS={globe:'<circle cx="12" cy="12" r="8.8"/><path d="M3.2 12h17.6M12 3.2c2.4 2.4 3.6 5.3 3.6 8.8s-1.2 6.4-3.6 8.8c-2.4-2.4-3.6-5.3-3.6-8.8s1.2-6.4 3.6-8.8z"/>',link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',cam:'<path d="M3.5 8.5h3.2l1.7-2.6h7.2l1.7 2.6h3.2v10.6h-17z"/><circle cx="12" cy="13.4" r="3.5"/>',loc:'<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',trend:'<path d="M3 17l6-6 4 4 7.5-7.5"/><path d="M14.5 7.5H20.5V13.5"/>',search:'<circle cx="10.8" cy="10.8" r="6.3"/><path d="M20 20l-4.6-4.6"/>',star:'<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z"/>',lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
   proj:'<path d="M3 21h18M5 21V9.5l7-5 7 5V21"/><path d="M10 21v-5h4v5"/>',
   ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.2" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 2 5 5.4"/>',
   eur:'<circle cx="12" cy="12" r="9"/><path d="M15.6 8.6a4.6 4.6 0 1 0 0 6.8M7.5 10.6h6M7.5 13.4h6"/>',
@@ -2650,7 +3068,7 @@ const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" st
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
 const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck',att:'loc',diary:'cam',clients:'card'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
-const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
+const navGroups=()=>isWorker()?[{k:'plan',l:TRH('Πρόγραμμα'),i:'cal',items:[['mine',TRH('Το πρόγραμμά μου')]]}]:[
   {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['duties','Υπενθυμίσεις']]},
   {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['clients','Πελάτες'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο'],['equip','Εξοπλισμός']]},
   {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες'],['att','Παρουσίες']]},
@@ -2666,15 +3084,15 @@ function renderNav(){
       ?`<button class="ni sub" data-tab="project" data-p="${p.id}"${isCur(k,p)?' aria-current="page"':''}><i class="dot" style="background:${pc(p)}"></i><span>${h(l)}</span></button>`
       :TAB_F[k]&&offF(TAB_F[k])?''
       :`<button class="ni" data-tab="${k}"${isCur(k)?' aria-current="page"':''}>${ico(NAVI[k]||'day')}<span>${l}</span>${TAB_F[k]?lockTag(TAB_F[k]):''}</button>`).join('')}</div></div>`}).join('');
-  document.getElementById('navb').innerHTML=`${AUTH.user?`<div class="me"><span class="av" aria-hidden="true">${h(initials(AUTH.user.name))}</span><span class="me-t"><b>${h(AUTH.user.name)}</b><small>${ROLE_L[AUTH.user.role]||''}</small></span><button class="iconbtn" data-act="logout" title="Αποσύνδεση" aria-label="Αποσύνδεση">${ico('out')}</button></div>`:''}
-      <button class="ni top" data-tab="settings"${UI.tab==='settings'?' aria-current="page"':''}>${ico(isWorker()?'user':'gear')}<span>${isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'}</span></button>`;
-  const tabs=isWorker()?[['mine','Πρόγραμμα','day'],['settings','Λογαριασμός','user']]:[['today','Σήμερα','day'],['week','Εβδομάδα','week'],['projects','Έργα','bld'],['tasks','Εργασίες','list']];
+  document.getElementById('navb').innerHTML=`${AUTH.user?`<div class="me"><span class="av" aria-hidden="true">${h(initials(AUTH.user.name))}</span><span class="me-t"><b>${h(AUTH.user.name)}</b><small>${TRH(ROLE_L[AUTH.user.role]||'')}</small></span><button class="iconbtn" data-act="logout" title="${TRH('Αποσύνδεση')}" aria-label="${TRH('Αποσύνδεση')}">${ico('out')}</button></div>`:''}
+      <button class="ni top" data-tab="settings"${UI.tab==='settings'?' aria-current="page"':''}>${ico(isWorker()?'user':'gear')}<span>${isWorker()?TRH('Ο λογαριασμός μου'):'Ρυθμίσεις'}</span></button>`;
+  const tabs=isWorker()?[['mine',TRH('Πρόγραμμα'),'day'],['settings',TRH('Λογαριασμός'),'user']]:[['today','Σήμερα','day'],['week','Εβδομάδα','week'],['projects','Έργα','bld'],['tasks','Εργασίες','list']];
   const onTab=k=>UI.tab===k||(k==='projects'&&UI.tab==='project');
   document.getElementById('tabbar').innerHTML=tabs.map(([k,l,i])=>`<button class="tb" data-tab="${k}"${onTab(k)?' aria-current="page"':''}>${ico(i)}<span>${l}</span></button>`).join('')
     +(isWorker()?'':`<button class="tb${tabs.some(([k])=>onTab(k))?'':' on'}" data-act="navopen" aria-label="Όλο το μενού">${ico('menu')}<span>Μενού</span></button>`);
   const mav=document.getElementById('mav');if(mav)mav.textContent=AUTH.user?initials(AUTH.user.name):'';
   const g=navGroups().find(g=>g.items.some(([k,,p])=>isCur(k,p)));
-  document.getElementById('mtitle').textContent=UI.tab==='project'?P(UI.proj)?.name||'':UI.tab==='client'?cliById(UI.cli)?.name||'':UI.tab==='settings'?(isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'):(g?g.items.find(([k,,p])=>isCur(k,p))[1]:'');
+  document.getElementById('mtitle').textContent=UI.tab==='project'?P(UI.proj)?.name||'':UI.tab==='client'?cliById(UI.cli)?.name||'':UI.tab==='settings'?(isWorker()?TR('Ο λογαριασμός μου'):'Ρυθμίσεις'):(g?g.items.find(([k,,p])=>isCur(k,p))[1].replace(/&amp;/g,'&'):'');
 }
 function render(){
   if(!AUTH.user)return;
@@ -2713,7 +3131,7 @@ const isApp=()=>matchMedia('(display-mode: standalone)').matches||navigator.stan
 const u8=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((s.length+3)%4)),c=>c.charCodeAt(0));
 // ο service worker γράφεται στη φόρτωση της σελίδας· αν δεν έχει γραφτεί ακόμη, γράφεται εδώ
 const swReady=()=>Promise.race([navigator.serviceWorker.getRegistration().then(r=>r||navigator.serviceWorker.register('/sw.js')).then(()=>navigator.serviceWorker.ready),
-  new Promise((_,no)=>setTimeout(()=>no(new Error('Η εφαρμογή δεν ετοιμάστηκε για ειδοποιήσεις. Ξαναφόρτωσε τη σελίδα.')),8000))]);
+  new Promise((_,no)=>setTimeout(()=>no(new Error(TR('Η εφαρμογή δεν ετοιμάστηκε για ειδοποιήσεις. Ξαναφόρτωσε τη σελίδα.'))),8000))]);
 async function pushLoad(force){if(PUSH.load||(PUSH.st&&!force))return;PUSH.load=true;
   try{let sub=null;if(pushCan()){const reg=await swReady();sub=await reg.pushManager.getSubscription()}
     PUSH.st={...await api('push'+(sub?'?ep='+encodeURIComponent(sub.endpoint):'')),sub}}
@@ -2723,126 +3141,140 @@ async function pushLoad(force){if(PUSH.load||(PUSH.st&&!force))return;PUSH.load=
 function pushPaint(){const a=document.getElementById('pushp');if(a)a.outerHTML=pushPanel();const b=document.getElementById('pushinv');if(b)b.outerHTML=pushInvite()}
 // τι μπορεί να γίνει σε αυτή τη συσκευή· κενό = μπορεί να ενεργοποιηθεί
 function pushWhy(){
-  if(isIOS()&&!isApp())return 'Στο iPhone οι ειδοποιήσεις έρχονται όταν η εφαρμογή είναι στην αρχική οθόνη. Στο Safari πάτα Κοινοποίηση και «Προσθήκη στην οθόνη Αφετηρίας», και άνοιξέ την από εκεί.';
-  if(!pushCan())return 'Αυτός ο browser δεν δέχεται ειδοποιήσεις. Άνοιξε την εφαρμογή στο κινητό από Chrome ή Safari.';
-  if(Notification.permission==='denied')return 'Οι ειδοποιήσεις είναι μπλοκαρισμένες για την εφαρμογή. Άνοιξέ τες από τις ρυθμίσεις του κινητού ή του browser και ξαναδοκίμασε.';
+  if(isIOS()&&!isApp())return TR('Στο iPhone οι ειδοποιήσεις έρχονται όταν η εφαρμογή είναι στην αρχική οθόνη. Στο Safari πάτα Κοινοποίηση και «Προσθήκη στην οθόνη Αφετηρίας», και άνοιξέ την από εκεί.');
+  if(!pushCan())return TR('Αυτός ο browser δεν δέχεται ειδοποιήσεις. Άνοιξε την εφαρμογή στο κινητό από Chrome ή Safari.');
+  if(Notification.permission==='denied')return TR('Οι ειδοποιήσεις είναι μπλοκαρισμένες για την εφαρμογή. Άνοιξέ τες από τις ρυθμίσεις του κινητού ή του browser και ξαναδοκίμασε.');
   return ''}
 function pushPanel(){
-  const head='<section class="panel" id="pushp"><h2>Ειδοποιήσεις στο κινητό</h2>',end='</section>';
+  const head=`<section class="panel" id="pushp"><h2>${TRH('Ειδοποιήσεις στο κινητό')}</h2>`,end='</section>';
   if(!isWorker()){if(offF('push'))return '<div id="pushp" hidden></div>';
     if(!planHas('push'))return head+`<p class="note">Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση στο κινητό, χωρίς χρέωση ανά μήνυμα.</p><div class="bar" style="margin-top:8px">${lockBtn('push','<button>Ειδοποιήσεις στο κινητό</button>')}</div>`+end}
-  if(!SERVER)return head+'<p class="note">Ο καθένας τις ενεργοποιεί στο κινητό του, και του έρχονται το πρόγραμμα της μέρας, οι αλλαγές του και η απάντηση στις άδειες. Στο γραφείο έρχονται η πρόοδος και τα αιτήματα άδειας από το εργοτάξιο. Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.</p>'+end;
+  if(!SERVER)return head+(isWorker()?`<p class="note">${TRH('Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.')} ${TRH('Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.')}</p>`:'<p class="note">Ο καθένας τις ενεργοποιεί στο κινητό του, και του έρχονται το πρόγραμμα της μέρας, οι αλλαγές του και η απάντηση στις άδειες. Στο γραφείο έρχονται η πρόοδος και τα αιτήματα άδειας από το εργοτάξιο. Λειτουργούν όταν η εφαρμογή τρέχει στον server της εταιρείας.</p>')+end;
   const st=PUSH.st;
-  if(!st)return head+'<p class="note">Φόρτωση…</p>'+end;
+  if(!st)return head+`<p class="note">${TRH('Φόρτωση…')}</p>`+end;
   if(st.err)return head+`<p class="note">${h(st.err)}</p>`+end;
   if(!st.on)return isWorker()?'<div id="pushp" hidden></div>':head+'<p class="note">Οι ειδοποιήσεις είναι κλειστές για την εταιρεία.</p>'+end;
   const why=pushWhy(),busy=PUSH.busy?' disabled':'';
-  return head+`<p class="note">${isWorker()?'Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.':'Ενεργοποίησέ τες σε κάθε κινητό ή υπολογιστή που θέλεις. Κάθε χρήστης τις ανοίγει στη δική του συσκευή.'}</p>
-    <div class="bar pushst">${st.here?`<span class="tag ok">${ico('check')}Ενεργές σε αυτή τη συσκευή</span><button class="btn" data-act="pushtest"${busy}>Δοκιμή</button><button class="btn ghost" data-act="pushoff"${busy}>Απενεργοποίηση</button>`
-      :why?`<p class="warnline">${ico('info')}<span>${h(why)}</span></p>`:`<button class="btn pri" data-act="pushon"${busy}>${ico('bell')}Ενεργοποίηση σε αυτή τη συσκευή</button>`}</div>
-    ${st.devices&&!(st.here&&st.devices===1)?`<p class="note">${st.devices===1?'1 συσκευή':st.devices+' συσκευές'} με ειδοποιήσεις για τον λογαριασμό σου.</p>`:''}
-    ${st.devices&&st.kinds&&st.kinds.length>1?`<div class="fs" style="margin-top:12px"><span class="fl">Τι θέλω να μου έρχεται</span><div class="wd">${st.kinds.map(k=>`<label><input type="checkbox" data-pk="${h(k.k)}"${k.on?' checked':''}> ${h(k.name)}</label>`).join('')}</div></div>`:''}`+end}
+  return head+`<p class="note">${isWorker()?TRH('Σου έρχεται το πρόγραμμα της μέρας, κάθε αλλαγή του και η απάντηση στις άδειές σου.'):'Ενεργοποίησέ τες σε κάθε κινητό ή υπολογιστή που θέλεις. Κάθε χρήστης τις ανοίγει στη δική του συσκευή.'}</p>
+    <div class="bar pushst">${st.here?`<span class="tag ok">${ico('check')}${TRH('Ενεργές σε αυτή τη συσκευή')}</span><button class="btn" data-act="pushtest"${busy}>${TRH('Δοκιμή')}</button><button class="btn ghost" data-act="pushoff"${busy}>${TRH('Απενεργοποίηση')}</button>`
+      :why?`<p class="warnline">${ico('info')}<span>${h(why)}</span></p>`:`<button class="btn pri" data-act="pushon"${busy}>${ico('bell')}${TRH('Ενεργοποίηση σε αυτή τη συσκευή')}</button>`}</div>
+    ${st.devices&&!(st.here&&st.devices===1)?`<p class="note">${st.devices===1?TRH('1 συσκευή με ειδοποιήσεις για τον λογαριασμό σου.'):TRH('{n} συσκευές με ειδοποιήσεις για τον λογαριασμό σου.',{n:st.devices})}</p>`:''}
+    ${st.devices&&st.kinds&&st.kinds.length>1?`<div class="fs" style="margin-top:12px"><span class="fl">${TRH('Τι θέλω να μου έρχεται')}</span><div class="wd">${st.kinds.map(k=>`<label><input type="checkbox" data-pk="${h(k.k)}"${k.on?' checked':''}> ${TRH(k.name)}</label>`).join('')}</div></div>`:''}`+end}
 // στο «Το πρόγραμμά μου»: πρόταση μία φορά, μέχρι να την ενεργοποιήσει ή να πει «Όχι τώρα»
 function pushInvite(){const st=PUSH.st,none='<div id="pushinv" hidden></div>';
   if(!SERVER||!st||st.err||!st.on||st.here||st.devices||lsGet(LS+'.pushinv',0)||pushWhy()&&!(isIOS()&&!isApp()))return none;
-  return `<section class="panel pinv" id="pushinv"><div class="pinv-t">${ico('bell')}<div class="grow"><b>Να σου έρχεται το πρόγραμμα ως ειδοποίηση;</b><div class="note">${isIOS()&&!isApp()?h(pushWhy()):'Μόλις βγαίνει το πρόγραμμα της μέρας ή αλλάζει, το βλέπεις στο κινητό χωρίς να ανοίξεις την εφαρμογή.'}</div></div></div>
-    <div class="bar">${isIOS()&&!isApp()?'':`<button class="btn pri" data-act="pushon">Ενεργοποίηση</button>`}<button class="btn ghost" data-act="pushlater">Όχι τώρα</button></div></section>`}
+  return `<section class="panel pinv" id="pushinv"><div class="pinv-t">${ico('bell')}<div class="grow"><b>${TRH('Να σου έρχεται το πρόγραμμα ως ειδοποίηση;')}</b><div class="note">${isIOS()&&!isApp()?h(pushWhy()):TRH('Μόλις βγαίνει το πρόγραμμα της μέρας ή αλλάζει, το βλέπεις στο κινητό χωρίς να ανοίξεις την εφαρμογή.')}</div></div></div>
+    <div class="bar">${isIOS()&&!isApp()?'':`<button class="btn pri" data-act="pushon">${TRH('Ενεργοποίηση')}</button>`}<button class="btn ghost" data-act="pushlater">${TRH('Όχι τώρα')}</button></div></section>`}
 async function pushEnable(){if(PUSH.busy)return;PUSH.busy=true;pushPaint();
   try{const perm=await Notification.requestPermission();
-    if(perm!=='granted'){toast(perm==='denied'?'Οι ειδοποιήσεις μπλοκαρίστηκαν. Άνοιξέ τες από τις ρυθμίσεις του κινητού.':'Δεν δόθηκε άδεια για ειδοποιήσεις.');return}
+    if(perm!=='granted'){toast(TR(perm==='denied'?'Οι ειδοποιήσεις μπλοκαρίστηκαν. Άνοιξέ τες από τις ρυθμίσεις του κινητού.':'Δεν δόθηκε άδεια για ειδοποιήσεις.'));return}
     const reg=await swReady();let sub=await reg.pushManager.getSubscription();
     try{if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(PUSH.st.key)})}
     catch(e){if(sub)await sub.unsubscribe();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(PUSH.st.key)})}
     await api('push/sub',{sub:sub.toJSON()});lsSet(LS+'.pushinv',1);
-    toast('Οι ειδοποιήσεις ενεργοποιήθηκαν σε αυτή τη συσκευή.')}
-  catch(e){if(e.status===401)return expired();toast(e.status?e.message:'Δεν ενεργοποιήθηκαν οι ειδοποιήσεις σε αυτή τη συσκευή. Δοκίμασε ξανά.')}
+    toast(TR('Οι ειδοποιήσεις ενεργοποιήθηκαν σε αυτή τη συσκευή.'))}
+  catch(e){if(e.status===401)return expired();toast(e.status?e.message:TR('Δεν ενεργοποιήθηκαν οι ειδοποιήσεις σε αυτή τη συσκευή. Δοκίμασε ξανά.'))}
   finally{PUSH.busy=false;await pushLoad(true)}}
 async function pushDisable(){if(PUSH.busy)return;PUSH.busy=true;pushPaint();
   try{const reg=await swReady(),sub=await reg.pushManager.getSubscription();if(sub){await api('push/unsub',{endpoint:sub.endpoint});await sub.unsubscribe()}
-    toast('Οι ειδοποιήσεις σταμάτησαν σε αυτή τη συσκευή.')}
-  catch(e){toast(e.message||'Δεν έγινε η αλλαγή. Δοκίμασε ξανά.')}
+    toast(TR('Οι ειδοποιήσεις σταμάτησαν σε αυτή τη συσκευή.'))}
+  catch(e){toast(e.message||TR('Δεν έγινε η αλλαγή. Δοκίμασε ξανά.'))}
   finally{PUSH.busy=false;await pushLoad(true)}}
-async function pushTest(){try{const r=await api('push/test',{});toast(r.sent?'Στάλθηκε δοκιμαστική ειδοποίηση. Θα έρθει σε λίγα δευτερόλεπτα.':'Δεν έφτασε σε καμία συσκευή. Απενεργοποίησέ τες και ενεργοποίησέ τες ξανά.')}
+async function pushTest(){try{const r=await api('push/test',{});toast(TR(r.sent?'Στάλθηκε δοκιμαστική ειδοποίηση. Θα έρθει σε λίγα δευτερόλεπτα.':'Δεν έφτασε σε καμία συσκευή. Απενεργοποίησέ τες και ενεργοποίησέ τες ξανά.'))}
   catch(e){toast(e.message)}}
 async function pushPrefs(){const off=[...document.querySelectorAll('[data-pk]')].filter(c=>!c.checked).map(c=>c.dataset.pk);
-  try{await api('push/prefs',{off});if(PUSH.st&&PUSH.st.kinds)PUSH.st.kinds.forEach(k=>k.on=!off.includes(k.k));toast('Αποθηκεύτηκε.')}catch(e){toast(e.message)}}
+  try{await api('push/prefs',{off});if(PUSH.st&&PUSH.st.kinds)PUSH.st.kinds.forEach(k=>k.on=!off.includes(k.k));toast(TR('Αποθηκεύτηκε.'))}catch(e){toast(e.message)}}
 /* Το πρόγραμμά μου (λογαριασμός εργαζόμενου) */
 const MY={};
 function myData(ws){
-  if(!SERVER){const w=W(AUTH.user.workerId);return w?myView(schedule(),w,ws):{unlinked:true}}
+  if(!SERVER){const w=W(AUTH.user.workerId),o=w?myView(schedule(),w,ws):{unlinked:true};if(langSync(o))return myView(schedule(),w,ws);return o}
   if(MY[ws])return MY[ws];
   if(!MY['_'+ws]){MY['_'+ws]=1;
     // κρατά τις τελευταίες εβδομάδες στο κινητό, για να φαίνονται και χωρίς σήμα
-    api('my?week='+ws).then(o=>{MY[ws]=o;if(o.days){const c=lsGet(LS+'.my',{});c[ws]=o;lsSet(LS+'.my',Object.fromEntries(Object.entries(c).filter(([k])=>/^\d{4}-/.test(k)).sort().slice(-6)))}})
-      .catch(e=>{if(e.status===401)return expired();const c=lsGet(LS+'.my',{})[ws];MY[ws]=c?{...c,offline:true}:{error:e.message+' Δεν υπάρχει αποθηκευμένο πρόγραμμα για αυτή την εβδομάδα.'}})
+    api('my?week='+ws).then(o=>{MY[ws]=o;if(o.days){const c=lsGet(LS+'.my',{});c[ws]=o;lsSet(LS+'.my',Object.fromEntries(Object.entries(c).filter(([k])=>/^\d{4}-/.test(k)).sort().slice(-6)))}
+        if(langSync(o))Object.keys(MY).forEach(k=>{if(k[0]!=='_'&&k!==ws)delete MY[k]})})
+      .catch(e=>{if(e.status===401)return expired();const c=lsGet(LS+'.my',{})[ws];MY[ws]=c?{...c,offline:true}:{error:e.message+' '+TR('Δεν υπάρχει αποθηκευμένο πρόγραμμα για αυτή την εβδομάδα.')}})
       .finally(()=>{delete MY['_'+ws];if(AUTH.user&&UI.tab==='mine')render()})}
   return null;
 }
+// η γλώσσα που όρισε ο ίδιος ή το γραφείο έρχεται με το πρόγραμμα· αν δεν έχει οριστεί ακόμη, στέλνεται αυτή της συσκευής
+function langSync(o){if(!o||!o.days||o.offline)return false;
+  if(o.lang&&o.lang!==UL){setLang(o.lang,true);setTimeout(render,0);return true}
+  if(!o.lang&&UL!=='el'&&!langSync.sent){langSync.sent=1;myLang(UL,true)}
+  return false}
+async function myLang(l,quiet){
+  if(SERVER){try{await api('my/lang',{lang:l})}catch(e){if(e.status===401)return expired();if(!quiet)toast(e.message);return}
+    Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});if(!quiet&&AUTH.user)render();return}
+  const w=W(AUTH.user.workerId);if(!w)return;if((w.lang||'')!==l){w.lang=l;w.langAt=new Date().toISOString();const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}}}
 function vMine(){
   if(!UI.week)UI.week=weekStart(TODAY);
-  const ws=UI.week,o=myData(ws);
-  const head=`<div class="bar"><h1 class="grow">Το πρόγραμμά μου</h1><div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div></div>`;
-  if(!o)return head+'<section class="panel"><p class="note">Φόρτωση προγράμματος…</p></section>';
-  if(o.unlinked)return head+'<section class="panel"><p>Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο. Ζήτα από το γραφείο να το κάνει.</p></section>';
-  if(o.error||!o.days)return head+`<section class="panel"><p>${h(o.error||'Δεν φορτώθηκε το πρόγραμμα.')}</p></section>`;
+  const ws=UI.week,o=myData(ws),R0=isR();
+  const head=`<div class="bar"><h1 class="grow">${TRH('Το πρόγραμμά μου')}</h1><div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="${TRH('Προηγούμενη εβδομάδα')}">${ico(R0?'cr':'cl')}</button><button class="btn" data-act="week" data-dir="0"><bdi>${fS(ws)} – ${fS(add(ws,6))}</bdi></button><button class="btn" data-act="week" data-dir="1" aria-label="${TRH('Επόμενη εβδομάδα')}">${ico(R0?'cl':'cr')}</button></div></div>`;
+  if(!o)return head+`<section class="panel"><p class="note">${TRH('Φόρτωση προγράμματος…')}</p></section>`;
+  if(o.unlinked)return head+`<section class="panel"><p>${TRH('Ο λογαριασμός σου δεν έχει συνδεθεί ακόμη με εργαζόμενο. Ζήτα από το γραφείο να το κάνει.')}</p></section>`;
+  if(o.error||!o.days)return head+`<section class="panel"><p>${h(o.error||TR('Δεν φορτώθηκε το πρόγραμμα.'))}</p></section>`;
   // ο υπεύθυνος της εργασίας δηλώνει στο τέλος της μέρας αν τελείωσε ή αν θέλει μία μέρα ακόμη
-  const repBox=it=>{const r=it.rep;return `<div class="mrep"><div class="mrep-h"><span>Πώς πήγε σήμερα;</span><span class="note">Μέρα ${r.day||1} από ${r.days}</span></div>
-      <div class="mbtns">${r.done?`<span class="tag ok">${ico('check')}Το δήλωσες: τελείωσε</span>`
-        :`<button class="btn" data-act="myrep" data-k="done" data-t="${h(it.tid)}">${ico('check')}Τελείωσε</button>${r.more?`<span class="tag warn">Δηλώθηκε μία μέρα ακόμη</span>`:`<button class="btn out" data-act="myrep" data-k="more" data-t="${h(it.tid)}">+1 μέρα</button>`}`}</div></div>`};
-  const item=(it,hero)=>it.project?`<div class="mi"><div class="t"><i class="dot" style="background:var(--${h(it.color||'p6')})"></i><b>${h(it.project)}</b></div>${it.location?`<div class="note">${h(it.location)}</div>`:''}
-      <div>${h(it.task)}${it.lead?' <span class="tag hv">Υπεύθυνος</span>':''}</div>${it.with&&it.with.length?`<div class="chips">${it.with.map(n=>`<span class="chip">${h(n)}</span>`).join('')}</div>`:''}
-      ${it.location?`<a class="btn sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.location)}" target="_blank" rel="noopener">Οδηγίες στον χάρτη</a>`:''}${hero&&it.rep&&!o.offline?repBox(it):''}</div>`
+  const repBox=it=>{const r=it.rep;return `<div class="mrep"><div class="mrep-h"><span>${TRH('Πώς πήγε σήμερα;')}</span><span class="note">${TRH('Μέρα {a} από {b}',{a:r.day||1,b:r.days})}</span></div>
+      <div class="mbtns">${r.done?`<span class="tag ok">${ico('check')}${TRH('Το δήλωσες: τελείωσε')}</span>`
+        :`<button class="btn" data-act="myrep" data-k="done" data-t="${h(it.tid)}">${ico('check')}${TRH('Τελείωσε')}</button>${r.more?`<span class="tag warn">${TRH('Δηλώθηκε μία μέρα ακόμη')}</span>`:`<button class="btn out" data-act="myrep" data-k="more" data-t="${h(it.tid)}">${TRH('+1 μέρα').replace('+1','<bdi dir="ltr">+1</bdi>')}</button>`}`}</div></div>`};
+  const chips=xs=>xs&&xs.length?`<div class="chips">${xs.map(n=>`<span class="chip"><bdi>${h(tlN(n))}</bdi></span>`).join('')}</div>`:'';
+  const item=(it,hero)=>it.project?`<div class="mi"><div class="t"><i class="dot" style="background:var(--${h(it.color||'p6')})"></i><b><bdi>${h(it.project)}</bdi></b></div>${tlD(it.project)}${it.location?`<div class="note"><bdi>${h(it.location)}</bdi></div>`:''}
+      <div><bdi>${h(it.task)}</bdi>${it.lead?` <span class="tag hv">${TRH('Υπεύθυνος')}</span>`:''}</div>${tlD(it.task)}${chips(it.with)}
+      ${it.location?`<a class="btn sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.location)}" target="_blank" rel="noopener">${TRH('Οδηγίες στον χάρτη')}</a>`:''}${hero&&it.rep&&!o.offline?repBox(it):''}</div>`
     :`<div class="mi"><b>${h(it.title)}</b></div>`;
-  const apItem=a=>`<div class="mi"><div class="t">${ico('meet')}<b>Ραντεβού ${h(a.time)}</b></div><div>${h(a.title)}${a.client?` <span class="note">· ${h(a.client)}</span>`:''}</div>
-      ${a.with&&a.with.length?`<div class="chips">${a.with.map(n=>`<span class="chip">${h(n)}</span>`).join('')}</div>`:''}
-      <div class="mbtns">${a.place?`<a class="btn sm" href="${mapsUrl(a.place)}" target="_blank" rel="noopener">Οδηγίες στον χάρτη</a>`:''}${a.phone?`<a class="btn sm" href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">Κλήση πελάτη</a>`:''}</div></div>`;
-  const body=(d,hero)=>d.off?`<span class="tag ${d.rest?'mute':'warn'}">${d.rest?'Ρεπό':d.absent?'Απουσία':'Άδεια'}</span>`:d.items.map(it=>item(it,hero)).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<div class="mrem"><span class="lbl">Υπενθυμίσεις</span><ul class="mduties">${d.duties.map(t=>`<li>${t.time?`<b>${h(t.time)}</b> `:''}${h(t.title)}${t.project?` <span class="note">(${h(t.project)})</span>`:''}${t.late?` <span class="tag warn">από ${h(fmt(t.late))}</span>`:''}${t.notes?`<div class="note">${h(t.notes)}</div>`:''}</li>`).join('')}</ul></div>`:'');
-  const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span>${h(d.wx.text)}</span></div>`:'';
+  const apItem=a=>`<div class="mi"><div class="t">${ico('meet')}<b>${TRH('Ραντεβού {t}',{t:`<bdi>${h(a.time)}</bdi>`})}</b></div><div><bdi>${h(a.title)}</bdi>${a.client?` <span class="note">· <bdi>${h(a.client)}</bdi></span>`:''}</div>${tlD(a.title+(a.client?', '+a.client:''))}
+      ${chips(a.with)}
+      <div class="mbtns">${a.place?`<a class="btn sm" href="${mapsUrl(a.place)}" target="_blank" rel="noopener">${TRH('Οδηγίες στον χάρτη')}</a>`:''}${a.phone?`<a class="btn sm" href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">${TRH('Κλήση πελάτη')}</a>`:''}</div></div>`;
+  const body=(d,hero)=>d.off?`<span class="tag ${d.rest?'mute':'warn'}">${TRH(d.rest?'Ρεπό':d.absent?'Απουσία':'Άδεια')}</span>`:d.items.map(it=>item(it,hero)).join('')+(d.appts||[]).map(apItem).join('')+(d.duties.length?`<div class="mrem"><span class="lbl">${TRH('Υπενθυμίσεις')}</span><ul class="mduties">${d.duties.map(t=>`<li>${t.time?`<b><bdi>${h(t.time)}</bdi></b> `:''}<bdi>${h(t.title)}</bdi>${t.project?` <span class="note"><bdi>(${h(t.project)})</bdi></span>`:''}${t.late?` <span class="tag warn">${TRH('από {d}',{d:`<bdi>${h(fD(t.late))}</bdi>`})}</span>`:''}${tlD(t.title+(t.project?' ('+t.project+')':''))}${t.notes?`<div class="note"><bdi>${h(t.notes)}</bdi></div>`:''}</li>`).join('')}</ul></div>`:'');
+  const wx=(d,c)=>d.wx&&!d.off?`<div class="${c}${d.wx.wet?' wet':''}">${ico(d.wx.k)}<span><bdi>${h(d.wx.text)}</bdi></span></div>`:'';
   const next=o.days.find(d=>d.date>=TODAY);
-  return head+`<p class="note" style="margin:-8px 0 0">${h(o.name)}${o.specialty?' · '+h(o.specialty):''}${o.offline?' · <span class="tag warn">Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε</span>':''}</p>
-  ${next?`<section class="panel hero"><div class="when">${next.date===TODAY?'Σήμερα':'Επόμενη μέρα'} · ${fmt(next.date)}</div>${o.feats&&o.feats.gps&&next.date===TODAY&&!next.off&&next.items.length&&!o.offline?attBox(next):''}${body(next,true)}${o.feats&&o.feats.diary&&next.date===TODAY&&!next.off&&!o.offline?myDiaryBox(o):''}${wx(next,'hwx')}</section>`:''}
+  return head+`<p class="note" style="margin:-8px 0 0"><bdi>${h(tlN(o.name))}</bdi>${o.specialty?' · <bdi>'+h(o.specialty)+'</bdi>':''}${o.offline?` · <span class="tag warn">${TRH('Χωρίς σύνδεση: το τελευταίο πρόγραμμα που φορτώθηκε')}</span>`:''}</p>
+  ${next?`<section class="panel hero"><div class="when">${TRH(next.date===TODAY?'Σήμερα':'Επόμενη μέρα')} · <bdi>${fD(next.date)}</bdi></div>${o.feats&&o.feats.gps&&next.date===TODAY&&!next.off&&next.items.length&&!o.offline?attBox(next):''}${body(next,true)}${o.feats&&o.feats.diary&&next.date===TODAY&&!next.off&&!o.offline?myDiaryBox(o):''}${wx(next,'hwx')}</section>`:''}
   ${o.feats&&o.feats.push?pushInvite():''}
-  <section class="panel"><h2>Όλη η εβδομάδα</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl">${fmt(d.date)}</div><div class="db">${body(d)}${attLine(d)}${wx(d,'wx')}</div></div>`).join('')||'<p class="empty">Δεν υπάρχουν εργάσιμες μέρες.</p>'}</div></section>
+  <section class="panel"><h2>${TRH('Όλη η εβδομάδα')}</h2><div class="pdays">${o.days.map(d=>`<div class="pday${d.date===TODAY?' is-today':''}"><div class="dl"><bdi>${fD(d.date)}</bdi></div><div class="db">${body(d)}${attLine(d)}${wx(d,'wx')}</div></div>`).join('')||`<p class="empty">${TRH('Δεν υπάρχουν εργάσιμες μέρες.')}</p>`}</div></section>
   ${o.feats&&o.feats.leave?myLeavePanel(o):''}
-  <p class="note">Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.</p>`;
+  <p class="note">${TRH('Αλλαγές στο πρόγραμμα κάνει το γραφείο. Θα ενημερωθείς και στο Viber.')}</p>`;
 }
 const LV_ST={new:['warn','Περιμένει το γραφείο'],ok:['ok','Εγκρίθηκε'],no:['bad','Δεν εγκρίθηκε'],x:['mute','Ακυρώθηκε']};
-const lvRange=r=>r.from===r.to?fmt(r.from):fmtS(r.from)+' – '+fmtS(r.to);
+const lvRange=r=>r.from===r.to?fD(r.from):fS(r.from)+' – '+fS(r.to);
+// το ίδιο στη γλώσσα του εργαζόμενου, για το μήνυμα που του στέλνει το γραφείο
+const lvRangeX=(r,l)=>r.from===r.to?ErgoCore.fmtX(l,r.from):ErgoCore.fmtSX(l,r.from)+' – '+ErgoCore.fmtSX(l,r.to);
 function myLeavePanel(o){const xs=o.leave||[];
-  return `<section class="panel" id="myleave"><div class="bar"><h2 class="grow" style="margin:0">Άδειες</h2>${o.offline?'':`<button class="btn pri" data-act="myleave">${ico('plus')}Ζήτα άδεια</button>`}</div>
-    ${xs.length?`<div class="lvlist">${xs.map(r=>`<div class="lvrow"><div class="grow"><b>${h(lvRange(r))}</b><span class="note">${r.days==1?'1 εργάσιμη':r.days+' εργάσιμες'}${r.note?' · '+h(r.note):''}</span></div>
-      <span class="tag ${LV_ST[r.st][0]}">${LV_ST[r.st][1]}</span>${r.st==='new'&&!o.offline?`<button class="btn sm ghost" data-act="mylvx" data-id="${h(r.id)}">Ακύρωση</button>`:''}</div>`).join('')}</div>`
-    :'<p class="note">Ζήτα άδεια από εδώ. Μόλις την εγκρίνει το γραφείο, το πρόγραμμα αλλάζει μόνο του.</p>'}</section>`}
+  return `<section class="panel" id="myleave"><div class="bar"><h2 class="grow" style="margin:0">${TRH('Άδειες')}</h2>${o.offline?'':`<button class="btn pri" data-act="myleave">${ico('plus')}${TRH('Ζήτα άδεια')}</button>`}</div>
+    ${xs.length?`<div class="lvlist">${xs.map(r=>`<div class="lvrow"><div class="grow"><b><bdi>${h(lvRange(r))}</bdi></b><span class="note">${r.days==1?TRH('1 εργάσιμη'):TRH('{n} εργάσιμες',{n:r.days})}${r.note?' · <bdi>'+h(r.note)+'</bdi>':''}</span></div>
+      <span class="tag ${LV_ST[r.st][0]}">${TRH(LV_ST[r.st][1])}</span>${r.st==='new'&&!o.offline?`<button class="btn sm ghost" data-act="mylvx" data-id="${h(r.id)}">${TRH('Ακύρωση')}</button>`:''}</div>`).join('')}</div>`
+    :`<p class="note">${TRH('Ζήτα άδεια από εδώ. Μόλις την εγκρίνει το γραφείο, το πρόγραμμα αλλάζει μόνο του.')}</p>`}</section>`}
 // οι αλλαγές του εργαζόμενου: με τον server στέλνονται εκεί, χωρίς server γράφονται στα δεδομένα αυτού του browser
 async function myAct(path,body){const w=W(AUTH.user.workerId);
   // φωτογραφία: με τον server ανεβαίνει μαζί με το αίτημα, χωρίς server φυλάγεται πρώτα σε αυτή τη συσκευή
-  if(path==='diary'&&body.pp){const pp=body.pp;body={p:body.p,text:body.text};try{if(SERVER)Object.assign(body,{data:await b64(pp.full),thumb:await b64(pp.thumb),w:pp.w,h:pp.h});else body.ph=await phLocal(pp)}catch(e){toast('Η φωτογραφία δεν ετοιμάστηκε. Δοκίμασε ξανά.');return false}}
+  if(path==='diary'&&body.pp){const pp=body.pp;body={p:body.p,text:body.text};try{if(SERVER)Object.assign(body,{data:await b64(pp.full),thumb:await b64(pp.thumb),w:pp.w,h:pp.h});else body.ph=await phLocal(pp)}catch(e){toast(TR('Η φωτογραφία δεν ετοιμάστηκε. Δοκίμασε ξανά.'));return false}}
   if(SERVER){try{await api('my/'+path,body)}catch(e){if(e.status===401)return expired(),false;toast(e.message);return false}
     Object.keys(MY).forEach(k=>{if(k[0]!=='_')delete MY[k]});try{MY[UI.week]=await api('my?week='+UI.week)}catch(e){}   // χωρίς ενδιάμεσο «Φόρτωση»
     return true}
-  if(!w){toast('Ο λογαριασμός σου δεν έχει συνδεθεί με εργαζόμενο.');return false}
+  if(!w){toast(TR('Ο λογαριασμός σου δεν έχει συνδεθεί με εργαζόμενο.'));return false}
   const out=path==='diary'?myDiaryLocal(w,body):path==='att'?addAtt(schedule(),w,body.k,body.lat!=null?body:null,new Date(),body.why):path==='progress'?addProgress(schedule(),w,body.task,body.kind,body.note,TODAY):path==='leave'?addLeave(w,body.from,body.to,body.note):cancelLeave(w,body.id);
-  if(out.err){toast(out.err);return false}
+  if(out.err){toast(TR(out.ek||out.err,out.ep));return false}
   if(out.e)ringPush(out.e.id);
   const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}
   return true}
 function myRepForm(tid,k){const o=myData(UI.week),it=o&&o.days&&o.days.flatMap(d=>d.items).find(x=>x.tid===tid);if(!it)return;
-  openModal(`<h2>${k==='done'?'Τελείωσε η εργασία;':'Θέλει μία μέρα ακόμη;'}</h2>
-  <p style="margin:0 0 6px"><b>${h(it.task)}</b> <span class="note">· ${h(it.project)}</span></p>
-  <p class="note">${k==='done'?'Από αύριο η εργασία βγαίνει από το πρόγραμμα και το συνεργείο πηγαίνει σε άλλη δουλειά. Το γραφείο το βλέπει αμέσως.':'Το πρόγραμμα κρατά την εργασία μία μέρα παραπάνω και μεταθέτει όσες περιμένουν. Το γραφείο το βλέπει αμέσως.'}</p>
-  <form class="form" id="myrepf" data-t="${h(tid)}" data-k="${k}"><label class="full">${k==='done'?'Σημείωση για το γραφείο (προαιρετικά)':'Τι έμεινε ή γιατί αργεί (προαιρετικά)'}<textarea id="mr_note" rows="2" maxlength="300" placeholder="${k==='done'?'π.χ. έμειναν υλικά στο εργοτάξιο':'π.χ. δεν ήρθαν τα υλικά'}"></textarea></label></form>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="myrepsave">${k==='done'?'Ναι, τελείωσε':'Ναι, μία μέρα ακόμη'}</button></div>`)}
+  const d=k==='done';
+  openModal(`<h2>${TRH(d?'Τελείωσε η εργασία;':'Θέλει μία μέρα ακόμη;')}</h2>
+  <p style="margin:0 0 6px"><b><bdi>${h(it.task)}</bdi></b> <span class="note">· <bdi>${h(it.project)}</bdi></span></p>${tlD(it.task)}
+  <p class="note">${TRH(d?'Από αύριο η εργασία βγαίνει από το πρόγραμμα και το συνεργείο πηγαίνει σε άλλη δουλειά. Το γραφείο το βλέπει αμέσως.':'Το πρόγραμμα κρατά την εργασία μία μέρα παραπάνω και μεταθέτει όσες περιμένουν. Το γραφείο το βλέπει αμέσως.')}</p>
+  <form class="form" id="myrepf" data-t="${h(tid)}" data-k="${k}"><label class="full">${TRH(d?'Σημείωση για το γραφείο (προαιρετικά)':'Τι έμεινε ή γιατί αργεί (προαιρετικά)')}<textarea id="mr_note" rows="2" maxlength="300" placeholder="${TRH(d?'π.χ. έμειναν υλικά στο εργοτάξιο':'π.χ. δεν ήρθαν τα υλικά')}"></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="myrepsave">${TRH(d?'Ναι, τελείωσε':'Ναι, μία μέρα ακόμη')}</button></div>`)}
 function myLeaveForm(){const d=nextWork(add(TODAY,1));
-  openModal(`<h2>Αίτημα άδειας</h2>
-  <form class="form" id="mylvf"><label>Από<input id="ml_from" type="date" value="${d}" min="${TODAY}"></label><label>Έως<input id="ml_to" type="date" value="${d}" min="${TODAY}"></label>
-  <label class="full">Λόγος (προαιρετικά)<input id="ml_note" maxlength="300" placeholder="π.χ. γάμος, ιατρείο"></label></form>
+  openModal(`<h2>${TRH('Αίτημα άδειας')}</h2>
+  <form class="form" id="mylvf"><label>${TRH('Από')}<input id="ml_from" type="date" value="${d}" min="${TODAY}"></label><label>${TRH('Έως')}<input id="ml_to" type="date" value="${d}" min="${TODAY}"></label>
+  <label class="full">${TRH('Λόγος (προαιρετικά)')}<input id="ml_note" maxlength="300" placeholder="${TRH('π.χ. γάμος, ιατρείο')}"></label></form>
   <p class="note" id="ml_days">${lvCount()}</p>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mylvsave">${ico('send')}Στείλε στο γραφείο</button></div>`)}
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="mylvsave">${ico('send')}${TRH('Στείλε στο γραφείο')}</button></div>`)}
 // πόσες εργάσιμες πιάνει η άδεια (χωρίς server υπολογίζεται εδώ, με τον server το λέει μετά η λίστα)
 function lvCount(){const f=document.getElementById('ml_from'),t=document.getElementById('ml_to'),a=f?f.value:nextWork(add(TODAY,1)),b=t?t.value:a;
-  if(!a||!b||b<a)return '';const w=SERVER?null:W(AUTH.user.workerId),span=a===b?fmt(a):fmt(a)+' έως '+fmt(b);
-  if(!w){const n=Math.round((pd(b)-pd(a))/864e5)+1;return span+(n>1?' · '+n+' μέρες':'')}
-  const n=leaveDays(w,a,b).length;return span+' · '+(n==1?'1 εργάσιμη':n+' εργάσιμες')}
+  if(!a||!b||b<a)return '';const w=SERVER?null:W(AUTH.user.workerId),span=a===b?fD(a):TR('{a} έως {b}',{a:fD(a),b:fD(b)});
+  if(!w){const n=Math.round((pd(b)-pd(a))/864e5)+1;return span+(n>1?' · '+TR('{n} μέρες',{n}):'')}
+  const n=leaveDays(w,a,b).length;return span+' · '+(n==1?TR('1 εργάσιμη'):TR('{n} εργάσιμες',{n}))}
 
 /* Σήμερα */
 /* Από το εργοτάξιο: πρόοδος που έστειλαν οι υπεύθυνοι εργασιών και αιτήματα άδειας, με έγκριση σε ένα πάτημα */
@@ -3458,7 +3890,7 @@ function vWorkers(R){
   const mdw={};R.asg.filter(a=>a.date>=ws_&&a.date<=we_).forEach(a=>mdw[a.workerId]=(mdw[a.workerId]||0)+(a.share||1));
   const rateInfo=w=>{const r=Object.entries(w.rates||{}).filter(([,v])=>v!==''&&v!=null);return r.length?`<div class="note">${r.map(([pid,v])=>h(short(pname(pid)))+' '+eur(v)).join(' · ')}</div>`:''};
   const rows=S.specialties.map(sp=>{const ws=S.workers.filter(w=>w.specialtyId===sp.id&&!isExt(w));if(!ws.length&&S.workers.some(w=>w.specialtyId===sp.id))return '';
-    return `<tr class="grp"><td colspan="6">${h(sp.name)} <span class="note">· ${ws.length}${sp.office?' · γραφείο':''}</span></td></tr>`+(ws.length?ws.map(w=>`<tr><td><b>${h(w.name)}</b>${rateOn()&&!sp.office?stars(w):''}${availNote(w)}${isPM(w)?`<div class="note">${S.projects.filter(p=>(p.managers||[]).includes(w.id)).map(p=>h(p.name)).join(', ')||'Χωρίς έργο'}</div>`:''}</td><td>${roleTag(w.role)}</td><td class="n mono">${eur(w.wage)}${rateInfo(w)}</td><td class="mono">${h(w.phone||'')}</td><td class="n mono">${nf(mdw[w.id]||0)}</td>
+    return `<tr class="grp"><td colspan="6">${h(sp.name)} <span class="note">· ${ws.length}${sp.office?' · γραφείο':''}</span></td></tr>`+(ws.length?ws.map(w=>`<tr><td><b>${h(w.name)}</b>${langTag(w)}${rateOn()&&!sp.office?stars(w):''}${availNote(w)}${isPM(w)?`<div class="note">${S.projects.filter(p=>(p.managers||[]).includes(w.id)).map(p=>h(p.name)).join(', ')||'Χωρίς έργο'}</div>`:''}</td><td>${roleTag(w.role)}</td><td class="n mono">${eur(w.wage)}${rateInfo(w)}</td><td class="mono">${h(w.phone||'')}</td><td class="n mono">${nf(mdw[w.id]||0)}</td>
       <td style="white-space:nowrap"><button class="btn sm" data-act="editworker" data-id="${w.id}">Επεξεργασία</button>${isPM(w)&&hasF('pm')?` <button class="btn sm" data-act="pmw" data-id="${w.id}">Έργα</button>`:isOffice(w)?'':` <button class="btn sm" data-act="rates" data-id="${w.id}">Μεροκάματο ανά έργο</button>`}</td></tr>`).join(''):'<tr><td colspan="6" class="note">Κανένας εργαζόμενος.</td></tr>')}).join('');
   return `<div class="bar"><h1 class="grow">Προσωπικό</h1><button class="btn" data-act="newspec">${ico('plus')}Ειδικότητα</button><button class="btn pri" data-act="newworker">${ico('plus')}Νέος εργαζόμενος</button></div>
   ${peopleNote()}
@@ -3473,6 +3905,7 @@ function workerForm(w){
   <label>Ρόλος${sel('h_role',Object.entries(ROLES).filter(([k])=>k!=='ext'),w.role)}</label>
   <label>Βασικό μεροκάματο (€)<input id="h_wage" type="number" min="0" step="5" value="${+w.wage||0}"></label>
   <label>Τηλέφωνο (Viber)<input id="h_phone" value="${h(w.phone)}"></label>
+  ${hasF('lang')?`<label>Γλώσσα${sel('h_lang',I18N.LANGS.map(([k,n,g])=>[k,k==='el'?g:n+' · '+g]),w.lang||'el')}<span class="note">Η σελίδα του και τα μηνύματα Viber και κινητού. Οι μεταφράσεις θέλουν ακόμη έλεγχο από κάποιον που μιλά τη γλώσσα.</span></label>`:''}
   ${hasF('acc')?`<label>ΑΜΚΑ<input id="h_amka" inputmode="numeric" maxlength="16" value="${h(w.amka||'')}"><span class="note">Για την κατάσταση του λογιστή.</span></label>`:''}
   ${hasF('avail')?`<label>Δεύτερη ειδικότητα${sel('h_spec2',[['','Καμία'],...siteSpecs().filter(x=>x.id!=='gen').map(x=>[x.id,x.name])],w.spec2||'')}<span class="note">Μπαίνει και εκεί όταν λείπουν άτομα.</span></label>
   <label class="full">Μέρες που δουλεύει<div class="wd">${[1,2,3,4,5,6,0].filter(d=>S.settings.workdays.includes(d)).map(d=>`<label><input type="checkbox" data-wday="${d}"${!Array.isArray(w.days)||!w.days.length||w.days.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div><span class="note">Τις άλλες εργάσιμες έχει ρεπό και δεν μπαίνει στο πρόγραμμα.</span></label>`:''}
@@ -3650,18 +4083,18 @@ const getPos=()=>new Promise(res=>{if(!navigator.geolocation)return res({err:'τ
     e=>res({err:e.code===1?'δεν δόθηκε άδεια για τη θέση':e.code===3?'η θέση άργησε να βρεθεί':'δεν βρέθηκε θέση'}),{enableHighAccuracy:true,timeout:15000,maximumAge:60000})}
   catch(e){res({err:'δεν βρέθηκε θέση'})}});
 // --- στο κινητό του εργαζόμενου ---
-function attBox(d){const a=d.att,busy=UI.attBusy?' disabled':'',wait='Βρίσκω τη θέση…';
-  const where=pt=>pt&&pt.where==='ok'?(pt.yard?' · στην αποθήκη':' · στο εργοτάξιο'):pt&&pt.where==='far'?' · '+distS(pt.m)+(pt.yard?' από την αποθήκη':' από το εργοτάξιο'):pt&&pt.where==='nopos'?' · χωρίς θέση':'';
-  if(!a||!a.in)return `<div class="matt"><button class="btn big" data-act="myatt" data-k="in"${busy}>${ico('loc')}${UI.attBusy?wait:'Ήρθα στο εργοτάξιο'}</button>
-    <div class="note">Η θέση σου διαβάζεται μόνο τη στιγμή που πατάς, όχι όλη τη μέρα.</div></div>`;
-  if(!a.out)return `<div class="matt"><div class="matt-h">${ico('check')}<span>Ήρθες στις <b>${h(a.in.t)}</b>${h(where(a.in))}</span></div>
-    <button class="btn out" data-act="myatt" data-k="out"${busy}>${UI.attBusy?wait:'Έφυγα'}</button></div>`;
-  return `<div class="matt"><div class="matt-h">${ico('check')}<span><b>${h(a.in.t)} – ${h(a.out.t)}</b>${a.min!=null?' · '+h(hrsL(a.min)):''}</span></div></div>`}
-const attLine=d=>d.att&&d.att.in?`<div class="matt-s">${ico('clock')}${h(d.att.in.t)}${d.att.out?' – '+h(d.att.out.t)+(d.att.min!=null?' · '+h(hrsS(d.att.min))+' ώρες':''):''}</div>`:'';
+function attBox(d){const a=d.att,busy=UI.attBusy?' disabled':'',wait=TRH('Βρίσκω τη θέση…');
+  const where=pt=>pt&&pt.where==='ok'?' · '+TR(pt.yard?'στην αποθήκη':'στο εργοτάξιο'):pt&&pt.where==='far'?' · '+TR(pt.yard?'{d} από την αποθήκη':'{d} από το εργοτάξιο',{d:distL(pt.m)}):pt&&pt.where==='nopos'?' · '+TR('χωρίς θέση'):'';
+  if(!a||!a.in)return `<div class="matt"><button class="btn big" data-act="myatt" data-k="in"${busy}>${ico('loc')}${UI.attBusy?wait:TRH('Ήρθα στο εργοτάξιο')}</button>
+    <div class="note">${TRH('Η θέση σου διαβάζεται μόνο τη στιγμή που πατάς, όχι όλη τη μέρα.')}</div></div>`;
+  if(!a.out)return `<div class="matt"><div class="matt-h">${ico('check')}<span>${TRH('Ήρθες στις {t}',{t:`<b><bdi>${h(a.in.t)}</bdi></b>`})}${h(where(a.in))}</span></div>
+    <button class="btn out" data-act="myatt" data-k="out"${busy}>${UI.attBusy?wait:TRH('Έφυγα')}</button></div>`;
+  return `<div class="matt"><div class="matt-h">${ico('check')}<span><b><bdi>${h(a.in.t)} – ${h(a.out.t)}</bdi></b>${a.min!=null?' · '+h(hrsLL(a.min)):''}</span></div></div>`}
+const attLine=d=>d.att&&d.att.in?`<div class="matt-s">${ico('clock')}<bdi>${h(d.att.in.t)}${d.att.out?' – '+h(d.att.out.t):''}</bdi>${d.att.out&&d.att.min!=null?' · '+TRH('{t} ώρες',{t:h(hrsS(d.att.min))}):''}</div>`:'';
 async function myAtt(k){if(UI.attBusy)return;UI.attBusy=true;render();
   const pos=await getPos(),body={k,...(pos.lat!=null?{lat:pos.lat,lon:pos.lon,acc:pos.acc}:{why:pos.err})};
   const ok=await myAct('att',body);UI.attBusy=false;render();
-  if(ok)toast((k==='in'?'Καταγράφηκε η άφιξή σου':'Καταγράφηκε η αποχώρησή σου')+(pos.lat!=null?'.':', χωρίς θέση: '+pos.err+'.'))}
+  if(ok)toast(pos.lat!=null?TR(k==='in'?'Καταγράφηκε η άφιξή σου.':'Καταγράφηκε η αποχώρησή σου.'):TR(k==='in'?'Καταγράφηκε η άφιξή σου, χωρίς θέση: {x}.':'Καταγράφηκε η αποχώρησή σου, χωρίς θέση: {x}.',{x:TR(pos.err)}))}
 // --- γραφείο ---
 const attCame=x=>x.r&&x.r.in;
 const attOdd=x=>{if(!attCame(x))return false;const k=attWhere(x.r,x.r.in)?.k;return k==='far'||k==='nopos'};
@@ -3766,13 +4199,13 @@ function phHydrate(root){if(SERVER)return;(root||document).querySelectorAll('img
     PHC.set(id,URL.createObjectURL(v.full));PHC.set(id+'_t',URL.createObjectURL(v.thumb||v.full))}
   img.src=PHC.get(k)})}
 // από το αρχείο του κινητού σε JPEG έως 1600 px και μικρή έως 400 px, ώστε να ανεβαίνει γρήγορα και να μη γεμίζει ο δίσκος
-async function phPrep(file){const bad=()=>new Error('Το αρχείο δεν ανοίγει ως φωτογραφία εδώ. Δοκίμασε JPEG ή PNG.');let src,u='';
+async function phPrep(file){const bad=()=>new Error(TR('Το αρχείο δεν ανοίγει ως φωτογραφία εδώ. Δοκίμασε JPEG ή PNG.'));let src,u='';
   try{src=await createImageBitmap(file,{imageOrientation:'from-image'})}
   catch(e){u=URL.createObjectURL(file);src=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(bad());i.src=u}).finally(()=>setTimeout(()=>URL.revokeObjectURL(u),1000))}
   const W0=src.naturalWidth||src.width,H0=src.naturalHeight||src.height;if(!W0||!H0)throw bad();
   const out=async(max,q)=>{const k=Math.min(1,max/Math.max(W0,H0)),w=Math.max(1,Math.round(W0*k)),hh=Math.max(1,Math.round(H0*k)),c=document.createElement('canvas');c.width=w;c.height=hh;
     const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,hh);x.drawImage(src,0,0,w,hh);
-    const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',q));if(!b)throw new Error('Η φωτογραφία δεν ετοιμάστηκε σε αυτόν τον browser.');return {b,w,h:hh}};
+    const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',q));if(!b)throw new Error(TR('Η φωτογραφία δεν ετοιμάστηκε σε αυτόν τον browser.'));return {b,w,h:hh}};
   const f=await out(1600,.82),t=await out(400,.72);if(src.close)src.close();
   return {full:f.b,thumb:t.b,w:f.w,h:f.h}}
 const b64=blob=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).replace(/^data:[^,]*,/,''));r.onerror=()=>no(r.error);r.readAsDataURL(blob)});
@@ -3948,19 +4381,19 @@ async function printDiary(pid,from,to,full,withPh){const R=schedule(),p=P(pid);i
 // --- στο κινητό του εργαζόμενου: φωτογραφία ή σημείωση για το έργο όπου δουλεύει σήμερα ---
 function myDiaryBox(o){const md=o.diary;if(!md||!md.ps.length)return '';const busy=!!UI.myPhBusy;
   if(!md.ps.some(x=>x.id===UI.mdP))UI.mdP=md.ps[0].id;
-  return `<div class="mrep mdiary"><div class="mrep-h"><span>Για το ημερολόγιο του έργου</span>${md.items.length?`<span class="note">${md.items.length==1?'1 σήμερα':md.items.length+' σήμερα'}</span>`:''}</div>
-    ${md.ps.length>1?`<select id="md_p" aria-label="Σε ποιο έργο">${md.ps.map(x=>`<option value="${h(x.id)}"${x.id===UI.mdP?' selected':''}>${h(x.name)}</option>`).join('')}</select>`:''}
-    <div class="mbtns"><label class="btn fpick${busy?' dis':''}">${ico('cam')}<span>${busy?'Ανεβαίνει…':'Φωτογραφία'}</span><input type="file" accept="image/*" data-myph${busy?' disabled':''} aria-label="Φωτογραφία για το ημερολόγιο"></label><button class="btn out" data-act="mynote"${busy?' disabled':''}>Σημείωση</button></div>
-    ${md.items.length?`<div class="mdph">${md.items.map(r=>`<span class="mdt${r.ph?'':' txt'}">${r.ph?phImg(r.ph,false,r.text||'Η φωτογραφία σου'):`<span>${h(r.text.slice(0,60))}</span>`}<button class="mdx" data-act="mydx" data-id="${h(r.id)}" aria-label="Σβήσιμο">${ico('x')}</button></span>`).join('')}</div>`:''}
-    <div class="note">Πηγαίνουν στο γραφείο και στο ημερολόγιο του έργου.</div></div>`}
+  return `<div class="mrep mdiary"><div class="mrep-h"><span>${TRH('Για το ημερολόγιο του έργου')}</span>${md.items.length?`<span class="note">${md.items.length==1?TRH('1 σήμερα'):TRH('{n} σήμερα',{n:md.items.length})}</span>`:''}</div>
+    ${md.ps.length>1?`<select id="md_p" aria-label="${TRH('Σε ποιο έργο')}">${md.ps.map(x=>`<option value="${h(x.id)}"${x.id===UI.mdP?' selected':''}>${h(x.name)}${TL(x.name)?' · '+h(TL(x.name)):''}</option>`).join('')}</select>`:''}
+    <div class="mbtns"><label class="btn fpick${busy?' dis':''}">${ico('cam')}<span>${TRH(busy?'Ανεβαίνει…':'Φωτογραφία')}</span><input type="file" accept="image/*" data-myph${busy?' disabled':''} aria-label="${TRH('Φωτογραφία για το ημερολόγιο')}"></label><button class="btn out" data-act="mynote"${busy?' disabled':''}>${TRH('Σημείωση')}</button></div>
+    ${md.items.length?`<div class="mdph">${md.items.map(r=>`<span class="mdt${r.ph?'':' txt'}">${r.ph?phImg(r.ph,false,r.text||TR('Η φωτογραφία σου')):`<span><bdi>${h(r.text.slice(0,60))}</bdi></span>`}<button class="mdx" data-act="mydx" data-id="${h(r.id)}" aria-label="${TRH('Σβήσιμο')}">${ico('x')}</button></span>`).join('')}</div>`:''}
+    <div class="note">${TRH('Πηγαίνουν στο γραφείο και στο ημερολόγιο του έργου.')}</div></div>`}
 async function myPhPick(file){let pp;try{pp=await phPrep(file)}catch(e){toast(e.message);return}
   UI.myPP=pp;const u=URL.createObjectURL(pp.thumb);
-  openModal(`<h2>Φωτογραφία για το ημερολόγιο</h2><div class="lbx-img sm"><img src="${u}" alt="Η φωτογραφία που διάλεξες"></div>
-  <form class="form" id="mphf"><label class="full">Τι δείχνει (προαιρετικά)<textarea id="mp_text" rows="2" maxlength="${DIARY_TXT}" placeholder="π.χ. τελείωσε η πλάκα του 3ου"></textarea></label></form>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mysend">${ico('send')}Στείλε</button></div>`)}
-function myNoteForm(){openModal(`<h2>Σημείωση για το ημερολόγιο</h2>
-  <form class="form" id="mphf"><label class="full">Τι έγινε<textarea id="mp_text" rows="4" maxlength="${DIARY_TXT}" placeholder="π.χ. Ήρθαν τα πλακάκια, λείπουν 2 κούτες."></textarea></label></form>
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="mysend" data-note="1">${ico('send')}Στείλε</button></div>`);const t=document.getElementById('mp_text');if(t)t.focus()}
+  openModal(`<h2>${TRH('Φωτογραφία για το ημερολόγιο')}</h2><div class="lbx-img sm"><img src="${u}" alt="${TRH('Η φωτογραφία που διάλεξες')}"></div>
+  <form class="form" id="mphf"><label class="full">${TRH('Τι δείχνει (προαιρετικά)')}<textarea id="mp_text" rows="2" maxlength="${DIARY_TXT}" placeholder="${TRH('π.χ. τελείωσε η πλάκα του 3ου')}"></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="mysend">${ico('send')}${TRH('Στείλε')}</button></div>`)}
+function myNoteForm(){openModal(`<h2>${TRH('Σημείωση για το ημερολόγιο')}</h2>
+  <form class="form" id="mphf"><label class="full">${TRH('Τι έγινε')}<textarea id="mp_text" rows="4" maxlength="${DIARY_TXT}" placeholder="${TRH('π.χ. Ήρθαν τα πλακάκια, λείπουν 2 κούτες.')}"></textarea></label></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="mysend" data-note="1">${ico('send')}${TRH('Στείλε')}</button></div>`);const t=document.getElementById('mp_text');if(t)t.focus()}
 // χωρίς server: η φωτογραφία ή η σημείωση του εργαζόμενου γράφεται στα δεδομένα αυτού του browser
 function myDiaryLocal(w,b){if(b.del)return delMyDiary(w,b.del);const md=myDiary(schedule(),w),pid=md.ps.some(x=>x.id===b.p)?b.p:(md.ps[0]||{}).id;
   if(!pid)return {err:'Σήμερα δεν είσαι σε έργο. Φωτογραφίες στέλνεις τη μέρα που δουλεύεις σε κάποιο.'};
@@ -4222,13 +4655,14 @@ function addPay(R,ws,r,p){
 const payAfter=(rest,v)=>{const left=r2(rest-v),carry=S.settings.payCarry!==false;
   return v<=0?'Γράψε πόσα πληρώνεις.':Math.abs(left)<0.5?'Εξοφλείται όλο το ποσό.':left>0?`Μένουν <b>${money(left)}</b>${carry?', περνούν στην επόμενη εβδομάδα.':' απλήρωτα σε αυτή την εβδομάδα.'}`
     :`Δίνεις <b>${money(-left)}</b> παραπάνω${carry?', αφαιρούνται ως προκαταβολή από την επόμενη εβδομάδα.':', μένουν ως προκαταβολή σε αυτή την εβδομάδα.'}`};
-function payText(r,ws){
-  let s='Γεια σου '+voc(r.w.name)+'!\nΠληρωμή εβδομάδας '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n';
-  s+='Μέρες: '+nf(r.days)+'\nΜεροκάματα: '+money(r.wages)+'\n';
-  if(r.bonus)s+='Μπόνους για δύσκολη εργασία: '+money(r.bonus)+'\n';
-  if(Math.abs(r.carry)>=0.5)s+=(r.carry>0?'Από προηγούμενες εβδομάδες: ':'Προκαταβολή από πριν: −')+money(Math.abs(r.carry))+'\n';
-  r.pays.forEach(p=>s+='Πληρωμή '+fmt(p.date)+(p.method?' ('+payM(p.method).toLowerCase()+')':'')+': '+money(p.amount)+'\n');
-  s+=Math.abs(r.rest)<0.5?'Εξοφλήθηκε.\n':r.rest>0?'Υπόλοιπο: '+money(r.rest)+(carryWord()?', '+carryWord():'')+'.\n':'Προκαταβολή: '+money(-r.rest)+(carryWord()?', αφαιρείται την επόμενη εβδομάδα':'')+'.\n';
+// το μήνυμα πληρωμής προς τον εργαζόμενο, στη γλώσσα του
+function payText(r,ws){const l=ErgoCore.langOf(r.w),T0=(k,p)=>ErgoCore.tx(l,k,p),fx=d=>ErgoCore.fmtSX(l,d),cw=!!carryWord();
+  let s=T0('Γεια σου {n}!',{n:ErgoCore.hiName(r.w,l)})+'\n'+T0('Πληρωμή εβδομάδας {a} – {b}',{a:fx(ws),b:fx(add(ws,6))})+'\n\n';
+  s+=T0('Μέρες: {n}',{n:nf(r.days)})+'\n'+T0('Μεροκάματα: {x}',{x:money(r.wages)})+'\n';
+  if(r.bonus)s+=T0('Μπόνους για δύσκολη εργασία: {x}',{x:money(r.bonus)})+'\n';
+  if(Math.abs(r.carry)>=0.5)s+=T0(r.carry>0?'Από προηγούμενες εβδομάδες: {x}':'Προκαταβολή από πριν: −{x}',{x:money(Math.abs(r.carry))})+'\n';
+  r.pays.forEach(p=>s+=(p.method?T0('Πληρωμή {d} ({m}): {x}',{d:ErgoCore.fmtX(l,p.date),m:T0(payM(p.method).toLowerCase()),x:money(p.amount)}):T0('Πληρωμή {d}: {x}',{d:ErgoCore.fmtX(l,p.date),x:money(p.amount)}))+'\n');
+  s+=(Math.abs(r.rest)<0.5?T0('Εξοφλήθηκε.'):r.rest>0?T0(cw?'Υπόλοιπο: {x}, περνά στην επόμενη εβδομάδα.':'Υπόλοιπο: {x}.',{x:money(r.rest)}):T0(cw?'Προκαταβολή: {x}, αφαιρείται την επόμενη εβδομάδα.':'Προκαταβολή: {x}.',{x:money(-r.rest)}))+'\n';
   return s+sign();
 }
 function payForm(wid){
@@ -4458,11 +4892,17 @@ function printSheets(x){const el=document.getElementById('print');
   finally{document.body.classList.remove('printing');el.innerHTML=''}}
 
 /* Ρυθμίσεις */
+// η γλώσσα του εργαζόμενου: σε αυτή του έρχονται η σελίδα, τα μηνύματα Viber και οι ειδοποιήσεις
+function langPanel(){const m=MY[UI.week]||Object.values(MY).find(o=>o&&o.feats)||(SERVER?null:myData(UI.week||weekStart(TODAY)));
+  if(m&&m.feats&&m.feats.lang===false)return '';
+  return `<section class="panel"><label class="langp"><span class="fl">${ico('globe')} ${TRH('Γλώσσα')}</span><select id="my_lang">${langOpts()}</select></label>
+    <p class="note" style="margin:8px 0 0">${TRH('Η εφαρμογή και τα μηνύματα που σου έρχονται θα είναι σε αυτή τη γλώσσα.')}</p></section>`}
 function vAccount(){const u=AUTH.user;
-  return `<section class="panel"><h2>Ο λογαριασμός μου</h2>
-    <div class="me" style="border:0;padding:0 0 12px;margin:0"><span class="av" aria-hidden="true">${h(initials(u.name))}</span><span class="me-t"><b>${h(u.name)}</b><small>Όνομα χρήστη: ${h(u.username)} · ${ROLE_L[u.role]||''}, ${ROLE_D[u.role]||''}</small></span></div>
-    <div class="bar"><button class="btn" data-act="pwform">Αλλαγή κωδικού</button><button class="btn" data-act="logout">Αποσύνδεση</button></div>
-    ${SERVER?'':'<p class="note" style="margin-top:10px">Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Όταν η εφαρμογή τρέχει από τον server της εταιρείας, φυλάγονται κεντρικά και ο κάθε εργαζόμενος μπαίνει από το κινητό του.</p>'}</section>
+  return `<section class="panel"><h2>${TRH('Ο λογαριασμός μου')}</h2>
+    <div class="me" style="border:0;padding:0 0 12px;margin:0"><span class="av" aria-hidden="true">${h(initials(u.name))}</span><span class="me-t"><b><bdi>${h(isWorker()?tlN(u.name):u.name)}</bdi></b><small>${TRH('Όνομα χρήστη: {u}',{u:`<bdi>${h(u.username)}</bdi>`})} · ${TRH(ROLE_L[u.role]||'')}, ${TRH(ROLE_D[u.role]||'')}</small></span></div>
+    <div class="bar"><button class="btn" data-act="pwform">${TRH('Αλλαγή κωδικού')}</button><button class="btn" data-act="logout">${TRH('Αποσύνδεση')}</button></div>
+    ${SERVER?'':`<p class="note" style="margin-top:10px">${TRH('Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Όταν η εφαρμογή τρέχει από τον server της εταιρείας, φυλάγονται κεντρικά και ο κάθε εργαζόμενος μπαίνει από το κινητό του.')}</p>`}</section>
+  ${isWorker()?langPanel():''}
   ${isAdmin()?`<section class="panel" id="usersec"><div class="bar" style="margin-bottom:8px"><h2 class="grow" style="margin:0">Χρήστες</h2><button class="btn pri" data-act="newuser">${ico('plus')}Νέος χρήστης</button></div>
     <p class="note" style="margin:0 0 10px">Ο εργαζόμενος βλέπει μόνο το δικό του πρόγραμμα, χωρίς αλλαγές, έργα, προσωπικό ή οικονομικά. Το γραφείο (γραμματεία, ταμείο, λογιστήριο, διαχειριστές έργων) έχει πρόσβαση σε όλα.</p>
     <div id="users" class="scroll"><p class="note">Φόρτωση χρηστών…</p></div></section>`:''}`;
@@ -4474,7 +4914,7 @@ const holNext=f=>{const y=+TODAY.slice(0,4),d=f(y);return d>=TODAY?d:f(y+1)};
 function closedRanges(){const r=[];[...new Set(S.settings.closed||[])].sort().forEach(d=>{const l=r[r.length-1];if(l&&add(l[1],1)===d)l[1]=d;else r.push([d,d])});return r}
 const company=()=>S.settings.company||{};
 function vSettings(){
-  if(isWorker())return `<h1>Ο λογαριασμός μου</h1>${vAccount()}${pushPanel()}`;
+  if(isWorker())return `<h1>${TRH('Ο λογαριασμός μου')}</h1>${vAccount()}${pushPanel()}`;
   const hol=S.settings.hol||holDefaults(),hon=hol.on!==false,skip=hol.skip||[],cr=closedRanges().filter(([,b])=>b>=add(TODAY,-31)),co=company();
   return `<h1>Ρυθμίσεις</h1>${vAccount()}
   ${pushPanel()}
@@ -4535,7 +4975,7 @@ const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
 const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push','gps','diary','client','clients'];
-const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
+const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Γλώσσες για τους εργαζόμενους','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
 const lockTag=f=>planHas(f)?'':`<span class="ptag" title="Από το πακέτο ${h(needPlan(f).name)}">${ico('lock')}${h(needPlan(f).name)}</span>`;
@@ -4558,7 +4998,7 @@ function officeNote(){const p=planOf();if(!UI.users)return '';const n=officeUser
 const SW=[
   ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.'],['push','Ειδοποιήσεις στο κινητό','Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση, χωρίς χρέωση.']]],
   ['Έργα',[['clients','Πελάτες','Μία καρτέλα για κάθε πελάτη: στοιχεία, έργα, ραντεβού και ό,τι έχετε πει.'],['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['diary','Ημερολόγιο έργου','Κάθε μέρα του έργου: ποιοι δούλεψαν, τι έγινε, καιρός, σημειώσεις και φωτογραφίες από το εργοτάξιο, σε PDF για τον πελάτη.'],['client','Σελίδα για τον πελάτη','Ιδιωτικός σύνδεσμος ανά έργο όπου ο πελάτης βλέπει την πρόοδο, το ημερολόγιο και τις φωτογραφίες, χωρίς ονόματα και κόστη.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
-  ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.']]],
+  ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.'],['lang','Γλώσσες για τους εργαζόμενους','Η σελίδα του εργαζόμενου και τα μηνύματά του στη γλώσσα του: αλβανικά, αγγλικά, αραβικά, περσικά, τουρκικά, κουρδικά, εβραϊκά.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['profit','Κέρδος ανά έργο','Τιμή συμβολαίου, υλικά και έξοδα, με το κέρδος κάθε έργου.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
   ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
 const swName=f=>{for(const [,xs] of SW)for(const x of xs)if(x[0]===f)return x[1];return f};
@@ -4737,13 +5177,13 @@ function userForm(u){
   <div class="acts">${isNew||u.id===AUTH.user.id?'':`<button class="btn danger" data-act="deluser" data-id="${u.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveuser">Αποθήκευση</button></div>`);
 }
 function pwForm(){
-  openModal(`<h2>Αλλαγή κωδικού</h2><form class="form" id="pwf">
+  openModal(`<h2>${TRH('Αλλαγή κωδικού')}</h2><form class="form" id="pwf">
     <input type="text" autocomplete="username" value="${h(AUTH.user.username)}" hidden>
-    <label class="full">Τωρινός κωδικός<input id="pw_cur" type="password" autocomplete="current-password"></label>
-    <label>Νέος κωδικός (τουλάχιστον 8)<input id="pw_new" type="password" autocomplete="new-password"></label>
-    <label>Ξανά ο νέος κωδικός<input id="pw_new2" type="password" autocomplete="new-password"></label></form>
-  ${SERVER?'<p class="note">Οι άλλες συσκευές σου θα αποσυνδεθούν.</p>':''}
-  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savepw">Αλλαγή κωδικού</button></div>`);
+    <label class="full">${TRH('Τωρινός κωδικός')}<input id="pw_cur" type="password" autocomplete="current-password" dir="ltr"></label>
+    <label>${TRH('Νέος κωδικός (τουλάχιστον 8)')}<input id="pw_new" type="password" autocomplete="new-password" dir="ltr"></label>
+    <label>${TRH('Ξανά ο νέος κωδικός')}<input id="pw_new2" type="password" autocomplete="new-password" dir="ltr"></label></form>
+  ${SERVER?`<p class="note">${TRH('Οι άλλες συσκευές σου θα αποσυνδεθούν.')}</p>`:''}
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn pri" data-act="savepw">${TRH('Αλλαγή κωδικού')}</button></div>`);
 }
 
 /* ---------- Modal ---------- */
@@ -4823,10 +5263,10 @@ document.addEventListener('click',e=>{
     case 'pushoff':pushDisable();break;
     case 'pushtest':pushTest();break;
     case 'pushlater':lsSet(LS+'.pushinv',1);pushPaint();break;
-    case 'pwshow':{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';el.textContent=show?'Απόκρυψη':'Εμφάνιση';i.focus();break}
+    case 'pwshow':{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';el.textContent=TR(show?'Απόκρυψη':'Εμφάνιση');i.focus();break}
     case 'pwform':pwForm();break;
-    case 'savepw':{const g=x=>document.getElementById(x).value;if(g('pw_new')!==g('pw_new2')){toast('Οι δύο νέοι κωδικοί δεν είναι ίδιοι.');break}
-      el.disabled=true;changePw(g('pw_cur'),g('pw_new')).then(()=>{closeModal();toast('Ο κωδικός άλλαξε.')}).catch(x=>{if(x.status===401)return expired();el.disabled=false;toast(x.message)});break}
+    case 'savepw':{const g=x=>document.getElementById(x).value;if(g('pw_new')!==g('pw_new2')){toast(TR('Οι δύο νέοι κωδικοί δεν είναι ίδιοι.'));break}
+      el.disabled=true;changePw(g('pw_cur'),g('pw_new')).then(()=>{closeModal();toast(TR('Ο κωδικός άλλαξε.'))}).catch(x=>{if(x.status===401)return expired();el.disabled=false;toast(x.message)});break}
     case 'newuser':userForm(null);break;
     case 'edituser':userForm((UI.users||[]).find(u=>u.id===id));break;
     case 'genpw':{const i=document.getElementById('u_pw');i.value=genPw();i.select();break}
@@ -4909,7 +5349,8 @@ document.addEventListener('click',e=>{
     case 'lvok':case 'lvno':{const r=decideLeave(id,a==='lvok',AUTH.user?AUTH.user.name:'');if(!r)break;const w=W(r.w);
       commit((a==='lvok'?'Εγκρίθηκε η άδεια: ':'Δεν εγκρίθηκε η άδεια: ')+(w?w.name:'')+', '+lvRange(r)+'.');break}
     case 'lvviber':{const r=(S.field||[]).find(x=>x.id===id),w=r&&W(r.w);if(!w)break;
-      openViber(w,'Γεια σου '+voc(w.name)+'! '+(r.st==='ok'?'Η άδειά σου για '+lvRange(r)+' εγκρίθηκε. Το πρόγραμμα έχει ήδη αλλάξει.':'Η άδεια που ζήτησες για '+lvRange(r)+' δεν εγκρίθηκε. Πάρε τηλέφωνο στο γραφείο να το δούμε μαζί.')+sign());break}
+      const l=ErgoCore.langOf(w),tx=ErgoCore.tx;   // στη γλώσσα του εργαζόμενου
+      openViber(w,tx(l,'Γεια σου {n}!',{n:ErgoCore.hiName(w,l)})+' '+tx(l,r.st==='ok'?'Η άδειά σου για {d} εγκρίθηκε. Το πρόγραμμα έχει ήδη αλλάξει.':'Η άδεια που ζήτησες για {d} δεν εγκρίθηκε. Πάρε τηλέφωνο στο γραφείο να το δούμε μαζί.',{d:lvRangeX(r,l)})+sign());break}
     case 'myrep':myRepForm(el.dataset.t,el.dataset.k);break;
     case 'myatt':myAtt(el.dataset.k);break;
     case 'dproj':UI.dP=el.dataset.p;UI.dN=10;render();break;
@@ -4960,11 +5401,11 @@ document.addEventListener('click',e=>{
     case 'coff':{const p=P(el.dataset.p);if(!p||!p.share)break;if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά';break}
       const {t,at,...rest}=p.share;p.share=rest;UI.hmsg='Σελίδα πελάτη: κλείσιμο συνδέσμου για «'+p.name+'»';commit('Ο σύνδεσμος έκλεισε. Ο πελάτης δεν βλέπει πια τη σελίδα.');break}
     case 'mynote':myNoteForm();break;
-    case 'mysend':{const t=(document.getElementById('mp_text')||{}).value||'',pp=el.dataset.note?null:UI.myPP;if(!pp&&!t.trim()){toast('Γράψε τη σημείωση.');break}
+    case 'mysend':{const t=(document.getElementById('mp_text')||{}).value||'',pp=el.dataset.note?null:UI.myPP;if(!pp&&!t.trim()){toast(TR('Γράψε τη σημείωση.'));break}
       el.disabled=true;UI.myPhBusy=true;myAct('diary',{p:UI.mdP,text:t,pp}).then(ok=>{UI.myPhBusy=false;el.disabled=false;if(!ok){render();return}UI.myPP=null;closeModal();render();
-        toast(pp?'Η φωτογραφία στάλθηκε στο γραφείο.':'Η σημείωση στάλθηκε στο γραφείο.')});break}
-    case 'mydx':openModal(`<h2>Να σβηστεί;</h2><p class="note">Φεύγει από το ημερολόγιο του έργου.</p><div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn danger" data-act="mydxok" data-id="${h(id)}">Σβήσιμο</button></div>`);break;
-    case 'mydxok':el.disabled=true;myAct('diary',{del:id}).then(ok=>{closeModal();render();if(ok)toast('Σβήστηκε.')});break;
+        toast(TR(pp?'Η φωτογραφία στάλθηκε στο γραφείο.':'Η σημείωση στάλθηκε στο γραφείο.'))});break}
+    case 'mydx':openModal(`<h2>${TRH('Να σβηστεί;')}</h2><p class="note">${TRH('Φεύγει από το ημερολόγιο του έργου.')}</p><div class="acts"><span class="grow"></span><button class="btn" data-act="close">${TRH('Άκυρο')}</button><button class="btn danger" data-act="mydxok" data-id="${h(id)}">${TRH('Σβήσιμο')}</button></div>`);break;
+    case 'mydxok':el.disabled=true;myAct('diary',{del:id}).then(ok=>{closeModal();render();if(ok)toast(TR('Σβήστηκε.'))});break;
     case 'attedit':attForm(el.dataset.w,el.dataset.d);break;
     case 'attno':{const w=W(el.dataset.w),d=el.dataset.d;if(!w)break;markAbsent(w.id,d);commit('Δεν ήρθε: '+w.name+', '+fmt(d));break}
     case 'attdel':{const r=delAtt(el.dataset.id);if(r)commit('Διαγραφή παρουσίας: '+(W(r.w)?.name||'')+', '+fmt(r.d));break}
@@ -4986,11 +5427,11 @@ document.addEventListener('click',e=>{
       if(k==='yard'){delete S.settings.yard;commit('Αφαίρεση σημείου αποθήκης')}else{const p=P(k);if(!p)break;delete p.site;commit('Αφαίρεση σημείου εργοταξίου: '+p.name)}break}
     case 'myrepsave':{const f=document.getElementById('myrepf');if(!f)break;el.disabled=true;
       myAct('progress',{task:f.dataset.t,kind:f.dataset.k,note:document.getElementById('mr_note').value}).then(ok=>{el.disabled=false;if(!ok)return;closeModal();render();
-        toast(f.dataset.k==='done'?'Στάλθηκε στο γραφείο: η εργασία τελείωσε. Το πρόγραμμα από αύριο άλλαξε.':'Στάλθηκε στο γραφείο: μία μέρα ακόμη. Το πρόγραμμα άλλαξε.')});break}
+        toast(TR(f.dataset.k==='done'?'Στάλθηκε στο γραφείο: η εργασία τελείωσε. Το πρόγραμμα από αύριο άλλαξε.':'Στάλθηκε στο γραφείο: μία μέρα ακόμη. Το πρόγραμμα άλλαξε.'))});break}
     case 'myleave':myLeaveForm();break;
     case 'mylvsave':{const g=x=>document.getElementById(x).value;el.disabled=true;
-      myAct('leave',{from:g('ml_from'),to:g('ml_to')||g('ml_from'),note:g('ml_note')}).then(ok=>{el.disabled=false;if(!ok)return;closeModal();UI.sec='myleave';render();toast('Το αίτημα στάλθηκε στο γραφείο.')});break}
-    case 'mylvx':myAct('leave/cancel',{id}).then(ok=>{if(ok){render();toast('Το αίτημα ακυρώθηκε.')}});break;
+      myAct('leave',{from:g('ml_from'),to:g('ml_to')||g('ml_from'),note:g('ml_note')}).then(ok=>{el.disabled=false;if(!ok)return;closeModal();UI.sec='myleave';render();toast(TR('Το αίτημα στάλθηκε στο γραφείο.'))});break}
+    case 'mylvx':myAct('leave/cancel',{id}).then(ok=>{if(ok){render();toast(TR('Το αίτημα ακυρώθηκε.'))}});break;
     case 'g-next':{guideRead();const g=UI.g;if(g.step===0&&!g.wd.length){toast('Διάλεξε τουλάχιστον μία εργάσιμη μέρα.');break}g.step++;guideRender();break}
     case 'g-back':guideRead();UI.g.step--;guideRender();break;
     case 'g-later':guideRead();closeModal();break;
@@ -5089,6 +5530,8 @@ document.addEventListener('click',e=>{
     case 'saveworker':{const f=document.getElementById('wf');const g=x=>document.getElementById(x).value;
       const v={id:f.dataset.id,name:g('h_name').trim(),specialtyId:g('h_spec'),role:g('h_role'),wage:+g('h_wage')||0,phone:g('h_phone').trim(),...(document.getElementById('h_amka')?{amka:g('h_amka').replace(/\s/g,'')}:{}),off:g('h_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)),...(document.getElementById('h_rate')?{rating:+g('h_rate')}:{})};
       if(f.querySelector('.xed'))v.exp=readExp(f);
+      // γλώσσα: γράφεται μόνο όταν αλλάξει, με την ώρα, ώστε να μη χαθεί αυτή που διάλεξε στο μεταξύ ο ίδιος από το κινητό
+      if(document.getElementById('h_lang')){const l=g('h_lang'),o=W(v.id);if(((o&&o.lang)||'el')!==l){v.lang=l;v.langAt=new Date().toISOString()}}
       if(document.getElementById('h_spec2')){v.spec2=g('h_spec2')===v.specialtyId?'':g('h_spec2');const dd=[...f.querySelectorAll('[data-wday]:checked')].map(x=>+x.dataset.wday);
         if(!dd.length){toast('Διάλεξε τουλάχιστον μία μέρα που δουλεύει.');break}v.days=S.settings.workdays.every(d=>dd.includes(d))?null:dd}
       if(!v.name){toast('Γράψε ονοματεπώνυμο.');break}
@@ -5154,6 +5597,9 @@ document.addEventListener('change',e=>{
   if(t.dataset.dph!=null){const pid=t.dataset.dph,d=t.dataset.dd||TODAY,files=[...(t.files||[])];t.value='';if(!files.length)return;diaryAddPhotos(files,pid,d,'',false).then(o=>diaryPhotosDone(o,pid,d));return}
   if(t.dataset.myph!=null){const f=t.files&&t.files[0];t.value='';if(f)myPhPick(f);return}
   if(t.id==='md_p'){UI.mdP=t.value;return}
+  // γλώσσα στη σύνδεση: ξαναγράφεται η φόρμα, κρατώντας ό,τι γράφτηκε
+  if(t.id==='a_lang'){const u=document.getElementById('a_user'),v=u?u.value:'',m=document.getElementById('authf')?.dataset.mode||'login';setLang(t.value,true);showAuth(m,'');const u2=document.getElementById('a_user');if(u2){u2.value=v;if(v)document.getElementById('a_pw')?.focus()}return}
+  if(t.id==='my_lang'){setLang(t.value,true);myLang(t.value);render();return}
   if(t.dataset.feat){if(!isAdmin()){t.checked=!t.checked;return}const f=t.dataset.feat,off=new Set(S.settings.off||[]);t.checked?off.delete(f):off.add(f);S.settings.off=[...off];
     commit('«'+swName(f)+'» '+(t.checked?'άνοιξε.':'έκλεισε. Τα δεδομένα της μένουν.'));return}
   if(t.dataset.duty){S.dutyDone[t.dataset.duty]=t.checked?TODAY:false;if(!t.checked)delete S.dutyDone[t.dataset.duty];save();
@@ -5229,8 +5675,8 @@ document.addEventListener('submit',async e=>{
   err.textContent='';btn.disabled=true;
   try{
     if(f.dataset.mode==='setup'){if(g('a_pw')!==g('a_pw2'))throw new Error('Οι δύο κωδικοί δεν είναι ίδιοι.');UI.firstRun=true;enter(await authSetup({name:g('a_name'),username:g('a_user'),password:g('a_pw')}))}
-    else{if(!g('a_user')||!g('a_pw'))throw new Error('Γράψε όνομα χρήστη και κωδικό.');enter(await authLogin(g('a_user'),g('a_pw'),document.getElementById('a_rem').checked))}
-  }catch(x){if(document.getElementById('a_err')){err.textContent=x.message||'Κάτι πήγε στραβά. Δοκίμασε ξανά.';btn.disabled=false}}
+    else{if(!g('a_user')||!g('a_pw'))throw new Error(TR('Γράψε όνομα χρήστη και κωδικό.'));enter(await authLogin(g('a_user'),g('a_pw'),document.getElementById('a_rem').checked))}
+  }catch(x){if(document.getElementById('a_err')){err.textContent=x.message||TR('Κάτι πήγε στραβά. Δοκίμασε ξανά.');btn.disabled=false}}
 });
 async function loadVStatus(){const el=document.getElementById('vstatus');if(!el)return;
   try{const r=await fetch('api/viber/status',{cache:'no-store'});const st=await r.json();
@@ -5248,8 +5694,9 @@ function fitLogo(){
 }
 fitLogo();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitLogo);addEventListener('resize',fitLogo);
 async function boot(){
+  setLang(lsGet(LS+'.lang','el'));   // η γλώσσα που διάλεξε ο εργαζόμενος σε αυτή τη συσκευή
   const a=await authMe();
-  if(a.user){enter(a.user);if(a.offline)toast('Χωρίς σύνδεση με τον server. Βλέπεις τα τελευταία δεδομένα.')}
+  if(a.user){enter(a.user);if(a.offline)toast(TR('Χωρίς σύνδεση με τον server. Βλέπεις τα τελευταία δεδομένα.'))}
   else showAuth(a.setup?'setup':'login',a.msg||'');
 }
 window.addEventListener('focus',()=>{if(!SERVER||!AUTH.user||document.querySelector('.modal'))return;
