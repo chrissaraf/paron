@@ -612,6 +612,67 @@ table.pfall td .btn{margin-top:6px}table.pfall .lnk{display:inline-flex;gap:6px;
 .modal.clpv{width:min(1040px,100%)}
 .clframe{display:flex;justify-content:center;background:var(--sunk);border-radius:14px;padding:12px;overflow:auto}
 .clframe iframe{border:0;border-radius:14px;height:min(64vh,760px);max-width:100%;background:#E8ECE4;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+/* Πελάτες */
+.clq{width:min(260px,100%);font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink)}
+.clgrp h2 .note,.clhist h2 .note{font-weight:500}
+.clrow{display:grid;grid-template-columns:minmax(210px,1.15fr) minmax(0,1.25fr) minmax(150px,.8fr) 40px;gap:8px 16px;align-items:center;padding:12px 0}
+.clrow+.clrow{border-top:1px solid var(--line)}
+.clrow[hidden],.clgrp[hidden]{display:none}
+.clmain{display:flex;gap:12px;align-items:center;background:none;border:0;padding:0;text-align:left;color:inherit;font:inherit;cursor:pointer;min-width:0}
+.clmain:hover b,.clmain:focus-visible b{text-decoration:underline;text-underline-offset:3px}
+.clname{display:flex;flex-direction:column;min-width:0;gap:1px}
+.clname b{font-size:15.5px;line-height:1.25}
+.clname .note{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clps{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.clmeta{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.clmeta .nx{display:inline-flex;gap:6px;align-items:center;color:var(--ink-2);font-weight:620}
+.clmeta svg{width:15px;height:15px;flex:none}
+.clcall{grid-column:4}
+.climp .btn{margin-left:auto;flex:none}
+@media (max-width:760px){.clrow{grid-template-columns:minmax(0,1fr) 40px}.clps,.clmeta{grid-column:1/-1}.clmeta{flex-direction:row;flex-wrap:wrap;gap:2px 14px}.clcall{grid-column:2;grid-row:1}.clq{order:3;width:100%}}
+.back{display:inline-flex;align-items:center;gap:2px;margin:0 0 8px;font-size:14px;color:var(--muted)}
+.back svg{width:16px;height:16px}
+.av.lg{width:46px;height:46px;font-size:16px}
+.clhead .btn svg{width:17px;height:17px}
+.clgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+.clgrid>div{display:grid;gap:20px;min-width:0}
+@media (max-width:1000px){.clgrid{grid-template-columns:minmax(0,1fr)}}
+.clinfo{display:grid;gap:10px;margin:0}
+.clinfo>div{display:grid;grid-template-columns:132px minmax(0,1fr);gap:8px;align-items:baseline}
+.clinfo dt{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px}
+.clinfo dt svg{width:16px;height:16px;flex:none;align-self:center}
+.clinfo dd{margin:0;overflow-wrap:anywhere}
+.clinfo a{color:inherit;text-underline-offset:2px}
+.clnotes{margin:14px 0 0;padding:10px 12px;background:var(--sunk);border-radius:var(--r);white-space:pre-line;font-size:14px}
+@media (max-width:520px){.clinfo>div{grid-template-columns:minmax(0,1fr);gap:0}}
+.clproj{padding:12px 0}
+.clproj+.clproj{border-top:1px solid var(--line)}
+.clproj>.bar .lnk{display:inline-flex;gap:8px;align-items:center;text-align:left}
+.clproj .meter{margin:8px 0 6px}
+.clplink{margin-top:6px}
+.clplink .note{display:inline-flex;gap:6px;align-items:center}
+.clplink svg{width:15px;height:15px;flex:none}
+.clap .apday>h3{font-size:14px;color:var(--muted);font-weight:650;margin:14px 0 0}
+.clnote{display:grid;gap:8px;margin:0 0 6px;padding:0 0 14px;border-bottom:1px solid var(--line)}
+.clnr{display:flex;gap:8px}.clnr select{flex:1;min-width:0}.clnr input{width:auto}
+.clnote textarea{width:100%;font:inherit;font-size:14.5px;padding:9px 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);resize:vertical}
+.tl{list-style:none;margin:0;padding:0;position:relative}
+.tl li{display:flex;gap:12px;padding:10px 0;position:relative}
+.tl li:not(:last-child):before{content:"";position:absolute;left:15px;top:44px;bottom:-8px;width:2px;background:var(--line)}
+.tli{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--sunk);color:var(--ink-2);flex:none}
+.tli svg{width:16px;height:16px}
+.tl .k-call .tli,.tl .k-meet .tli,.tl .k-msg .tli{background:var(--accent-soft);color:var(--accent-soft-ink)}
+.tl .k-offer .tli{background:var(--warn-bg);color:var(--warn)}
+.tl .k-appt .tli,.tl .k-link .tli{background:var(--rain-bg);color:var(--rain)}
+.tl .k-start .tli,.tl .k-done .tli{background:var(--ok-bg);color:var(--ok)}
+.tlh{display:flex;gap:4px 8px;align-items:baseline;flex-wrap:wrap}
+.tl p{margin:2px 0 0;white-space:pre-line;overflow-wrap:anywhere}
+.tl .lnk{text-align:left;margin-top:2px}
+.tl .grow>.note{display:block}
+.tlx{margin-left:auto;padding:2px 6px;min-height:0}
+.tlx svg{width:15px;height:15px}
+.tlx.sure{color:var(--bad)}
+@media (hover:hover){.tl li:not(:hover):not(:focus-within) .tlx:not(.sure){opacity:0}}
 /* Ημερολόγιο έργου */
 .fpick{position:relative;cursor:pointer;overflow:hidden}
 .fpick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
@@ -794,10 +855,10 @@ body:not(.in) .app{display:none}
 </script>
 <script>
 (()=>{
-const {DAYS_L,MON_G,fmtL,CL_MSG,shareOf,clientOpt,clientView,clientDoc,newTok,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,gpsOn,siteOf,yardOf,siteFor,distS,parseLL,attOf,attProjects,attWhere,attWS,attMin,hrsS,hrsL,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attMissing,attDemoFill,ATT_R,COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
+const {projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,DAYS_L,MON_G,fmtL,CL_MSG,shareOf,clientOpt,clientView,clientDoc,newTok,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,gpsOn,siteOf,yardOf,siteFor,distS,parseLL,attOf,attProjects,attWhere,attWS,attMin,hrsS,hrsL,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attMissing,attDemoFill,ATT_R,COST_K,LOW_M,profitOf,pctS,matOn,matBy,matTodo,matState,matWhen,orderMat,addCost,EQ_KINDS,EXP_LABELS,expState,expWhen,expAll,expSoon,expNext,eqWhere,myView,fieldEffect,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,upGR,voc,sign,holName,HOLIDAYS,holDefaults,ownerW,anyone,doneKey,isDone,dayBlock,OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,setWeather,getWeather,wxCfg,hasLL,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,isExt,hasJob,ROLES,DAYS,MONTHS,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,weekDays,personText,personDayText,personWeek}=ErgoCore;
 const TODAY=ErgoCore.today();
 const LS='ergoplano.v1';
-const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο έργου'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['profit','Κέρδος ανά έργο'],['equip','Εξοπλισμός και οχήματα'],['att','Παρουσίες'],['settings','Ρυθμίσεις']];
+const TABS=[['mine','Το πρόγραμμά μου'],['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['projects','Όλα τα έργα'],['project','Έργο'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο έργου'],['clients','Πελάτες'],['client','Πελάτης'],['workers','Προσωπικό'],['partners','Συνεργάτες'],['duties','Υπενθυμίσεις'],['pay','Πληρωμές'],['costs','Κόστος'],['acc','Για τον λογιστή'],['profit','Κέρδος ανά έργο'],['equip','Εξοπλισμός και οχήματα'],['att','Παρουσίες'],['settings','Ρυθμίσεις']];
 
 
 const SERVER=!!window.ERGO_SERVER;
@@ -824,7 +885,7 @@ async function pull(again,quiet){if(isWorker())return false;if(saveT&&SYNC)retur
 setS(load());LAST=JSON.stringify(S);
 
 let UI={proj:'',closed:[],tab:'today',day:null,week:null,weekMode:'workers',person:'',taskMode:'site',fProj:'',fSpec:'',fStat:'open',period:'week',from:'',to:'',payWeek:null};
-try{const t=localStorage.getItem(LS+'.tab');if(t&&TABS.some(x=>x[0]===t))UI.tab=t;UI.proj=localStorage.getItem(LS+'.proj')||'';UI.closed=JSON.parse(localStorage.getItem(LS+'.nav')||'[]')}catch(e){}
+try{const t=localStorage.getItem(LS+'.tab');if(t&&TABS.some(x=>x[0]===t))UI.tab=t;UI.proj=localStorage.getItem(LS+'.proj')||'';UI.cli=localStorage.getItem(LS+'.cli')||'';UI.closed=JSON.parse(localStorage.getItem(LS+'.nav')||'[]')}catch(e){}
 if(location.hash&&TABS.some(x=>'#'+x[0]===location.hash))UI.tab=location.hash.slice(1);
 
 /* ---------- Σύνδεση και λογαριασμοί ---------- */
@@ -1151,17 +1212,20 @@ const ICONS={link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4
   fog:'<path d="M7.5 12.5h9.5a3.5 3.5 0 0 0 .5-6.95A5.5 5.5 0 0 0 6.6 6a3.3 3.3 0 0 0 .9 6.5z"/><path d="M4 16h16M6.5 19.5h11"/>',
   umb:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6.5a2 2 0 0 1-4 0M12 3v-.5"/>',
   bell:'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/>',
+  phone:'<path d="M5.2 3.8h3.3l1.8 4.3-2.3 1.5a11.5 11.5 0 0 0 6.4 6.4l1.5-2.3 4.3 1.8v3.3a1.6 1.6 0 0 1-1.7 1.6A16.6 16.6 0 0 1 3.6 5.5a1.6 1.6 0 0 1 1.6-1.7z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.6 6.6 12 13l8.4-6.4"/>',
+  card:'<rect x="3" y="4.5" width="18" height="15" rx="2"/><circle cx="9" cy="10.4" r="2.4"/><path d="M5.6 16.4c.6-1.9 1.9-2.9 3.4-2.9s2.8 1 3.4 2.9M15 9.6h3.4M15 13h2.4"/>',
   meet:'<path d="M20.5 11V6.5a2 2 0 0 0-2-2h-13a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2H11"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.6v2l1.3.9"/>'};
 const ico=(k,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
 // εικονίδιο κάθε σελίδας στο μενού και στην κάτω μπάρα του κινητού
-const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck',att:'loc',diary:'cam'};
+const NAVI={mine:'day',today:'day',week:'week',person:'user',appts:'meet',projects:'bld',tasks:'list',gantt:'gantt',workers:'hat',partners:'brief',duties:'bell',pay:'cash',costs:'chart',acc:'clip',profit:'trend',equip:'truck',att:'loc',diary:'cam',clients:'card'};
 // η σειρά του μενού: ό,τι ανοίγει κάθε μέρα πρώτο, μετά έργα, άνθρωποι, οικονομικά
 const navGroups=()=>isWorker()?[{k:'plan',l:'Πρόγραμμα',i:'cal',items:[['mine','Το πρόγραμμά μου']]}]:[
   {k:'plan',l:'Πρόγραμμα',i:'cal',items:[['today','Σήμερα'],['week','Εβδομάδα'],['person','Ατομικό πρόγραμμα'],['appts','Ραντεβού'],['duties','Υπενθυμίσεις']]},
-  {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο'],['equip','Εξοπλισμός']]},
+  {k:'proj',l:'Έργα',i:'proj',items:[['projects','Όλα τα έργα'],...S.projects.map(p=>['project',p.name,p]),['clients','Πελάτες'],['tasks','Όλες οι εργασίες'],['gantt','Χρονοδιάγραμμα'],['diary','Ημερολόγιο'],['equip','Εξοπλισμός']]},
   {k:'ppl',l:'Ανθρώπινο δυναμικό',i:'ppl',items:[['workers','Προσωπικό'],['partners','Συνεργάτες'],['att','Παρουσίες']]},
   {k:'fin',l:'Οικονομικά',i:'eur',items:[['pay','Πληρωμές'],['costs','Κόστος'],['profit','Κέρδος'],['acc','Για τον λογιστή']]}];
-const isCur=(k,p)=>UI.tab===k&&(!p||UI.proj===p.id);
+const isCur=(k,p)=>(UI.tab===k||k==='clients'&&UI.tab==='client')&&(!p||UI.proj===p.id);
 function renderNav(){
   const chev='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
   const sb=isWorker()||offF('search')?'':hasF('search')?`<button class="ni nsearch" data-act="search">${ico('search')}<span>Αναζήτηση</span><kbd>/</kbd></button>`:`<button class="ni nsearch" data-act="upsell" data-f="search">${ico('search')}<span>Αναζήτηση</span>${lockTag('search')}</button>`;
@@ -1180,7 +1244,7 @@ function renderNav(){
     +(isWorker()?'':`<button class="tb${tabs.some(([k])=>onTab(k))?'':' on'}" data-act="navopen" aria-label="Όλο το μενού">${ico('menu')}<span>Μενού</span></button>`);
   const mav=document.getElementById('mav');if(mav)mav.textContent=AUTH.user?initials(AUTH.user.name):'';
   const g=navGroups().find(g=>g.items.some(([k,,p])=>isCur(k,p)));
-  document.getElementById('mtitle').textContent=UI.tab==='project'?P(UI.proj)?.name||'':UI.tab==='settings'?(isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'):(g?g.items.find(([k,,p])=>isCur(k,p))[1]:'');
+  document.getElementById('mtitle').textContent=UI.tab==='project'?P(UI.proj)?.name||'':UI.tab==='client'?cliById(UI.cli)?.name||'':UI.tab==='settings'?(isWorker()?'Ο λογαριασμός μου':'Ρυθμίσεις'):(g?g.items.find(([k,,p])=>isCur(k,p))[1]:'');
 }
 function render(){
   if(!AUTH.user)return;
@@ -1197,8 +1261,9 @@ function render(){
   // ο καιρός της μέρας γράφεται στο ημερολόγιο των έργων
   if(R&&wxLogFill(R))save(true);
   if(UI.tab==='project'&&!P(UI.proj))UI.tab='projects';
+  if(UI.tab==='client'&&!cliById(UI.cli))UI.tab='clients';
   renderNav();
-  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,profit:vProfit,equip:vEquip,att:vAtt,diary:vDiary,settings:vSettings}[UI.tab]||vToday;
+  const v={mine:vMine,today:vToday,week:vWeek,person:vPerson,appts:vAppts,projects:vProjects,project:vProject,tasks:vTasks,gantt:vGantt,workers:vWorkers,partners:vPartners,duties:vDuties,pay:vPay,costs:vCosts,acc:vAcc,profit:vProfit,equip:vEquip,att:vAtt,diary:vDiary,clients:vClients,client:vClient,settings:vSettings}[UI.tab]||vToday;
   const lf=TAB_F[UI.tab];
   document.getElementById('main').innerHTML=lf&&!hasF(lf)?`<h1>${h(TABS.find(x=>x[0]===UI.tab)[1])}</h1><section class="panel">${upsell(lf)}</section>`:v(R);
   if(UI.sec){const x=document.getElementById(UI.sec);UI.sec='';x&&setTimeout(()=>x.scrollIntoView({block:'start'}),0)}
@@ -1707,11 +1772,11 @@ function vPerson(R){
 const mapsUrl=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
 function apCard(a){
   const p=a.projectId&&P(a.projectId),done=a.status==='done',cf=done?[]:apConflicts(a);
-  const people=(a.people||[]).map(apPerson).filter(Boolean);
+  const people=(a.people||[]).map(apPerson).filter(Boolean),cl=hasF('clients')&&cliOfA(a),cn=a.client||(cl?cl.name:'');
   return `<article class="ap${done?' done':''}${a.date<TODAY?' past':''}">
     <div class="tm">${a.time?h(a.time):'—'}${a.end?`<small>έως ${h(a.end)}</small>`:a.time?'':'<small>χωρίς ώρα</small>'}</div>
     <div><div class="t"><b>${h(a.title)}</b>${p?`<span class="tag mute"><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</span>`:''}${done?'<span class="tag ok">Έγινε</span>':''}${cf.map(c=>`<span class="tag warn">${h(c.name)}: ${h(c.why)}</span>`).join('')}</div>
-      ${a.client||a.phone||a.place?`<div class="meta">${a.client?`<span>${h(a.client)}</span>`:''}${a.phone?`<a href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">${h(a.phone)}</a>`:''}${a.place?`<a href="${mapsUrl(a.place)}" target="_blank" rel="noopener">${h(a.place)}</a>`:''}</div>`:''}
+      ${cn||a.phone||a.place?`<div class="meta">${cl?`<button class="lnk" data-tab="client" data-c="${cl.id}">${h(cn)}</button>`:cn?`<span>${h(cn)}</span>`:''}${a.phone?`<a href="tel:${h(String(a.phone).replace(/[^\d+]/g,''))}">${h(a.phone)}</a>`:''}${a.place?`<a href="${mapsUrl(a.place)}" target="_blank" rel="noopener">${h(a.place)}</a>`:''}</div>`:''}
       <div class="chips">${people.map(x=>`<span class="chip">${h(x.name)}</span>`).join('')||'<span class="tag warn">Δεν έχει οριστεί ποιος πηγαίνει</span>'}</div>
       ${a.notes?`<p class="note" style="margin:8px 0 0;white-space:pre-line">${h(a.notes)}</p>`:''}</div>
     <div class="acts-r"><button class="btn sm" data-act="editappt" data-id="${a.id}">${ico('edit')}Επεξεργασία</button><button class="btn sm ghost" data-act="doneappt" data-id="${a.id}">${done?ico('undo')+'Άνοιγμα':ico('check')+'Έγινε'}</button></div></article>`;
@@ -1734,9 +1799,9 @@ function vAppts(){
     :`<section class="panel"><p class="empty">${f==='done'?'Δεν έχει σημειωθεί ακόμη κανένα ραντεβού ως «Έγινε».':'Δεν υπάρχουν ραντεβού'+(who?' για αυτό το άτομο':'')+'. Πρόσθεσε ένα με «Νέο ραντεβού».'}</p></section>`}
   <p class="note">Τα ραντεβού δεν μετράνε μεροκάματο και δεν αλλάζουν τα συνεργεία. Μπαίνουν στο πρόγραμμα όσων πηγαίνουν, στο Σήμερα και στο μήνυμα Viber της ημέρας.</p>`;
 }
-function apptForm(a){
+function apptForm(a,pre){
   const isNew=!a,me=AUTH.user&&W(AUTH.user.workerId);
-  a=a||{id:uid('a'),date:UI.tab==='today'&&UI.day?UI.day:TODAY,time:'10:00',end:'',title:'',client:'',phone:'',place:'',projectId:'',people:[me?me.id:OWNER],notes:'',status:'open'};
+  a=a||{id:uid('a'),date:UI.tab==='today'&&UI.day?UI.day:TODAY,time:'10:00',end:'',title:'',client:'',phone:'',place:'',projectId:'',people:[me?me.id:OWNER],notes:'',status:'open',...(pre||{})};
   const box=(id,name,note)=>`<label><input type="checkbox" data-ap="${h(id)}"${(a.people||[]).includes(id)?' checked':''}><span>${h(name)}${note?` <span class="note">${h(note)}</span>`:''}</span></label>`;
   const grp=(l,xs)=>xs.length?`<span class="grp-l">${l}</span>${xs.map(w=>box(w.id,w.name,isExt(w)?w.company||'':SP(w.specialtyId)?.name||'')).join('')}`:'';
   const office=S.workers.filter(isOffice),leads=S.workers.filter(w=>!isOffice(w)&&!isExt(w)&&w.role!=='voith'),ext=S.workers.filter(isExt),help=S.workers.filter(w=>!isOffice(w)&&!isExt(w)&&w.role==='voith');
@@ -1747,7 +1812,7 @@ function apptForm(a){
     <label>Έργο${sel('ap_proj',[['','Χωρίς έργο, νέος πελάτης'],...projOpts()],a.projectId)}</label>
     <label>Ώρα<input id="ap_time" type="time" value="${h(a.time||'')}"></label>
     <label>Έως (αν το ξέρεις)<input id="ap_end" type="time" value="${h(a.end||'')}"></label>
-    <label>Πελάτης<input id="ap_client" value="${h(a.client||'')}" placeholder="Όνομα ή εταιρεία"></label>
+    <label>Πελάτης<input id="ap_client" value="${h(a.client||'')}" placeholder="Όνομα ή εταιρεία"${hasF('clients')?' list="ap_cl" autocomplete="off"':''}>${hasF('clients')?`<datalist id="ap_cl">${cliOpts().map(([,n])=>`<option value="${h(n)}">`).join('')}</datalist>`:''}</label>
     <label>Τηλέφωνο πελάτη<input id="ap_phone" type="tel" value="${h(a.phone||'')}"></label>
     <label class="full">Διεύθυνση<input id="ap_place" value="${h(a.place||'')}" placeholder="Πού γίνεται το ραντεβού"></label>
     <div class="fs"><span class="fl">Ποιοι πηγαίνουν</span><div class="wd"><span class="grp-l" style="margin-top:0">Διοίκηση και γραφείο</span>${box(OWNER,ownerName())}${office.map(w=>box(w.id,w.name,SP(w.specialtyId)?.name||'')).join('')}${grp('Αρχιεργάτες και τεχνίτες',leads)}${grp('Συνεργάτες',ext)}${grp('Βοηθοί',help)}</div></div>
@@ -1912,7 +1977,8 @@ function vProjects(R){
     <div class="bar"><span class="grow">Μεροκάματα σε πρόγραμμα</span><b class="mono">${nf(md(st.A))}</b></div>
     <div class="bar"><span class="grow">Εκτιμώμενο τέλος</span><b class="mono">${fmt(st.fin)}</b></div>
     ${st.due?`<div class="bar"><span class="grow">Παράδοση</span><b class="mono">${fmt(p.due)}</b> ${dueTag(st.due)}</div>`:''}
-    <div class="bar"><span class="grow">Διαχειριστές</span><b>${mgrNames(p)||'<span class="tag warn">κανένας</span>'}</b></div></div></article>`}).join('');
+    <div class="bar"><span class="grow">Διαχειριστές</span><b>${mgrNames(p)||'<span class="tag warn">κανένας</span>'}</b></div>
+    ${hasF('clients')?`<div class="bar"><span class="grow">Πελάτης</span>${cliOfP(p)?`<button class="lnk" data-tab="client" data-c="${cliOfP(p).id}"><b>${h(cliOfP(p).name)}</b></button>`:`<button class="lnk note" data-act="clipick" data-p="${p.id}">Ορισμός</button>`}</div>`:''}</div></article>`}).join('');
   return `<div class="bar"><h1 class="grow">Όλα τα έργα</h1><button class="btn pri" data-act="newproj">${ico('plus')}Νέο έργο</button></div>
   <div class="projgrid">${cards||'<p class="empty">Δεν υπάρχουν έργα ακόμη.</p>'}</div>`;
 }
@@ -1922,7 +1988,7 @@ function vProject(R){
   const open=st.ts.filter(t=>t.status!=='done').length;
   const ext=new Set(st.ts.map(t=>W(t.responsibleId)).filter(isExt));
   return `<div class="bar"><h1 class="grow ptitle"><i class="dot lg" style="background:${pc(p)}"></i><span>${h(p.name)}</span></h1><button class="btn" data-act="editproj" data-id="${p.id}">Επεξεργασία έργου</button><button class="btn pri" data-act="newtask" data-p="${p.id}">${ico('plus')}Νέα εργασία</button></div>
-  <p class="note" style="margin-top:-12px">${h(p.location)} · Διαχειριστές: ${mgrNames(p)||'κανένας'}${ext.size?' · Συνεργάτες: '+[...ext].map(w=>h(w.company||w.name)).join(', '):''}${hasF('gps')?` · <button class="lnk sitelnk" data-act="siteform" data-k="${p.id}">${siteOf(p)?'Σημείο για τις παρουσίες: '+siteOf(p).r+' μέτρα':'Ορισμός σημείου για τις παρουσίες'}</button>`:''}</p>
+  <p class="note" style="margin-top:-12px">${h(p.location)}${hasF('clients')?' · '+(cliOfP(p)?`Πελάτης: <button class="lnk sitelnk" data-tab="client" data-c="${cliOfP(p).id}">${h(cliOfP(p).name)}</button>`:`<button class="lnk sitelnk" data-act="clipick" data-p="${p.id}">Ορισμός πελάτη</button>`):''} · Διαχειριστές: ${mgrNames(p)||'κανένας'}${ext.size?' · Συνεργάτες: '+[...ext].map(w=>h(w.company||w.name)).join(', '):''}${hasF('gps')?` · <button class="lnk sitelnk" data-act="siteform" data-k="${p.id}">${siteOf(p)?'Σημείο για τις παρουσίες: '+siteOf(p).r+' μέτρα':'Ορισμός σημείου για τις παρουσίες'}</button>`:''}</p>
   ${st.due&&st.due.late?`<p class="warnline bad">${ico('info')}<span><b>Παράδοση ${fmt(p.due)}.</b> ${h(st.due.txt)} Δες το «Τι λείπει» στο Σήμερα ή πρόσθεσε άτομα στις εργασίες.</span></p>`:''}
   <div class="kpis">
     <div class="kpi"><span class="lbl">Εργατικά σε πρόγραμμα</span><span class="v">${eur(st.cost)}</span><div class="meter"><i class="${st.over?'over':''}" style="width:${st.pct}%"></i></div><span class="s">${st.over?'Υπέρβαση '+eur(st.cost-p.budget):'από '+eur(p.budget)+' προϋπολογισμό'}</span></div>
@@ -1940,11 +2006,12 @@ function vProject(R){
 function vGantt(R){
   return `<div class="bar"><h1 class="grow">Χρονοδιάγραμμα</h1></div><section class="panel">${gantt(R,S.projects)}</section>`;
 }
-function projForm(p){
-  const isNew=!p;p=p||{id:uid('p'),name:'',location:'',budget:0,color:['p1','p2','p3','p4','p5','p6'][S.projects.length%6]};
+function projForm(p,pre){
+  const isNew=!p;p=p||{id:uid('p'),name:'',location:'',budget:0,color:['p1','p2','p3','p4','p5','p6'][S.projects.length%6],...(pre||{})};
   openModal(`<h2>${isNew?'Νέο έργο':'Επεξεργασία έργου'}</h2><form class="form" id="pf" data-id="${p.id}" data-new="${isNew?1:0}">
   <label class="full">Όνομα έργου<input id="g_name" value="${h(p.name)}" placeholder="π.χ. Ανακαίνιση γραφείων Πυλαίας"></label>
   <label class="full">Διεύθυνση<input id="g_loc" value="${h(p.location)}"></label>
+  ${hasF('clients')?`<label>Πελάτης${sel('g_cli',[['','Χωρίς πελάτη'],...cliOpts()],cliById(p.clientId)?p.clientId:'')}</label>`:''}
   ${hasF('wx')?`<label class="full">Περιοχή για τον καιρό<span class="inl"><input id="g_place" value="${h(p.place||'')}" placeholder="π.χ. Καλαμαριά · κενό = η έδρα (${h(wxCfg().place||'')})" data-lat="${hasLL(p)?p.lat:''}" data-lon="${hasLL(p)?p.lon:''}" data-q="${h(p.place||'')}"><button type="button" class="btn" data-act="geo" data-t="g">Εύρεση</button></span><span class="note" id="g_geo">${hasLL(p)?h(geoNote(p)):''}</span></label>`:''}
   ${hasF('acc')?`<label>ΑΜΟΕ<input id="g_amoe" value="${h(p.amoe||'')}"><span class="note">Αριθμός Μητρώου Οικοδομοτεχνικού Έργου, για τον λογιστή.</span></label>`:''}
   ${hasF('profit')?`<label>Τιμή συμβολαίου (€, χωρίς ΦΠΑ)<input id="g_contract" type="number" min="0" step="100" value="${+p.contract||''}"><span class="note">Τι πληρώνει ο πελάτης, για το κέρδος του έργου.</span></label>`:''}
@@ -2481,10 +2548,10 @@ const clWhat=p=>{const o=clientOpt(p);return ['την πρόοδο','τις ερ
 function clientPanel(R,p){if(!hasF('client'))return '';const sh=shareOf(p),url=clLink(p);
   const head=`<div class="bar"><h2 class="grow" style="margin:0">Σελίδα για τον πελάτη</h2><button class="btn sm ghost" data-act="cprev" data-p="${p.id}">${ico('eye')}Προεπισκόπηση</button><button class="btn sm" data-act="cset" data-p="${p.id}">Τι βλέπει</button></div>`;
   const what=`Ο πελάτης βλέπει ${clWhat(p)}, χωρίς κωδικό. Ονόματα, μεροκάματα και κόστη δεν φαίνονται ποτέ.`;
-  if(!SERVER)return `<section class="panel clp">${head}<p class="note">${what} Ο σύνδεσμος βγαίνει όταν η εφαρμογή τρέχει στον server της εταιρείας. Εδώ βλέπεις μόνο την προεπισκόπηση.</p></section>`;
-  if(!sh)return `<section class="panel clp">${head}<p class="note">${what}</p><div class="bar"><button class="btn pri" data-act="cmake" data-p="${p.id}">${ico('link')}Δημιουργία συνδέσμου</button></div></section>`;
+  if(!SERVER)return `<section class="panel clp" id="clp">${head}<p class="note">${what} Ο σύνδεσμος βγαίνει όταν η εφαρμογή τρέχει στον server της εταιρείας. Εδώ βλέπεις μόνο την προεπισκόπηση.</p></section>`;
+  if(!sh)return `<section class="panel clp" id="clp">${head}<p class="note">${what}</p><div class="bar"><button class="btn pri" data-act="cmake" data-p="${p.id}">${ico('link')}Δημιουργία συνδέσμου</button></div></section>`;
   clViewsLoad();const text=clText(p,url);
-  return `<section class="panel clp">${head}
+  return `<section class="panel clp" id="clp">${head}
     <div class="cllink"><input id="cl_url" readonly value="${h(url)}" aria-label="Σύνδεσμος για τον πελάτη"><button class="btn sm" data-act="ccopy" data-p="${p.id}">Αντιγραφή</button></div>
     <div class="clshare"><span class="note">Στείλ’ τον με</span><a class="chip" href="${h(viberHref(text))}" target="_blank" rel="noopener">Viber</a><a class="chip" href="https://wa.me/?text=${h(encodeURIComponent(text))}" target="_blank" rel="noopener">WhatsApp</a><a class="chip" href="mailto:?subject=${h(encodeURIComponent('Πρόοδος του έργου: '+p.name))}&amp;body=${h(encodeURIComponent(text))}">Email</a></div>
     <p class="note"><span id="clseen" data-p="${p.id}">${h(clSeen(p.id))}</span> ${what}</p>
@@ -2510,6 +2577,108 @@ async function clPreview(pid){const p=P(pid);if(!p)return;
     <div class="clframe"><iframe id="cl_if" title="Η σελίδα του πελάτη" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" style="width:${w}px"></iframe></div>
     <div class="acts"><span class="note grow">${SERVER&&shareOf(p)?'Ο πελάτης τη βλέπει πάντα ενημερωμένη, όπως είναι τώρα το πρόγραμμα και το ημερολόγιο.':SERVER?'Φτιάξε τον σύνδεσμο από τη σελίδα του έργου για να τη στείλεις στον πελάτη.':'Ο σύνδεσμος βγαίνει όταν η εφαρμογή τρέχει στον server της εταιρείας.'}</span><button class="btn" data-act="cset" data-p="${pid}">Τι βλέπει</button><button class="btn pri" data-act="close">Κλείσιμο</button></div>`,'clpv');
   document.getElementById('cl_if').srcdoc=doc}
+/* Πελάτες (πακέτο Συνεργείο): μία καρτέλα για κάθε πελάτη με στοιχεία, έργα, ραντεβού και ιστορικό.
+   Τα δεδομένα και το ιστορικό είναι στο src/core.js (cliHistory κ.λπ.)· εδώ η λίστα, η καρτέλα και οι φόρμες. */
+const CLI_ST=[['now','Με έργο τώρα'],['lead','Χωρίς έργο ακόμη'],['done','Τελειωμένα έργα']];
+const CLI_I={note:'edit',call:'phone',meet:'ppl',offer:'clip',msg:'mail',appt:'meet',start:'bld',done:'check',link:'link',new:'card'};
+const cliKind=k=>({appt:'Ραντεβού',start:'Έργο',done:'Έργο',link:'Σελίδα προόδου',new:'Καρτέλα'})[k]||(CLI_K.find(x=>x[0]===k)||CLI_K[0])[1];
+const telHref=x=>'tel:'+String(x||'').replace(/[^\d+]/g,'');
+// Viber: η συνομιλία με το κινητό του πελάτη
+const viberChat=x=>{const d=String(x||'').replace(/\D/g,'').replace(/^00/,'');return 'viber://chat?number=%2B'+(d.length===10?'30'+d:d)};
+const isMob=x=>/^69\d{8}$/.test(String(x||'').replace(/\D/g,'').replace(/^(00)?30(?=69)/,''));
+const cliOpts=()=>cliList().slice().sort((a,b)=>a.name.localeCompare(b.name,'el')).map(c=>[c.id,c.name]);
+const apWhen=a=>(a.date===TODAY?'Σήμερα':a.date===add(TODAY,1)?'Αύριο':fmtS(a.date))+(a.time?' '+a.time:'');
+const cliGo=id=>{UI.tab='client';UI.cli=id;try{localStorage.setItem(LS+'.tab',UI.tab);localStorage.setItem(LS+'.cli',id)}catch(e){}};
+// η κατάσταση του έργου σε μία γραμμή: τέλος, παράδοση ή εκτιμώμενο τέλος
+function cliProjLine(R,p,g){
+  if(projDone(p))return 'Τελείωσε'+(g.fin?' '+fmt(g.fin):'');
+  if(hasF('deadline')&&p.due)return 'Παράδοση '+fmt(p.due);
+  return g.fin?'Εκτιμώμενο τέλος '+fmt(g.fin):g.rows.length?'Δεν έχει μπει στο πρόγραμμα':'Χωρίς εργασίες ακόμη'}
+function vClients(R){
+  const cs=cliList().slice().sort((a,b)=>a.name.localeCompare(b.name,'el')),imp=cliFromAppts(),free=S.projects.filter(p=>!cliOfP(p));
+  const row=c=>{const ps=cliProjects(c),nx=hasF('appts')?cliUpcoming(c)[0]:null,last=cliLast(c);
+    const q=fold([c.name,c.person,c.phone,c.email,c.addr,c.afm,...ps.map(p=>p.name)].join(' '));
+    return `<article class="clrow" data-q="${h(q)}"><button class="clmain" data-tab="client" data-c="${c.id}"><span class="av" aria-hidden="true">${h(initials(c.name))}</span>
+      <span class="clname"><b>${h(c.name)}</b><span class="note">${h([c.person,c.phone].filter(Boolean).join(' · '))||'Χωρίς στοιχεία επικοινωνίας'}</span></span></button>
+      <div class="clps">${ps.map(p=>`<button class="chip" data-tab="project" data-p="${p.id}"><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</button>`).join('')}</div>
+      <div class="clmeta note">${nx?`<span class="nx">${ico('meet')}${h(apWhen(nx))}</span>`:''}${last?`<span>Τελευταία επαφή ${h(fmtS(last))}</span>`:''}</div>
+      ${c.phone?`<a class="btn sm ghost iconbtn clcall" href="${h(telHref(c.phone))}" title="Κλήση" aria-label="Κλήση: ${h(c.name)}">${ico('phone')}</a>`:''}</article>`};
+  const groups=CLI_ST.map(([k,l])=>{const xs=cs.filter(c=>cliState(c)===k);return xs.length?`<section class="panel clgrp"><h2>${l} <span class="note">${xs.length}</span></h2>${xs.map(row).join('')}</section>`:''}).join('');
+  return `<div class="bar"><h1 class="grow">Πελάτες</h1>${cs.length>5?`<input id="cq" class="clq" type="search" placeholder="Όνομα, τηλέφωνο ή έργο" aria-label="Αναζήτηση πελάτη" autocomplete="off">`:''}<button class="btn pri" data-act="newcli">${ico('plus')}Νέος πελάτης</button></div>
+  ${imp.length?`<p class="warnline climp">${ico('info')}<span class="grow">Στα ραντεβού ${imp.length==1?'υπάρχει 1 πελάτης':'υπάρχουν '+imp.length+' πελάτες'} χωρίς καρτέλα: ${imp.map(x=>'<b>'+h(x.name)+'</b>').join(', ')}.</span><button class="btn sm pri" data-act="cliimp">${imp.length==1?'Φτιάξε την καρτέλα':'Φτιάξε τις καρτέλες'}</button></p>`:''}
+  ${groups||`<section class="panel"><p class="empty">Πρόσθεσε τους πελάτες σου, για να βλέπεις σε μία καρτέλα τα στοιχεία τους, τα έργα τους, τα ραντεβού και ό,τι έχετε πει.</p></section>`}
+  <p class="note" id="cqnone" hidden>Δεν βρέθηκε πελάτης.</p>
+  ${free.length&&cs.length?`<section class="panel"><h2>Έργα χωρίς πελάτη <span class="note">${free.length}</span></h2><div class="chips">${free.map(p=>`<button class="chip" data-act="clipick" data-p="${p.id}"><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}<span class="note">Ορισμός πελάτη</span></button>`).join('')}</div></section>`:''}`}
+// φίλτρο της λίστας χωρίς να ξαναστήνεται η σελίδα
+function cliFilter(v){const ws=fold(v).trim().split(/\s+/).filter(Boolean);let n=0;
+  document.querySelectorAll('.clrow').forEach(r=>{const ok=ws.every(w=>r.dataset.q.includes(w));r.hidden=!ok;if(ok)n++});
+  document.querySelectorAll('.clgrp').forEach(g=>g.hidden=![...g.querySelectorAll('.clrow')].some(r=>!r.hidden));
+  const e=document.getElementById('cqnone');if(e)e.hidden=n>0}
+function vClient(R){const c=cliById(UI.cli),ps=cliProjects(c),st=cliState(c);
+  const up=hasF('appts')?cliUpcoming(c):[],hist=cliHistory(R,c),past=hasF('appts')?cliAppts(c).length-up.length:0;
+  const info=[c.person&&['user','Επικοινωνία',h(c.person)],c.phone&&['phone','Τηλέφωνο',`<a href="${h(telHref(c.phone))}">${h(c.phone)}</a>`],
+    c.email&&['mail','Email',`<a href="mailto:${h(c.email)}">${h(c.email)}</a>`],c.addr&&['loc','Διεύθυνση',`<a href="${h(mapsUrl(c.addr))}" target="_blank" rel="noopener">${h(c.addr)}</a>`],
+    c.afm&&['clip','ΑΦΜ',`<span class="mono">${h(c.afm)}</span>`]].filter(Boolean);
+  const pr=p=>{const g=projProg(R,p.id),dn=projDone(p);
+    return `<div class="clproj" style="--pc:${pc(p)}"><div class="bar"><button class="lnk grow" data-tab="project" data-p="${p.id}"><i class="dot" style="background:${pc(p)}"></i><b>${h(p.name)}</b></button><b class="mono">${g.rows.length?g.pct+'%':''}</b></div>
+      ${g.rows.length?`<div class="meter"><i style="width:${g.pct}%;background:${dn?'var(--ok)':pc(p)}"></i></div>`:''}
+      <div class="note clpl">${[p.location&&h(p.location),h(cliProjLine(R,p,g)),hasF('profit')&&+p.contract?'Συμβόλαιο '+eur(p.contract):''].filter(Boolean).join(' · ')}</div>
+      ${hasF('client')?`<div class="bar clplink">${SERVER&&shareOf(p)?`<span class="note grow">${ico('link')}Σελίδα προόδου ανοιχτή</span><button class="btn sm ghost" data-act="ccopy" data-p="${p.id}">Αντιγραφή συνδέσμου</button>`:`<span class="note grow">${ico('link')}${SERVER?'Χωρίς σελίδα προόδου':'Σελίδα προόδου για τον πελάτη'}</span>`}<button class="btn sm ghost" data-tab="project" data-p="${p.id}" data-sec="clp">${SERVER&&!shareOf(p)?'Δημιουργία':'Άνοιγμα'}</button></div>`:''}</div>`};
+  const tl=x=>`<li class="k-${x.k}"><span class="tli" aria-hidden="true">${ico(CLI_I[x.k]||'edit')}</span><div class="grow">
+      <div class="tlh"><b>${h(cliKind(x.k))}</b><span class="note">${h(fmt(x.d))}${x.by?' · '+h(short(x.by)):''}</span>${x.id?`<button class="btn sm ghost tlx" data-act="clidel" data-c="${c.id}" data-id="${h(x.id)}" aria-label="Διαγραφή σημείωσης">${ico('x')}</button>`:''}</div>
+      ${x.a?`<button class="lnk" data-act="editappt" data-id="${h(x.a)}">${h(x.text)}</button>`:x.p&&x.k!=='link'?`<button class="lnk" data-tab="project" data-p="${h(x.p)}">${h(x.text)}</button>`:`<p>${h(x.text)}</p>`}
+      ${x.sub?`<span class="note">${h(x.sub)}</span>`:''}</div></li>`;
+  const since=c.at?MONTHS[+String(c.at).slice(5,7)-1]+' '+String(c.at).slice(0,4):'';
+  return `<button class="lnk back" data-tab="clients">${ico('cl')}Πελάτες</button>
+  <div class="bar clhead"><h1 class="grow ptitle"><span class="av lg" aria-hidden="true">${h(initials(c.name))}</span><span>${h(c.name)}</span></h1>
+    ${c.phone?`<a class="btn" href="${h(telHref(c.phone))}">${ico('phone')}Κλήση</a>`:''}${isMob(c.phone)?`<a class="btn" href="${h(viberChat(c.phone))}">${ico('send')}Viber</a>`:''}${c.email?`<a class="btn" href="mailto:${h(c.email)}">${ico('mail')}Email</a>`:''}
+    <button class="btn" data-act="editcli" data-c="${c.id}">${ico('edit')}Επεξεργασία</button></div>
+  <p class="note" style="margin-top:-12px"><span class="tag ${st==='now'?'ok':'mute'}">${h(CLI_ST.find(x=>x[0]===st)[1])}</span> ${ps.length==1?'1 έργο':ps.length+' έργα'}${up.length?' · '+(up.length==1?'1 ραντεβού μπροστά':up.length+' ραντεβού μπροστά'):''}${since?' · πελάτης από '+h(since):''}</p>
+  <div class="clgrid"><div>
+    <section class="panel"><h2>Στοιχεία</h2>${info.length?`<dl class="clinfo">${info.map(([i,l,v])=>`<div><dt>${ico(i)}<span>${l}</span></dt><dd>${v}</dd></div>`).join('')}</dl>`:`<p class="note">Δεν έχουν μπει στοιχεία. <button class="lnk" data-act="editcli" data-c="${c.id}">Πρόσθεσε τηλέφωνο και διεύθυνση</button></p>`}
+      ${c.notes?`<p class="clnotes">${h(c.notes)}</p>`:''}</section>
+    <section class="panel"><div class="bar"><h2 class="grow" style="margin:0">Έργα</h2><button class="btn sm ghost" data-act="clilinkp" data-c="${c.id}">Σύνδεση έργου</button><button class="btn sm" data-act="clinewp" data-c="${c.id}">${ico('plus')}Νέο έργο</button></div>
+      ${ps.length?ps.map(pr).join(''):'<p class="note">Δεν έχει έργο ακόμη. Όταν κλείσει η δουλειά, φτιάξε το έργο από εδώ για να μπει στον πελάτη.</p>'}</section>
+    ${hasF('appts')?`<section class="panel clap"><div class="bar"><h2 class="grow" style="margin:0">Ραντεβού</h2><button class="btn sm" data-act="clinewa" data-c="${c.id}">${ico('plus')}Νέο ραντεβού</button></div>
+      ${up.length?[...new Set(up.map(a=>a.date))].map(d=>`<div class="apday"><h3>${h(d===TODAY?'Σήμερα, '+fmt(d):d===add(TODAY,1)?'Αύριο, '+fmt(d):fmt(d))}</h3>${up.filter(a=>a.date===d).map(apCard).join('')}</div>`).join(''):'<p class="note">Κανένα ραντεβού μπροστά.</p>'}
+      ${past?`<p class="note">${past==1?'Το ραντεβού που πέρασε είναι':'Τα '+past+' ραντεβού που πέρασαν είναι'} στο ιστορικό.</p>`:''}</section>`:''}
+  </div><section class="panel clhist"><h2>Ιστορικό</h2>
+    <form class="clnote" id="cln" data-c="${c.id}"><div class="clnr">${sel('cn_k',CLI_K,UI.cnK||'call','aria-label="Είδος"')}<input id="cn_d" type="date" value="${TODAY}" max="${TODAY}" aria-label="Ημερομηνία"></div>
+      <textarea id="cn_t" rows="2" maxlength="2000" placeholder="Τι ειπώθηκε ή τι συμφωνήθηκε" aria-label="Σημείωση"></textarea>
+      <div class="bar"><span class="grow"></span><button type="button" class="btn sm pri" data-act="clinote" data-c="${c.id}">Προσθήκη</button></div></form>
+    <ol class="tl">${hist.map(tl).join('')}</ol></section></div>`}
+function cliForm(c,o={}){const isNew=!c;c=c||cliNew({name:o.name||''});
+  openModal(`<h2>${isNew?'Νέος πελάτης':'Επεξεργασία πελάτη'}</h2><form class="form" id="clif" data-id="${c.id}" data-new="${isNew?1:0}"${o.p?` data-p="${h(o.p)}"`:''}>
+    <label class="full">Όνομα ή επωνυμία<input id="k_name" value="${h(c.name)}" placeholder="π.χ. Οικογένεια Παπαδοπούλου ή Αφοί Δημητρίου ΟΕ"></label>
+    <label>Υπεύθυνος επικοινωνίας<input id="k_person" value="${h(c.person||'')}" placeholder="Αν είναι εταιρεία"></label>
+    <label>Τηλέφωνο<input id="k_phone" type="tel" value="${h(c.phone||'')}"></label>
+    <label>Email<input id="k_email" type="email" value="${h(c.email||'')}"></label>
+    <label>ΑΦΜ<input id="k_afm" inputmode="numeric" maxlength="14" value="${h(c.afm||'')}"><span class="note">Για τιμολόγια και συμβόλαια.</span></label>
+    <label class="full">Διεύθυνση<input id="k_addr" value="${h(c.addr||'')}"></label>
+    <label class="full">Τι πρέπει να ξέρουμε<textarea id="k_notes" rows="3" placeholder="π.χ. Μένουν στο σπίτι όσο γίνεται η δουλειά">${h(c.notes||'')}</textarea></label></form>
+  <div class="acts">${isNew?'':`<button class="btn danger" data-act="delcli" data-c="${c.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savecli">Αποθήκευση</button></div>`)}
+function cliSave(){const f=document.getElementById('clif');if(!f)return;const g=x=>document.getElementById(x).value.trim(),isNew=f.dataset.new==='1';
+  const v={name:g('k_name').replace(/\s+/g,' '),person:g('k_person'),phone:g('k_phone'),email:g('k_email'),afm:g('k_afm'),addr:g('k_addr'),notes:g('k_notes')};
+  if(!v.name){toast('Γράψε το όνομα του πελάτη.');return}
+  const dup=cliByName(v.name);if(dup&&dup.id!==f.dataset.id){toast('Υπάρχει ήδη πελάτης «'+dup.name+'».');return}
+  S.clients=S.clients||[];
+  if(isNew){const c=cliNew({id:f.dataset.id,...v});S.clients.push(c);const p=f.dataset.p&&P(f.dataset.p);
+    if(p)p.clientId=c.id;else cliGo(c.id);
+    UI.hmsg='Νέος πελάτης «'+c.name+'»'+(p?' για το έργο «'+p.name+'»':'');commit('Ο πελάτης προστέθηκε.');return}
+  const c=cliById(f.dataset.id);if(!c)return;
+  // τα ραντεβού του πελάτη παίρνουν το νέο όνομα
+  if(c.name!==v.name)cliAppts(c).forEach(a=>{a.clientId=c.id;a.client=v.name});
+  Object.assign(c,v);UI.hmsg='Αλλαγές στον πελάτη «'+c.name+'»';commit('Οι αλλαγές αποθηκεύτηκαν.')}
+// ο πελάτης ενός έργου
+function cliPick(pid){const p=P(pid);if(!p)return;const cur=p.clientId&&cliById(p.clientId)?p.clientId:'';
+  openModal(`<h2>Πελάτης του έργου</h2><p class="note">${h(p.name)}</p><form id="cpk" data-p="${p.id}"><div class="radios">${[...cliOpts(),['','Χωρίς πελάτη']].map(([v,l])=>radio(v,l,cur)).join('')}</div></form>
+  <div class="acts"><button class="btn" data-act="newcli" data-p="${p.id}">${ico('plus')}Νέος πελάτης</button><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savecpk">Αποθήκευση</button></div>`)}
+// τα έργα ενός πελάτη
+function cliLinkForm(cid){const c=cliById(cid);if(!c)return;
+  openModal(`<h2>Έργα του πελάτη</h2><p class="note">${h(c.name)}</p><form id="clk" data-c="${c.id}"><div class="radios">${S.projects.map(p=>{const o=cliOfP(p);
+    return `<label class="ck"><input type="checkbox" data-lp="${p.id}"${o===c?' checked':''}> <span><b>${h(p.name)}</b>${o&&o!==c?`<span class="note" style="display:block">Τώρα στον πελάτη «${h(o.name)}». Αν το τσεκάρεις, περνά εδώ.</span>`:''}</span></label>`}).join('')||'<p class="note">Δεν υπάρχουν έργα ακόμη.</p>'}</div></form>
+  <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveclk">Αποθήκευση</button></div>`)}
+
 /* Συνεργάτες */
 // λογαριασμός συνεργάτη κατ' αποκοπή: συμφωνία, δουλεμένα μέχρι σήμερα, πληρωμένα, υπόλοιπο
 function jobAccount(R,w){
@@ -2931,11 +3100,11 @@ function vSettings(){
 
 /* ---------- Πακέτα συνδρομής ---------- */
 // σελίδες που ανοίγουν από συγκεκριμένο πακέτο (τα πακέτα και οι λειτουργίες τους είναι στο core)
-const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs',acc:'acc',profit:'profit',equip:'equip',att:'gps',diary:'diary'};
+const TAB_F={partners:'partners',appts:'appts',duties:'duties',gantt:'gantt',pay:'pay',costs:'costs',acc:'acc',profit:'profit',equip:'equip',att:'gps',diary:'diary',clients:'clients',client:'clients'};
 // κλειστή από τον διαχειριστή (όχι από το πακέτο): δεν φαίνεται καθόλου
 const offF=f=>planHas(f)&&!isOn(f);
 // ό,τι από το FEATS υπάρχει ήδη στην εφαρμογή· τα υπόλοιπα φαίνονται ως «σύντομα»
-const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push','gps','diary'];
+const READY=['wx','partners','appts','pm','rating','gaps','deadline','avail','history','search','weekly','setup','acc','export','progress','leave','equip','profit','materials','push','gps','diary','client','clients'];
 const BASE_F=['Αυτόματο πρόγραμμα ημέρας και εβδομάδας','Viber με ένα πάτημα','Η εφαρμογή του εργάτη','Έργα, εργασίες και χρονοδιάγραμμα','Μεροκάματα και πληρωμές','Υπενθυμίσεις, αργίες και κλειστές μέρες'];
 const planLock=()=>!!S.settings.planLock;   // ο server ορίζει το πακέτο από τη συνδρομή
 const perMonth=p=>money(p.price)+' τον μήνα';
@@ -2958,7 +3127,7 @@ function officeNote(){const p=planOf();if(!UI.users)return '';const n=officeUser
 // διακόπτες λειτουργιών: ο διαχειριστής κλείνει ό,τι δεν χρειάζεται η εταιρεία
 const SW=[
   ['Πρόγραμμα',[['wx','Καιρός','Οι εξωτερικές εργασίες μετατίθενται όταν βρέχει.'],['appts','Ραντεβού','Ραντεβού με πελάτες, με ώρα, μέρος και άτομα.'],['duties','Υπενθυμίσεις','Δουλειές γραφείου και εργοταξίου που επαναλαμβάνονται ή γίνονται μία φορά.'],['avail','Διαθεσιμότητα','Ποιες μέρες δουλεύει ο καθένας και δεύτερη ειδικότητα.'],['rating','Βαθμοί και δυσκολία','Οι πιο έμπειροι στις δύσκολες εργασίες, χωρίς να κουράζονται.'],['gaps','Τι λείπει','Τα κενά του προγράμματος στο Σήμερα.'],['push','Ειδοποιήσεις στο κινητό','Το πρόγραμμα της μέρας, οι άδειες και η πρόοδος από το εργοτάξιο ως ειδοποίηση, χωρίς χρέωση.']]],
-  ['Έργα',[['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['diary','Ημερολόγιο έργου','Κάθε μέρα του έργου: ποιοι δούλεψαν, τι έγινε, καιρός, σημειώσεις και φωτογραφίες από το εργοτάξιο, σε PDF για τον πελάτη.'],['client','Σελίδα για τον πελάτη','Ιδιωτικός σύνδεσμος ανά έργο όπου ο πελάτης βλέπει την πρόοδο, το ημερολόγιο και τις φωτογραφίες, χωρίς ονόματα και κόστη.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
+  ['Έργα',[['clients','Πελάτες','Μία καρτέλα για κάθε πελάτη: στοιχεία, έργα, ραντεβού και ό,τι έχετε πει.'],['deadline','Προθεσμία παράδοσης','Προειδοποίηση όταν ένα έργο δεν προλαβαίνει.'],['pm','Διαχειριστές έργων','Ποιος από το γραφείο έχει κάθε έργο.'],['gantt','Χρονοδιάγραμμα','Οι εργασίες κάθε έργου σε μπάρες ανά μέρα.'],['diary','Ημερολόγιο έργου','Κάθε μέρα του έργου: ποιοι δούλεψαν, τι έγινε, καιρός, σημειώσεις και φωτογραφίες από το εργοτάξιο, σε PDF για τον πελάτη.'],['client','Σελίδα για τον πελάτη','Ιδιωτικός σύνδεσμος ανά έργο όπου ο πελάτης βλέπει την πρόοδο, το ημερολόγιο και τις φωτογραφίες, χωρίς ονόματα και κόστη.'],['equip','Εξοπλισμός και λήξεις','Πού είναι κάθε μηχάνημα και όχημα, με υπενθύμιση για ΚΤΕΟ, ασφάλειες και πιστοποιήσεις.'],['materials','Υλικά πριν την εργασία','Υπενθύμιση να παραγγελθούν τα υλικά πριν ξεκινήσει κάθε εργασία.']]],
   ['Ανθρώπινο δυναμικό',[['partners','Συνεργάτες','Εξωτερικά συνεργεία με μεροκάματο ή κατ᾽ αποκοπή.'],['progress','Πρόοδος από το εργοτάξιο','Ο υπεύθυνος της εργασίας πατά «Τελείωσε» ή «+1 μέρα» στο κινητό.'],['leave','Άδειες από το κινητό','Ο εργαζόμενος ζητά άδεια και το γραφείο την εγκρίνει.'],['gps','Παρουσίες με GPS','Ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό. Η θέση ελέγχεται μόνο εκείνη τη στιγμή.']]],
   ['Οικονομικά',[['pay','Πληρωμές','Τι χρωστάς στον καθένα κάθε εβδομάδα και τι πλήρωσες.'],['costs','Κόστος','Μεροκάματα ανά έργο και ανά εργαζόμενο.'],['profit','Κέρδος ανά έργο','Τιμή συμβολαίου, υλικά και έξοδα, με το κέρδος κάθε έργου.'],['weekly','Σύνοψη εβδομάδας','Η εβδομάδα σε ένα μήνυμα για τον εργολάβο.'],['acc','Για τον λογιστή','Μέρες κάθε εργαζόμενου ανά έργο τον μήνα, με ΑΜΚΑ και ΑΜΟΕ.'],['export','Excel και PDF','Πρόγραμμα, πληρωμές και κόστος σε αρχείο ή για εκτύπωση.']]],
   ['Εργαλεία',[['search','Αναζήτηση','Βρίσκει άτομα, έργα, εργασίες και ραντεβού.'],['history','Ιστορικό αλλαγών','Ποιος άλλαξε τι, με αναίρεση.'],['setup','Οδηγός πρώτης ρύθμισης','Εταιρεία, ειδικότητες, άτομα και έργα, βήμα βήμα.']]]];
@@ -3172,7 +3341,7 @@ function closeModal(){document.getElementById('modal').innerHTML='';if(UI.wxDirt
 // χωρίς τόνους και κεφαλαία, ώστε «παπαδοπουλος» να βρίσκει «Παπαδόπουλος»
 const fold=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ς/g,'σ');
 function searchForm(){UI.qR=schedule();
-  openModal(`<h2>Αναζήτηση</h2><input id="q" class="qbox" type="search" enterkeyhint="go" placeholder="Όνομα, έργο, εργασία, ραντεβού ή τηλέφωνο" autocomplete="off" aria-label="Αναζήτηση"><div id="qres" class="qres" aria-live="polite"><p class="note">Γράψε τουλάχιστον 2 γράμματα.</p></div>`)}
+  openModal(`<h2>Αναζήτηση</h2><input id="q" class="qbox" type="search" enterkeyhint="go" placeholder="Όνομα, πελάτης, έργο, εργασία ή τηλέφωνο" autocomplete="off" aria-label="Αναζήτηση"><div id="qres" class="qres" aria-live="polite"><p class="note">Γράψε τουλάχιστον 2 γράμματα.</p></div>`)}
 function searchRun(q){const box=document.getElementById('qres');if(!box)return;const words=fold(q).trim().split(/\s+/).filter(Boolean);
   if(words.join('').length<2){box.innerHTML='<p class="note">Γράψε τουλάχιστον 2 γράμματα.</p>';return}
   // τηλέφωνο: σύγκριση μόνο των ψηφίων, ώστε «697220» να βρίσκει «697 220 4410»
@@ -3182,7 +3351,8 @@ function searchRun(q){const box=document.getElementById('qres');if(!box)return;c
   const when=t=>t.status==='done'?'ολοκληρώθηκε':R.begin[t.id]?fmtS(R.begin[t.id])+' – '+fmtS(R.finish[t.id]||R.end):'δεν έχει μπει στο πρόγραμμα';
   const G=[
     ['Άτομα',S.workers.filter(w=>hit(w.name,w.company,w.phone,w.afm,SP(w.specialtyId)?.name)).slice(0,8).map(w=>isExt(w)?row('editpartner',`data-id="${w.id}"`,w.company||w.name,['συνεργάτης',SP(w.specialtyId)?.name,w.phone].filter(Boolean).join(' · ')):row('qperson',`data-id="${w.id}"`,w.name,[SP(w.specialtyId)?.name,ROLES[w.role],w.phone].filter(Boolean).join(' · ')))],
-    ['Έργα',S.projects.filter(p=>hit(p.name,p.location,p.place)).slice(0,6).map(p=>row('qproj',`data-p="${p.id}"`,p.name,p.location,pc(p)))],
+    ['Πελάτες',(hasF('clients')?cliList():[]).filter(c=>hit(c.name,c.person,c.phone,c.email,c.addr,c.afm,c.notes)).slice(0,6).map(c=>row('qcli',`data-c="${c.id}"`,c.name,[c.person,c.phone,cliProjects(c).map(p=>p.name).join(', ')].filter(Boolean).join(' · ')))],
+    ['Έργα',S.projects.filter(p=>hit(p.name,p.location,p.place,hasF('clients')?cliOfP(p)?.name:'')).slice(0,6).map(p=>row('qproj',`data-p="${p.id}"`,p.name,p.location,pc(p)))],
     ['Εργασίες',S.tasks.filter(t=>hit(t.title,P(t.projectId)?.name,SP(t.specialtyId)?.name,W(t.responsibleId)?.name,W(t.responsibleId)?.company)).sort((a,b)=>(a.status==='done')-(b.status==='done')).slice(0,8).map(t=>row('edittask',`data-id="${t.id}"`,t.title,[P(t.projectId)?.name,SP(t.specialtyId)?.name,when(t)].filter(Boolean).join(' · '),pc(t.projectId)))],
     ['Ραντεβού',(hasF('appts')?S.appts||[]:[]).filter(a=>hit(a.title,a.client,a.phone,a.place,a.notes,P(a.projectId)?.name,...(a.people||[]).map(x=>apPerson(x)?.name))).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6).map(a=>row('editappt',`data-id="${a.id}"`,a.title,[fmt(a.date)+(a.time?' '+a.time:''),a.client,a.place].filter(Boolean).join(' · ')))],
     ['Εξοπλισμός',(hasF('equip')?S.equip||[]:[]).filter(e=>hit(e.name,e.code,e.notes,eqWhere(e),anyone(e.holder)?.name)).slice(0,6).map(e=>row('editeq',`data-id="${e.id}"`,e.name,[eqKind(e.kind),e.code,eqWhere(e)].filter(Boolean).join(' · ')))],
@@ -3206,7 +3376,7 @@ document.addEventListener('click',e=>{
   // αν άλλαξε η μέρα με την εφαρμογή ανοιχτή, η χθεσινή καταγράφεται πριν από την αλλαγή
   if(AUTH.user&&!isWorker()&&pastPending()&&freezePast(schedule()))save(true);
   const tab=e.target.closest('[data-tab]');
-  if(tab){UI.tab=tab.dataset.tab;if(tab.dataset.p)UI.proj=tab.dataset.p;if(tab.dataset.pw)UI.payWeek=tab.dataset.pw;UI.sec=tab.dataset.sec||'';try{localStorage.setItem(LS+'.tab',UI.tab);localStorage.setItem(LS+'.proj',UI.proj)}catch(err){}
+  if(tab){UI.tab=tab.dataset.tab;if(tab.dataset.p)UI.proj=tab.dataset.p;if(tab.dataset.c){UI.cli=tab.dataset.c;try{localStorage.setItem(LS+'.cli',UI.cli)}catch(err){}}if(tab.dataset.pw)UI.payWeek=tab.dataset.pw;UI.sec=tab.dataset.sec||'';try{localStorage.setItem(LS+'.tab',UI.tab);localStorage.setItem(LS+'.proj',UI.proj)}catch(err){}
     document.body.classList.remove('nav-open');closeModal();window.scrollTo(0,0);render();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id;
@@ -3331,6 +3501,28 @@ document.addEventListener('click',e=>{
     case 'cset':clForm(el.dataset.p);break;
     case 'csave':clSave();break;
     case 'cpw':{UI.clW=+el.dataset.w;const f=document.getElementById('cl_if');if(f)f.style.width=UI.clW+'px';el.parentNode.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b===el));break}
+    case 'newcli':cliForm(null,{p:el.dataset.p||''});break;
+    case 'editcli':cliForm(cliById(el.dataset.c));break;
+    case 'savecli':cliSave();break;
+    case 'delcli':if(el.dataset.sure){const c=cliById(el.dataset.c);if(!c)break;UI.hmsg='Διαγραφή πελάτη «'+c.name+'»';cliDel(c.id);UI.tab='clients';commit('Ο πελάτης διαγράφηκε. Τα έργα και τα ραντεβού του μένουν.')}else{el.dataset.sure=1;el.textContent='Τα έργα και τα ραντεβού μένουν. Πάτα ξανά'}break;
+    case 'cliimp':{const n=cliImport();if(!n)break;UI.hmsg=n==1?'Νέα καρτέλα πελάτη από τα ραντεβού':n+' νέες καρτέλες πελατών από τα ραντεβού';commit(n==1?'Η καρτέλα φτιάχτηκε.':'Φτιάχτηκαν '+n+' καρτέλες.');break}
+    case 'clipick':cliPick(el.dataset.p);break;
+    case 'savecpk':{const f=document.getElementById('cpk'),p=f&&P(f.dataset.p);if(!p)break;const c=cliById((f.querySelector('input:checked')||{}).value);
+      if((cliOfP(p)||null)===(c||null)){closeModal();break}
+      if(c)p.clientId=c.id;else delete p.clientId;UI.hmsg='Έργο «'+p.name+'»: '+(c?'πελάτης «'+c.name+'»':'χωρίς πελάτη');commit(c?'Το έργο μπήκε στον πελάτη «'+c.name+'».':'Το έργο δεν έχει πια πελάτη.');break}
+    case 'clilinkp':cliLinkForm(el.dataset.c);break;
+    case 'saveclk':{const f=document.getElementById('clk'),c=f&&cliById(f.dataset.c);if(!c)break;let n=0;
+      f.querySelectorAll('[data-lp]').forEach(x=>{const p=P(x.dataset.lp);if(!p)return;if(x.checked&&p.clientId!==c.id){p.clientId=c.id;n++}else if(!x.checked&&p.clientId===c.id){delete p.clientId;n++}});
+      if(!n){closeModal();break}UI.hmsg='Έργα του πελάτη «'+c.name+'»: αλλαγές';commit('Τα έργα του πελάτη αποθηκεύτηκαν.');break}
+    case 'clinewp':projForm(null,{clientId:el.dataset.c});break;
+    case 'clinewa':{const c=cliById(el.dataset.c);if(!c)break;const ps=cliProjects(c).filter(p=>!projDone(p)),one=ps.length===1?ps[0]:null;
+      apptForm(null,{client:c.name,phone:c.phone||'',place:one&&one.location||c.addr||'',projectId:one?one.id:'',clientId:c.id});break}
+    case 'clinote':{const c=cliById(el.dataset.c),ta=document.getElementById('cn_t');if(!c||!ta)break;const t=ta.value.trim();if(!t){toast('Γράψε τι ειπώθηκε ή τι συμφωνήθηκε.');ta.focus();break}
+      const k=document.getElementById('cn_k').value,d=document.getElementById('cn_d').value;UI.cnK=k;
+      cliAddLog(c,{k,d:/^\d{4}-\d\d-\d\d$/.test(d)&&d<=TODAY?d:TODAY,text:t,by:AUTH.user?AUTH.user.name:''});UI.hmsg='Πελάτης «'+c.name+'»: '+cliKind(k).toLowerCase();commit('Μπήκε στο ιστορικό.');break}
+    case 'clidel':{const c=cliById(el.dataset.c);if(!c)break;if(!el.dataset.sure){el.dataset.sure=1;el.classList.add('sure');el.textContent='Διαγραφή;';break}
+      c.log=(c.log||[]).filter(r=>r.id!==id);UI.hmsg='Πελάτης «'+c.name+'»: διαγραφή σημείωσης';commit('Η σημείωση διαγράφηκε.');break}
+    case 'qcli':cliGo(el.dataset.c);closeModal();render();window.scrollTo(0,0);break;
     case 'cmake':{const p=P(el.dataset.p);if(!p)break;p.share={...(p.share||{}),t:newTok(),at:stamp()};UI.hmsg='Σελίδα πελάτη: σύνδεσμος για «'+p.name+'»';commit('Ο σύνδεσμος είναι έτοιμος. Στείλ’ τον στον πελάτη.');break}
     case 'ccopy':{const p=P(el.dataset.p);if(p&&clLink(p))copy(clLink(p),document.getElementById('cl_url'));break}
     case 'cnew':{const p=P(el.dataset.p);if(!p)break;if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Ο παλιός σταματά. Πάτα ξανά';break}
@@ -3393,6 +3585,8 @@ document.addEventListener('click',e=>{
     case 'doneappt':{const a=S.appts.find(x=>x.id===id);a.status=a.status==='done'?'open':'done';UI.hmsg='Ραντεβού «'+a.title+(a.status==='done'?'»: έγινε':'»: άνοιξε ξανά');commit(a.status==='done'?'Το ραντεβού σημειώθηκε ότι έγινε.':'Το ραντεβού άνοιξε ξανά.');break}
     case 'saveappt':{const f=document.getElementById('apf'),g=x=>document.getElementById(x).value;
       const v={id:f.dataset.id,date:g('ap_date'),time:g('ap_time'),end:g('ap_end'),title:g('ap_title').trim(),client:g('ap_client').trim(),phone:g('ap_phone').trim(),place:g('ap_place').trim(),projectId:g('ap_proj'),notes:g('ap_notes').trim(),people:[...f.querySelectorAll('[data-ap]:checked')].map(c=>c.dataset.ap)};
+      // ο πελάτης: με το όνομα, ή του έργου όταν δεν γράφτηκε όνομα
+      if(hasF('clients')){const c=cliByName(v.client)||(!v.client&&v.projectId?cliOfP(P(v.projectId)):null);v.clientId=c?c.id:'';if(c&&!v.client)v.client=c.name;if(c&&!v.phone&&c.phone)v.phone=c.phone}
       if(!v.title){toast('Γράψε τι ραντεβού είναι.');break}
       if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date)){toast('Διάλεξε ημερομηνία.');break}
       if(!v.people.length){toast('Διάλεξε ποιοι πηγαίνουν.');break}
@@ -3436,7 +3630,7 @@ document.addEventListener('click',e=>{
     case 'remday':{const dir=+el.dataset.dir,cur=UI.remDay||nextWork(TODAY);UI.remDay=dir===0?nextWork(TODAY):nextWork(add(cur,dir),dir);render();break}
     case 'newproj':projForm(null);break;
     case 'editproj':projForm(P(id));break;
-    case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color'),...(document.getElementById('g_due')?{due:g('g_due')}:{}),...(document.getElementById('g_amoe')?{amoe:g('g_amoe').trim()}:{}),...(document.getElementById('g_contract')?{contract:+g('g_contract')||0}:{})};
+    case 'saveproj':{const f=document.getElementById('pf');const g=x=>document.getElementById(x).value;const v={id:f.dataset.id,name:g('g_name').trim(),location:g('g_loc').trim(),budget:+g('g_budget')||0,color:g('g_color'),...(document.getElementById('g_due')?{due:g('g_due')}:{}),...(document.getElementById('g_amoe')?{amoe:g('g_amoe').trim()}:{}),...(document.getElementById('g_contract')?{contract:+g('g_contract')||0}:{}),...(document.getElementById('g_cli')?{clientId:g('g_cli')}:{})};
       // κλειδωμένα πεδία του πακέτου δεν υπάρχουν στη φόρμα: κρατούν ό,τι είχε το έργο
       if(hasF('pm'))v.managers=[...f.querySelectorAll('[data-mgr]:checked')].map(x=>x.dataset.mgr);else if(f.dataset.new==='1')v.managers=[];
       if(!v.name){toast('Γράψε όνομα έργου.');break}
@@ -3557,7 +3751,9 @@ document.addEventListener('change',e=>{
   else if(t.id==='s_time'){S.settings.sendTime=t.value||'06:30';commit('Η ώρα αποστολής έγινε '+S.settings.sendTime+'.')}
   else if(t.dataset.viber){W(t.dataset.viber).viber=t.checked;UI.hmsg=W(t.dataset.viber).name+(t.checked?': λαμβάνει το πρόγραμμα στο Viber':': δεν λαμβάνει το πρόγραμμα στο Viber');note(t.checked?'Θα λαμβάνει το πρόγραμμα στο Viber.':'Δεν θα λαμβάνει το πρόγραμμα στο Viber.')}
   else if(t.id==='apW'){UI.apW=t.value;render()}
-  else if(t.id==='ap_proj'){const p=P(t.value),pl=document.getElementById('ap_place');if(p&&!pl.value.trim())pl.value=p.location||''}
+  else if(t.id==='ap_proj'){const p=P(t.value),pl=document.getElementById('ap_place');if(p&&!pl.value.trim())pl.value=p.location||'';
+    const c=hasF('clients')&&cliOfP(p),cl=document.getElementById('ap_client'),ph=document.getElementById('ap_phone');if(c&&cl&&!cl.value.trim()){cl.value=c.name;if(ph&&!ph.value.trim())ph.value=c.phone||''}}
+  else if(t.id==='ap_client'&&hasF('clients')){const c=cliByName(t.value),ph=document.getElementById('ap_phone'),pl=document.getElementById('ap_place');if(c){if(ph&&!ph.value.trim())ph.value=c.phone||'';if(pl&&!pl.value.trim()&&!document.getElementById('ap_proj').value)pl.value=c.addr||''}}
   else if(t.id==='s_owner'){S.settings.ownerName=t.value.trim();commit('Το όνομα του εργολάβου έγινε «'+ownerName()+'».')}
   else if(t.id==='s_ownerph'){S.settings.ownerPhone=t.value.trim();commit(S.settings.ownerPhone?'Ο εργολάβος θα παίρνει τα ραντεβού και τις υπενθυμίσεις του στο Viber.':'Ο εργολάβος δεν θα παίρνει μήνυμα στο Viber.')}
   else if(t.id==='s_wx'){S.settings.wx=Object.assign(wxCfg(),{on:t.checked});commit(t.checked?'Το πρόγραμμα ακολουθεί την πρόγνωση καιρού.':'Το πρόγραμμα δεν λαμβάνει υπόψη τον καιρό.');if(t.checked)wxRefresh()}
@@ -3589,7 +3785,7 @@ document.addEventListener('change',e=>{
 });
 // το «μένουν» στις φόρμες πληρωμής αλλάζει καθώς γράφεται το ποσό
 function updPay(){const f=document.getElementById('payf'),o=document.getElementById('p_after');if(f&&o)o.innerHTML=payAfter(+f.dataset.rest,num(document.getElementById('p_amount').value))}
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='q')searchRun(t.value);else if(t.id==='p_amount')updPay();
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='q')searchRun(t.value);else if(t.id==='cq')cliFilter(t.value);else if(t.id==='p_amount')updPay();
   else if(t.id==='ml_from'||t.id==='ml_to'){const fr=document.getElementById('ml_from'),to=document.getElementById('ml_to'),n=document.getElementById('ml_days');if(t===fr&&to&&(!to.value||to.value<fr.value))to.value=fr.value;if(n)n.textContent=lvCount()}
   else if(t.id==='c_amount'){const f=document.getElementById('cpf'),o=document.getElementById('c_after');if(f&&o)o.innerHTML=cAfter(+f.dataset.rest,num(t.value))}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){guideRead();closeModal();document.body.classList.remove('nav-open')}

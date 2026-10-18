@@ -138,9 +138,9 @@ function demo(){
     w('w17','Ηλίας Μπέκας','gen','voith',50,'698 027 5541'),
   ];
   const projects=[
-    {id:'p1',name:'Πολυκατοικία Καλαμαριάς',location:'Κομνηνών 24, Καλαμαριά',budget:24000,color:'p1',managers:['w19'],...WX_DEMO.p1,share:clientDemo()},
-    {id:'p2',name:'Μονοκατοικία Πανοράματος',location:'Αγ. Αντωνίου 7, Πανόραμα',budget:9500,color:'p2',managers:['w19','w21'],...WX_DEMO.p2},
-    {id:'p3',name:'Κατάστημα Τσιμισκή',location:'Τσιμισκή 112, Θεσσαλονίκη',budget:5200,color:'p3',managers:['w21']},
+    {id:'p1',name:'Πολυκατοικία Καλαμαριάς',location:'Κομνηνών 24, Καλαμαριά',budget:24000,color:'p1',managers:['w19'],clientId:'c1',...WX_DEMO.p1,share:clientDemo()},
+    {id:'p2',name:'Μονοκατοικία Πανοράματος',location:'Αγ. Αντωνίου 7, Πανόραμα',budget:9500,color:'p2',managers:['w19','w21'],clientId:'c2',...WX_DEMO.p2},
+    {id:'p3',name:'Κατάστημα Τσιμισκή',location:'Τσιμισκή 112, Θεσσαλονίκη',budget:5200,color:'p3',managers:['w21'],clientId:'c3'},
   ];
   const t=(id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after,earliestOffset)=>({id,projectId,title,specialtyId,responsibleId,helpers,days,priority,after:after||'',earliest:earliestOffset!=null?add(TODAY,earliestOffset):'',status:'todo',...(WX_DEMO.dry.includes(id)?{dry:true}:{})});
   const tasks=[
@@ -167,7 +167,7 @@ function demo(){
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   const xw=EXPW_DEMO();workers.forEach(w=>{if(xw[w.id])w.exp=xw[w.id]});
   profitDemo({projects,tasks});attDemoSites({projects});
-  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],diarySeed:true,diary:diaryDemo([1,2,3,4,5,6]),wxLog:wxLogDemo([1,2,3,4,5,6]),eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],diarySeed:true,diary:diaryDemo([1,2,3,4,5,6]),wxLog:wxLogDemo([1,2,3,4,5,6]),eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]).map(a=>({...a,clientId:CLI_DEMO.a[a.id]})),cliDemo:true,clients:cliDemo(),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 /* ---------- Αρχεία Excel ----------
    Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
@@ -548,8 +548,8 @@ const clientOpt=p=>{const o=(p&&p.share&&p.share.opt)||{};return {ph:o.ph!==0,da
 const byShare=t=>typeof t==='string'&&CL_TOK.test(t)?S.projects.find(p=>shareOf(p)&&p.share.t===t)||null:null;
 // η φωτογραφία ανήκει στο έργο και επιτρέπεται να τη δει ο πελάτης
 const clientPhotoOk=(pid,id)=>clientOpt(P(pid)).ph&&diaryList().some(r=>r.p===pid&&r.ph&&r.ph.id===id&&!r.hide);
-function clientView(R,pid,all){const p=P(pid);if(!p)return null;const o=clientOpt(p),sh=p.share||{},co=(S.settings&&S.settings.company)||{};
-  const ts=S.tasks.filter(t=>t.projectId===pid),worked={},cur={},F=diaryFin(R,pid);
+// η πρόοδος ενός έργου σε μέρες εργασίας: ό,τι έγινε, ό,τι γίνεται τώρα και ό,τι ακολουθεί
+function projProg(R,pid){const ts=S.tasks.filter(t=>t.projectId===pid),worked={},cur={},F=diaryFin(R,pid);
   Object.keys(R.byDay).forEach(d=>R.byDay[d].jobs.forEach(j=>{const t=j.task;if(!t||t.projectId!==pid)return;
     if(d<TODAY&&j.lead)worked[t.id]=(worked[t.id]||0)+1;if(d===TODAY)cur[t.id]=j.dayNo||1}));
   let tot=0,dn=0;
@@ -561,6 +561,9 @@ function clientView(R,pid,all){const p=P(pid);if(!p)return null;const o=clientOp
   const done=rows.filter(r=>r.st==='done').sort((a,b)=>ord(a.to,b.to)),now=rows.filter(r=>r.st==='now').sort((a,b)=>ord(a.from,b.from)),next=rows.filter(r=>r.st==='next').sort((a,b)=>ord(a.from,b.from));
   const pct=!tot?0:done.length===rows.length?100:Math.min(99,Math.round(dn/tot*100));
   const fin=rows.map(r=>r.to).filter(Boolean).sort().pop()||null;
+  return {rows,done,now,next,pct,fin,F}}
+function clientView(R,pid,all){const p=P(pid);if(!p)return null;const o=clientOpt(p),sh=p.share||{},co=(S.settings&&S.settings.company)||{};
+  const {rows,done,now,next,pct,fin,F}=projProg(R,pid);
   const end=!o.end||!rows.length?null:done.length===rows.length?{k:'done',d:fin}:hasF('deadline')&&p.due?{k:'due',d:p.due}:R.unplanned.some(t=>t.projectId===pid)||!fin?null:{k:'est',d:fin};
   let days=[],more=false,gal=[];
   if(o.days){
@@ -649,13 +652,73 @@ const clientGone=()=>`<!doctype html><html lang="el"><head><meta charset="utf-8"
 const TOK_A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 const newTok=()=>{const b=new Uint8Array(24),c=globalThis.crypto;if(c&&c.getRandomValues)c.getRandomValues(b);else for(let i=0;i<24;i++)b[i]=Math.random()*256|0;return [...b].map(x=>TOK_A[x&63]).join('')};   // 144 bit
 const clientDemo=()=>({t:newTok(),at:stamp(),opt:{ph:1,days:1,plan:1,end:1},msg:'Από Δευτέρα ξεκινούν οι ηλεκτρολογικές σωληνώσεις στον 2ο όροφο. Θα σας πούμε από πριν αν χρειαστεί να κλείσει το ρεύμα στο κλιμακοστάσιο.'});
+/* ---------- Καρτέλα πελάτη (πακέτο Συνεργείο) ----------
+   S.clients=[{id,name,person,phone,email,addr,afm,notes,at,log:[{id,d,k,text,by,at}]}]. Τα έργα και τα ραντεβού δείχνουν τον πελάτη με clientId.
+   Ραντεβού χωρίς clientId ανήκουν στον πελάτη με το ίδιο όνομα, ή στον πελάτη του έργου τους όταν δεν γράφουν όνομα. */
+const CLI_K=[['note','Σημείωση'],['call','Τηλεφώνημα'],['meet','Συνάντηση'],['offer','Προσφορά'],['msg','Μήνυμα ή email']];
+const CLI_LOG=1000;   // σημειώσεις ανά πελάτη· οι πιο παλιές φεύγουν πρώτες
+const cliList=()=>(S&&S.clients)||[];
+const cliById=id=>id?cliList().find(c=>c.id===id)||null:null;
+const cliByName=n=>{const f=fold(n);return f?cliList().find(c=>fold(c.name)===f)||null:null};
+const cliOfP=p=>p?cliById(p.clientId):null;
+const cliOfA=a=>!a?null:a.clientId&&cliById(a.clientId)||cliByName(a.client)||(a.projectId&&!String(a.client||'').trim()?cliOfP(P(a.projectId)):null);
+const cliProjects=c=>S.projects.filter(p=>p.clientId===c.id);
+const apOrd=(a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||''));
+const cliAppts=c=>(S.appts||[]).filter(a=>{const x=cliOfA(a);return x&&x.id===c.id}).sort(apOrd);
+const cliUpcoming=c=>cliAppts(c).filter(a=>a.status!=='done'&&a.date>=TODAY);
+const projDone=p=>{const ts=S.tasks.filter(t=>t.projectId===p.id);return ts.length>0&&ts.every(t=>t.status==='done')};
+// now: έργο σε εξέλιξη· lead: χωρίς έργο ακόμη· done: όλα τα έργα τελείωσαν
+const cliState=c=>{const ps=cliProjects(c);return !ps.length?'lead':ps.every(projDone)?'done':'now'};
+// η πιο πρόσφατη επαφή: σημείωση ή ραντεβού που πέρασε
+const cliLast=c=>[...(c.log||[]).map(r=>r.d),...cliAppts(c).filter(a=>a.date<=TODAY).map(a=>a.date)].filter(d=>d&&d<=TODAY).sort().pop()||'';
+// το ιστορικό του πελάτη, από το πιο πρόσφατο: σημειώσεις, ραντεβού που πέρασαν, αρχή και τέλος κάθε έργου, σελίδα προόδου
+function cliHistory(R,c){const L=[];
+  (c.log||[]).forEach(r=>L.push({d:r.d,k:r.k||'note',text:r.text,by:r.by||'',id:r.id,at:r.at||''}));
+  if(hasF('appts'))cliAppts(c).filter(a=>a.date<TODAY||a.status==='done').forEach(a=>L.push({d:a.date,k:'appt',text:a.title,a:a.id,p:a.projectId||'',sub:(a.time?a.time+' · ':'')+(a.status==='done'?'Έγινε':'Δεν σημειώθηκε ότι έγινε'),at:a.date+'T'+(a.time||'00:00')}));
+  cliProjects(c).forEach(p=>{
+    const s=R&&[...R.asg.filter(a=>a.projectId===p.id&&!a.pm&&a.date<=TODAY).map(a=>a.date),...diaryOf(p.id).map(r=>r.d).filter(d=>d<=TODAY)].sort()[0];
+    if(s&&!S.tasks.some(t=>t.projectId===p.id&&t.doneOn&&t.doneOn<s))L.push({d:s,k:'start',text:'Ξεκίνησε η δουλειά: '+p.name,p:p.id,at:s+'T00:01'});
+    if(projDone(p)){const e=S.tasks.filter(t=>t.projectId===p.id).map(t=>t.doneOn).filter(Boolean).sort().pop();if(e)L.push({d:e,k:'done',text:'Ολοκληρώθηκε: '+p.name,p:p.id,at:e+'T23:59'})}
+    if(hasF('client')&&shareOf(p)&&p.share.at)L.push({d:String(p.share.at).slice(0,10),k:'link',text:'Φτιάχτηκε ο σύνδεσμος για «'+p.name+'»',p:p.id,at:p.share.at})});
+  if(c.at)L.push({d:String(c.at).slice(0,10),k:'new',text:'Μπήκε στους πελάτες',at:'0'});
+  return L.filter(x=>x.d).sort((a,b)=>b.d.localeCompare(a.d)||String(b.at).localeCompare(String(a.at)))}
+// ονόματα πελατών από τα ραντεβού που δεν έχουν καρτέλα ακόμη
+function cliFromAppts(){const m=new Map();
+  (S.appts||[]).filter(a=>String(a.client||'').trim()&&!cliOfA(a)).sort(apOrd).forEach(a=>{const k=fold(a.client),x=m.get(k)||{name:a.client.trim(),phone:'',addr:'',ids:[]};
+    if(a.phone)x.phone=a.phone;if(a.place&&!a.projectId)x.addr=a.place;x.ids.push(a.id);m.set(k,x)});
+  return [...m.values()]}
+const cliNew=o=>({id:uid('c'),name:'',person:'',phone:'',email:'',addr:'',afm:'',notes:'',log:[],at:stamp(),...o});
+// νέες καρτέλες από τα ραντεβού· τα ραντεβού δείχνουν πια την καρτέλα
+function cliImport(){const xs=cliFromAppts();S.clients=S.clients||[];
+  xs.forEach(x=>{const c=cliNew({name:x.name,phone:x.phone,addr:x.addr});S.clients.push(c);x.ids.forEach(id=>{const a=S.appts.find(y=>y.id===id);if(a)a.clientId=c.id})});
+  return xs.length}
+function cliAddLog(c,r){c.log=c.log||[];c.log.push({id:uid('n'),d:r.d||TODAY,k:CLI_K.some(x=>x[0]===r.k)?r.k:'note',text:String(r.text||'').trim().slice(0,2000),by:r.by||'',at:stamp()});
+  if(c.log.length>CLI_LOG)c.log=c.log.slice(-CLI_LOG);return c.log[c.log.length-1]}
+// διαγραφή: τα έργα και τα ραντεβού μένουν, με το όνομα του πελάτη γραμμένο στο ραντεβού
+function cliDel(id){const c=cliById(id);if(!c)return;
+  (S.appts||[]).forEach(a=>{if(cliOfA(a)===c){if(!String(a.client||'').trim())a.client=c.name;if(!a.phone&&c.phone)a.phone=c.phone}});
+  S.clients=cliList().filter(x=>x.id!==id);
+  S.projects.forEach(p=>{if(p.clientId===id)delete p.clientId});(S.appts||[]).forEach(a=>{if(a.clientId===id)delete a.clientId})}
+// demo: ένας πελάτης για κάθε έργο και ένας που περιμένει αυτοψία
+function cliDemo(){const d=n=>add(TODAY,-n),at=n=>d(n)+'T09:00';
+  const L=(id,n,k,text,by,t)=>({id,d:d(n),k,text,by,at:d(n)+'T'+(t||'10:15')});
+  return [
+    {id:'c1',name:'Αφοί Δημητρίου ΟΕ',person:'Νίκος Δημητρίου',phone:'697 512 3340',email:'n.dimitriou@example.com',addr:'Εγνατίας 88, Θεσσαλονίκη',afm:'',notes:'Κατασκευαστική εταιρεία, έργο με αντιπαροχή. Οι λογαριασμοί πάνε στο λογιστήριό τους με email.',at:at(45),
+      log:[L('n1',40,'offer','Στάλθηκε η προσφορά για τον σκελετό και τις τοιχοποιίες.','Αντώνης Ρίζος'),L('n2',33,'meet','Υπογράφηκε το συμφωνητικό. Πληρωμή σε 4 δόσεις, μία με κάθε όροφο.','Αντώνης Ρίζος','12:30'),L('n3',3,'call','Ζήτησε να μπει και θυροτηλέφωνο στην προσφορά των ηλεκτρολογικών.','Ελένη Παπαδάκη','11:40')]},
+    {id:'c2',name:'Οικογένεια Νικολαΐδη',person:'Γιώργος Νικολαΐδης',phone:'694 220 9981',email:'',addr:'Αγ. Αντωνίου 7, Πανόραμα',afm:'',notes:'Μένουν στο σπίτι όσο γίνεται η ανακαίνιση. Πριν από θόρυβο νωρίς το πρωί, ένα τηλέφωνο την προηγούμενη μέρα.',at:at(30),
+      log:[L('n4',6,'call','Θέλουν να δουν δείγματα πλακιδίων πριν την επιμέτρηση των κουφωμάτων.','Ελένη Παπαδάκη','17:05')]},
+    {id:'c3',name:'Κατάστημα Τσιμισκή',person:'Σοφία Μαυρίδου',phone:'2310 233 415',email:'',addr:'Τσιμισκή 112, Θεσσαλονίκη',afm:'',notes:'Το κατάστημα μένει ανοιχτό. Δουλειές με σκόνη μόνο πριν τις 10:00.',at:at(20),
+      log:[L('n5',10,'meet','Διάλεξαν χρώματα για το βάψιμο. Θέλουν προσφορά και για τη βιτρίνα.','Κατερίνα Λιάπη')]},
+    {id:'c4',name:'Κ. Ιωάννου',person:'',phone:'697 300 4512',email:'',addr:'Αγ. Δημητρίου 45, Θεσσαλονίκη',afm:'',notes:'Ενδιαφέρεται για ανακαίνιση μπάνιου.',at:at(2),
+      log:[L('n6',2,'call','Πήρε τηλέφωνο για ανακαίνιση μπάνιου. Κλείσαμε αυτοψία.','Ελένη Παπαδάκη','09:20')]}]}
+const CLI_DEMO={p:{p1:'c1',p2:'c2',p3:'c3'},a:{a1:'c4',a2:'c3',a3:'c2'}};
 // demo: ένα αίτημα άδειας που περιμένει και μία «+1 μέρα» από την προηγούμενη μέρα (η επιπλέον μέρα είναι ήδη μέσα στις μέρες της εργασίας)
 function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(weekStart(TODAY),8);
   return [{id:'fd1',k:'more',w:'w1',t:'t1',d:y,note:'Δεν ήρθαν τα τούβλα, συνεχίζουμε αύριο',at:y+'T16:40',st:'ok'},
     {id:'fd2',k:'leave',w:'w3',from:nw,to:add(nw,1),note:'Βάφτιση του ανιψιού',at:stamp(),st:'new'}]}
 function blankState(cur){
   const o=demo(),st=(cur&&cur.settings)||{};
-  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false,diary:[],wxLog:{}});
+  Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false,diary:[],wxLog:{},clients:[]});
   o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});if(!st.yard)delete o.settings.yard;
   if(cur&&cur.hist)o.hist=cur.hist;
   return o;
@@ -794,6 +857,13 @@ function migrate(o){
       WX_DEMO.tasks(mk).forEach(t=>{if(!o.tasks.some(x=>x.id===t.id)){if(t.after&&!o.tasks.some(x=>x.id===t.after))t.after='';o.tasks.push(t)}});
     }
   }
+  if(o&&!Array.isArray(o.clients))o.clients=[];
+  // μία φορά: demo πελάτες, όταν τα έργα είναι του demo· τα έργα και τα ραντεβού του demo δείχνουν την καρτέλα τους
+  if(o&&Array.isArray(o.projects)&&!o.cliDemo){
+    o.cliDemo=true;const d=demo(),same=(a,b,k,f)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&x[f]===z[f]};
+    if(!o.clients.length&&['p1','p2','p3'].every(k=>same(o.projects,d.projects,k,'name'))){o.clients=cliDemo();
+      Object.entries(CLI_DEMO.p).forEach(([k,c])=>{const p=o.projects.find(y=>y.id===k);if(p&&!p.clientId)p.clientId=c});
+      Object.entries(CLI_DEMO.a).forEach(([k,c])=>{const a=(o.appts||[]).find(y=>y.id===k);if(a&&!a.clientId&&same(o.appts,d.appts,k,'title'))a.clientId=c})}}
   if(o&&o.settings){if(o.settings.sendTime==null)o.settings.sendTime='06:30';if(o.settings.autoSend==null)o.settings.autoSend=false}
   return o;
 }
@@ -829,7 +899,7 @@ const isExt=w=>!!w&&w.role==='ext';
 // Πακέτα συνδρομής. Κάθε λειτουργία ανοίγει από το χαμηλότερο πακέτο που την έχει· ό,τι δεν είναι στο FEATS υπάρχει σε όλα.
 // people: άτομα στα έργα (γραφείο και εργολάβος δεν μετράνε), office: χρήστες γραφείου (0 = χωρίς όριο). Τα όρια μόνο προειδοποιούν.
 const PLANS=[{id:'mastoras',name:'Μάστορας',gen:'Μάστορα',price:9.99,people:5,office:1},{id:'synergeio',name:'Συνεργείο',gen:'Συνεργείου',price:19.99,people:15,office:3},{id:'ergotaxio',name:'Εργοτάξιο',gen:'Εργοταξίου',price:39.99,people:40,office:0}];
-const FEATS={wx:['synergeio','Πρόγραμμα με τον καιρό'],partners:['synergeio','Συνεργάτες'],appts:['synergeio','Ραντεβού με πελάτες'],pm:['synergeio','Διαχειριστές έργων'],
+const FEATS={wx:['synergeio','Πρόγραμμα με τον καιρό'],partners:['synergeio','Συνεργάτες'],appts:['synergeio','Ραντεβού με πελάτες'],clients:['synergeio','Καρτέλα πελάτη'],pm:['synergeio','Διαχειριστές έργων'],
   gaps:['synergeio','Τι λείπει: κενά στο πρόγραμμα'],deadline:['synergeio','Προθεσμία παράδοσης ανά έργο'],avail:['synergeio','Διαθεσιμότητα και δεύτερη ειδικότητα'],search:['synergeio','Αναζήτηση σε όλη την εφαρμογή'],weekly:['synergeio','Εβδομαδιαία σύνοψη για τον εργολάβο'],setup:['synergeio','Οδηγός πρώτης ρύθμισης'],
   progress:['synergeio','Πρόοδος από το εργοτάξιο'],leave:['synergeio','Άδειες από το κινητό'],acc:['synergeio','Κατάσταση για τον λογιστή'],export:['synergeio','Εξαγωγή σε Excel και PDF'],push:['synergeio','Ειδοποιήσεις στο κινητό'],
   rating:['ergotaxio','Βαθμός εργαζομένου και δυσκολία εργασίας'],history:['ergotaxio','Ιστορικό αλλαγών με αναίρεση'],profit:['ergotaxio','Κέρδος ανά έργο'],gps:['ergotaxio','Παρουσίες με GPS'],materials:['ergotaxio','Υλικά πριν την εργασία'],equip:['ergotaxio','Μηχανήματα, οχήματα και λήξεις'],diary:['ergotaxio','Ημερολόγιο έργου με φωτογραφίες'],client:['ergotaxio','Σελίδα προόδου για τον πελάτη']};
@@ -1352,7 +1422,7 @@ function myView(R,w,ws){const o=personWeek(R,w,ws);o.feats={progress:hasF('progr
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
+root.ErgoCore={projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
