@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--BODY-START-->
+<title>PARON για κατασκευές · Πρόγραμμα συνεργείων και μεροκάματα ανά έργο</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Το PARON βγάζει μόνο του το πρόγραμμα των συνεργείων σας, το στέλνει σε κάθε εργάτη στο Viber και κρατάει τα μεροκάματα κάθε έργου. Για εργολάβους και κατασκευαστικές. 30 μέρες δωρεάν, πακέτα από 9,99 € τον μήνα.">
+<meta name="theme-color" content="#0e3b34">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="el_GR">
+<meta property="og:site_name" content="PARON">
+<meta property="og:title" content="PARON για κατασκευές · Πρόγραμμα συνεργείων και μεροκάματα ανά έργο">
+<meta property="og:description" content="Το PARON βγάζει μόνο του το πρόγραμμα των συνεργείων σας, το στέλνει σε κάθε εργάτη στο Viber και κρατάει τα μεροκάματα κάθε έργου. Για εργολάβους και κατασκευαστικές. 30 μέρες δωρεάν, πακέτα από 9,99 € τον μήνα.">
+<meta property="og:url" content="https://paron.gr/kataskeves.html">
+<meta property="og:image" content="https://paron.gr/img/simera.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400..800&family=Fira+Sans+Condensed:wght@600;700;800&display=swap">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"PARON","applicationCategory":"BusinessApplication","operatingSystem":"Web, Android, iOS","inLanguage":"el","url":"https://paron.gr/",
+ "description":"Πρόγραμμα συνεργείων, αποστολή προγράμματος στο Viber και μεροκάματα για εταιρείες με συνεργεία.",
+ "offers":[
+  {"@type":"Offer","name":"Μάστορας","description":"Έως 5 άτομα","price":"9.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"9.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Συνεργείο","description":"Έως 15 άτομα","price":"19.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"19.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Εργοτάξιο","description":"Έως 40 άτομα","price":"39.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"39.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}}
+ ]}
+</script>
+<style>
+/* Layout: a forest hero, then light sections, then a closing card drawn like tomorrow's schedule.
+   Colours live only in the tokens below. The page background is one value (--bg); the other options
+   Christos was shown are Πέτρα #dde3d7 / cards #f2f5ee and Λινό #e7e4da / cards #f6f4ee. */
+:root{
+  --bg:#e8ece4; --surface:#f6f8f3; --sunk:#dfe5da; --ink:#1b2a27; --ink-2:#34453f; --muted:#5a6964; --line:#d3dbd0; --line-2:#bcc7ba;
+  --accent:#c2cf7e; --accent-2:#b1c066; --accent-ink:#0e3b34; --accent-soft:#e8edcd; --accent-soft-ink:#2e5310;
+  --brand:#0e3b34; --brand-2:#0b2c27; --on-brand:#f1f4ec; --on-brand-2:#a9bdb5;
+  --btn-bg:var(--brand); --btn-bg-2:var(--brand-2); --btn-ink:var(--accent); --focus:var(--brand);
+  --ok:#23824f; --bad:#c0362c; --rain:#2d68a8;
+  --f-ui:"Commissioner",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-display:"Fira Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --r:12px; --r-lg:20px;
+  --shadow:0 30px 60px -24px rgba(8,30,26,.42),0 2px 8px rgba(8,30,26,.12);
+  --gut:max(16px,env(safe-area-inset-left,0px));
+  --gut-r:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1714; --surface:#13221e; --sunk:#0f1c19; --ink:#e6ede8; --ink-2:#c5d1cb; --muted:#93a39d; --line:#22352f; --line-2:#33493f;
+  --accent:#c2cf7e; --accent-2:#d0dc90; --accent-ink:#0e3b34; --accent-soft:#2b3a22; --accent-soft-ink:#dde8b0;
+  --brand:#0b2c27; --brand-2:#0e3b34; --on-brand:#f1f4ec; --on-brand-2:#a3b8af;
+  --btn-bg:var(--accent); --btn-bg-2:var(--accent-2); --btn-ink:var(--accent-ink); --focus:var(--accent);
+  --ok:#5cc58a; --bad:#f07a6f; --rain:#86b6ec;
+  --shadow:0 30px 60px -24px rgba(0,0,0,.8),0 2px 8px rgba(0,0,0,.4);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1714; --surface:#13221e; --sunk:#0f1c19; --ink:#e6ede8; --ink-2:#c5d1cb; --muted:#93a39d; --line:#22352f; --line-2:#33493f;
+  --accent:#c2cf7e; --accent-2:#d0dc90; --accent-ink:#0e3b34; --accent-soft:#2b3a22; --accent-soft-ink:#dde8b0;
+  --brand:#0b2c27; --brand-2:#0e3b34; --on-brand:#f1f4ec; --on-brand-2:#a3b8af;
+  --btn-bg:var(--accent); --btn-bg-2:var(--accent-2); --btn-ink:var(--accent-ink); --focus:var(--accent);
+  --ok:#5cc58a; --bad:#f07a6f; --rain:#86b6ec;
+  --shadow:0 30px 60px -24px rgba(0,0,0,.8),0 2px 8px rgba(0,0,0,.4);
+  color-scheme:dark}
+/* On forest surfaces the primary button turns olive with forest text */
+.on-dark{--btn-bg:var(--accent); --btn-bg-2:var(--accent-2); --btn-ink:var(--accent-ink); --focus:var(--accent)}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3{font-family:var(--f-display);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.005em}
+h2{font-size:clamp(34px,5vw,54px);font-weight:800}
+h3{font-size:24px;font-weight:700;line-height:1.15}
+p{margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:var(--gut);padding-right:var(--gut-r)}
+/* Greek capitals never carry a tonos: eyebrow labels are written in capitals in the source */
+.eyebrow{font-family:var(--f-display);font-weight:700;font-size:14px;letter-spacing:.16em;color:var(--muted)}
+.lead{font-size:clamp(18px,2vw,21px);color:var(--ink-2);max-width:60ch}
+.sec{padding-block:clamp(72px,10vw,120px)}
+.sec.tight{padding-top:0}
+.sec-head{display:grid;gap:16px;max-width:760px;margin-bottom:clamp(36px,5vw,56px)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:6px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;font:600 17px/1 var(--f-ui);text-decoration:none;cursor:pointer;border:1.5px solid transparent;transition:transform .15s ease,background .15s ease,border-color .15s ease;white-space:nowrap}
+.btn svg{width:20px;height:20px;flex:none}
+.btn:hover{transform:translateY(-1px)}
+.btn.pri{background:var(--btn-bg);color:var(--btn-ink)}
+.btn.pri:hover{background:var(--btn-bg-2)}
+.btn.ghost{border-color:var(--line-2);color:var(--ink);background:transparent}
+.btn.ghost-d{border-color:rgba(255,255,255,.28);color:var(--on-brand);background:transparent}
+.btn.ghost-d:hover{border-color:rgba(255,255,255,.6)}
+.btn.sm{min-height:42px;padding:0 18px;font-size:15px}
+
+/* Logo: wordmark with the mark as its O, tagline stretched to the wordmark width (written in capitals, no tonos) */
+.logo{display:inline-flex;text-decoration:none;color:inherit}
+.logo .wm{display:inline-grid;gap:5px;line-height:1;justify-items:start}
+.logo .wm b{font-family:var(--f-display);font-weight:800;font-size:30px;display:flex;align-items:center;letter-spacing:.01em}
+.mark{width:.78em;height:.78em;margin:0 .05em;flex:none;--mark:var(--accent);--mark-ink:var(--accent-ink)}
+.logo .wm small{font-family:var(--f-display);font-weight:700;font-size:9.5px;letter-spacing:.3em;color:var(--muted);white-space:nowrap}
+.on-dark .logo .wm small{color:var(--on-brand-2)}
+
+/* Header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand);background:color-mix(in srgb,var(--brand) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--on-brand);border-bottom:1px solid rgba(255,255,255,.06)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--brand)}
+.top .wrap{display:flex;align-items:center;gap:28px;min-height:72px}
+.top nav{display:flex;gap:26px;margin-left:auto}
+.top nav a{text-decoration:none;font-size:15px;font-weight:500;color:var(--on-brand-2)}
+.top nav a:hover{color:var(--on-brand)}
+.top .acts{display:flex;gap:10px;align-items:center}
+.top .login{font-size:15px;font-weight:500;color:var(--on-brand-2);text-decoration:none}
+@media (max-width:940px){.top nav{display:none}.top .acts{margin-left:auto}}
+@media (max-width:480px){.top .login{display:none}.top .btn.sm{padding:0 14px}}
+
+/* Hero */
+.hero{background:var(--brand);color:var(--on-brand);position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:clamp(32px,5vw,64px);align-items:center;padding-block:clamp(56px,8vw,96px) clamp(80px,9vw,112px)}
+.hero .eyebrow{color:var(--accent)}
+.hero h1{font-size:clamp(46px,7.2vw,88px);font-weight:800;line-height:.98;letter-spacing:-.01em;margin-top:18px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lead{color:var(--on-brand-2);margin-top:24px}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.hero .fine{margin-top:16px;font-size:15px;color:var(--on-brand-2)}
+.hero .fine b{color:var(--on-brand);font-weight:600}
+.trust{display:flex;flex-wrap:wrap;gap:10px 22px;margin:30px 0 0;padding:0;list-style:none;font-size:14px;color:var(--on-brand-2)}
+.trust li{display:flex;align-items:center;gap:8px}
+.trust svg{width:18px;height:18px;color:var(--accent);flex:none}
+.shots{position:relative;padding-bottom:12%;padding-right:9%;min-width:0}
+.browser{border-radius:14px;overflow:hidden;background:#fff;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.12);transform:rotate(-1.2deg)}
+.browser .bar{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;background:#e6e9e5}
+.browser .bar i{width:10px;height:10px;border-radius:50%;background:#c8cdc7}
+.browser .bar span{margin-left:10px;font-size:11.5px;color:#5f6971;background:#fff;border-radius:6px;padding:2px 10px}
+.phone{position:absolute;right:0;bottom:0;width:31%;border-radius:26px;overflow:hidden;border:6px solid #0b0e10;background:#0b0e10;box-shadow:var(--shadow);transform:rotate(3deg)}
+.phone img{border-radius:20px}
+.stamp{position:absolute;left:-14px;bottom:4%;display:flex;align-items:center;gap:10px;background:var(--surface);color:var(--ink);border-radius:14px;padding:12px 16px 12px 12px;box-shadow:var(--shadow);font-size:14px;line-height:1.3;max-width:250px;animation:pop .6s .5s both cubic-bezier(.2,.9,.3,1.3)}
+.stamp b{display:block;font-size:15px}
+.stamp .v{width:36px;height:36px;border-radius:50%;background:#7360f2;display:grid;place-items:center;flex:none}
+.stamp .v svg{width:20px;height:20px}
+@keyframes pop{from{transform:translateY(12px) scale(.94);opacity:.4}to{transform:none;opacity:1}}
+@media (max-width:900px){.hero .wrap{grid-template-columns:minmax(0,1fr)}.shots{max-width:640px}}
+@media (max-width:520px){.stamp{left:0;bottom:0;max-width:62%;font-size:13px;padding:10px 12px 10px 10px}.stamp .v{width:30px;height:30px}.shots{padding-bottom:30%}}
+
+/* Pain vs. gain */
+.vs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.vs-col{border-radius:var(--r-lg);padding:clamp(24px,3vw,36px);display:grid;gap:22px;align-content:start}
+.vs-col.before{background:var(--sunk);border:1px dashed var(--line-2)}
+.vs-col.after{background:var(--surface);border:1px solid var(--line)}
+.vs-col h3{display:flex;align-items:center;gap:10px}
+.vs-col ul{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.vs-col li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}
+.vs-col li svg{width:24px;height:24px;margin-top:2px}
+.before li svg{color:var(--bad)}
+.after li svg{color:var(--ok)}
+.vs-col li b{display:block}
+.vs-col li span{color:var(--muted);font-size:16px}
+.time{font-family:var(--f-display);font-weight:700;font-size:13px;letter-spacing:.08em;padding:3px 9px;border-radius:6px;background:var(--line);color:var(--ink-2)}
+.after .time{background:var(--accent);color:var(--accent-ink)}
+@media (max-width:800px){.vs{grid-template-columns:minmax(0,1fr)}}
+
+/* What the worker receives (a Viber chat drawn as a screen, so its colors stay fixed in both themes) */
+.msg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:clamp(28px,5vw,72px);align-items:center}
+.msg .txt{display:grid;gap:18px;align-content:start}
+.ticks{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:12px}
+.ticks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px}
+.ticks svg{width:22px;height:22px;margin-top:2px;color:var(--ok)}
+.ticks b{font-weight:600}
+.vphone{justify-self:center;width:min(350px,100%);border-radius:38px;border:9px solid #0b0e10;background:#0b0e10;box-shadow:var(--shadow);overflow:hidden}
+.vtop{background:#7360f2;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;line-height:1.2}
+.vtop .av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:13px;flex:none}
+.vtop small{display:block;font-weight:400;font-size:12px;opacity:.85}
+.vchat{background:#ece7f5;padding:16px 12px 22px;display:grid;gap:12px;font-family:var(--f-ui)}
+.vday{justify-self:center;font-size:11.5px;color:#4d5560;background:rgba(255,255,255,.7);padding:3px 10px;border-radius:999px}
+.bub{justify-self:start;background:#fff;color:#1d2328;border-radius:16px 16px 16px 4px;padding:10px 12px 7px;font-size:13.5px;line-height:1.45;white-space:pre-line;max-width:94%;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.bub time{display:block;text-align:right;font-size:11px;color:#7d848d;margin-top:2px}
+.bub .rain{color:#2d68a8;font-weight:600}
+@media (max-width:860px){.msg{grid-template-columns:minmax(0,1fr)}}
+
+/* Industries */
+.kladoi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.klados{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 24px;display:grid;gap:10px;align-content:start;text-decoration:none;color:inherit;position:relative}
+.klados h3{font-size:22px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 0}
+.klados p{color:var(--muted);font-size:16px}
+.klados .ic{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent-soft-ink);display:grid;place-items:center}
+.klados .ic svg{width:24px;height:24px}
+.klados .go{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15px;color:var(--ink);margin-top:4px}
+.klados .go svg{width:18px;height:18px}
+a.klados{border:2px solid var(--ink);box-shadow:var(--shadow);transition:transform .15s ease}
+a.klados:hover{transform:translateY(-2px)}
+.klados.later{background:var(--sunk);border-style:dashed;border-color:var(--line-2)}
+.kladoi-note{margin-top:18px;color:var(--muted);font-size:15px;max-width:70ch}
+@media (max-width:900px){.kladoi{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:580px){.kladoi{grid-template-columns:minmax(0,1fr)}}
+
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;counter-reset:s;padding:0;margin:0;list-style:none}
+.steps li{position:relative;padding:28px 26px 30px;border-top:4px solid var(--ink);display:grid;gap:10px;align-content:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--f-display);font-weight:800;font-size:64px;line-height:1;color:var(--btn-bg)}
+.steps p{color:var(--muted)}
+@media (max-width:800px){.steps{grid-template-columns:minmax(0,1fr)}}
+
+/* Feature rows */
+.dark-band{background:var(--brand);color:var(--on-brand)}
+.dark-band .eyebrow{color:var(--accent)}
+.dark-band .lead{color:var(--on-brand-2)}
+.feat{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(28px,5vw,72px);align-items:center}
+.feat+.feat{margin-top:clamp(64px,9vw,112px)}
+.feat.flip .txt{order:2}
+.feat .txt{display:grid;gap:18px;align-content:start}
+.feat .txt h3{font-size:clamp(28px,3.4vw,40px);font-weight:800}
+.feat ul{margin:4px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.feat li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;color:var(--on-brand-2)}
+.feat li svg{width:20px;height:20px;margin-top:4px;color:var(--accent)}
+.feat li b{color:var(--on-brand);font-weight:600}
+.feat .pic{border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.1)}
+.feat .pic.duo{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);gap:14px;border:0;box-shadow:none;overflow:visible;align-items:end}
+.feat .pic.duo img{border-radius:14px;box-shadow:var(--shadow)}
+.feat .pic.duo img+img{border-radius:20px;border:5px solid #0b0e10}
+@media (max-width:860px){.feat{grid-template-columns:minmax(0,1fr)}.feat.flip .txt{order:0}}
+
+/* Small features grid */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.grid article{background:var(--surface);padding:28px 26px;display:grid;gap:10px;align-content:start}
+.grid .ic{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent-soft-ink);display:grid;place-items:center}
+.grid .ic svg{width:24px;height:24px}
+.grid h3{font-size:21px}
+.grid p{color:var(--muted);font-size:16px}
+@media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:580px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Calculator */
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.calc form{padding:clamp(24px,3.5vw,40px);display:grid;gap:24px}
+.field{display:grid;gap:6px}
+.field label{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-weight:600}
+.field output{font-variant-numeric:tabular-nums;font-family:var(--f-display);font-weight:700;font-size:20px;white-space:nowrap}
+.field .hint{font-size:14px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--btn-bg);height:28px;margin:0}
+.calc .res{background:var(--brand);color:var(--on-brand);padding:clamp(24px,3.5vw,40px) clamp(24px,3.5vw,40px) clamp(24px,3.5vw,40px) calc(clamp(24px,3.5vw,40px) + 10px);display:grid;gap:22px;align-content:center;position:relative}
+.calc .res::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--accent)}
+.res .eyebrow{color:var(--on-brand-2)}
+.big{font-family:var(--f-display);font-weight:800;font-size:clamp(56px,8vw,88px);line-height:.95;font-variant-numeric:tabular-nums;color:var(--accent)}
+.big small{font-size:.4em;color:var(--on-brand);margin-left:6px}
+.res .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;border-top:1px solid rgba(255,255,255,.12);padding-top:20px}
+.res .row b{display:block;font-family:var(--f-display);font-size:30px;font-variant-numeric:tabular-nums}
+.res .row span,.res .note{color:var(--on-brand-2);font-size:14px}
+@media (max-width:820px){.calc{grid-template-columns:minmax(0,1fr)}}
+
+/* Pricing */
+.bill{display:inline-flex;padding:4px;border-radius:999px;background:var(--surface);border:1px solid var(--line);margin-bottom:28px}
+.bill button{border:0;background:transparent;font:600 15px var(--f-ui);color:var(--muted);padding:10px 18px;border-radius:999px;cursor:pointer}
+.bill button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.bill .save{font-size:12px;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:30px 28px;display:grid;grid-template-rows:auto auto auto 1fr auto;gap:16px;position:relative}
+.plan.top-pick{border:2px solid var(--ink);box-shadow:var(--shadow)}
+.plan .flag{position:absolute;top:-14px;left:26px;background:var(--accent);color:var(--accent-ink);font:700 13px var(--f-display);letter-spacing:.1em;padding:5px 12px;border-radius:6px}
+.plan h3{font-size:28px;font-weight:800}
+.plan .who{color:var(--muted);font-size:15px;margin-top:4px}
+.price{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.price b{font-family:var(--f-display);font-weight:800;font-size:56px;line-height:1}
+.price span{color:var(--muted);font-size:15px}
+.per{color:var(--muted);font-size:14px;margin-top:-8px;display:grid;gap:2px}
+.per strong{color:var(--ok);font-weight:600}
+.plan ul{list-style:none;margin:0;padding:0;display:grid;gap:10px;align-content:start;font-size:16px}
+.plan li{display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px}
+.plan li svg{width:18px;height:18px;margin-top:4px;color:var(--ok)}
+.plan .btn{width:100%}
+.plans-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;margin-top:22px;color:var(--muted);font-size:15px}
+.plans-foot a{color:var(--ink);font-weight:600}
+.plan li.inc{display:block;font-weight:600}
+.soon{display:inline-block;vertical-align:2px;margin-left:6px;padding:2px 6px;border-radius:5px;background:var(--accent-soft);color:var(--accent-soft-ink);font:700 11px/1.2 var(--f-display);letter-spacing:.08em;white-space:nowrap}
+.compare{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.compare summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;font-weight:600;font-size:17px}
+.compare summary::-webkit-details-marker{display:none}
+.compare summary::after{content:"";width:11px;height:11px;flex:none;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg) translate(-3px,-3px);transition:transform .2s}
+.compare[open] summary::after{transform:rotate(-135deg)}
+.cmp-wrap{overflow-x:auto;padding:0 22px 18px}
+.cmp{width:100%;border-collapse:collapse;table-layout:fixed;font-size:15px}
+.cmp col:first-child{width:46%}
+.cmp col.pick{background:var(--sunk)}
+.cmp th,.cmp td{padding:10px 8px;border-top:1px solid var(--line);text-align:center;vertical-align:middle;overflow-wrap:break-word}
+.cmp thead th{border-top:0;font:800 18px var(--f-display);padding-bottom:12px}
+.cmp tbody th{text-align:left;font-weight:500}
+.cmp .grp th{font:700 13px var(--f-display);letter-spacing:.12em;color:var(--muted);padding-top:20px}
+.cmp td svg{width:18px;height:18px;color:var(--ok);vertical-align:middle}
+.cmp .no{color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:560px){.cmp-wrap{padding:0 10px 14px}.cmp{font-size:13px}.cmp th,.cmp td{padding:9px 3px}.cmp thead th{font-size:13px}.cmp col:first-child{width:37%}.compare summary{padding:16px 16px}}
+@media (max-width:900px){.plans{grid-template-columns:minmax(0,1fr);max-width:520px}}
+
+/* Launch programme */
+.launch{margin-top:clamp(36px,5vw,56px);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px 32px;align-items:center;background:var(--brand);color:var(--on-brand);border-radius:var(--r-lg);padding:34px 30px 30px;position:relative;overflow:hidden}
+.launch::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--accent)}
+.seats{display:grid;justify-items:center;line-height:1}
+.seats b{font-family:var(--f-display);font-weight:800;font-size:72px;color:var(--accent)}
+.seats span{font-family:var(--f-display);font-weight:700;font-size:13px;letter-spacing:.16em;color:var(--on-brand-2);margin-top:4px}
+.launch .eyebrow{color:var(--accent)}
+.launch h3{font-size:clamp(24px,3vw,32px);font-weight:800;margin-top:8px}
+.launch p{color:var(--on-brand-2);margin-top:10px;max-width:62ch}
+@media (max-width:760px){.launch{grid-template-columns:minmax(0,1fr)}.seats{justify-items:start}}
+
+/* Origin */
+.origin{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:center}
+.origin blockquote{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(28px,3.6vw,42px);line-height:1.12;text-wrap:balance}
+.origin blockquote::before{content:"";display:block;width:64px;height:6px;margin-bottom:22px;background:var(--btn-bg);border-radius:3px}
+.origin .txt{display:grid;gap:16px;color:var(--ink-2)}
+@media (max-width:820px){.origin{grid-template-columns:minmax(0,1fr)}}
+
+/* FAQ */
+.faq{display:grid;gap:12px;max-width:860px}
+.faq details{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 22px}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 0;font-weight:600;font-size:18px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";width:12px;height:12px;flex:none;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg) translate(-3px,-3px);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(-135deg)}
+.faq details p{padding:0 0 22px;color:var(--ink-2);max-width:68ch}
+
+/* Closing call to action: a card drawn like the schedule a worker gets for tomorrow */
+.sched{max-width:920px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden}
+.sched-top{background:var(--brand);color:var(--on-brand);padding:16px 24px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px;font:700 15px var(--f-display);letter-spacing:.14em}
+.sched-top .pill{background:var(--accent);color:var(--accent-ink);padding:5px 12px;border-radius:999px;font-size:13px;letter-spacing:.1em}
+.sched dl{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line)}
+.sched dl>div{padding:16px 24px;display:grid;gap:4px;align-content:start}
+.sched dl>div+div{border-left:1px solid var(--line)}
+.sched dt{font:700 13px var(--f-display);letter-spacing:.12em;color:var(--muted)}
+.sched dd{margin:0;font-weight:600}
+.sched-body{padding:30px 24px 32px;display:grid;gap:20px}
+.sched-body h2{font-size:clamp(32px,4.4vw,48px)}
+.sched-body .sub{color:var(--ink-2);margin-top:-8px}
+.lead-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.lead-form .full{grid-column:1/-1}
+.lead-form label{display:grid;gap:6px;font-size:14px;font-weight:600;color:var(--ink-2)}
+.lead-form input,.lead-form select{font:16px var(--f-ui);padding:13px 14px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--bg);color:var(--ink);width:100%;min-width:0}
+.lead-form input:focus,.lead-form select:focus{border-color:var(--focus);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.lead-form input.err{border-color:var(--bad)}
+.lead-form .btn{justify-self:start}
+.lead-form .small{font-size:13px;color:var(--muted);font-weight:400}
+.form-ok{display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:10px;background:var(--accent-soft);color:var(--accent-soft-ink);font-size:15px}
+.form-ok svg{width:22px;height:22px;flex:none;margin-top:1px}
+@media (max-width:640px){.lead-form{grid-template-columns:minmax(0,1fr)}.sched dl{grid-template-columns:minmax(0,1fr)}.sched dl>div{padding:12px 20px}.sched dl>div+div{border-left:0;border-top:1px solid var(--line)}.sched-top,.sched-body{padding-left:20px;padding-right:20px}}
+
+/* Footer */
+footer{background:var(--brand);color:var(--on-brand-2);border-top:1px solid rgba(255,255,255,.08);font-size:15px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px;padding-block:36px calc(36px + env(safe-area-inset-bottom,0px))}
+footer nav{display:flex;flex-wrap:wrap;gap:20px}
+footer a{text-decoration:none}
+footer a:hover{color:var(--on-brand)}
+
+/* Phone: a call to action that stays in reach */
+.mbar{display:none}
+@media (max-width:700px){
+  .mbar{display:block;position:fixed;left:0;right:0;bottom:0;z-index:25;padding:10px var(--gut-r) calc(10px + env(safe-area-inset-bottom,0px)) var(--gut);background:var(--brand);border-top:1px solid rgba(255,255,255,.1);transform:translateY(110%);transition:transform .25s ease}
+  .mbar.show{transform:none}
+  .mbar .btn{width:100%}
+  footer .wrap{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-euro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17.5 6.5A7 7 0 1 0 17.5 17.5M4 10h9M4 14h9"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></symbol>
+  <symbol id="i-team" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.3.2 4 1.7 4.5 4.4"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l4-4 4 2 3-3 4 1 3 4-6 6-4-1-2 2-6-7z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+  <symbol id="i-viber" viewBox="0 0 24 24" fill="#fff"><path d="M12 3c-4.7 0-8 2.6-8 7.7 0 2.9 1 4.7 2.6 5.8v3.2c0 .5.6.8 1 .4l2.4-2.4c.6.1 1.3.1 2 .1 4.7 0 8-2.6 8-7.1S16.7 3 12 3zm3.6 10.6c-.3.6-1 1.1-1.6 1.1-.4 0-1.9-.5-3.5-2s-2.1-3-2.1-3.5c0-.7.5-1.3 1.1-1.6.3-.1.6 0 .7.2l.8 1.4c.1.2 0 .5-.1.6l-.5.5c.2.7 1.3 1.9 2.1 2.1l.5-.5c.2-.2.4-.2.6-.1l1.4.8c.3.2.3.5.2.7z"/></symbol>
+  <!-- The mark: the O of the wordmark, a person in a circle. The person takes the logo's text colour. -->
+  <symbol id="i-mark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" style="fill:var(--mark,#f5b800)"/><circle cx="50" cy="38" r="14" style="fill:var(--mark-ink,#0e3b34)"/><path d="M24 80C28 60 72 60 76 80Z" style="fill:var(--mark-ink,#0e3b34)"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-helmet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18M5 17v-2a7 7 0 0 1 14 0v2M10 8.4V6h4v2.4M12 6v4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8.5 5.5-13.5 14-14-.5 8.5-5.5 14-14 14z"/><path d="M5 19l7.5-7.5"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 3L5 13.5h6L10 21l9-11h-6.2z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 8h12v4.5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M16.5 9.5H18a2.5 2.5 0 0 1 0 5h-1.5M4 21h13M8.5 3.5v2M12.5 3.5v2"/></symbol>
+</svg>
+
+<header class="top on-dark">
+  <div class="wrap">
+    <a class="logo" href="index.html" aria-label="PARON, αρχική σελίδα"><span class="wm"><b>PAR<svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg>N</b><small>ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ</small></span></a>
+
+    <nav aria-label="Ενότητες">
+      <a href="index.html#kladoi">Κλάδοι</a>
+      <a href="#viber">Πώς ενημερώνονται</a>
+      <a href="#features">Λειτουργίες</a>
+      <a href="#pricing">Τιμές</a>
+      <a href="#faq">Ερωτήσεις</a>
+    </nav>
+    <div class="acts">
+      <a class="login" href="https://app.paron.gr">Είσοδος</a>
+      <a class="btn pri sm" href="#start">Δοκιμή δωρεάν</a>
+    </div>
+  </div>
+</header>
+
+
+<main id="top">
+<section class="hero on-dark" id="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">ΓΙΑ ΕΡΓΟΛΑΒΟΥΣ, ΚΑΤΑΣΚΕΥΑΣΤΙΚΕΣ ΚΑΙ ΣΥΝΕΡΓΕΙΑ</p>
+      <h1>Ποιος πάει πού αύριο; <em>Το PARON το έχει ήδη κανονίσει.</em></h1>
+      <p class="lead">Περνάτε έργα και προσωπικό μία φορά. Από εκεί και πέρα το PARON βγάζει κάθε μέρα το πρόγραμμα, το στέλνει σε κάθε εργάτη στο Viber και κρατάει τα μεροκάματα κάθε έργου.</p>
+      <div class="ctas">
+        <a class="btn pri" href="#start">Ξεκινήστε 30 μέρες δωρεάν <svg><use href="#i-arrow"/></svg></a>
+        <a class="btn ghost-d" href="#pricing">Δείτε τις τιμές</a>
+      </div>
+      <p class="fine">Χωρίς κάρτα. <b>Πακέτα από 9,99 € τον μήνα</b> για όλη την εταιρεία.</p>
+      <ul class="trust">
+        <li><svg><use href="#i-flag"/></svg>Ελληνικά σε κάθε οθόνη</li>
+        <li><svg><use href="#i-phone"/></svg>Στο Viber που ήδη έχουν</li>
+        <li><svg><use href="#i-globe"/></svg>Χωρίς εγκατάσταση</li>
+        <li><svg><use href="#i-lock"/></svg>Δεδομένα στην Ευρώπη</li>
+      </ul>
+    </div>
+    <div class="shots">
+      <div class="browser"><div class="bar"><i></i><i></i><i></i><span>app.paron.gr</span></div><img src="img/simera.png" width="1366" height="900" alt="Η οθόνη «Σήμερα» του PARON: 22 άτομα στη δουλειά, 1.770 € μεροκάματα, τρία έργα με τα συνεργεία τους"></div>
+      <div class="phone"><img src="img/kinito.png" width="780" height="1688" alt="Το PARON στο κινητό με το πρόγραμμα της ημέρας"></div>
+      <div class="stamp" role="note"><span class="v"><svg><use href="#i-viber"/></svg></span><span><b>Στάλθηκε σε 22 άτομα</b>Το πρόγραμμα της Δευτέρας είναι σε όλους.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΤΟ ΒΡΑΔΥ ΠΡΙΝ ΤΗ ΔΟΥΛΕΙΑ</p>
+      <h2>Κλείστε το τετράδιο. Κλείστε και το τηλέφωνο.</h2>
+      <p class="lead">Κάθε εργολάβος ξέρει το απόγευμα που χάνεται στα τηλέφωνα: ποιος πάει πού, ποιος λείπει, ποιος έρχεται μετά τη βροχή. Με το PARON το πρόγραμμα είναι έτοιμο πριν το σκεφτείτε.</p>
+    </div>
+    <div class="vs">
+      <div class="vs-col before">
+        <h3><span class="time">20:30</span> Χωρίς PARON</h3>
+        <ul>
+          <li><svg><use href="#i-x"/></svg><div><b>Δέκα τηλέφωνα για το αυριανό</b><span>Ο καθένας ακούει κάτι λίγο διαφορετικό και το πρωί κάποιος πάει σε λάθος έργο.</span></div></li>
+          <li><svg><use href="#i-x"/></svg><div><b>Μεροκάματα σε τετράδιο</b><span>Στο τέλος της εβδομάδας κανείς δεν ξέρει σίγουρα πόσα πήγαν σε κάθε έργο.</span></div></li>
+          <li><svg><use href="#i-x"/></svg><div><b>Η βροχή χαλάει όλη τη μέρα</b><span>Τα εξωτερικά σταματούν και τα συνεργεία κάθονται.</span></div></li>
+          <li><svg><use href="#i-x"/></svg><div><b>Όλα στο κεφάλι ενός ανθρώπου</b><span>Αν λείψει εκείνος, δεν ξέρει κανείς τι γίνεται.</span></div></li>
+        </ul>
+      </div>
+      <div class="vs-col after">
+        <h3><span class="time">17:00</span> Με το PARON</h3>
+        <ul>
+          <li><svg><use href="#i-ok"/></svg><div><b>Ένα πάτημα, όλοι ενημερωμένοι</b><span>Κάθε εργάτης παίρνει στο Viber μόνο το δικό του πρόγραμμα, με διεύθυνση και συνεργείο.</span></div></li>
+          <li><svg><use href="#i-ok"/></svg><div><b>Κόστος κάθε έργου, κάθε μέρα</b><span>Μεροκάματα ανά έργο και ανά εργάτη, πληρωμές και προκαταβολές συνεργατών.</span></div></li>
+          <li><svg><use href="#i-ok"/></svg><div><b>Βλέπει τον καιρό πριν από εσάς</b><span>Αν βρέχει, μεταθέτει τις εξωτερικές εργασίες και ειδοποιεί όσους αλλάζουν δουλειά.</span></div></li>
+          <li><svg><use href="#i-ok"/></svg><div><b>Όλη η εταιρεία σε μία οθόνη</b><span>Γραφείο, εργοδηγοί και ιδιοκτήτης βλέπουν τα ίδια, από υπολογιστή ή κινητό.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" id="viber">
+  <div class="wrap msg">
+    <div class="txt">
+      <p class="eyebrow">ΣΤΟ ΚΙΝΗΤΟ ΤΟΥ ΕΡΓΑΤΗ</p>
+      <h2>Ένα μήνυμα το απόγευμα. Το πρωί όλοι ξέρουν πού πάνε.</h2>
+      <p class="lead">Κάθε εργάτης παίρνει στο Viber μόνο το δικό του πρόγραμμα: σε ποιο έργο, ποια δουλειά, με ποιους και τι καιρό θα κάνει. Αν αλλάξει κάτι, νέο μήνυμα παίρνει μόνο όποιος επηρεάζεται.</p>
+      <ul class="ticks">
+        <li><svg><use href="#i-ok"/></svg><span><b>Δεν κατεβάζει τίποτα.</b> Το Viber το έχει ήδη κάθε κινητό στο εργοτάξιο.</span></li>
+        <li><svg><use href="#i-ok"/></svg><span><b>Ξέρει αν είναι υπεύθυνος.</b> Ο αρχιεργάτης το βλέπει γραμμένο δίπλα στη δουλειά.</span></li>
+        <li><svg><use href="#i-ok"/></svg><span><b>Βλέπει τη βδομάδα του.</b> Με ένα πάτημα στέλνετε και το εβδομαδιαίο πρόγραμμα.</span></li>
+      </ul>
+    </div>
+    <div class="vphone" role="img" aria-label="Παράδειγμα μηνυμάτων Viber που λαμβάνει ένας εργάτης από το PARON">
+      <div class="vtop"><span class="av">ΓΡ</span><span>Γραφείο<small>Viber</small></span></div>
+      <div class="vchat">
+        <span class="vday">Κυριακή</span>
+        <p class="bub">Γεια σου Γιώργο! Άλλαξε το πρόγραμμά σου για Δευ 19/10:
+
+Αποθήκη και συντήρηση εξοπλισμού
+
+<span class="rain">Καιρός: Βροχή (πιθανότητα βροχής 85%), 14–20°C</span>
+✅ PARON · Όλοι στη θέση τους<time>18:42</time></p>
+        <span class="vday">Δευτέρα</span>
+        <p class="bub">Γεια σου Γιώργο! Το πρόγραμμά σου για Τρί 20/10:
+
+Πολυκατοικία Καλαμαριάς (Κομνηνών 24, Καλαμαριά)
+Τοιχοποιία 2ου ορόφου, υπεύθυνος
+Μαζί: Αλέξης Χ., Δημήτρης Λ., Νίκος Κ.
+
+Καιρός: Λίγα σύννεφα, 13–21°C
+✅ PARON · Όλοι στη θέση τους<time>17:05</time></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="sec tight" id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΠΩΣ ΔΟΥΛΕΥΕΙ</p>
+      <h2>Τρία βήματα από το έργο στο συνεργείο.</h2>
+    </div>
+    <ol class="steps">
+      <li><h3>Περνάτε έργα και εργασίες</h3><p>Τοιχοποιία, υδραυλικά, βάψιμο. Για κάθε εργασία λέτε ειδικότητα, μέρες και ποιος είναι υπεύθυνος.</p></li>
+      <li><h3>Το PARON φτιάχνει το πρόγραμμα</h3><p>Μοιράζει αρχιεργάτες και βοηθούς ανά ειδικότητα, κρατάει τα συνεργεία μαζί και καλύπτει όποιον λείπει. Ό,τι αλλάξετε με το χέρι το κρατάει.</p></li>
+      <li><h3>Ένα πάτημα και φεύγει</h3><p>Το πρόγραμμα της αυριανής μέρας ή όλης της εβδομάδας πάει σε όλους στο Viber. Ο εργάτης το βλέπει και στο κινητό του, μέσα στην εφαρμογή.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec dark-band on-dark" id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΛΕΙΤΟΥΡΓΙΕΣ</p>
+      <h2>Φτιαγμένο για τον τρόπο που δουλεύει ένα εργοτάξιο.</h2>
+      <p class="lead">Κάθε οθόνη απαντάει σε μια ερώτηση που κάνει ο εργολάβος κάθε μέρα.</p>
+    </div>
+
+    <div class="feat">
+      <div class="txt">
+        <p class="eyebrow">ΠΡΟΓΡΑΜΜΑ</p>
+        <h3>Όλα τα έργα και όλα τα συνεργεία, σε μία ματιά.</h3>
+        <ul>
+          <li><svg><use href="#i-ok"/></svg><span><b>Σήμερα, εβδομάδα, ανά άτομο.</b> Δείτε ποιος δουλεύει πού, με χρώμα ανά έργο.</span></li>
+          <li><svg><use href="#i-ok"/></svg><span><b>Υπεύθυνος ανά ειδικότητα.</b> Ο αρχιεργάτης ξεχωρίζει, οι βοηθοί ακολουθούν.</span></li>
+          <li><svg><use href="#i-ok"/></svg><span><b>Πότε τελειώνει κάθε έργο.</b> Χρονοδιάγραμμα με το προσωπικό που έχετε τώρα.</span></li>
+        </ul>
+      </div>
+      <div class="pic"><img src="img/simera.png" width="1366" height="900" alt="Πρόγραμμα ημέρας με κάρτες ανά έργο"></div>
+    </div>
+
+    <div class="feat flip">
+      <div class="txt">
+        <p class="eyebrow">ΚΑΙΡΟΣ</p>
+        <h3>Βρέχει τη Δευτέρα; Το πρόγραμμα έχει ήδη αλλάξει.</h3>
+        <ul>
+          <li><svg><use href="#i-ok"/></svg><span><b>Πρόγνωση ανά έργο</b> για κάθε μέρα της εβδομάδας.</span></li>
+          <li><svg><use href="#i-ok"/></svg><span><b>Οι εξωτερικές εργασίες μετακινούνται</b> και τα συνεργεία πάνε σε εσωτερικές.</span></li>
+          <li><svg><use href="#i-ok"/></svg><span><b>Ειδοποίηση αλλαγών</b> σε όσους επηρεάζονται, αν έχετε ήδη στείλει το πρόγραμμα.</span></li>
+        </ul>
+      </div>
+      <div class="pic"><img src="img/kairos.png" width="1366" height="900" alt="Εβδομαδιαίο πρόγραμμα με πρόγνωση καιρού και μεταφορά εργασίας λόγω βροχής"></div>
+    </div>
+
+    <div class="feat">
+      <div class="txt">
+        <p class="eyebrow">ΓΡΑΦΕΙΟ ΚΑΙ ΕΡΓΑΤΕΣ</p>
+        <h3>Ο καθένας βλέπει μόνο τα δικά του.</h3>
+        <ul>
+          <li><svg><use href="#i-ok"/></svg><span><b>Το πρόγραμμά μου</b> στο κινητό, με οδηγίες στον χάρτη για κάθε εργοτάξιο.</span></li>
+          <li><svg><use href="#i-ok"/></svg><span><b>Υπενθυμίσεις για το γραφείο.</b> Τράπεζες, ΔΟΥ, ΕΦΚΑ, πολεοδομία, μέχρι να γίνουν.</span></li>
+          <li><svg><use href="#i-ok"/></svg><span><b>Χωρίς μεροκάματα άλλων.</b> Ο εργάτης δεν βλέπει τίποτα που δεν τον αφορά.</span></li>
+          <li><svg><use href="#i-ok"/></svg><span><b>Στη γλώσσα του καθενός.</b> Αλβανικά, αγγλικά, αραβικά, περσικά, τουρκικά, κουρδικά ή εβραϊκά. Το γραφείο μένει στα ελληνικά.</span></li>
+        </ul>
+      </div>
+      <div class="pic duo"><img src="img/ypenthymiseis.png" width="1366" height="900" alt="Υπενθυμίσεις ανά άτομο για το γραφείο και τον εργολάβο"><img src="img/ergazomenos.png" width="780" height="1688" alt="Το πρόγραμμα ενός εργάτη στο κινητό, με οδηγίες στον χάρτη"></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="more">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΚΑΙ ΟΛΑ ΤΑ ΥΠΟΛΟΙΠΑ</p>
+      <h2>Ό,τι χρειάζεται μια κατασκευαστική, σε ένα μέρος.</h2>
+    </div>
+    <div class="grid">
+      <article><span class="ic"><svg><use href="#i-euro"/></svg></span><h3>Κόστος και πληρωμές</h3><p>Μεροκάματα ανά έργο και εργάτη, διαφορετικό μεροκάματο ανά έργο όπου χρειάζεται, εβδομαδιαίες πληρωμές. Όταν κάποιος δουλεύει σε δύο έργα, το μεροκάματο μοιράζεται.</p></article>
+      <article><span class="ic"><svg><use href="#i-hand"/></svg></span><h3>Συνεργάτες</h3><p>Εξωτερικά συνεργεία με το μεροκάματο ή κατ' αποκοπή, με υπόλοιπο και προκαταβολές.</p></article>
+      <article><span class="ic"><svg><use href="#i-pin"/></svg></span><h3>Πελάτες και ραντεβού</h3><p>Μία καρτέλα για κάθε πελάτη με τα έργα του, την πρόοδο και ό,τι ειπώθηκε: σημειώσεις, τηλεφωνήματα, συναντήσεις, προσφορές. Τα ραντεβού μπαίνουν στο πρόγραμμα του καθενός και στο μήνυμα Viber.</p></article>
+      <article><span class="ic"><svg><use href="#i-bell"/></svg></span><h3>Υπενθυμίσεις</h3><p>Ό,τι δεν έγινε σήμερα μένει ως εκκρεμότητα για αύριο. Ο εργολάβος τις παίρνει κι αυτός στο Viber.</p></article>
+      <article><span class="ic"><svg><use href="#i-team"/></svg></span><h3>Γραφείο και εργοδηγοί</h3><p>Γραμματεία, ταμείο, υπεύθυνοι έργων και εξωτερικός υπάλληλος με τις δικές τους δουλειές της ημέρας.</p></article>
+      <article><span class="ic"><svg><use href="#i-lock"/></svg></span><h3>Λογαριασμός για τον καθένα</h3><p>Διαχειριστής, γραφείο, εργάτης. Κάθε άτομο μπαίνει με δικό του κωδικό και βλέπει μόνο όσα του επιτρέπετε.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" id="calc">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΠΟΣΑ ΚΕΡΔΙΖΕΤΕ</p>
+      <h2>Βάλτε τα δικά σας νούμερα.</h2>
+      <p class="lead">Ο υπολογισμός κρατάει χαμηλά τα κέρδη: θεωρεί ότι το πρόγραμμα θα σας παίρνει ακόμη ένα τέταρτο κάθε μέρα και ότι οι πληρωμές θα θέλουν τον μισό χρόνο.</p>
+    </div>
+    <div class="calc">
+      <form id="calcForm" onsubmit="return false">
+        <div class="field">
+          <label for="cWorkers">Άτομα στην ομάδα <output id="oWorkers" for="cWorkers">12</output></label>
+          <input id="cWorkers" type="range" min="2" max="40" step="1" value="12">
+        </div>
+        <div class="field">
+          <label for="cMins">Λεπτά την ημέρα για πρόγραμμα και τηλέφωνα <output id="oMins" for="cMins">45</output></label>
+          <input id="cMins" type="range" min="15" max="180" step="5" value="45">
+        </div>
+        <div class="field">
+          <label for="cPay">Ώρες την εβδομάδα για μεροκάματα και πληρωμές <output id="oPay" for="cPay">3</output></label>
+          <input id="cPay" type="range" min="0" max="15" step="1" value="3">
+        </div>
+        <div class="field">
+          <label for="cErr">Μεροκάματα τον μήνα σε λάθος έργο ή πληρωμένα δύο φορές <output id="oErr" for="cErr">1</output></label>
+          <input id="cErr" type="range" min="0" max="8" step="1" value="1">
+          <span class="hint">Υπολογίζεται με 50 € το μεροκάματο.</span>
+        </div>
+        <div class="field">
+          <label for="cRate">Κόστος μιας ώρας γραφείου <output id="oRate" for="cRate">10 €</output></label>
+          <input id="cRate" type="range" min="7" max="50" step="1" value="10">
+          <span class="hint">Αν τα κάνετε εσείς, βάλτε την αξία της δικής σας ώρας.</span>
+        </div>
+      </form>
+      <div class="res on-dark" aria-live="polite">
+        <div>
+          <p class="eyebrow">ΧΡΟΝΟΣ ΠΟΥ ΓΛΙΤΩΝΕΤΕ</p>
+          <p class="big"><span id="rHours">17,5</span><small>ώρες τον μήνα</small></p>
+        </div>
+        <div class="row">
+          <div><b id="rEuro">225 €</b><span>αξία τον μήνα, με τα λάθη που δεν γίνονται</span></div>
+          <div><b id="rRoi">11×</b><span>την τιμή του πακέτου <span id="rPlan">Συνεργείο</span></span></div>
+        </div>
+        <p class="note">Εκτίμηση με 22 εργάσιμες τον μήνα. Δεν μετράει τον χρόνο του επικεφαλής ούτε τις χαμένες ώρες όταν κάποιος πάει σε λάθος δουλειά.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" id="pricing">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΤΙΜΕΣ</p>
+      <h2>Μία συνδρομή για όλη την εταιρεία.</h2>
+      <p class="lead">Ξεκινάτε με ό,τι χρειάζεται ένα μικρό συνεργείο και ανεβαίνετε όταν μεγαλώσει η δουλειά. Το γραφείο και ο ιδιοκτήτης δεν μετράνε στα άτομα, και το Συνεργείο κοστίζει λιγότερο από μισό μεροκάματο τον μήνα.</p>
+    </div>
+    <div class="bill" role="group" aria-label="Τρόπος χρέωσης">
+      <button type="button" id="bMonth" aria-pressed="true">Μηνιαία</button>
+      <button type="button" id="bYear" aria-pressed="false">Ετήσια<span class="save">2 μήνες δώρο</span></button>
+    </div>
+    <div class="plans">
+      <article class="plan">
+        <div><h3>Μάστορας</h3><p class="who">Έως 5 άτομα στην ομάδα</p></div>
+        <p class="price"><b data-m="9.99" data-n="5">9,99</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
+        <p class="per" data-per></p>
+        <ul>
+          <li><svg><use href="#i-ok"/></svg><span>Αυτόματο πρόγραμμα κάθε μέρα</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Viber με ένα πάτημα</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Η εφαρμογή του εργάτη στο κινητό</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Πρόγραμμα και μηνύματα σε 8 γλώσσες</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Μεροκάματα, κόστος και πληρωμές</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Υπενθυμίσεις και αργίες</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Έργα, εργασίες και χρονοδιάγραμμα</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>1 χρήστης γραφείου, βοήθεια με email</span></li>
+        </ul>
+        <a class="btn ghost" href="#start" data-plan="0">Δοκιμή 30 ημερών</a>
+      </article>
+      <article class="plan top-pick">
+        <span class="flag">ΠΡΟΤΕΙΝΟΥΜΕ</span>
+        <div><h3>Συνεργείο</h3><p class="who">Έως 15 άτομα στην ομάδα</p></div>
+        <p class="price"><b data-m="19.99" data-n="15">19,99</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
+        <p class="per" data-per></p>
+        <ul>
+          <li class="inc">Όλα του Μάστορα, και:</li>
+          <li><svg><use href="#i-ok"/></svg><span>Πρόγραμμα με τον καιρό</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Συνεργάτες και ραντεβού</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Καρτέλα πελάτη με έργα και ιστορικό</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Πρόοδος και άδειες από το κινητό</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Κατάσταση ημερών για τον λογιστή, σε Excel και PDF</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>«Τι λείπει», προθεσμίες έργων και αναζήτηση</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Ειδοποιήσεις στο κινητό χωρίς Viber Business</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Έως 3 χρήστες γραφείου, στήσιμο μαζί σας</span></li>
+        </ul>
+        <a class="btn pri" href="#start" data-plan="1">Δοκιμή 30 ημερών</a>
+      </article>
+      <article class="plan">
+        <div><h3>Εργοτάξιο</h3><p class="who">Έως 40 άτομα στην ομάδα</p></div>
+        <p class="price"><b data-m="39.99" data-n="40">39,99</b><span data-unit>€ / μήνα + ΦΠΑ</span></p>
+        <p class="per" data-per></p>
+        <ul>
+          <li class="inc">Όλα του Συνεργείου, και:</li>
+          <li><svg><use href="#i-ok"/></svg><span>Κέρδος ανά έργο και υπενθύμιση υλικών</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Παρουσίες με GPS</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Ημερολόγιο έργου με φωτογραφίες και PDF</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Σελίδα προόδου για τον πελάτη</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Μηχανήματα, οχήματα και λήξεις</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Βαθμολογία ομάδας: οι καλύτεροι στις δύσκολες δουλειές</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Ιστορικό αλλαγών με αναίρεση</span></li>
+          <li><svg><use href="#i-ok"/></svg><span>Χρήστες γραφείου χωρίς όριο, μεταφορά από Excel</span></li>
+        </ul>
+        <a class="btn ghost" href="#start" data-plan="2">Δοκιμή 30 ημερών</a>
+      </article>
+    </div>
+    <div class="plans-foot">
+      <span>30 μέρες δωρεάν σε κάθε πακέτο, χωρίς κάρτα. Ακυρώνετε όποτε θέλετε.</span>
+      <span>Πάνω από 40 άτομα; <a href="#start" data-plan="3">Ζητήστε προσφορά</a></span>
+    </div>
+    <details class="compare">
+      <summary>Όλες οι λειτουργίες ανά πακέτο</summary>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <colgroup><col><col><col class="pick"><col></colgroup>
+          <thead><tr><th scope="col"><span class="vh">Λειτουργία</span></th><th scope="col">Μάστορας</th><th scope="col">Συνεργείο</th><th scope="col">Εργοτάξιο</th></tr></thead>
+          <tbody>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΠΡΟΓΡΑΜΜΑ</th></tr>
+          <tr><th scope="row">Αυτόματο πρόγραμμα ημέρας και εβδομάδας</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Viber με ένα πάτημα</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Η εφαρμογή του εργάτη στο κινητό</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Σελίδα και μηνύματα του εργάτη σε 8 γλώσσες</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Έργα, εργασίες και χρονοδιάγραμμα</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Υπενθυμίσεις, αργίες και κλειστές μέρες</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Οδηγός πρώτου στησίματος</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Πρόγραμμα με τον καιρό</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ραντεβού με πελάτες</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Πρόοδος από το κινητό του επικεφαλής</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Άδειες από το κινητό</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ειδοποιήσεις στο κινητό</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">«Τι λείπει» για αύριο και την εβδομάδα</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Προθεσμία ανά έργο, με προειδοποίηση</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Διαθεσιμότητα και δεύτερη ειδικότητα</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Αναζήτηση σε όλη την εφαρμογή</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Παρουσίες με GPS</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Υλικά πριν την εργασία</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Βαθμολογία ομάδας και δυσκολία εργασιών, με εναλλαγή</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ιστορικό αλλαγών με αναίρεση</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΧΡΗΜΑΤΑ</th></tr>
+          <tr><th scope="row">Μεροκάματα, κόστος εργατικών και πληρωμές</th><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Συνεργάτες με μεροκάματο ή κατ' αποκοπή</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Κατάσταση ημερών για τον λογιστή, με ΑΜΟΕ για οικοδομικά</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Εξαγωγή σε Excel και PDF</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Σύνοψη κάθε Παρασκευή για τον ιδιοκτήτη, και στο Viber</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Κέρδος ανά έργο</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΣΤΗ ΔΟΥΛΕΙΑ ΚΑΙ ΣΤΟΝ ΠΕΛΑΤΗ</th></tr>
+          <tr><th scope="row">Καρτέλα πελάτη με έργα, ραντεβού και ιστορικό</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Μηχανήματα, οχήματα και λήξεις</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Ημερολόγιο έργου με φωτογραφίες</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Σελίδα προόδου για τον πελάτη</th><td><span class="no" aria-label="Όχι">–</span></td><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr class="grp"><th colspan="4" scope="colgroup">ΟΜΑΔΑ ΚΑΙ ΒΟΗΘΕΙΑ</th></tr>
+          <tr><th scope="row">Άτομα στην ομάδα</th><td>5</td><td>15</td><td>40</td></tr>
+          <tr><th scope="row">Χρήστες γραφείου</th><td>1</td><td>3</td><td>Χωρίς όριο</td></tr>
+          <tr><th scope="row">Διαχειριστές έργων</th><td><span class="no" aria-label="Όχι">–</span></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td><td><svg aria-label="Ναι"><use href="#i-ok"/></svg></td></tr>
+          <tr><th scope="row">Βοήθεια</th><td>Email</td><td>Και τηλέφωνο</td><td>Πρώτη σειρά</td></tr>
+          <tr><th scope="row">Στήσιμο</th><td><span class="no" aria-label="Όχι">–</span></td><td>Μαζί σας</td><td>Και από Excel</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <div class="launch on-dark">
+      <div class="seats"><b>20</b><span>ΘΕΣΕΙΣ</span></div>
+      <div>
+        <p class="eyebrow">ΠΡΟΓΡΑΜΜΑ ΕΝΑΡΞΗΣ</p>
+        <h3>Οι πρώτες 20 εταιρείες κλειδώνουν την τιμή τους για 2 χρόνια.</h3>
+        <p>Παίρνουν και δωρεάν στήσιμο σε όποιο πακέτο διαλέξουν. Σε αντάλλαγμα μας λένε τι να βελτιώσουμε, και το βάζουμε πρώτο στη σειρά.</p>
+      </div>
+      <a class="btn pri" href="#start">Κλείστε θέση <svg><use href="#i-arrow"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="origin">
+  <div class="wrap origin">
+    <blockquote>Γεννήθηκε μέσα σε κατασκευαστική εταιρεία, με έργα που τρέχουν κάθε μέρα.</blockquote>
+    <div class="txt">
+      <p>Το PARON φτιάχτηκε για να λύσει τα προβλήματα μιας πραγματικής κατασκευαστικής: πολλά έργα ταυτόχρονα, συνεργεία που αλλάζουν, συνεργάτες, γραφείο και τηλέφωνα κάθε βράδυ.</p>
+      <p>Κάθε λειτουργία απαντάει σε κάτι που χρειάζεται κάθε μέρα ο εργολάβος, η γραμματεία ή ο εργοδηγός. Γι' αυτό είναι στα ελληνικά, με τους όρους του εργοταξίου, και δουλεύει από το κινητό.</p>
+      <p>Τα ξένα προγράμματα για κατασκευαστικές κοστίζουν εκατοντάδες ευρώ τον μήνα, είναι στα αγγλικά και μετράνε ώρες αντί για μεροκάματα. Το PARON φτιάχτηκε για την ελληνική αγορά.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ΕΡΩΤΗΣΕΙΣ</p>
+      <h2>Ό,τι μας ρωτάνε πριν ξεκινήσουν.</h2>
+    </div>
+    <div class="faq">
+      <details><summary>Πρέπει η ομάδα να κατεβάσει εφαρμογή;</summary><p>Όχι. Το πρόγραμμά τους έρχεται στο Viber που ήδη έχουν. Όποιος θέλει, ανοίγει το PARON από το κινητό του και το βάζει στην αρχική οθόνη σαν εφαρμογή, χωρίς κατέβασμα από store. Από το πακέτο Συνεργείο, έτσι παίρνει και ειδοποίηση στο κινητό για το πρόγραμμα και κάθε αλλαγή, χωρίς χρέωση ανά μήνυμα.</p></details>
+      <details><summary>Κι αν κάποιος δεν διαβάζει καλά ελληνικά;</summary><p>Σε όλα τα πακέτα, ο καθένας βλέπει τη σελίδα του και παίρνει το πρόγραμμα, τις αλλαγές, τις απαντήσεις για άδειες και το μήνυμα της πληρωμής στη γλώσσα του: αλβανικά, αγγλικά, αραβικά, περσικά, τουρκικά, κουρδικά ή εβραϊκά. Τη γλώσσα την ορίζει το γραφείο ή ο ίδιος από τον λογαριασμό του, και τα ελληνικά ονόματα και οι τοποθεσίες γράφονται και με λατινικούς χαρακτήρες. Το γραφείο συνεχίζει στα ελληνικά.</p></details>
+      <details><summary>Κι αν αλλάξει κάτι το πρωί;</summary><p>Αλλάζετε το άτομο ή την εργασία και το PARON προσαρμόζει τα υπόλοιπα γύρω από την επιλογή σας. Νέο μήνυμα στέλνεται μόνο σε όσους άλλαξε η μέρα τους.</p></details>
+      <details><summary>Πόσο χρόνο θέλει για να ξεκινήσουμε;</summary><p>Λίγες ώρες. Περνάτε δουλειές, εργασίες και προσωπικό, και από την επόμενη μέρα το πρόγραμμα βγαίνει μόνο του. Στα πακέτα Συνεργείο και Εργοτάξιο το στήσιμο το κάνουμε εμείς μαζί σας.</p></details>
+      <details><summary>Έχει πολλά που δεν θα χρησιμοποιήσουμε. Θα μας μπερδέψει;</summary><p>Όχι. Από τις Ρυθμίσεις κλείνετε ό,τι δεν χρειάζεστε και φεύγει από το μενού, από την οθόνη της ημέρας και από τα μηνύματα στο Viber. Τα στοιχεία σας μένουν, και το ξανανοίγετε όποτε θέλετε.</p></details>
+      <details><summary>Μπορώ να βάλω και εξωτερικά συνεργεία;</summary><p>Ναι, από το πακέτο Συνεργείο. Οι συνεργάτες μπαίνουν με μεροκάματο ή κατ' αποκοπή, παίρνουν το πρόγραμμά τους στο Viber, και βλέπετε υπόλοιπο και προκαταβολές για τον καθένα.</p></details>
+      <details><summary>Μπορώ να δείξω στον πελάτη τι έγινε κάθε μέρα;</summary><p>Ναι, στο πακέτο Εργοτάξιο. Το ημερολόγιο έργου κρατά μία σελίδα για κάθε μέρα με τις εργασίες, ποιοι ήταν εκεί, τον καιρό και τα υλικά. Το γραφείο και η ομάδα προσθέτουν φωτογραφίες και σημειώσεις από το κινητό, και το βγάζετε σε PDF για τον πελάτη. Μπορείτε επίσης να του δώσετε έναν ιδιωτικό σύνδεσμο για το έργο του, όπου βλέπει την πρόοδο, τις επόμενες εργασίες, το ημερολόγιο και τις φωτογραφίες, χωρίς ονόματα και κόστη.</p></details>
+      <details><summary>Ποιος βλέπει τα μεροκάματα;</summary><p>Μόνο όσοι ορίσετε, συνήθως ο διαχειριστής και το γραφείο. Ο εργαζόμενος βλέπει μόνο το δικό του πρόγραμμα.</p></details>
+      <details><summary>Παρακολουθεί τους εργαζόμενους με GPS;</summary><p>Όχι. Στο πακέτο Εργοτάξιο ο εργαζόμενος πατά «Ήρθα» και «Έφυγα» στο κινητό και η θέση του διαβάζεται μόνο εκείνη τη στιγμή. Το γραφείο βλέπει ποιος ήρθε σε ποιο έργο, οι συντεταγμένες σβήνονται μετά από 60 μέρες και το μεροκάματο δεν αλλάζει ποτέ μόνο του.</p></details>
+      <details><summary>Δουλεύει και για βάρδιες με ώρες;</summary><p>Όχι ακόμη. Σήμερα το PARON οργανώνει ομάδες που δουλεύουν με μέρες και μεροκάματο. Οι βάρδιες με ώρα έναρξης και λήξης, οι υπερωρίες και τα ρεπό, για εστίαση και καταστήματα, ετοιμάζονται τώρα.</p></details>
+      <details><summary>Τι γίνεται αν ξεπεράσουμε τα άτομα του πακέτου;</summary><p>Δεν κόβεται τίποτα. Σας ειδοποιούμε και περνάτε στο επόμενο πακέτο από τον επόμενο μήνα.</p></details>
+      <details><summary>Πού είναι τα δεδομένα μας;</summary><p>Σε server στην Ευρώπη, με κρυπτογραφημένη σύνδεση και αντίγραφο ασφαλείας κάθε μέρα. Τα δεδομένα είναι δικά σας και παίρνετε αντίγραφό τους από τις Ρυθμίσεις όποτε θέλετε.</p></details>
+      <details><summary>Υπάρχει δέσμευση;</summary><p>Όχι. Δοκιμάζετε 30 μέρες δωρεάν χωρίς κάρτα και μετά πληρώνετε μήνα με μήνα, ή ετήσια με δύο μήνες δώρο.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" id="start">
+  <div class="wrap">
+    <div class="sched">
+      <div class="sched-top"><span>ΤΟ ΠΡΟΓΡΑΜΜΑ ΣΑΣ ΓΙΑ ΑΥΡΙΟ</span><span class="pill">30 ΗΜΕΡΕΣ ΔΩΡΕΑΝ</span></div>
+      <dl>
+        <div><dt>ΔΟΥΛΕΙΑ</dt><dd>Οργάνωση των ομάδων σας</dd></div>
+        <div><dt>ΜΑΖΙ ΜΕ</dt><dd>PARON</dd></div>
+        <div><dt>ΕΝΑΡΞΗ</dt><dd>Από αύριο το πρωί</dd></div>
+      </dl>
+      <div class="sched-body">
+        <h2>Ζητήστε δοκιμή. Σας καλούμε εμείς.</h2>
+        <p class="sub">Σας καλούμε, σας δείχνουμε την εφαρμογή με τα δικά σας δεδομένα και στέλνετε το πρώτο πρόγραμμα την ίδια μέρα.</p>
+        <form class="lead-form" id="leadForm" novalidate>
+          <label>Ονοματεπώνυμο<input id="fName" name="name" autocomplete="name" required></label>
+          <label>Εταιρεία<input id="fCompany" name="company" autocomplete="organization"></label>
+          <label>Τηλέφωνο<input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
+          <label>Άτομα στην ομάδα
+            <select id="fSize" name="size">
+              <option>Έως 5</option><option selected>6 έως 15</option><option>16 έως 40</option><option>Πάνω από 40</option>
+            </select>
+          </label>
+          <label class="full"><span>Email <span class="small">(προαιρετικό)</span></span><input id="fEmail" name="email" type="email" autocomplete="email"></label>
+          <button class="btn pri full" type="submit">Θέλω δοκιμή 30 ημερών <svg><use href="#i-arrow"/></svg></button>
+          <div class="form-ok full" id="formOk" hidden><svg><use href="#i-ok"/></svg><span id="formOkText"></span></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="on-dark">
+  <div class="wrap">
+    <a class="logo" href="index.html" aria-label="PARON, αρχική σελίδα"><span class="wm"><b>PAR<svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg>N</b><small>ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ</small></span></a>
+
+    <nav aria-label="Υποσέλιδο">
+      <a href="index.html#kladoi">Κλάδοι</a>
+      <a href="kataskeves.html">Για κατασκευές</a>
+      <a href="#pricing">Τιμές</a>
+      <a href="#faq">Ερωτήσεις</a>
+      <a href="https://app.paron.gr">Είσοδος πελατών</a>
+    </nav>
+    <span>© <span id="yr">2026</span> PARON · paron.gr</span>
+  </div>
+</footer>
+
+
+<div class="mbar on-dark" id="mbar"><a class="btn pri" href="#start">Ξεκινήστε 30 μέρες δωρεάν</a></div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+
+  // Tagline spans the wordmark width, as in the app.
+  function fitLogo(){
+    document.querySelectorAll('.logo .wm').forEach(function(wm){
+      var b=wm.querySelector('b'),t=wm.querySelector('small');if(!b||!t||!b.getBoundingClientRect().width)return;
+      var n=t.textContent.length;t.style.letterSpacing='0px';t.style.marginRight='0px';
+      var ls=(b.getBoundingClientRect().width-t.getBoundingClientRect().width)/(n-1);
+      t.style.letterSpacing=ls+'px';t.style.marginRight=(-ls)+'px';
+    });
+  }
+  fitLogo();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitLogo);addEventListener('resize',fitLogo);
+  $('yr').textContent=new Date().getFullYear();
+
+  var nf=function(n,d){return n.toLocaleString('el-GR',{minimumFractionDigits:d||0,maximumFractionDigits:d||0})};
+
+  // Plans: monthly price per plan and the people it fits. Yearly = 10 months.
+  var PLANS=[['Μάστορας',9.99,5],['Συνεργείο',19.99,15],['Εργοτάξιο',39.99,40]];
+  var yearly=false;
+  function monthly(m){return yearly?m*10/12:m}
+  function renderPrices(){
+    document.querySelectorAll('[data-m]').forEach(function(b){
+      var m=+b.dataset.m,n=+b.dataset.n,pm=monthly(m),plan=b.closest('.plan');
+      b.textContent=nf(yearly?Math.round(m*1000)/100:m,2);
+      plan.querySelector('[data-unit]').textContent=yearly?'€ / χρόνο + ΦΠΑ':'€ / μήνα + ΦΠΑ';
+      plan.querySelector('[data-per]').innerHTML=(yearly?'Ίσο με '+nf(pm,2)+' € τον μήνα':'Χρέωση κάθε μήνα')+'<strong>Από '+nf(pm/n,2)+' € ανά άτομο τον μήνα</strong>';
+    });
+    $('bMonth').setAttribute('aria-pressed',!yearly);
+    $('bYear').setAttribute('aria-pressed',yearly);
+    calc();
+  }
+  $('bMonth').onclick=function(){yearly=false;renderPrices()};
+  $('bYear').onclick=function(){yearly=true;renderPrices()};
+
+  // Savings estimate, kept conservative: scheduling still takes 15 minutes a day, payroll half its time.
+  var WAGE=50,DAYS=22,WEEKS=52/12;
+  function calc(){
+    var w=+$('cWorkers').value,mins=+$('cMins').value,pay=+$('cPay').value,err=+$('cErr').value,rate=+$('cRate').value;
+    $('oWorkers').textContent=w;$('oMins').textContent=mins;$('oPay').textContent=pay;$('oErr').textContent=err;$('oRate').textContent=rate+' €';
+    var hours=Math.max(0,mins-15)*DAYS/60+pay*0.5*WEEKS;
+    var euro=hours*rate+err*WAGE;
+    var p=PLANS[w<=5?0:w<=15?1:2],price=monthly(p[1]);
+    var hr=Math.round(hours*2)/2;$('rHours').textContent=nf(hr,hr%1?1:0);
+    $('rEuro').textContent=nf(Math.round(euro))+' €';
+    $('rPlan').textContent=p[0];
+    var roi=euro/price;$('rRoi').textContent=(roi>=10?nf(Math.round(roi)):nf(roi,1))+'×';
+  }
+  ['cWorkers','cMins','cPay','cErr','cRate'].forEach(function(id){$(id).addEventListener('input',calc)});
+  renderPrices();
+
+  // Plan buttons preselect team size in the form
+  document.querySelectorAll('[data-plan]').forEach(function(a){a.addEventListener('click',function(){$('fSize').selectedIndex=+a.dataset.plan})});
+
+  // Phone: show the bottom call to action once the hero is gone, hide it at the form
+  if('IntersectionObserver' in window){
+    var seen={hero:true,start:false};
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){seen[e.target.id]=e.isIntersecting});$('mbar').classList.toggle('show',!seen.hero&&!seen.start)});
+    io.observe($('hero'));io.observe($('start'));
+  }
+
+  // Lead form (not wired to a backend yet)
+  $('leadForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=$('fName'),phone=$('fPhone'),bad=null;
+    [phone,name].forEach(function(i){var ok=!!i.value.trim();i.classList.toggle('err',!ok);if(!ok)bad=i});
+    if(bad){bad.focus();return}
+    $('formOkText').textContent='Ευχαριστούμε, '+name.value.trim().split(/\s+/)[0]+'. Αυτή είναι δοκιμαστική έκδοση του site και η φόρμα δεν στέλνει ακόμη τίποτα.';
+    $('formOk').hidden=false;
+  });
+})();
+</script>
+<!--BODY-END-->
+</body>
+</html>

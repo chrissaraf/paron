@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--BODY-START-->
+<title>{{TITLE}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="theme-color" content="#0e3b34">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="el_GR">
+<meta property="og:site_name" content="{{NAME}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:url" content="https://{{DOMAIN}}/{{PATH}}">
+<meta property="og:image" content="https://{{DOMAIN}}/img/simera.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400..800&family=Fira+Sans+Condensed:wght@600;700;800&display=swap">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{NAME}}","applicationCategory":"BusinessApplication","operatingSystem":"Web, Android, iOS","inLanguage":"el","url":"https://{{DOMAIN}}/",
+ "description":"Πρόγραμμα συνεργείων, αποστολή προγράμματος στο Viber και μεροκάματα για εταιρείες με συνεργεία.",
+ "offers":[
+  {"@type":"Offer","name":"Μάστορας","description":"Έως 5 άτομα","price":"9.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"9.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Συνεργείο","description":"Έως 15 άτομα","price":"19.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"19.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}},
+  {"@type":"Offer","name":"Εργοτάξιο","description":"Έως 40 άτομα","price":"39.99","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","price":"39.99","priceCurrency":"EUR","unitText":"MONTH","valueAddedTaxIncluded":false}}
+ ]}
+</script>
+<style>
+{{CSS}}</style>
+</head>
+<body>
+{{> sprite}}
+{{> header}}
+
+<main id="top">
+{{CONTENT}}
+</main>
+
+{{> footer}}
+
+<div class="mbar on-dark" id="mbar"><a class="btn pri" href="#start">Ξεκινήστε 30 μέρες δωρεάν</a></div>
+
+<script>
+{{JS}}</script>
+<!--BODY-END-->
+</body>
+</html>
