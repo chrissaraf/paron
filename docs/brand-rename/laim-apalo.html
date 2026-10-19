@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@600;800&family=Commissioner:wght@400;600;700&display=block" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1800px;font-family:Commissioner,sans-serif;background:#cfd3cc;padding:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.col{border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.hd{padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.hd h2{font:800 24px 'Fira Sans Condensed';color:#0E3B34}
+.hex{font:600 13px Commissioner;color:#0E3B34;opacity:.7}
+.lg{height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.wm{font:800 62px/1 'Fira Sans Condensed';display:flex;align-items:center;color:#0E3B34}
+.wm svg{width:.8em;height:.8em;margin:0 3px}
+.tg{font:600 12px 'Fira Sans Condensed';letter-spacing:3.5px;color:#0E3B34;opacity:.75}
+.ui{padding:6px 18px 22px}
+.scr{border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(14,59,52,.12)}
+.bar{padding:10px 14px;font:700 15px Commissioner;display:flex;justify-content:space-between;align-items:center;background:#0E3B34;color:#fff}
+.bar span{background:var(--l);color:#0E3B34;font-size:12px;padding:3px 9px;border-radius:99px}
+.row{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:14px;border-top:1px solid rgba(14,59,52,.08);color:#1b2a27}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px Commissioner;background:var(--s);color:#2E5310}
+.pill{margin-left:auto;font:600 12px Commissioner;padding:3px 9px;border-radius:99px;background:var(--s);color:#2E5310}
+.btn{display:block;margin:12px 14px;text-align:center;padding:11px;border-radius:11px;font:700 15px Commissioner;background:#0E3B34;color:var(--l)}
+.tabs{display:flex;justify-content:space-around;padding:9px 6px;font:600 12px Commissioner;color:#5d6b67;border-top:1px solid rgba(14,59,52,.08)}
+.tabs b{color:#0E3B34}
+.ic{display:flex;justify-content:center;padding:4px 0 18px}
+.ic div{width:76px;height:76px;border-radius:18px;background:#0E3B34;display:flex;align-items:center;justify-content:center}
+.ic svg{width:50px;height:50px}
+.rec{font:700 11px Commissioner;letter-spacing:1px;padding:4px 9px;border-radius:99px;background:#0E3B34;color:var(--l)}
+</style></head><body>
+<script>
+const person=(c,f)=>`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="${c}"/><circle cx="50" cy="38" r="14" fill="${f}"/><path d="M24 80 C28 60 72 60 76 80" fill="${f}"/></svg>`;
+const V=[
+ {n:'Τωρινό λάιμ',l:'#C4F04A',s:'#E6F6C4'},
+ {n:'1. Απαλό λάιμ',l:'#B9DC6E',s:'#E2EFCB',rec:1},
+ {n:'2. Φιστίκι',l:'#A9CC85',s:'#DEEAD2'},
+ {n:'3. Ελιά',l:'#C2CF7E',s:'#E8EDCD'},
+];
+const bg='#E8ECE4',card='#F6F8F3';
+document.write(V.map(v=>`<div class="col" style="background:${bg};--l:${v.l};--s:${v.s}">
+<div class="hd"><div><h2>${v.n}</h2><div class="hex">${v.l}</div></div>${v.rec?'<span class="rec">ΠΡΟΤΑΣΗ</span>':''}</div>
+<div class="lg"><div class="wm">PAR${person(v.l,'#0E3B34')}N</div><div class="tg">ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ</div></div>
+<div class="ic"><div>${person(v.l,'#0E3B34')}</div></div>
+<div class="ui"><div class="scr" style="background:${card}">
+ <div class="bar">Σήμερα · Πέμ 16/10 <span>8 παρόντες</span></div>
+ <div class="row"><div class="av">ΓΚ</div>Γιώργος Κ.<span class="pill">08:00–16:00</span></div>
+ <div class="row"><div class="av">ΜΠ</div>Μαρία Π.<span class="pill">12:00–20:00</span></div>
+ <div class="row"><div class="av">ΝΣ</div>Νίκος Σ.<span class="pill">Ρεπό</span></div>
+ <div class="btn">Αποστολή προγράμματος</div>
+ <div class="tabs"><b>● Πρόγραμμα</b><span>Ομάδα</span><span>Πληρωμές</span></div>
+</div></div></div>`).join(''));
+</script></body></html>

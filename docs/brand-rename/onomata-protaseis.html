@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@600;800&family=Commissioner:wght@400;600&display=block" rel="stylesheet">
+<style>
+:root{--y:#f5b800;--d:#161b22;--g:#6b7480}
+*{box-sizing:border-box;margin:0}
+body{width:1200px;font-family:Commissioner,sans-serif;background:#eef0f2}
+.row{display:grid;grid-template-columns:70px 1fr 1fr 150px;border-bottom:1px solid #d5d9de;height:210px}
+.n{display:flex;align-items:center;justify-content:center;font:800 40px 'Fira Sans Condensed';color:var(--d);background:#e3e6ea}
+.c{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.l{background:#fff}.k{background:#11161d}
+.wm{font:800 74px/1 'Fira Sans Condensed';letter-spacing:.5px;display:flex;align-items:center;color:var(--d)}
+.k .wm{color:#fff}
+.wm svg{height:.78em;width:.78em;margin-left:3px}
+.tg{font:600 15px 'Fira Sans Condensed';letter-spacing:4px;color:var(--g)}
+.k .tg{color:#9aa3ad}
+.y{color:var(--y)}
+.ic{display:flex;align-items:center;justify-content:center;background:#e3e6ea}
+.ic div{width:96px;height:96px;border-radius:22px;background:var(--d);display:flex;align-items:center;justify-content:center;font:800 54px 'Fira Sans Condensed';color:#fff}
+.ic svg{width:60px;height:60px}
+.mean{font:400 13px Commissioner;color:var(--g);letter-spacing:0}
+.k .mean{color:#9aa3ad}
+</style></head><body>
+<script>
+const seal=(bg='#f5b800',fg='#161b22')=>`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="${bg}"/><path d="M27 52 L43 67 L74 35" stroke="${fg}" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const clock=(fg)=>`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="#f5b800" stroke-width="13"/><path d="M50 28 V52 L65 62" stroke="${fg}" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const dot=(fg)=>`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#f5b800"/><circle cx="50" cy="38" r="14" fill="${fg}"/><path d="M24 80 C28 60 72 60 76 80" fill="${fg}"/></svg>`;
+const rows=[
+ ['1', f=>`TIKAR${seal()}`, 'ΚΑΘΕ ΔΟΥΛΕΙΑ ΣΤΗΝ ΩΡΑ ΤΗΣ', 'από το «τικάρω»: το τσεκάρισμα της δουλειάς που έγινε', `${seal()}`],
+ ['2', f=>`KAN<span class="y">’</span>TO`, 'ΚΑΝ’ ΤΟ ΣΩΣΤΑ, ΚΑΝ’ ΤΟ ΜΑΖΙ', '«καν’ το»: το ελληνικό «get it done»', `K<span class="y">’</span>`],
+ ['3', f=>`PAR${dot(f)}N`, 'ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ', '«παρών!»: ποιος είναι πού, και πότε', `${dot('#161b22')}`],
+ ['4', f=>`${clock(f)}RARIO`, 'ΤΟ ΩΡΑΡΙΟ ΤΗΣ ΟΜΑΔΑΣ ΣΟΥ', '«ωράριο»: βάρδιες, ώρες, μεροκάματα', `${clock('#fff')}`],
+];
+document.write(rows.map(([n,w,t,m,i])=>`<div class="row"><div class="n">${n}</div>
+<div class="c l"><div class="wm">${w('#161b22')}</div><div class="tg">${t}</div><div class="mean">${m}</div></div>
+<div class="c k"><div class="wm">${w('#fff')}</div><div class="tg">${t}</div></div>
+<div class="ic"><div>${i}</div></div></div>`).join(''));
+</script>
+<style>.wm svg{margin:0 3px}</style>
+</body></html>

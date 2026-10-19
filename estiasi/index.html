@@ -1,0 +1,1062 @@
+<title>PARON Εστίαση</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400..800&family=Fira+Sans+Condensed:wght@700;800&display=swap">
+<style>
+/* Διάταξη: πλαϊνό μενού σε υπολογιστή, κάτω μπάρα σε κινητό. Χρώματα PARON (δάσος, ελιά, φασκόμηλο). */
+:root{
+  --bg:#E8ECE4; --card:#F6F8F3; --ink:#14231F; --muted:#56645E; --line:#D3DAD0;
+  --brand:#0E3B34; --deep:#0B2C27; --on-brand:#C2CF7E; --accent:#C2CF7E;
+  --soft:#E8EDCD; --soft-ink:#2E5310;
+  --ok:#2C6A39; --ok-bg:#DCEBD9; --warn:#8A5200; --warn-bg:#F6E7C8; --bad:#A3302A; --bad-bg:#F5DAD6;
+  --est:#B9C4B4;
+  --f-body:"Commissioner",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-logo:"Fira Sans Condensed","Arial Narrow",sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#07201C; --card:#0B2C27; --ink:#E6ECE4; --muted:#9DB0A8; --line:#1E4A42;
+  --brand:#C2CF7E; --deep:#041814; --on-brand:#0B2C27; --accent:#C2CF7E;
+  --soft:#1C4532; --soft-ink:#DCE6AE;
+  --ok:#9FD3A6; --ok-bg:#163A23; --warn:#F0C674; --warn-bg:#3A2E12; --bad:#F2A49C; --bad-bg:#3D1C19; --est:#3A5C54;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#07201C; --card:#0B2C27; --ink:#E6ECE4; --muted:#9DB0A8; --line:#1E4A42;
+  --brand:#C2CF7E; --deep:#041814; --on-brand:#0B2C27; --accent:#C2CF7E;
+  --soft:#1C4532; --soft-ink:#DCE6AE;
+  --ok:#9FD3A6; --ok-bg:#163A23; --warn:#F0C674; --warn-bg:#3A2E12; --bad:#F2A49C; --bad-bg:#3D1C19; --est:#3A5C54;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;margin:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.mob,.mobi{display:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num,td.n,.kpi b{font-variant-numeric:tabular-nums}
+
+/* Κέλυφος */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100%}
+.side{background:var(--deep);color:#E6ECE4;padding:20px 14px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:1px;font-family:var(--f-logo);font-weight:800;font-size:30px;letter-spacing:.5px;color:#F6F8F3;line-height:1}
+.logo .o{width:26px;height:26px;border-radius:50%;background:#C2CF7E;display:inline-grid;place-items:center;margin:0 1px}
+.logo .o svg{width:16px;height:16px;fill:#0E3B34}
+.brandsub{font-size:12.5px;color:#9DB0A8;margin-top:6px;letter-spacing:.3px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:12px;background:none;border:0;color:#CBD6CF;padding:11px 12px;border-radius:10px;text-align:left;font-weight:500}
+.nav button svg{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button:hover{background:#12403A}
+.nav button.on{background:#C2CF7E;color:#0B2C27;font-weight:650}
+.side .co{margin-top:auto;font-size:13px;color:#9DB0A8;border-top:1px solid #1E4A42;padding-top:14px}
+.side .co b{display:block;color:#E6ECE4;font-weight:600}
+main{min-width:0;padding-block:22px 40px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1180px;width:100%}
+.mtop{display:none}
+.tabbar{display:none}
+
+h1{font-size:24px;margin:0;font-weight:700;text-wrap:balance}
+h2{font-size:17px;margin:0;font-weight:650}
+.sub{color:var(--muted);font-size:13.5px}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-bottom:18px}
+.head .grow{flex:1;min-width:200px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+.btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:10px;font-weight:550;font-size:14px}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn.arm{background:var(--bad);color:#fff;border-color:var(--bad)}
+.ic{width:36px;height:36px;padding:0;display:inline-grid;place-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:none;padding:7px 13px;font-weight:550;font-size:14px}
+.seg button.on{background:var(--brand);color:var(--on-brand)}
+.wk{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px}
+.wk button{border:0;background:none;width:32px;height:30px;border-radius:8px;font-size:18px;line-height:1}
+.wk button:hover{background:var(--soft)}
+.wk span{min-width:150px;text-align:center;font-weight:600;font-size:14px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:16px}
+.grid2>*,.stack>*{min-width:0}
+.stack{display:flex;flex-direction:column;gap:16px}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-size:12.5px;font-weight:600;background:var(--soft);color:var(--soft-ink);white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.note{border-radius:10px;padding:10px 14px;font-size:14px;background:var(--warn-bg);color:var(--warn);margin-bottom:16px}
+.note.info{background:var(--soft);color:var(--soft-ink)}
+.note button{margin-left:8px}
+
+/* Πρόγραμμα: ημέρες */
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px}
+.day{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:2px;align-items:center}
+.day .d{font-size:12.5px;color:var(--muted)}
+.day .n{font-size:19px;font-weight:700;line-height:1.1}
+.day .f{font-size:11.5px;font-weight:600;color:var(--ok)}
+.day .f.short{color:var(--bad)}
+.day.on{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.day.on .d,.day.on .f{color:var(--on-brand)}
+.day.today .n::after{content:"";display:block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:3px auto 0}
+.shift h2{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.shift h2 .t{font-weight:500;color:var(--muted);font-size:14px}
+.shift .lead{display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:13.5px;color:var(--muted)}
+.shift .lead select{max-width:220px}
+.role{border-top:1px solid var(--line);padding:10px 0 8px;display:grid;grid-template-columns:132px 1fr;gap:6px 12px;align-items:start}
+.role:last-child{padding-bottom:0}
+.role .rn{font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 9px;font-size:13.5px;display:inline-flex;gap:6px;align-items:baseline}
+.chip small{color:var(--muted);font-size:11.5px}
+.chip.lead{border-color:var(--brand)}
+.chip.bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.chip.add{border-style:dashed;color:var(--muted);background:none}
+.chip:hover{border-color:var(--muted)}
+
+/* Πίνακες */
+.tw{overflow-x:auto;margin:0 -16px;padding:0 16px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;white-space:nowrap}
+tfoot td{font-weight:700;border-top:2px solid var(--line)}
+.grp td{background:var(--soft);color:var(--soft-ink);font-weight:650;font-size:13px;padding:5px 10px}
+.wgrid td.c{text-align:center;padding:4px}
+.cell{min-width:86px;height:40px;border-radius:8px;border:1px dashed var(--line);background:none;font-weight:700;font-size:12.5px;line-height:1.15;padding:2px 6px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center}
+.cell small{font-weight:500;font-size:11px;opacity:.85;font-variant-numeric:tabular-nums}
+.cell.s0{background:var(--soft);color:var(--soft-ink);border:1px solid transparent}
+.cell.s1{background:var(--brand);color:var(--on-brand);border:1px solid transparent}
+.cell.s2{background:var(--accent);color:#0B2C27;border:1px solid transparent}
+.nadj{display:inline-flex;align-items:center;gap:3px}
+.nadj button{width:24px;height:24px;border-radius:7px;border:1px solid var(--line);background:var(--card);font-weight:700;line-height:1;padding:0}
+.daynote{font-size:10.5px;font-weight:700;color:var(--warn);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day.on .daynote{color:var(--on-brand)}
+.wdays{display:flex;gap:3px}
+.wdays.wrap{flex-wrap:wrap}
+/* φίλτρο βαρδιών (κύλιση στο κινητό) */
+.fchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 14px;padding:1px 0 3px}
+.fchips::-webkit-scrollbar{display:none}
+.fchips button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;display:inline-flex;gap:7px;align-items:center}
+.fchips button b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.fchips button b.bad{color:var(--bad)}
+.fchips button.on{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.fchips button.on b{color:var(--on-brand)}
+.pgbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px}
+.pgbar i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card);flex:none}
+.step button{width:38px;height:34px;border:0;background:none;font-size:18px;font-weight:700;line-height:1;padding:0}
+.step button:active{background:var(--soft)}
+.step span{min-width:30px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.nrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.nrow.tot{font-weight:650}
+.scard{display:flex;flex-direction:column;gap:12px}
+.scard .lbl{font-weight:600;margin-bottom:-6px}
+.form.tt{grid-template-columns:1fr 1fr auto;align-items:end}
+.form.t3{grid-template-columns:repeat(3,minmax(0,1fr));align-items:end}
+.hrs{display:flex;flex-direction:column;padding-bottom:8px;font-size:13.5px}
+.srow{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:11px 2px;min-height:56px}
+.srow .sub{display:block;margin-top:1px}
+.srow .chev{color:var(--muted);font-size:22px;line-height:1}
+.sgrp{background:var(--soft);color:var(--soft-ink);font-weight:650;font-size:13px;padding:6px 10px;margin:0 -16px;padding-left:16px}
+.prow{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.prow .sub{display:block;font-size:13px}
+.pa{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pa>b{font-size:16px}
+details.help summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:600}
+details.help[open] summary{margin-bottom:6px}
+.amt>span{display:block}
+.wdays button{border:1px solid var(--line);background:none;border-radius:7px;padding:4px 6px;font-size:12px;font-weight:600;color:var(--muted)}
+.wdays button.on{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+/* παρουσίαση προγράμματος */
+.roster h2{margin-bottom:10px}
+.roster table{min-width:640px}
+.roster th{text-align:center;font-size:12.5px;line-height:1.25}
+.roster th span{font-weight:500}
+.roster th em{font-style:normal;color:var(--warn);font-size:11px}
+.roster th.td{color:var(--ink)}
+.roster td{text-align:center;padding:6px 4px}
+.roster .nm{text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--card);font-weight:600;padding-left:0}
+.sl{display:inline-block;min-width:64px;border-radius:7px;padding:4px 6px;font-size:13px;font-weight:650;font-variant-numeric:tabular-nums}
+.sl.s0{background:var(--soft);color:var(--soft-ink)}
+.sl.s1{background:var(--brand);color:var(--on-brand)}
+.sl.s2{background:var(--accent);color:#0B2C27}
+.sl.off{color:var(--muted);font-weight:500;font-size:12px}
+.sl.lv{color:var(--bad);background:var(--bad-bg)}
+.zn{display:block;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap}
+.lgd{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin:-4px 0 4px}
+.lgd span{display:inline-flex;align-items:center;gap:6px}
+.lgd i.sl{min-width:0;width:18px;height:12px;padding:0}
+.cell.cbad{box-shadow:inset 0 0 0 2px var(--bad)}
+.cell.off{border:0;color:var(--muted);font-weight:500;font-size:11.5px}
+
+/* Παρουσίες */
+.arow{display:grid;grid-template-columns:minmax(150px,1.4fr) auto auto minmax(110px,.8fr);gap:8px 14px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.arow .who b{display:block;font-weight:600}
+.arow .who span{font-size:12.5px;color:var(--muted)}
+.st{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.st button{border:0;background:var(--card);padding:6px 11px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.st button.y.on{background:var(--ok-bg);color:var(--ok)}
+.st button.x.on{background:var(--bad-bg);color:var(--bad)}
+.times{display:flex;gap:8px;align-items:center}
+.times label{display:flex;flex-direction:column;font-size:11.5px;color:var(--muted);gap:2px}
+.times input{width:112px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.times input:disabled{opacity:.45}
+.amt{text-align:right;font-size:13.5px}
+.amt b{display:block;font-size:14.5px}
+.wgrid td:first-child,.wgrid th:first-child{position:sticky;left:0;background:var(--card);z-index:1}
+.wgrid tr.grp td:first-child{background:var(--soft)}
+label.chk{display:flex;gap:8px;align-items:center;min-height:44px;font-size:14px}label.chk input{width:20px;height:20px;accent-color:var(--brand,#0E3B34)}.pex{line-height:1.6}
+.amt .ot{color:var(--warn);font-weight:600}
+.arow.no .who b{text-decoration:line-through;color:var(--muted)}
+
+/* Κόστος */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.kpi span{display:block;font-size:13px;color:var(--muted)}
+.kpi b{display:block;font-size:24px;font-weight:700;margin-top:2px}
+.kpi.main{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.kpi.main span{color:var(--on-brand);opacity:.85}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:200px;padding-top:24px}
+.bcol{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.bcol .v{font-size:12px;font-weight:600;white-space:nowrap}
+.bcol .b{width:100%;max-width:56px;border-radius:6px 6px 2px 2px;background:var(--brand)}
+.bcol .b.est{background:var(--est)}
+.bcol .l{font-size:12.5px;color:var(--muted)}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* Πληρωμές */
+.weeks{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.weeks button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 12px;text-align:left;font-size:13px;display:flex;flex-direction:column;gap:1px}
+.weeks button b{font-size:14px}
+.weeks button.on{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.paybtn{min-width:118px}
+.paid{color:var(--ok);font-weight:600;font-size:13px}
+
+/* Ρυθμίσεις */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--muted);font-weight:500}
+.form>*{min-width:0}
+label.f input,label.f select{width:100%;min-width:0}
+label.f input,label.f select,.inp{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+td .inp{padding:5px 7px;width:100%;min-width:70px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+
+/* Παράθυρο */
+.scrim{position:fixed;inset:0;background:rgba(4,20,17,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.sheet{background:var(--card);border-radius:16px;padding:20px;width:min(440px,100%);display:flex;flex-direction:column;gap:14px;border:1px solid var(--line);max-height:90vh;overflow:auto}
+.sheet .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:-20px;background:var(--card);padding:10px 0 4px;margin-bottom:-4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--deep);color:#E6ECE4;padding:10px 16px;border-radius:10px;font-size:14px;z-index:60}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{display:none}
+  .mtop{display:flex;align-items:center;justify-content:space-between;background:var(--deep);padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--deep)}
+  .mtop .logo{font-size:24px}.mtop .logo .o{width:21px;height:21px}.mtop .logo .o svg{width:13px;height:13px}
+  .mtop span{color:#9DB0A8;font-size:13px}
+  main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 96px}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:30;padding:6px max(4px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
+  .tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--muted);padding:5px 0;border-radius:10px;font-weight:550}
+  .tabbar svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabbar button.on{color:var(--ink)}
+  .tabbar button.on svg{background:var(--accent);color:#0B2C27;border-radius:999px;padding:2px 12px;width:46px;box-sizing:border-box;height:26px}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:600px){
+  body{font-size:15.5px}
+  input,select,textarea,.inp,label.f input,label.f select{font-size:16px}
+  .mob{display:block}.mobi{display:inline}.desk{display:none!important}
+  .btn{min-height:44px;padding:10px 16px;border-radius:12px}
+  .btn.sm{min-height:40px;padding:8px 13px;font-size:14px}
+  .btn:active,.chip:active,.day:active,.srow:active{transform:scale(.97)}
+  .inp,label.f input,label.f select{min-height:44px}
+  .head{margin-bottom:12px;gap:10px}
+  .head .grow{min-width:0;flex-basis:100%}
+  .head>.grow>.sub{display:none}
+  .head>.bar{width:100%}
+  .head>.bar>.wk{flex:1 1 210px}
+  .head>.bar>.seg{flex:1 1 100%}
+  .wk{display:flex}.wk span{flex:1;min-width:0}.wk button{width:44px;height:40px}
+  .seg{display:flex;overflow-x:auto;scrollbar-width:none}.seg::-webkit-scrollbar{display:none}
+  .seg button{flex:1 0 auto;padding:10px 12px;white-space:nowrap}
+  .seg.tabs{flex-wrap:nowrap!important;margin-left:-16px!important;margin-right:-16px;border-radius:0;border-left:0;border-right:0}
+  .note{font-size:14.5px}
+  .note button{margin:8px 8px 0 0}
+  .pbar{display:grid;grid-template-columns:1fr 1fr}
+  .pbar>.sub{grid-column:1/-1}
+  .days{position:sticky;top:calc(48px + env(safe-area-inset-top,0px));z-index:15;background:var(--bg);margin:-4px -16px 12px;padding:8px 16px;border-bottom:1px solid var(--line)}
+  .days .day{min-height:58px;justify-content:center}
+  .fchips{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+  .fchips button{padding:9px 15px}
+  .shift .lead{flex-wrap:wrap}.shift .lead select{max-width:none;flex:1 1 100%}
+  .nadj button{width:38px;height:36px;font-size:18px;border-radius:10px}
+  .nadj{gap:6px}
+  .chip{min-height:40px;padding:8px 12px;font-size:14.5px;align-items:center}
+  .cell{min-width:84px;height:44px}
+  .arow{gap:8px 10px;padding:12px 0}
+  .arow .st{display:grid;grid-template-columns:1fr 1fr;justify-self:stretch;border-radius:11px}
+  .st button{min-height:44px;font-size:15px}
+  .arow .times{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .times input{width:100%;min-height:44px}
+  .arow.unset .times{display:none}
+  .amt .dt{display:none}
+  .kpis{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{padding:12px 14px}.kpi b{font-size:20px}
+  .hm{display:none}
+  .weeks{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:0 16px 2px}
+  .weeks::-webkit-scrollbar{display:none}
+  .weeks button{flex:none}
+  .pcard .head .bar{width:100%}
+  .pcard .head .bar select{flex:1 1 100%}
+  .pcard .head .bar .btn{flex:1}
+  .form{grid-template-columns:1fr 1fr}
+  .form>label.f:only-child{grid-column:1/-1}
+  .form.tt{grid-template-columns:1fr 1fr}
+  .form.tt .hrs{grid-column:1/-1;flex-direction:row;gap:6px;padding:0}
+  .wdays button{flex:1;min-height:38px;font-size:13px;padding:4px 2px}
+  .wdays.wrap button{flex:none;padding:6px 10px}
+  .step button{width:46px;height:42px}
+  .step span{min-width:36px;font-size:16px}
+  .nrow{min-height:54px}
+  .sheet::before{content:"";display:block;width:40px;height:5px;border-radius:99px;background:var(--line);margin:-8px auto 0;flex:none}
+  .sheet{max-height:88vh;max-height:88dvh}
+  .sheet .acts{bottom:calc(-20px - env(safe-area-inset-bottom,0px))}
+  .sheet .acts .btn{flex:1}
+  .sheet .acts .btn[style*="margin-right:auto"]{flex:1 1 100%;order:3}
+  .roster .nm{max-width:118px;overflow:hidden;text-overflow:ellipsis}
+  .grid2{grid-template-columns:1fr}
+  .days{gap:4px}.day{padding:6px 2px}.day .n{font-size:16px}
+  .role{grid-template-columns:1fr}
+  .role .rn{flex-direction:row;align-items:center;gap:8px}
+  .arow{grid-template-columns:1fr auto;}
+  .arow .times{grid-column:1/-1}
+  .arow .amt{grid-column:2;grid-row:1}
+  .arow .st{grid-column:1/-1}
+  .sheet{align-self:end;border-radius:16px 16px 0 0;margin:0 -16px -16px;width:calc(100% + 32px);padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+  .scrim{padding:16px}
+  .wk span{min-width:118px}
+  .bars{gap:5px}.bcol .v{font-size:10.5px}
+  h1{font-size:21px}
+}
+@media (prefers-reduced-motion:no-preference){.btn,.chip,.day{transition:background .15s,border-color .15s}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div>
+      <div class="logo" aria-label="PARON">PAR<span class="o"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="4.4" r="2.9"/><path d="M2.6 15c0-3.3 2.4-5.6 5.4-5.6s5.4 2.3 5.4 5.6z"/></svg></span>N</div>
+      <div class="brandsub">Εστίαση · Όλοι στη θέση τους</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="co" id="coName"></div>
+  </aside>
+  <header class="mtop">
+    <div class="logo" aria-label="PARON">PAR<span class="o"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="4.4" r="2.9"/><path d="M2.6 15c0-3.3 2.4-5.6 5.4-5.6s5.4 2.3 5.4 5.6z"/></svg></span>N</div>
+    <span id="coNameM"></span>
+  </header>
+  <main id="main"></main>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+<div id="layer"></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- Βοηθητικά ---------- */
+const KEY='paron.estiasi.v1';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const pd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const addD=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ds(d)};
+const dow=s=>(pd(s).getDay()+6)%7;           // 0=Δευτέρα
+const monday=s=>addD(s,-dow(s));
+let PUB=0;                                   // μέρα που βγαίνει το πρόγραμμα (0=Δευτέρα)
+const schedStart=s=>addD(s,-((dow(s)-(PUB+1)%7+7)%7)); // πρώτη μέρα της εβδομάδας προγράμματος
+const TODAY=ds(new Date());
+const DN=['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'];
+const DF=['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'];
+const MS=['Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
+const dm=s=>{const d=pd(s);return d.getDate()+' '+MS[d.getMonth()]};
+const wkLabel=ws=>{const a=pd(ws),e=pd(addD(ws,6));return a.getMonth()===e.getMonth()?a.getDate()+'–'+e.getDate()+' '+MS[e.getMonth()]:dm(ws)+' – '+dm(addD(ws,6))};
+const swLabel=ws=>DN[dow(ws)]+' '+dm(ws)+' – '+DN[dow(addD(ws,6))]+' '+dm(addD(ws,6));
+const eur=n=>(Math.round(n*100)/100).toLocaleString('el-GR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const eur0=n=>Math.round(n).toLocaleString('el-GR')+' €';
+const hh=n=>(Math.round(n*10)/10).toLocaleString('el-GR')+' ώ';
+const mins=t=>{const[a,b]=t.split(':').map(Number);return a*60+b};
+const addT=(t,m)=>{const x=(mins(t)+m)%1440;return pad(Math.floor(x/60))+':'+pad(x%60)};
+const hoursBetween=(a,b)=>{let x=mins(b)-mins(a);if(x<=0)x+=1440;return x/60};
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+// Σύντομο όνομα για στενές οθόνες: «Γιώργος Παπαδόπουλος» → «Γιώργος Π.»
+const shortN=n=>{const w=String(n).trim().split(/\s+/);return w.length>1?w[0]+' '+w[w.length-1][0]+'.':n};
+const nameHTML=n=>`<span class="desk">${esc(n)}</span><span class="mobi">${esc(shortN(n))}</span>`;
+let uid=Date.now()%1e6;const nid=p=>p+(uid++).toString(36);
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+const IC={
+ cal:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+ chk:'<svg viewBox="0 0 24 24"><path d="M9 5H6.5A2.5 2.5 0 0 0 4 7.5v11A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-11A2.5 2.5 0 0 0 17.5 5H15"/><rect x="9" y="3" width="6" height="4" rx="1.2"/><path d="m8.5 14 2.5 2.5 4.5-5"/></svg>',
+ cost:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+ pay:'<svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10.5h19M6.5 15h3"/></svg>',
+ set:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
+};
+const PAGES=[['prog','Πρόγραμμα','cal'],['att','Παρουσίες','chk'],['cost','Κόστος','cost'],['pay','Πληρωμές','pay'],['set','Ρυθμίσεις','set']];
+
+/* ---------- Δεδομένα επίδειξης ---------- */
+function fem(s){return s.replace(/ός$/,'ού').replace(/ος$/,'ου').replace(/ής$/,'ή').replace(/ης$/,'η').replace(/άς$/,'ά').replace(/ας$/,'α')}
+function demo(){
+  // Για αρχή μόνο σερβιτόροι και βοηθοί (Χρήστος, 18/10). Δευ–Πεμ όπως τα έδωσε· Παρ–Κυρ ενδεικτικά.
+  // Άλλα πόστα προστίθενται από Ρυθμίσεις → Ειδικότητες και αμοιβές.
+  const roles=[{id:'serv',name:'Σερβιτόροι',one:'Σερβιτόρος',wage:55,ot:8,cut:6,bh:9,lon:true,lh:12,lx:1.5,n:10},{id:'help',name:'Βοηθοί σερβιτόρου',one:'Βοηθός',wage:45,ot:6,cut:5,bh:9,lon:true,lh:12,lx:1.5,n:6}];
+  const needs={};for(let i=0;i<7;i++)needs[i]=i<4?{m:{serv:1,help:1},e:{serv:1,help:1},x:{serv:1}}:{m:{serv:2,help:1},e:{serv:4,help:3},x:{serv:1}};
+  [4,5].forEach(i=>{needs[i].n={serv:2,help:1}});needs[6].s={serv:2,help:1};
+  const M=['Γιώργος','Νίκος','Κώστας','Δημήτρης','Γιάννης','Παναγιώτης','Βασίλης','Χρήστος','Αντώνης','Σπύρος','Μιχάλης','Θανάσης','Στέλιος','Άγγελος','Λευτέρης','Μάριος','Πέτρος','Ηλίας','Αλέξανδρος','Φώτης','Τάσος','Μανώλης','Στράτος','Ορέστης'];
+  const F=['Μαρία','Ελένη','Κατερίνα','Δέσποινα','Σοφία','Γεωργία','Αναστασία','Χριστίνα','Ιωάννα','Βασιλική','Ειρήνη','Δήμητρα','Αγγελική','Νίκη','Ευαγγελία','Ζωή','Μυρτώ','Ραφαέλα','Στέλλα','Άννα','Φωτεινή','Κωνσταντίνα','Λίνα'];
+  const L=['Παπαδόπουλος','Γεωργίου','Νικολάου','Οικονόμου','Καραγιάννης','Βλάχος','Μαυρίδης','Αθανασίου','Ζαφειρίου','Κωνσταντίνου','Δημητρίου','Παππάς','Αλεξίου','Χατζηδάκης','Μακρής','Λαμπρόπουλος','Σταματόπουλος','Ιωαννίδης','Τσακίρης','Ρήγας','Πετρίδης','Σαββίδης','Αντωνίου','Καλογεράκης','Μπακάλης','Ξενάκης','Θεοδωρίδης','Πολυχρόνης','Ζερβός','Φραγκιαδάκης','Μελάς','Κουτσός','Δούκας','Σιδέρης','Αναγνώστου','Ραφαηλίδης','Τζαννετάκης','Βασιλείου','Λιάπης','Σωτηρίου','Γκίκας','Χριστοδούλου','Μάνος','Ευαγγέλου','Πανάγου','Κυριακίδης','Μοσχονάς','Καλαμαράς','Βαρδάκης','Τριανταφύλλου'];
+  // Σερβιτόροι και βοηθοί: τα πραγματικά ονόματα από το χαρτί του Χρήστου (εβδομάδα Τρι–Δευ).
+  // Κελί: R = ρεπό, ώρα έναρξης, /12 = 12ωρο, Σ/Π/Τ = Σάλα/Παραλία/Ταράτσα, * = δούλεψε ως βοηθός.
+  const REAL={serv:[['Θανάσης','R R R R R R R'],['Πρίφτης','R R R 19Τ 20Σ 18Σ R'],['Λυκούργος','08 08 08 20Σ 19Τ 17Π 17'],['Σαραφόγλου','R R R R 20Σ 18Σ R'],['Εύα','R R 17 18Π 17Π 10/12Τ R'],
+    ['Σουκέρας','R R R 17Π 19Τ 10 R'],['Γρηγόρης','17 R R 08 18Π 12/12 R'],['Λαμπρόπουλος','R R R R 08 17Π R'],['Βλαστάκης','R 17 18 20Σ 19Τ* 10 18'],['Ελένη','19 18 R R 11/12* 08 08']],
+    help:[['Ιωάννα','R R 08 18Π 18Π 17Π 17'],['Σκληβάς','R 17 R 20Σ 20Σ 18Σ R'],['Αριστοτέλης','R R R 08 08 08 08'],['Κουλής','17 R 17 20Σ 20Σ 18Σ R'],['Κυριάκος','08 08 R 17Π 17Π 12/12 R'],['Γιάννης','R R R R 10 08 R']]};
+  const staff=[];let i=0;
+  roles.forEach(r=>{for(let k=0;k<r.n;k++){const w=i%2===0&&r.id!=='wash'?'m':(i%2?'f':'m');const first=w==='m'?M[i%M.length]:F[i%F.length];const last=L[(i*17)%L.length];
+    const rl=REAL[r.id]&&REAL[r.id][k];
+    staff.push({id:'p'+i,name:rl?rl[0]:first+' '+(w==='f'?fem(last):last),role:r.id,rate:null,off:rl?-1:k%4,phone:'69'+String(40000000+((i*7919)%9999999)).padStart(8,'0'),lead:r.id==='mgr',wage:null,ot:null,cut:null,active:true});i++}});
+  roles.forEach(r=>{delete r.n;delete r.wd;delete r.we});
+  const S={v:9,zones:['Σάλα','Παραλία','Ταράτσα'],
+    set:{name:'Εστιατόριο «Ο Γιαλός»',payDay:1,pubDay:0,sunPct:0,maxDays:6},
+    shifts:[{id:'m',name:'Πρωινή',a:'08:00',b:'17:00'},{id:'e',name:'Βραδινή',a:'17:00',b:'02:00'},{id:'x',name:'Ενδιάμεση',a:'18:00',b:'01:00'},
+      {id:'n',name:'Νυχτερινή',a:'21:00',b:'04:00',days:[4,5]},{id:'s',name:'Μεσημεριανή',a:'12:00',b:'18:00',days:[6]}],
+    roles,staff,needs,dayShifts:{},dayNeeds:{},dayNotes:{},sched:{},att:{},lead:{},paid:{},reqs:[]};
+  // τρεις εβδομάδες: δύο περασμένες και η τρέχουσα
+  const ws0=addD(monday(TODAY),-14);
+  for(let w=schedStart(ws0);w<=TODAY;w=addD(w,7))autoWeek(S,w);
+  // Η τρέχουσα εβδομάδα είναι όπως στο χαρτί.
+  const cw=schedStart(TODAY),ZN={'Σ':'Σάλα','Π':'Παραλία','Τ':'Ταράτσα'};
+  for(let j=0;j<7;j++){const d=addD(cw,j);S.sched[d]=(S.sched[d]||[]).filter(e=>!REAL[staffOf(S,e.p).role])}
+  Object.entries(REAL).forEach(([rid,rows])=>rows.forEach(([nm,cells])=>{const p=staff.find(x=>x.name===nm&&x.role===rid);
+    cells.split(' ').forEach((tok,j)=>{const m=tok.match(/^(\d\d)(\/12)?([ΣΠΤ])?(\*)?$/);if(!m)return;const d=addD(cw,j),a=m[1]+':00';
+      const b=m[2]?addT(a,720):m[1]==='18'?'01:00':+m[1]>=19?'02:00':addT(a,540);
+      const L=shiftsOn(S,d).filter(sh=>forRole(sh,rid));const gap=sh=>{const x=Math.abs(mins(sh.a)-mins(a));return Math.min(x,1440-x)};const sh=L.sort((x,y)=>gap(x)-gap(y))[0];
+      const e={id:nid('e'),p:p.id,s:sh.id,a,b};if(m[3])e.z=ZN[m[3]];if(m[4])e.nt='ως βοηθός';(S.sched[d]=S.sched[d]||[]).push(e)})}));
+  // ενδεικτικό πάρτι σε καθημερινή: περισσότεροι σερβιτόροι μόνο εκείνη τη μέρα
+  let pd28=TODAY.slice(0,4)+'-10-28';if(pd28<TODAY)pd28=addD(TODAY,10);
+  S.dayNotes[pd28]='Πάρτι';S.dayNeeds[pd28]={e:{serv:4,help:3}};
+  // ενδεικτικά αιτήματα για την επόμενη εβδομάδα προγράμματος
+  const nx=addD(schedStart(TODAY),7),pp=rid=>staff.filter(p=>p.role===rid);
+  S.reqs=[
+    {id:nid('q'),p:pp('serv')[2].id,k:'leave',from:addD(nx,2),to:addD(nx,4),note:'Ταξίδι'},
+    {id:nid('q'),p:pp('serv')[5].id,k:'day',from:addD(nx,1),all:true,note:'Γιατρός'},
+    {id:nid('q'),p:pp('help')[3].id,k:'day',from:addD(nx,0),all:false,a:'08:00',b:'14:00',note:'Σχολή'},
+    {id:nid('q'),p:pp('serv')[7].id,k:'week',wd:4,all:false,a:'17:00',b:'23:59',note:'Δεύτερη δουλειά'}];
+  const R=rng(42);
+  for(let d=schedStart(ws0);d<=addD(schedStart(TODAY),6);d=addD(d,1))shiftsOn(S,d).forEach(sh=>{const es=(S.sched[d]||[]).filter(e=>e.s===sh.id);const l=es.find(e=>staffOf(S,e.p).lead)||(S.sched[d]||[]).find(e=>e.s==='e'&&staffOf(S,e.p).lead);if(l)S.lead[d+'|'+sh.id]=l.p});
+  for(let d=ws0;d<TODAY;d=addD(d,1)){
+    const day=S.sched[d]||[];const A=S.att[d]={};
+    day.forEach(e=>{const x=R();
+      if(x<.03){A[e.id]={st:'no'};return}
+      let b=e.b;
+      if(x>.85)b=addT(e.b,x>.95?90:60);
+      else if(x<.05)b=addT(e.b,-60);
+      A[e.id]={st:'yes',a:e.a,b}});
+  }
+  // πληρωμές των περασμένων εβδομάδων (η τελευταία με δύο εκκρεμότητες)
+  [ws0,addD(ws0,7)].forEach((ws,wi)=>{const rows=weekPay(S,ws);const P=S.paid[ws]={};let skip=0;
+    rows.forEach(r=>{if(wi===1&&r.total>0&&skip<2&&R()<.3){skip++;return}
+      if(r.total>0)P[r.p.id]={amount:r.total,date:payDate(S,ws)}})});
+  return S;
+}
+
+/* ---------- Πυρήνας ---------- */
+const staffOf=(S,id)=>S.staff.find(p=>p.id===id)||{name:'(διαγράφηκε)',role:'',rate:0};
+const roleOf=(S,id)=>S.roles.find(r=>r.id===id)||{name:'',one:'',wage:0,ot:0,cut:0};
+// Βάρδιες μιας μέρας: οι σταθερές που τρέχουν εκείνη τη μέρα της εβδομάδας + οι έκτακτες της ημερομηνίας.
+const shiftsOn=(S,d)=>S.shifts.filter(sh=>!sh.days||sh.days.includes(dow(d))).concat((S.dayShifts||{})[d]||[]);
+const dayShiftOf=(S,d,id)=>((S.dayShifts||{})[d]||[]).find(x=>x.id===id);
+const shiftOf=(S,id)=>S.shifts.find(s=>s.id===id)||Object.values(S.dayShifts||{}).flat().find(s=>s.id===id)||{name:'',a:'00:00',b:'00:00'};
+// Ποιος μετράει σε μια βάρδια: όσοι είναι σε αυτήν και όσοι την καλύπτουν με παράταση ωραρίου (e.cov).
+const inSh=(e,sid)=>e.s===sid||e.cov===sid;
+const forRole=(sh,rid)=>!sh.roles||sh.roles.includes(rid);
+// Μέρες που δουλεύει ένα άτομο: p.days (λίστα 0=Δευ…6=Κυρ) αν έχουν οριστεί, αλλιώς όλες εκτός από το σταθερό ρεπό.
+const worksOn=(p,d)=>p.days?p.days.includes(dow(d)):p.off!==dow(d);
+const needOf=(S,d,sid,rid)=>{const o=(((S.dayNeeds||{})[d]||{})[sid]||{})[rid];if(o!=null&&!dayShiftOf(S,d,sid))return o;return baseNeed(S,d,sid,rid)};
+const baseNeed=(S,d,sid,rid)=>{const x=dayShiftOf(S,d,sid);if(x)return(x.need||{})[rid]||0;const sh=S.shifts.find(s=>s.id===sid);if(!sh||(sh.days&&!sh.days.includes(dow(d)))||!forRole(sh,rid))return 0;return((S.needs[dow(d)]||{})[sid]||{})[rid]||0};
+const daysLbl=p=>p.days?'Μόνο '+p.days.map(i=>DN[i]).join(', '):p.off>=0?'Ρεπό '+DF[p.off]:'Όλες τις μέρες';
+const pick=(v,dflt)=>v==null||v===''?+dflt||0:+v;
+const payOf=(S,p)=>{const r=roleOf(S,p.role);return{wage:pick(p.wage,r.wage),ot:pick(p.ot,r.ot),cut:pick(p.cut,r.cut)}};
+// Βασικό ωράριο ανά πόστο: το μεροκάματο αντιστοιχεί σε bh ώρες (π.χ. 9). Προαιρετικά μεγάλη βάρδια:
+// από lh ώρες (π.χ. 12) πληρώνεται lx φορές το μεροκάματο (π.χ. 1,5). Πάνω από τη βάση = υπερωρία, κάτω = κράτηση.
+const tiersOf=r=>{const bh=+r.bh>0?+r.bh:9,t=[{h:bh,x:1}];if(r.lon&&+r.lh>bh&&+r.lx>0)t.push({h:+r.lh,x:+r.lx});return t};
+function payCalc(S,p,plan,h){const r=roleOf(S,p.role),pr=payOf(S,p),T=tiersOf(r);const ref=Math.max(plan,h);let t=T[0];T.forEach(x=>{if(ref>=x.h-1e-6)t=x});
+  const base=pr.wage*t.x,ot=Math.max(0,h-t.h),sh=Math.max(0,t.h-h),otc=ot*pr.ot,cutc=Math.min(base,sh*pr.cut);
+  return{base,x:t.x,th:t.h,ot,sh,otc,cutc,cost:base+otc-cutc}}
+const payEx=(S,r)=>{const p={role:r.id},T=tiersOf(r),b=T[0].h;const hs=[b-1,b,b+1];if(T[1])hs.push(T[1].h,T[1].h+1);
+  return 'Παράδειγμα: '+[...new Set(hs)].filter(x=>x>0).map(x=>`<span style="white-space:nowrap">${String(x).replace('.',',')} ώρες <b>${eur(payCalc(S,p,x,x).cost)}</b></span>`).join(' · ')};
+const payDate=(S,ws)=>addD(ws,7+(+S.set.payDay||0));
+
+// Αιτήματα: άδεια (από–έως), δεν μπορεί μια μέρα (όλη ή ώρες), κάθε εβδομάδα (μέρα, όλη ή ώρες).
+function iv(a,b){const x=mins(a);let y=mins(b);if(y<=x)y+=1440;return[x,y]}
+function reqHit(q,d,a,b){
+  if(q.k==='leave')return d>=q.from&&d<=(q.to||q.from);
+  const on=q.k==='week'?dow(d)===+q.wd:d===q.from;if(!on)return false;
+  if(q.all||!a)return true;const[s1,e1]=iv(a,b),[s2,e2]=iv(q.a,q.b);return s1<e2&&s2<e1;
+}
+function blockOf(S,pid,d,a,b){return(S.reqs||[]).find(q=>q.p===pid&&reqHit(q,d,a,b))}
+const REQK={leave:'Άδεια',day:'Δεν μπορεί',week:'Κάθε εβδομάδα'};
+function reqText(q){
+  const t=q.all===false?` ${q.a}–${q.b}`:' όλη μέρα';
+  if(q.k==='leave')return`Άδεια ${dm(q.from)}${q.to&&q.to!==q.from?' – '+dm(q.to):''}`;
+  if(q.k==='day')return`Δεν μπορεί ${DN[dow(q.from)]} ${dm(q.from)}${t}`;
+  return`Κάθε ${DF[+q.wd]} δεν μπορεί${t}`;
+}
+// Μετά από αλλαγή στα άτομα: προσαρμόζει τις ήδη φτιαγμένες μέρες από σήμερα ως το τέλος του επόμενου προγράμματος.
+function refit(S,test){const out={added:0,removed:0,short:0};const ws=schedStart(TODAY);
+  [ws,addD(ws,7)].forEach(w=>{const ds=[];for(let i=0;i<7;i++){const d=addD(w,i);if(d>=TODAY&&(S.sched[d]||[]).length&&(!test||test(d)))ds.push(d)}
+    if(ds.length){const r=autoWeek(S,w,ds);out.added+=r.added;out.removed+=r.removed;out.short+=r.short}});return out}
+function refitMsg(r){const t=[];if(r.added)t.push(`μπήκαν ${r.added}`);if(r.removed)t.push(`βγήκαν ${r.removed}`);if(r.short)t.push(`λείπουν ακόμα ${r.short}`);return t.length?'Το πρόγραμμα άλλαξε: '+t.join(', '):''}
+function conflicts(S,ws){const out=[];for(let i=0;i<7;i++){const d=addD(ws,i);if(d<TODAY)continue;(S.sched[d]||[]).forEach(e=>{const q=blockOf(S,e.p,d,e.a,e.b);if(q)out.push({d,e,q})})}return out}
+// Φέρνει τις μέρες (από σήμερα και μετά) στα άτομα που ζητούνται: βάζει όσους λείπουν και βγάζει όσους περισσεύουν.
+// Δεν βγάζει όποιον έχει ήδη παρουσία. days: λίστα ημερομηνιών, αλλιώς όλη η εβδομάδα.
+function autoWeek(S,ws,days){
+  const count={};S.staff.forEach(p=>count[p.id]=0);
+  for(let i=0;i<7;i++)(S.sched[addD(ws,i)]||[]).forEach(e=>count[e.p]=(count[e.p]||0)+1);
+  let added=0,short=0;
+  let removed=0;
+  for(let i=0;i<7;i++){const d=addD(ws,i);if(days&&!days.includes(d))continue;const day=S.sched[d]=S.sched[d]||[];
+    shiftsOn(S,d).forEach(sh=>S.roles.forEach(r=>{
+      let need=needOf(S,d,sh.id,r.id)-day.filter(e=>inSh(e,sh.id)&&staffOf(S,e.p).role===r.id).length;
+      if(need<0&&d>=TODAY){const A=S.att[d]||{};const extra=day.filter(e=>e.s===sh.id&&!e.cov&&staffOf(S,e.p).role===r.id&&!A[e.id]).sort((x,y)=>count[y.p]-count[x.p]);
+        while(need<0&&extra.length){const e=extra.shift();day.splice(day.indexOf(e),1);count[e.p]--;need++;removed++}}
+      if(need<=0)return;
+      const busy=new Set(day.map(e=>e.p));
+      const c=S.staff.filter(p=>p.active&&p.role===r.id&&!busy.has(p.id)&&worksOn(p,d)&&count[p.id]<(S.set.maxDays||6)&&!blockOf(S,p.id,d,sh.a,sh.b))
+        .sort((x,y)=>count[x.id]-count[y.id]||((S.staff.indexOf(x)+i)%7)-((S.staff.indexOf(y)+i)%7));
+      while(need>0&&c.length){const p=c.shift();day.push({id:nid('e'),p:p.id,s:sh.id,a:sh.a,b:sh.b});count[p.id]++;need--;added++}
+      short+=need;
+    }));
+  }
+  return{added,short,removed};
+}
+
+// Κόστος μιας βάρδιας ατόμου. Χωρίς παρουσία = εκτίμηση από το πρόγραμμα.
+function entryCost(S,d,e){
+  const p=staffOf(S,e.p),r=roleOf(S,p.role);const at=(S.att[d]||{})[e.id];
+  if(at&&at.st==='no')return{h:0,ot:0,cost:0,otc:0,sh:0,cutc:0,st:'no',est:false};
+  const a=at&&at.a||e.a,b=at&&at.b||e.b;const h=hoursBetween(a,b);
+  // Μεροκάματο για το βασικό ωράριο του πόστου (ή μεγάλης βάρδιας), + υπερωρία, − κράτηση ανά ώρα.
+  const c=payCalc(S,p,hoursBetween(e.a,e.b),h);let cost=c.cost;if(dow(d)===6&&+S.set.sunPct)cost*=1+S.set.sunPct/100;
+  return{h,ot:c.ot,sh:c.sh,cost,otc:c.otc,cutc:c.cutc,base:c.base,x:c.x,st:at?'yes':'plan',est:!at,a,b};
+}
+function dayCost(S,d){
+  const out={total:0,est:0,h:0,ot:0,otc:0,cutc:0,people:0,no:0,roles:{},shifts:{}};
+  (S.sched[d]||[]).forEach(e=>{const c=entryCost(S,d,e);const rid=staffOf(S,e.p).role;
+    const R=out.roles[rid]=out.roles[rid]||{n:0,h:0,ot:0,cost:0};const Sh=out.shifts[e.s]=out.shifts[e.s]||{n:0,cost:0};
+    if(c.st==='no'){out.no++;return}
+    out.total+=c.cost;if(c.est)out.est+=c.cost;out.h+=c.h;out.ot+=c.ot;out.otc+=c.otc;out.cutc+=c.cutc;out.people++;
+    R.n++;R.h+=c.h;R.ot+=c.ot;R.cost+=c.cost;Sh.n++;Sh.cost+=c.cost});
+  return out;
+}
+function weekPay(S,ws){
+  const m={};
+  for(let i=0;i<7;i++){const d=addD(ws,i);(S.sched[d]||[]).forEach(e=>{const c=entryCost(S,d,e);
+    const r=m[e.p]=m[e.p]||{p:staffOf(S,e.p),n:0,h:0,ot:0,otc:0,cutc:0,total:0,est:0,no:0};
+    if(c.st==='no'){r.no++;return}r.n++;r.h+=c.h;r.ot+=c.ot;r.otc+=c.otc;r.cutc+=c.cutc;r.total+=c.cost;if(c.est)r.est++})}
+  const order=S.roles.map(r=>r.id);
+  return Object.values(m).sort((a,b)=>order.indexOf(a.p.role)-order.indexOf(b.p.role)||a.p.name.localeCompare(b.p.name,'el'));
+}
+
+/* ---------- Αποθήκευση ---------- */
+let S;
+function load(){try{const t=localStorage.getItem(KEY);if(t){const x=JSON.parse(t);if(x&&x.v===9){(x.roles||[]).forEach(r=>{if(r.bh==null)Object.assign(r,{bh:9,lon:true,lh:12,lx:1.5})});return x}}}catch(e){}return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+S=load()||demo();
+PUB=+S.set.pubDay||0;S.zones=S.zones||[];S.reqs=S.reqs||[];S.dayShifts=S.dayShifts||{};S.dayNeeds=S.dayNeeds||{};S.dayNotes=S.dayNotes||{};
+// Κρατά τα δεδομένα επίδειξης ζωντανά: αν η τρέχουσα εβδομάδα δεν έχει πρόγραμμα, φτιάξ' το.
+if(!(S.sched[schedStart(TODAY)]||[]).length&&!S.userEdited){autoWeek(S,schedStart(TODAY))}
+save();
+
+/* ---------- Κατάσταση οθόνης ---------- */
+const UI={page:'prog',ws:schedStart(TODAY),day:TODAY,view:'day',attD:TODAY,costMode:'day',costD:TODAY,costWs:monday(TODAY),payWs:null,payRole:'',setTab:'gen',arm:null};
+try{const t=localStorage.getItem(KEY+'.ui');if(t)Object.assign(UI,JSON.parse(t),{arm:null})}catch(e){}
+if(location.hash&&PAGES.some(p=>p[0]===location.hash.slice(1)))UI.page=location.hash.slice(1);
+function saveUI(){try{localStorage.setItem(KEY+'.ui',JSON.stringify({page:UI.page,view:UI.view,costMode:UI.costMode,setTab:UI.setTab}))}catch(e){}}
+function commit(){S.userEdited=true;save();render()}
+function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
+
+/* ---------- Πλοήγηση ---------- */
+function renderNav(){
+  const h=PAGES.map(([id,n,ic])=>`<button data-act="go" data-id="${id}" class="${UI.page===id?'on':''}">${IC[ic]}<span>${n}</span></button>`).join('');
+  $('#nav').innerHTML=h;$('#tabbar').innerHTML=h;
+  $('#coName').innerHTML='<b>'+esc(S.set.name)+'</b>'+S.staff.filter(p=>p.active).length+' άτομα προσωπικό';
+  $('#coNameM').textContent=S.set.name;
+}
+
+/* ---------- Πρόγραμμα ---------- */
+function weekNav(act,label){return `<div class="wk"><button data-act="${act}" data-n="-1" aria-label="Προηγούμενη">‹</button><span>${label}</span><button data-act="${act}" data-n="1" aria-label="Επόμενη">›</button></div>`}
+function fillOf(d){let need=0,have=0;const day=S.sched[d]||[];shiftsOn(S,d).forEach(sh=>S.roles.forEach(r=>{const n=needOf(S,d,sh.id,r.id);need+=n;have+=Math.min(n,day.filter(e=>inSh(e,sh.id)&&staffOf(S,e.p).role===r.id).length)}));return{need,have,total:day.length}}
+function pageProg(){
+  const ws=UI.ws;if(schedStart(UI.day)!==ws)UI.day=ws<=TODAY&&TODAY<=addD(ws,6)?TODAY:ws;
+  const nx=addD(schedStart(TODAY),7),pubD=addD(nx,-1),nreq=(S.reqs||[]).filter(q=>reqActive(q,nx)).length;
+  let h=`<div class="head"><div class="grow"><h1>Πρόγραμμα</h1><div class="sub">Κάθε ${DF[PUB]} βγαίνει το πρόγραμμα ${DN[dow(nx)]}–${DN[dow(addD(nx,6))]}</div></div>
+  <div class="bar">${weekNav('wk',swLabel(ws))}
+  <div class="seg"><button data-act="view" data-v="day" class="${UI.view==='day'?'on':''}">Ημέρα</button><button data-act="view" data-v="week" class="${UI.view==='week'?'on':''}">Εβδομάδα</button><button data-act="view" data-v="share" class="${UI.view==='share'?'on':''}">Κοινοποίηση</button><button data-act="view" data-v="req" class="${UI.view==='req'?'on':''}">Αιτήματα${nreq?` <span class="pill" style="margin-left:4px">${nreq}</span>`:''}</button></div></div></div>`;
+  if(UI.view==='req')return h+pageReq(nx);
+  if(UI.view==='share')return h+pageShare(ws);
+  const nxEmpty=!(S.sched[nx]||[]).length;
+  if(ws!==nx&&nxEmpty&&addD(pubD,-3)<=TODAY)h+=`<div class="note info">${pubD===TODAY?'Σήμερα':DF[dow(pubD)]+' '+dm(pubD)} βγαίνει το πρόγραμμα ${swLabel(nx)}. Πέρασε πρώτα τα αιτήματα (${nreq}) και μετά φτιάξ' το.<button class="btn sm" data-act="view" data-v="req">Αιτήματα</button><button class="btn sm pri" data-act="gonext">Στο νέο πρόγραμμα</button></div>`;
+  const cf=conflicts(S,ws);
+  if(cf.length)h+=`<div class="note" style="background:var(--bad-bg);color:var(--bad)">${cf.length} ${cf.length===1?'βάρδια πέφτει':'βάρδιες πέφτουν'} πάνω σε αίτημα: ${cf.slice(0,3).map(x=>esc(staffOf(S,x.e.p).name)+' '+DN[dow(x.d)]).join(', ')}${cf.length>3?'…':''}.<button class="btn sm" data-act="fixcf">Αφαίρεση και αντικατάσταση</button></div>`;
+  let tot=0,need=0;for(let i=0;i<7;i++){const f=fillOf(addD(ws,i));tot+=f.have;need+=f.need}
+  h+=`<div class="bar pbar" style="margin-bottom:14px"><button class="btn pri" data-act="auto">Αυτόματο πρόγραμμα</button>
+    <button class="btn ${UI.arm==='clear'?'arm':'danger'}" data-act="clear">${UI.arm==='clear'?'Πάτα ξανά για καθάρισμα':'Καθάρισμα εβδομάδας'}</button>
+    <span class="sub">${need-tot>0?`<button class="btn sm" style="color:var(--bad);border-color:var(--bad);background:var(--bad-bg)" data-act="gaps">${need-tot===1?'Λείπει 1 θέση':'Λείπουν '+(need-tot)+' θέσεις'}: δες ποιες</button>`:`<span class="pill ok">Όλες οι θέσεις καλύφθηκαν</span>`}</span></div>`;
+  if(UI.view==='week')return h+progWeek(ws);
+  h+='<div class="days">';
+  for(let i=0;i<7;i++){const d=addD(ws,i),f=fillOf(d);h+=`<button class="day ${d===UI.day?'on':''} ${d===TODAY?'today':''}" data-act="day" data-d="${d}"><span class="d">${DN[dow(d)]}</span><span class="n">${pd(d).getDate()}</span><span class="f ${f.have<f.need?'short':''}">${f.have<f.need?'−'+(f.need-f.have):f.total+' άτ.'}</span>${(S.dayNotes||{})[d]?`<span class="daynote">${esc(S.dayNotes[d])}</span>`:''}</button>`}
+  h+='</div>';
+  const d=UI.day,day=S.sched[d]||[],shs=shiftsOn(S,d);
+  if(UI.shF&&!shs.some(x=>x.id===UI.shF))UI.shF='';
+  if(shs.length>1)h+=`<div class="fchips" aria-label="Βάρδιες"><button data-act="shf" data-v="" class="${!UI.shF?'on':''}">Όλες οι βάρδιες</button>${shs.map(sh=>{let lack=0;S.roles.forEach(r=>{lack+=Math.max(0,needOf(S,d,sh.id,r.id)-day.filter(e=>inSh(e,sh.id)&&staffOf(S,e.p).role===r.id).length)});return `<button data-act="shf" data-v="${sh.id}" class="${UI.shF===sh.id?'on':''}">${esc(sh.name)} <b class="${lack?'bad':''}">${lack?'−'+lack:day.filter(e=>e.s===sh.id).length}</b></button>`}).join('')}</div>`;
+  h+=`<div class="grid2">`;
+  shs.filter(sh=>!UI.shF||sh.id===UI.shF).forEach(sh=>{const inS=day.filter(e=>inSh(e,sh.id));const lead=S.lead[d+'|'+sh.id]||'';const ex=!!dayShiftOf(S,d,sh.id);
+    h+=`<section class="card shift"><h2>${esc(sh.name)} <span class="t">${sh.a}–${sh.b} · ${inS.length} άτομα</span>${ex?` <span class="pill warn">μόνο ${DN[dow(d)]} ${dm(d)}</span> <button class="btn sm" data-act="exshift" data-d="${d}" data-id="${sh.id}">Αλλαγή</button>`:(sh.days?` <span class="pill">${sh.days.map(i=>DN[i]).join(', ')}</span>`:'')+(sh.roles?` <span class="pill">${sh.roles.map(rid=>esc(roleOf(S,rid).name)).join(', ')}</span>`:'')}</h2>
+    <div class="lead">Υπεύθυνος βάρδιας <select class="inp" data-ch="lead" data-k="${d}|${sh.id}"><option value="">—</option>${day.map(e=>staffOf(S,e.p)).sort((a,b)=>b.lead-a.lead).map(p=>`<option value="${p.id}" ${p.id===lead?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div>`;
+    S.roles.forEach(r=>{const es=inS.filter(e=>staffOf(S,e.p).role===r.id);const n=needOf(S,d,sh.id,r.id);if(!n&&!es.length&&!baseNeed(S,d,sh.id,r.id)&&!(UI.showAll&&(ex||forRole(sh,r.id))))return;
+      if(!ex&&!forRole(sh,r.id)&&!es.length)return;
+      const chg=!ex&&n!==baseNeed(S,d,sh.id,r.id);
+      h+=`<div class="role"><div class="rn">${esc(r.name)} <span class="nadj"><span class="pill ${es.length<n?'bad':'ok'}">${es.length}/${n}</span>${ex?'':`<button data-act="dneed" data-d="${d}" data-s="${sh.id}" data-r="${r.id}" data-v="-1" aria-label="Ένα άτομο λιγότερο">−</button><button data-act="dneed" data-d="${d}" data-s="${sh.id}" data-r="${r.id}" data-v="1" aria-label="Ένα άτομο παραπάνω">+</button>`}</span>${chg?`<small class="sub">μόνο αυτή τη μέρα (κανονικά ${baseNeed(S,d,sh.id,r.id)})</small>`:''}</div><div class="chips">`;
+      es.forEach(e=>{const p=staffOf(S,e.p);const diff=e.a!==sh.a||e.b!==sh.b;const q=blockOf(S,p.id,d,e.a,e.b);h+=`<button class="chip ${p.id===lead?'lead':''} ${q?'bad':''}" data-act="edit" data-d="${d}" data-id="${e.id}" ${q?`title="${esc(reqText(q))}"`:''}>${esc(p.name)}${diff?` <small>${e.a}–${e.b}</small>`:''}${e.z?` <small>${esc(e.z)}</small>`:''}${e.nt?` <small>${esc(e.nt)}</small>`:''}${e.cov?` <small>${e.cov===sh.id?'παράταση από '+esc(shiftOf(S,e.s).name):'καλύπτει και '+esc(shiftOf(S,e.cov).name)}</small>`:''}${q?' <small>αίτημα</small>':''}</button>`});
+      h+=`<button class="chip add" data-act="add" data-d="${d}" data-s="${sh.id}" data-r="${r.id}">+ Προσθήκη</button>${d>=TODAY&&shs.length>1?`<button class="chip add" ${es.length<n?'style="color:var(--bad);border-color:var(--bad)"':''} data-act="cover" data-d="${d}" data-s="${sh.id}" data-r="${r.id}">Παράταση ωραρίου</button>`:''}</div></div>`});
+    h+=`</section>`});
+  return h+`</div><section class="card" style="margin-top:16px"><h2 style="margin-bottom:6px">Ειδικά για ${DF[dow(d)]} ${dm(d)}</h2><div class="sub" style="margin-bottom:10px">Για πάρτι, εκδήλωση ή αργία: γράψε σημείωση, άλλαξε με − και + πόσα άτομα θέλει κάθε πόστο μόνο αυτή τη μέρα, ή βάλε έκτακτη βάρδια. Μετά πάτα «Αυτόματο πρόγραμμα». Για μόνιμες βάρδιες σε συγκεκριμένες μέρες ή πόστα: Ρυθμίσεις → Βάρδιες.</div>
+  <div class="bar"><input class="inp" id="dn_${d}" data-ch="dnote" data-d="${d}" placeholder="π.χ. Πάρτι 150 ατόμων" value="${esc((S.dayNotes||{})[d]||'')}" style="flex:1;min-width:200px"><button class="btn" data-act="exshift" data-d="${d}">+ Έκτακτη βάρδια</button><button class="btn" data-act="showall">${UI.showAll?'Κρύψε τα κενά πόστα':'Δείξε όλα τα πόστα'}</button>${(S.dayNeeds||{})[d]?`<button class="btn danger" data-act="dneedreset" data-d="${d}">Επαναφορά ατόμων</button>`:''}</div></section>`;
+}
+function progWeek(ws){
+  let h=`<div class="card"><details class="help" style="margin-bottom:8px"><summary>Πώς αλλάζω βάρδια</summary><div class="sub">Πάτα ένα κελί. Κάθε πάτημα πάει στην επόμενη βάρδια της μέρας και μετά σε κενό (ρεπό). Ρεπό είναι η σταθερή μέρα ξεκούρασης. «άδεια», «όχι» και «ώρες» έρχονται από τα αιτήματα.</div></details><div class="tw"><table class="wgrid"><thead><tr><th>Άτομο</th>`;
+  for(let i=0;i<7;i++){const d=addD(ws,i);h+=`<th class="n" style="text-align:center">${DN[dow(d)]} ${pd(d).getDate()}</th>`}
+  h+=`<th class="n">Βάρδιες</th></tr></thead><tbody>`;
+  S.roles.forEach(r=>{const ps=S.staff.filter(p=>p.role===r.id&&p.active);if(!ps.length)return;
+    h+=`<tr class="grp"><td colspan="9">${esc(r.name)}</td></tr>`;
+    ps.forEach(p=>{let n=0;h+=`<tr><td style="white-space:nowrap">${nameHTML(p.name)}</td>`;
+      for(let i=0;i<7;i++){const d=addD(ws,i);const e=(S.sched[d]||[]).find(x=>x.p===p.id);
+        const q=blockOf(S,p.id,d,e&&e.a,e&&e.b);
+        if(e){n++;const si=shiftsOn(S,d).findIndex(s=>s.id===e.s);const hh0=+e.a.slice(0,2);h+=`<td class="c"><button class="cell s${hh0<12?0:hh0<17?2:1} ${q?'cbad':''}" data-act="cyc" data-d="${d}" data-p="${p.id}" title="${esc(shiftOf(S,e.s).name)} ${e.a}–${e.b}${q?' · '+esc(reqText(q)):''}">${esc(shiftOf(S,e.s).name)}<small>${st(e.a)}–${st(e.b)}</small></button></td>`}
+        else{const qd=blockOf(S,p.id,d);const lab=qd?(qd.k==='leave'?'άδεια':qd.all===false?'ώρες':'όχι'):!worksOn(p,d)?'ρεπό':'';h+=`<td class="c"><button class="cell ${lab?'off':''}" ${qd?`style="color:var(--bad)" title="${esc(reqText(qd))}"`:''} data-act="cyc" data-d="${d}" data-p="${p.id}">${lab}</button></td>`}}
+      h+=`<td class="n">${n}</td></tr>`})});
+  return h+'</tbody></table></div></div>';
+}
+
+/* ---------- Κοινοποίηση: πρόγραμμα ανά πόστο ---------- */
+const st=t=>t.slice(3)==='00'?t.slice(0,2):t;           // 08:00 → 08
+function cellOf(p,d){const e=(S.sched[d]||[]).find(x=>x.p===p.id);if(e)return{e,t:st(e.a)+'–'+st(e.b),sh:shiftOf(S,e.s)};
+  const q=blockOf(S,p.id,d);if(q&&(q.k==='leave'||q.all!==false))return{off:q.k==='leave'?'Άδεια':'Δεν μπορεί'};return{off:'Ρεπό'}}
+function pageShare(ws){
+  const days=[...Array(7)].map((_,i)=>addD(ws,i));const rf=UI.shRole||'';
+  let h=`<div class="bar" style="margin-bottom:14px"><select class="inp" data-ch="shrole" aria-label="Πόστο"><option value="">Όλα τα πόστα</option>${S.roles.map(r=>`<option value="${r.id}" ${rf===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select>
+    <button class="btn pri" data-act="copyroster" data-w="${ws}">Αντιγραφή για την ομάδα</button><button class="btn" data-act="persmsgs">Μήνυμα σε κάθε άτομο</button>
+    ${(S.pub||{})[ws]?`<span class="pill ok">Κοινοποιήθηκε ${dm(S.pub[ws])}</span>`:`<span class="pill warn">Δεν έχει κοινοποιηθεί</span>`}</div><div class="lgd"><span><i class="sl s0"></i>Πρωί</span><span><i class="sl s2"></i>Μεσημέρι</span><span><i class="sl s1"></i>Βράδυ</span><span><i class="sl off lv"></i>Άδεια ή δεν μπορεί</span></div>`;
+  S.roles.filter(r=>!rf||r.id===rf).forEach(r=>{const ps=S.staff.filter(p=>p.role===r.id&&(p.active||days.some(d=>(S.sched[d]||[]).some(e=>e.p===p.id))));if(!ps.length)return;
+    h+=`<section class="card roster"><h2>${esc(r.name)} <span class="sub">${swLabel(ws)}</span></h2><div class="tw"><table><thead><tr><th class="nm">Όνομα</th>${days.map(d=>`<th class="${d===TODAY?'td':''}">${DN[dow(d)]}<br><span>${pd(d).getDate()}/${pd(d).getMonth()+1}</span>${S.dayNotes&&S.dayNotes[d]?`<br><em>${esc(S.dayNotes[d])}</em>`:''}</th>`).join('')}</tr></thead><tbody>`;
+    ps.forEach(p=>{h+=`<tr><td class="nm">${nameHTML(p.name)}</td>${days.map(d=>{const c=cellOf(p,d);if(c.e){const hh=+c.e.a.slice(0,2),k=hh<12?0:hh<17?2:1;return `<td><span class="sl s${k}" title="${esc(c.sh.name)}">${c.t}</span><small class="zn">${esc([c.sh.name,c.e.z,c.e.nt].filter(Boolean).join(' · '))}</small></td>`}return `<td><span class="sl off ${c.off!=='Ρεπό'?'lv':''}">${c.off}</span></td>`}).join('')}</tr>`});
+    h+=`</tbody></table></div></section>`});
+  return `<div class="stack">${h}</div>`;
+}
+function rosterText(ws,rf){const days=[...Array(7)].map((_,i)=>addD(ws,i));let t=`${S.set.name}\nΠρόγραμμα ${swLabel(ws)}\n`;
+  S.roles.filter(r=>!rf||r.id===rf).forEach(r=>{const ps=S.staff.filter(p=>p.role===r.id&&p.active);if(!ps.length)return;t+=`\n${r.name}\n`;
+    days.forEach(d=>{const es=(S.sched[d]||[]).filter(e=>staffOf(S,e.p).role===r.id);if(!es.length)return;
+      t+=`${DN[dow(d)]} ${pd(d).getDate()}/${pd(d).getMonth()+1}${S.dayNotes&&S.dayNotes[d]?' ('+S.dayNotes[d]+')':''}: `+es.sort((a,b)=>mins(a.a)-mins(b.a)).map(e=>`${staffOf(S,e.p).name.split(' ')[0]} ${st(e.a)}–${st(e.b)}${e.z?' '+e.z:''}${e.nt?' ('+e.nt+')':''}`).join(', ')+'\n'})});
+  return t}
+function personText(ws,p){const days=[...Array(7)].map((_,i)=>addD(ws,i));
+  return `${p.name.split(' ')[0]}, το πρόγραμμά σου για ${swLabel(ws)}:\n`+days.map(d=>{const c=cellOf(p,d);return `${DN[dow(d)]} ${pd(d).getDate()}/${pd(d).getMonth()+1}: ${c.e?c.t+' '+(c.e.z||c.sh.name)+(c.e.nt?' ('+c.e.nt+')':''):c.off}`}).join('\n')+`\n${S.set.name}`}
+function copyText(t,msg){const done=()=>toast(msg||'Αντιγράφηκε');try{navigator.clipboard.writeText(t).then(done,()=>showText(t))}catch(e){showText(t)}}
+function persSheet(ws){const rf=UI.shRole||'';const ps=S.staff.filter(p=>p.active&&(!rf||p.role===rf)&&[...Array(7)].some((_,i)=>(S.sched[addD(ws,i)]||[]).some(e=>e.p===p.id)));
+  sheet(`<h2>Μήνυμα σε κάθε άτομο</h2><div class="sub">Πάτα «Αντιγραφή» και επικόλλησέ το στο Viber ή στο WhatsApp του καθενός.</div>
+  <div class="stack" style="gap:8px">${ps.map(p=>`<div class="bar" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:8px"><div><b>${esc(p.name)}</b><br><span class="sub">${esc(roleOf(S,p.role).one)}${p.phone?' · '+esc(p.phone):''}</span></div><button class="btn sm" data-act="copyp" data-p="${p.id}" data-w="${ws}">Αντιγραφή</button></div>`).join('')}</div>
+  <div class="acts"><button class="btn pri" data-act="close">Κλείσιμο</button></div>`)}
+
+function reqActive(q,from){return q.k==='week'||(q.to||q.from)>=from}
+function pageReq(nx){
+  const list=(S.reqs||[]).filter(q=>reqActive(q,TODAY));
+  const order={leave:0,day:1,week:2};list.sort((a,b)=>order[a.k]-order[b.k]||String(a.from||'').localeCompare(String(b.from||'')));
+  let h=`<section class="card"><div class="head" style="margin-bottom:8px"><div class="grow"><h2>Αιτήματα προσωπικού</h2><div class="sub">Ποιος θέλει άδεια, ποια μέρα ή ποιες ώρες δεν μπορεί. Το αυτόματο πρόγραμμα δεν τον βάζει εκεί. Επόμενο πρόγραμμα: ${swLabel(nx)}.</div></div><button class="btn pri" data-act="addreq">+ Νέο αίτημα</button></div>`;
+  if(!list.length)h+=`<div class="empty">Δεν υπάρχουν αιτήματα. Πάτα «Νέο αίτημα» για άδεια ή μέρα που δεν μπορεί κάποιος.</div>`;
+  else h+=`<div class="tw"><table><thead><tr><th>Όνομα</th><th>Αίτημα</th><th></th></tr></thead><tbody>${list.map(q=>{const p=staffOf(S,q.p);return `<tr><td style="white-space:nowrap"><b>${esc(p.name)}</b><br><span class="sub">${esc(roleOf(S,p.role).one)}</span></td><td><span class="pill ${q.k==='leave'?'warn':q.k==='week'?'':'bad'}">${REQK[q.k]}</span> ${esc(reqText(q))}${q.note?`<br><span class="sub">${esc(q.note)}</span>`:''}</td><td class="n"><button class="btn sm" data-act="editreq" data-id="${q.id}">Αλλαγή</button></td></tr>`}).join('')}</tbody></table></div>`;
+  h+=`</section><div class="bar" style="margin-top:14px"><button class="btn pri" data-act="gonext">Φτιάξε το πρόγραμμα ${swLabel(nx)}</button></div>`;
+  return h;
+}
+function reqSheet(id){
+  const q=id?S.reqs.find(x=>x.id===id):{k:'day',all:true,from:addD(schedStart(TODAY),7),wd:0,a:'08:00',b:'17:00'};
+  sheet(`<h2>${id?'Αλλαγή αιτήματος':'Νέο αίτημα'}</h2>
+  <label class="f">Υπάλληλος<select id="q_p">${S.roles.map(r=>{const ps=S.staff.filter(p=>p.role===r.id&&p.active);return ps.length?`<optgroup label="${esc(r.name)}">${ps.map(p=>`<option value="${p.id}" ${p.id===q.p?'selected':''}>${esc(p.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select></label>
+  <label class="f">Τι ζητάει<select id="q_k"><option value="leave" ${q.k==='leave'?'selected':''}>Άδεια (μία ή περισσότερες μέρες)</option><option value="day" ${q.k==='day'?'selected':''}>Δεν μπορεί μια συγκεκριμένη μέρα</option><option value="week" ${q.k==='week'?'selected':''}>Δεν μπορεί κάθε εβδομάδα την ίδια μέρα</option></select></label>
+  <div class="form"><label class="f" id="w_from">Ημερομηνία<input id="q_from" type="date" value="${q.from||''}"></label><label class="f" id="w_to">Έως<input id="q_to" type="date" value="${q.to||q.from||''}"></label>
+  <label class="f" id="w_wd">Μέρα<select id="q_wd">${DF.map((n,i)=>`<option value="${i}" ${+q.wd===i?'selected':''}>${n}</option>`).join('')}</select></label>
+  <label class="f" id="w_all">Ποιες ώρες<select id="q_all"><option value="1" ${q.all!==false?'selected':''}>Όλη τη μέρα</option><option value="0" ${q.all===false?'selected':''}>Συγκεκριμένες ώρες</option></select></label></div>
+  <div class="form" id="w_hours"><label class="f">Δεν μπορεί από<input id="q_a" type="time" value="${q.a||'08:00'}"></label><label class="f">έως<input id="q_b" type="time" value="${q.b||'17:00'}"></label></div>
+  <label class="f">Σημείωση<input id="q_note" value="${esc(q.note||'')}" placeholder="π.χ. γιατρός, σχολή"></label>
+  <div class="acts">${id?`<button class="btn danger" data-act="delreq" data-id="${id}" style="margin-right:auto">Διαγραφή</button>`:''}<button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savereq" data-id="${id||''}">Αποθήκευση</button></div>`);
+  reqFields();
+}
+function reqFields(){const k=$('#q_k').value,all=$('#q_all').value==='1';
+  $('#w_from').hidden=k==='week';$('#w_to').hidden=k!=='leave';$('#w_wd').hidden=k!=='week';$('#w_all').hidden=k==='leave';$('#w_hours').hidden=k==='leave'||all;
+  $('#w_from').firstChild.textContent=k==='leave'?'Από':'Ημερομηνία';}
+
+/* ---------- Παρουσίες ---------- */
+function pageAtt(){
+  const d=UI.attD,day=S.sched[d]||[],fut=d>TODAY;
+  let h=`<div class="head"><div class="grow"><h1>Παρουσίες</h1><div class="sub">Ο υπεύθυνος βάρδιας γράφει τι ώρα ήρθε και τι ώρα έφυγε ο καθένας. Από αυτές τις ώρες βγαίνει το ποσό της ημέρας.</div></div>
+  <div class="bar">${weekNav('attd',DF[dow(d)]+' '+dm(d))}${d!==TODAY?'<button class="btn sm" data-act="atttoday">Σήμερα</button>':''}</div></div>`;
+  if(fut)h+=`<div class="note info">Αυτή η μέρα δεν έχει έρθει ακόμα. Οι παρουσίες συμπληρώνονται τη μέρα της βάρδιας.</div>`;
+  if(!day.length)return h+`<div class="card empty">Δεν υπάρχει πρόγραμμα γι' αυτή τη μέρα. Φτιάξ' το από το μενού Πρόγραμμα.</div>`;
+  const A=S.att[d]||{};
+  const shs=shiftsOn(S,d).concat(S.shifts.filter(sh=>!shiftsOn(S,d).includes(sh))).filter(sh=>day.some(e=>e.s===sh.id));
+  if(UI.attShift&&!shs.some(x=>x.id===UI.attShift))UI.attShift='';
+  const done=day.filter(e=>A[e.id]).length;
+  h+=`<section class="card" style="margin-bottom:14px;padding:12px 16px"><div class="bar" style="justify-content:space-between"><b>Σημειώθηκαν ${done} από ${day.length}</b>${fut||done===day.length?'':`<button class="btn sm ${UI.attTodo?'pri':''}" data-act="atttodo" aria-pressed="${!!UI.attTodo}">${UI.attTodo?'Δείξε όλους':'Μόνο όσοι λείπουν'}</button>`}</div><div class="pgbar"><i style="width:${Math.round(done/day.length*100)}%"></i></div></section>`;
+  if(shs.length>1)h+=`<div class="fchips" aria-label="Βάρδιες"><button data-act="attsh" data-v="" class="${!UI.attShift?'on':''}">Όλες</button>${shs.map(sh=>{const es=day.filter(e=>e.s===sh.id);return `<button data-act="attsh" data-v="${sh.id}" class="${UI.attShift===sh.id?'on':''}">${esc(sh.name)} <b>${es.filter(e=>A[e.id]).length}/${es.length}</b></button>`}).join('')}</div>`;
+  h+='<div class="stack">';
+  shs.filter(sh=>!UI.attShift||sh.id===UI.attShift).forEach(sh=>{const es=day.filter(e=>e.s===sh.id);
+    const dn=es.filter(e=>A[e.id]).length;const lead=S.lead[d+'|'+sh.id];const vis=es.filter(e=>!UI.attTodo||!A[e.id]);
+    h+=`<section class="card"><div class="head" style="margin-bottom:6px"><div class="grow"><h2>${esc(sh.name)} <span class="sub">${sh.a}–${sh.b}</span></h2>
+      <div class="sub" style="display:block">Υπεύθυνος: ${lead?esc(staffOf(S,lead).name):'δεν ορίστηκε'} · σημειώθηκαν ${dn}/${es.length}</div></div>
+      ${fut||dn===es.length?'':`<button class="btn sm" data-act="allin" data-d="${d}" data-s="${sh.id}">Όλοι ήρθαν στην ώρα τους</button>`}</div>`;
+    if(!vis.length)h+=`<div class="sub" style="padding:8px 0 2px">Όλοι σε αυτή τη βάρδια έχουν σημειωθεί.</div>`;
+    S.roles.forEach(r=>{const rs=vis.filter(e=>staffOf(S,e.p).role===r.id);if(!rs.length)return;
+      h+=`<div class="sub" style="margin:10px 0 2px;font-weight:600;color:var(--soft-ink)">${esc(r.name)}</div>`;
+      rs.forEach(e=>{const p=staffOf(S,e.p),at=A[e.id],c=entryCost(S,d,e);
+        h+=`<div class="arow ${at&&at.st==='no'?'no':''} ${at?'':'unset'}"><div class="who"><b>${esc(p.name)}</b><span>Πρόγραμμα ${e.a}–${e.b}${e.z?' · '+esc(e.z):''}${e.x?' · εκτός προγράμματος':''}</span></div>
+        <div class="st"><button class="y ${at&&at.st==='yes'?'on':''}" data-act="st" data-d="${d}" data-id="${e.id}" data-v="yes" ${fut?'disabled':''}>Ήρθε</button><button class="x ${at&&at.st==='no'?'on':''}" data-act="st" data-d="${d}" data-id="${e.id}" data-v="no" ${fut?'disabled':''}>Δεν ήρθε</button></div>
+        <div class="times"><label>Ήρθε<input type="time" class="inp" id="ta_${e.id}" data-ch="ta" data-d="${d}" data-id="${e.id}" value="${at&&at.a||e.a}" ${fut||(at&&at.st==='no')?'disabled':''}></label><label>Έφυγε<input type="time" class="inp" id="tb_${e.id}" data-ch="tb" data-d="${d}" data-id="${e.id}" value="${at&&at.b||e.b}" ${fut||(at&&at.st==='no')?'disabled':''}></label></div>
+        <div class="amt num">${c.st==='no'?'<b>0,00 €</b>':`<b>${eur(c.cost)}</b><span class="dt">${hh(c.h)} · ${c.x!==1?String(c.x).replace('.',',')+' × ':''}μεροκ. ${eur(c.base)}</span>${c.otc>0?`<span class="ot">+${eur(c.otc)} υπερωρία</span>`:''}${c.cutc>0?`<span class="ot" style="color:var(--bad)">−${eur(c.cutc)} κράτηση</span>`:''}${c.est?'<span class="sub dt">εκτίμηση, δεν σημειώθηκε</span>':''}`}</div></div>`})});
+    if(!fut)h+=`<div style="padding-top:10px;border-top:1px solid var(--line);margin-top:6px"><button class="chip add" data-act="extra" data-d="${d}" data-s="${sh.id}">+ Ήρθε κάποιος εκτός προγράμματος</button></div>`;
+    h+='</section>'});
+  return h+'</div>';
+}
+
+/* ---------- Κόστος ---------- */
+function roleTable(roles,withOt){
+  let h=`<div class="tw"><table><thead><tr><th>Ειδικότητα</th><th class="n">Μεροκάματα</th><th class="n hm">Ώρες</th><th class="n hm">Υπερωρίες</th><th class="n">Κόστος</th></tr></thead><tbody>`;
+  let T={n:0,h:0,ot:0,cost:0};
+  S.roles.forEach(r=>{const x=roles[r.id];if(!x||!x.n)return;T.n+=x.n;T.h+=x.h;T.ot+=x.ot;T.cost+=x.cost;
+    h+=`<tr><td>${esc(r.name)}<br><span class="sub" style="white-space:nowrap">μεροκάματο ${eur(r.wage)}</span></td><td class="n">${x.n}</td><td class="n hm">${hh(x.h)}</td><td class="n hm">${x.ot?hh(x.ot):'—'}</td><td class="n"><b>${eur(x.cost)}</b></td></tr>`});
+  return h+`</tbody><tfoot><tr><td>Σύνολο</td><td class="n">${T.n}</td><td class="n hm">${hh(T.h)}</td><td class="n hm">${T.ot?hh(T.ot):'—'}</td><td class="n">${eur(T.cost)}</td></tr></tfoot></table></div>`;
+}
+function pageCost(){
+  let h=`<div class="head"><div class="grow"><h1>Κόστος προσωπικού</h1><div class="sub">Από τις παρουσίες. Όπου λείπουν, υπολογίζεται από το πρόγραμμα ως εκτίμηση.</div></div>
+  <div class="bar"><div class="seg"><button data-act="cmode" data-v="day" class="${UI.costMode==='day'?'on':''}">Ημέρα</button><button data-act="cmode" data-v="week" class="${UI.costMode==='week'?'on':''}">Εβδομάδα</button></div>
+  ${UI.costMode==='day'?weekNav('costd',DF[dow(UI.costD)]+' '+dm(UI.costD)):weekNav('costw',wkLabel(UI.costWs))}</div></div>`;
+  if(UI.costMode==='day'){
+    const c=dayCost(S,UI.costD);
+    h+=`<div class="kpis"><div class="kpi main"><span>Κόστος ημέρας</span><b>${eur(c.total)}</b></div><div class="kpi"><span>Άτομα που δούλεψαν</span><b>${c.people}</b></div><div class="kpi"><span>Ώρες εργασίας</span><b>${hh(c.h)}</b></div><div class="kpi"><span>Από υπερωρίες</span><b>${eur(c.otc)}</b></div></div>`;
+    if(c.est>0)h+=`<div class="note">${eur(c.est)} από το σύνολο είναι εκτίμηση, γιατί δεν έχουν συμπληρωθεί όλες οι παρουσίες.</div>`;
+    if(c.no)h+=`<div class="note info">${c.no} ${c.no===1?'άτομο δεν ήρθε':'άτομα δεν ήρθαν'} και δεν χρεώνονται.</div>`;
+    h+=`<div class="grid2"><section class="card"><h2 style="margin-bottom:8px">Ανά ειδικότητα</h2>${roleTable(c.roles)}</section>
+    <section class="card"><h2 style="margin-bottom:8px">Ανά βάρδια</h2><div class="tw"><table><thead><tr><th>Βάρδια</th><th class="n">Άτομα</th><th class="n">Κόστος</th></tr></thead><tbody>${shiftsOn(S,UI.costD).map(sh=>{const x=c.shifts[sh.id]||{n:0,cost:0};return `<tr><td>${esc(sh.name)} <span class="sub">${sh.a}–${sh.b}</span></td><td class="n">${x.n}</td><td class="n"><b>${eur(x.cost)}</b></td></tr>`}).join('')}</tbody></table></div></section></div>`;
+    return h;
+  }
+  const ws=UI.costWs;const days=[];const roles={};let T={total:0,est:0,h:0,otc:0,people:0};
+  for(let i=0;i<7;i++){const d=addD(ws,i),c=dayCost(S,d);days.push([d,c]);T.total+=c.total;T.est+=c.est;T.h+=c.h;T.otc+=c.otc;T.people+=c.people;
+    Object.entries(c.roles).forEach(([k,v])=>{const R=roles[k]=roles[k]||{n:0,h:0,ot:0,cost:0};R.n+=v.n;R.h+=v.h;R.ot+=v.ot;R.cost+=v.cost})}
+  const mx=Math.max(1,...days.map(x=>x[1].total));
+  h+=`<div class="kpis"><div class="kpi main"><span>Κόστος εβδομάδας</span><b>${eur(T.total)}</b></div><div class="kpi"><span>Μέσο κόστος ημέρας</span><b>${eur(T.total/7)}</b></div><div class="kpi"><span>Βάρδιες</span><b>${T.people}</b></div><div class="kpi"><span>Από υπερωρίες</span><b>${eur(T.otc)}</b></div></div>`;
+  if(T.est>0)h+=`<div class="note">${eur(T.est)} είναι εκτίμηση από το πρόγραμμα (μέρες χωρίς παρουσίες ή μέρες που δεν ήρθαν ακόμα).</div>`;
+  h+=`<div class="grid2"><section class="card"><h2>Ανά ημέρα</h2><div class="bars">${days.map(([d,c])=>{const allEst=c.total>0&&c.est>=c.total-0.01;return `<div class="bcol"><span class="v num">${c.total?eur0(c.total):'—'}</span><div class="b ${allEst?'est':''}" style="height:${Math.max(2,c.total/mx*140)}px"></div><span class="l">${DN[dow(d)]} ${pd(d).getDate()}</span></div>`}).join('')}</div>
+  <div class="legend"><span><i style="background:var(--brand)"></i>Με παρουσίες</span><span><i style="background:var(--est)"></i>Εκτίμηση από το πρόγραμμα</span></div></section>
+  <section class="card"><h2 style="margin-bottom:8px">Ανά ειδικότητα</h2>${roleTable(roles)}</section></div>`;
+  return h;
+}
+
+/* ---------- Πληρωμές ---------- */
+function weekStatus(ws){const rows=weekPay(S,ws).filter(r=>r.total>0);const P=S.paid[ws]||{};const paid=rows.filter(r=>P[r.p.id]).length;return{rows,paid,open:rows.length-paid}}
+function pageQueue(){
+  // Εβδομάδες που φαίνονται: 5 περασμένες + τρέχουσα
+  const cur=monday(TODAY);const list=[];for(let i=-5;i<=0;i++)list.push(addD(cur,i*7));
+  return list.filter(ws=>Object.keys(S.sched).some(d=>d>=ws&&d<=addD(ws,6)&&(S.sched[d]||[]).length));
+}
+function pagePay(){
+  const list=pageQueue();
+  if(!UI.payWs||!list.includes(UI.payWs)){
+    // προεπιλογή: η εβδομάδα που πληρώνεται την επόμενη (ή σημερινή) πληρωμή
+    UI.payWs=list.filter(ws=>payDate(S,ws)>=TODAY)[0]||list[list.length-1]||monday(TODAY)}
+  const ws=UI.payWs,pday=payDate(S,ws),st=weekStatus(ws),P=S.paid[ws]=S.paid[ws]||{};
+  const pdn=DF[dow(pday)];
+  let h=`<div class="head"><div class="grow"><h1>Πληρωμές</h1><div class="sub">Κάθε ${pdn.toLowerCase()} πληρώνεται η προηγούμενη εβδομάδα, Δευτέρα έως Κυριακή.</div></div></div>`;
+  const older=list.filter(w=>w!==ws&&payDate(S,w)<TODAY&&weekStatus(w).open>0);
+  older.forEach(w=>{h+=`<div class="note">Εκκρεμούν ${weekStatus(w).open} πληρωμές από την εβδομάδα ${wkLabel(w)}.<button class="btn sm" data-act="payws" data-w="${w}">Άνοιγμα</button></div>`});
+  h+='<div class="weeks">'+list.slice().reverse().map(w=>{const s=weekStatus(w);const pdw=payDate(S,w);
+    const tag=s.rows.length&&!s.open?'<span class="pill ok">Εξοφλήθηκε</span>':pdw<TODAY?`<span class="pill bad">${s.open} ανοιχτές</span>`:pdw===TODAY?'<span class="pill warn">Πληρώνεται σήμερα</span>':`<span class="pill">${DN[dow(pdw)]} ${dm(pdw)}</span>`;
+    return `<button data-act="payws" data-w="${w}" class="${w===ws?'on':''}"><b>${wkLabel(w)}</b>${tag}</button>`}).join('')+'</div>';
+  let rows=st.rows;const total=rows.reduce((a,r)=>a+r.total,0);const paidSum=rows.filter(r=>P[r.p.id]).reduce((a,r)=>a+P[r.p.id].amount,0);
+  const estDays=rows.reduce((a,r)=>a+r.est,0);
+  h+=`<div class="kpis"><div class="kpi main"><span>Πληρωμή ${pdn} ${dm(pday)}</span><b>${eur(total)}</b></div><div class="kpi"><span>Πληρώθηκαν</span><b>${eur(paidSum)}</b></div><div class="kpi"><span>Υπόλοιπο</span><b>${eur(Math.max(0,total-paidSum))}</b></div><div class="kpi"><span>Άτομα</span><b>${st.paid}/${rows.length}</b></div></div>`;
+  if(addD(ws,6)>=TODAY)h+=`<div class="note">Η εβδομάδα δεν έχει τελειώσει. Τα ποσά αλλάζουν μέχρι να συμπληρωθούν όλες οι παρουσίες ως την Κυριακή.</div>`;
+  else if(estDays)h+=`<div class="note">Λείπουν παρουσίες σε ${estDays} βάρδιες. Υπολογίστηκαν από το πρόγραμμα.</div>`;
+  if(UI.payRole)rows=rows.filter(r=>r.p.role===UI.payRole);
+  h+=`<section class="card pcard"><div class="head" style="margin-bottom:8px"><div class="grow bar"><select class="inp" data-ch="payrole" aria-label="Ειδικότητα"><option value="">Όλες οι ειδικότητες</option>${S.roles.map(r=>`<option value="${r.id}" ${UI.payRole===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></div>
+    <div class="bar"><button class="btn sm" data-act="copypay">Αντιγραφή λίστας</button>${st.open?`<button class="btn sm ${UI.arm==='payall'?'arm':'pri'}" data-act="payall">${UI.arm==='payall'?'Πάτα ξανά: πληρώθηκαν όλοι':'Πληρώθηκαν όλοι'}</button>`:''}</div></div>
+  <div class="tw desk"><table><thead><tr><th>Όνομα</th><th>Ειδικότητα</th><th class="n">Μεροκάματα</th><th class="n">Ώρες</th><th class="n">Υπερωρίες</th><th class="n">Κρατήσεις</th><th class="n">Ποσό</th><th></th></tr></thead><tbody>`;
+  if(!rows.length)h+=`<tr><td colspan="8" class="empty">Δεν υπάρχουν βάρδιες σε αυτή την εβδομάδα.</td></tr>`;
+  rows.forEach(r=>{const pp=P[r.p.id];const diff=pp&&Math.abs(pp.amount-r.total)>0.009;
+    h+=`<tr><td style="white-space:nowrap"><b>${esc(r.p.name)}</b>${r.no?` <span class="pill bad">${r.no} απουσία</span>`:''}</td><td class="sub">${esc(roleOf(S,r.p.role).one)}</td><td class="n">${r.n}</td><td class="n">${hh(r.h)}</td><td class="n">${r.otc?'+'+eur(r.otc):'—'}</td><td class="n">${r.cutc?'−'+eur(r.cutc):'—'}</td><td class="n"><b>${eur(r.total)}</b>${diff?`<br><span class="sub">πληρώθηκε ${eur(pp.amount)}</span>`:''}</td>
+    <td class="n">${pp?`<button class="btn sm paybtn" data-act="unpay" data-p="${r.p.id}" title="Αναίρεση"><span class="paid">Πληρώθηκε ${dm(pp.date)}</span></button>`:`<button class="btn sm pri paybtn" data-act="pay1" data-p="${r.p.id}">Πληρωμή</button>`}</td></tr>`});
+  h+=`</tbody></table></div><div class="mob">${rows.length?'':'<div class="empty">Δεν υπάρχουν βάρδιες σε αυτή την εβδομάδα.</div>'}${rows.map(r=>{const pp=P[r.p.id];const ex=[r.otc?'+'+eur(r.otc)+' υπερωρίες':'',r.cutc?'−'+eur(r.cutc)+' κρατήσεις':''].filter(Boolean).join(' · ');
+    return `<div class="prow"><div><b>${esc(r.p.name)}</b>${r.no?` <span class="pill bad">${r.no} απουσία</span>`:''}<span class="sub">${esc(roleOf(S,r.p.role).one)} · ${r.n} ${r.n===1?'βάρδια':'βάρδιες'} · ${hh(r.h)}</span>${ex?`<span class="sub">${ex}</span>`:''}</div>
+    <div class="pa"><b class="num">${eur(r.total)}</b>${pp?`<button class="btn sm" data-act="unpay" data-p="${r.p.id}" title="Αναίρεση"><span class="paid">Πληρώθηκε ${dm(pp.date)}</span></button>`:`<button class="btn sm pri" data-act="pay1" data-p="${r.p.id}">Πληρωμή</button>`}</div></div>`}).join('')}</div></section>`;
+  return h;
+}
+
+/* ---------- Ρυθμίσεις ---------- */
+function pageSet(){
+  const T=[['gen','Γενικά'],['shifts','Βάρδιες'],['needs','Άτομα ανά μέρα'],['roles','Ειδικότητες και αμοιβές'],['staff','Προσωπικό'],['data','Δεδομένα']];
+  let h=`<div class="head"><div class="grow"><h1>Ρυθμίσεις</h1><div class="sub">Όλες οι αλλαγές αποθηκεύονται αμέσως.</div></div></div>
+  <div class="seg tabs" style="margin-bottom:16px;flex-wrap:wrap">${T.map(([k,n])=>`<button data-act="stab" data-v="${k}" class="${UI.setTab===k?'on':''}">${n}</button>`).join('')}</div>`;
+  const s=S.set;
+  if(UI.setTab==='gen')h+=`<section class="card"><div class="form">
+    <label class="f">Όνομα καταστήματος<input id="s_name" data-ch="set" data-k="name" value="${esc(s.name)}"></label>
+    <label class="f">Μέρα που βγαίνει το πρόγραμμα<select id="s_pub" data-ch="set" data-k="pubDay">${DF.map((n,i)=>`<option value="${i}" ${+(s.pubDay||0)===i?'selected':''}>${n} (για ${DN[(i+1)%7]}–${DN[i]})</option>`).join('')}</select></label>
+    <label class="f">Μέρα πληρωμής<select id="s_pay" data-ch="set" data-k="payDay">${DF.map((n,i)=>`<option value="${i}" ${+s.payDay===i?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label class="f">Προσαύξηση Κυριακής (%)<input id="s_sun" type="number" min="0" max="200" step="5" data-ch="set" data-k="sunPct" value="${s.sunPct}"></label>
+    <label class="f">Χώροι του μαγαζιού (με κόμμα)<input id="s_zones" data-ch="zones" value="${esc((S.zones||[]).join(', '))}" placeholder="π.χ. Σάλα, Παραλία, Ταράτσα"></label>
+    <label class="f">Μέγιστες βάρδιες την εβδομάδα ανά άτομο<input id="s_max" type="number" min="1" max="7" data-ch="set" data-k="maxDays" value="${s.maxDays}"></label>
+    </div><div class="hint">Το μεροκάματο, η υπερωρία και η κράτηση ανά ώρα ρυθμίζονται στις «Ειδικότητες και αμοιβές» και, αν χρειάζεται, ανά άτομο στο «Προσωπικό».</div></section>`;
+  if(UI.setTab==='shifts'){h+=`<div class="grid2">`;
+    S.shifts.forEach(sh=>{h+=`<section class="card scard"><label class="f">Όνομα βάρδιας<input class="inp" id="sh_n_${sh.id}" data-ch="shift" data-id="${sh.id}" data-k="name" value="${esc(sh.name)}"></label>
+      <div class="form tt"><label class="f">Έναρξη<input class="inp" type="time" id="sh_a_${sh.id}" data-ch="shift" data-id="${sh.id}" data-k="a" value="${sh.a}"></label><label class="f">Λήξη<input class="inp" type="time" id="sh_b_${sh.id}" data-ch="shift" data-id="${sh.id}" data-k="b" value="${sh.b}"></label><div class="hrs"><span class="sub">Διάρκεια</span><b>${hh(hoursBetween(sh.a,sh.b))}</b></div></div>
+      <div class="sub lbl">Μέρες</div><div class="wdays">${DN.map((n,i)=>`<button class="${!sh.days||sh.days.includes(i)?'on':''}" data-act="shday" data-id="${sh.id}" data-v="${i}" aria-pressed="${!sh.days||sh.days.includes(i)}">${n}</button>`).join('')}</div>
+      <div class="sub lbl">Πόστα</div><div class="wdays wrap"><button class="${!sh.roles?'on':''}" data-act="shrole" data-id="${sh.id}" data-v="">Όλα τα πόστα</button>${S.roles.map(r=>`<button class="${sh.roles&&sh.roles.includes(r.id)?'on':''}" data-act="shrole" data-id="${sh.id}" data-v="${r.id}">${esc(r.name)}</button>`).join('')}</div>
+      ${S.shifts.length>1?`<div><button class="btn sm ${UI.arm==='dsh'+sh.id?'arm':'danger'}" data-act="delshift" data-id="${sh.id}">${UI.arm==='dsh'+sh.id?'Πάτα ξανά για διαγραφή':'Διαγραφή βάρδιας'}</button></div>`:''}</section>`});
+    h+=`</div><div class="bar" style="margin:12px 0"><button class="btn" data-act="addshift">+ Νέα βάρδια</button></div><div class="hint">Πάτα τις μέρες για να ορίσεις πότε τρέχει κάθε βάρδια (π.χ. Νυχτερινή μόνο Παρ και Σαβ) και τα πόστα για να ορίσεις ποιοι τη δουλεύουν (π.χ. κουζίνα 10:00–18:00 μόνο για μάγειρες και λάντζα). Για βάρδια σε μία μόνο ημερομηνία, άνοιξε τη μέρα στο Πρόγραμμα και πάτα «Έκτακτη βάρδια». Οι αλλαγές ισχύουν για το πρόγραμμα που θα φτιαχτεί από εδώ και πέρα.</div>`}
+  if(UI.setTab==='roles'){h+=`<div class="grid2">`;
+    S.roles.forEach(r=>{h+=`<section class="card scard"><div class="bar" style="align-items:flex-end;flex-wrap:nowrap"><label class="f" style="flex:1">Ειδικότητα<input class="inp" id="r_n_${r.id}" data-ch="role" data-id="${r.id}" data-k="name" value="${esc(r.name)}"></label><span class="pill" style="margin-bottom:12px">${S.staff.filter(p=>p.role===r.id&&p.active).length} άτομα</span></div>
+      <div class="form t3">${[['wage','Μεροκάματο €'],['ot','Υπερωρία €/ώρα'],['cut','Κράτηση €/ώρα']].map(([k,n])=>`<label class="f">${n}<input class="inp" type="number" min="0" step="0.5" inputmode="decimal" id="r_${k}_${r.id}" data-ch="role" data-id="${r.id}" data-k="${k}" value="${r[k]}"></label>`).join('')}</div>
+      <div class="form t3"><label class="f">Βασικό ωράριο (ώρες)<input class="inp" type="number" min="1" max="16" step="0.5" inputmode="decimal" id="r_bh_${r.id}" data-ch="role" data-id="${r.id}" data-k="bh" value="${tiersOf(r)[0].h}"></label></div>
+      <label class="chk"><input type="checkbox" id="r_lon_${r.id}" data-ch="role" data-id="${r.id}" data-k="lon" ${r.lon?'checked':''}> Μεγάλη βάρδια με αυξημένο μεροκάματο (π.χ. 12ωρο)</label>
+      ${r.lon?`<div class="form t3"><label class="f">Από (ώρες)<input class="inp" type="number" min="1" max="24" step="0.5" inputmode="decimal" id="r_lh_${r.id}" data-ch="role" data-id="${r.id}" data-k="lh" value="${r.lh??12}"></label><label class="f">Φορές το μεροκάματο<input class="inp" type="number" min="1" max="5" step="0.1" inputmode="decimal" id="r_lx_${r.id}" data-ch="role" data-id="${r.id}" data-k="lx" value="${r.lx??1.5}"></label></div>`:''}
+      <div class="sub pex">${payEx(S,r)}</div></section>`});
+    h+=`</div><div class="bar" style="margin:12px 0"><button class="btn" data-act="addrole">+ Νέα ειδικότητα</button></div><div class="hint">Το μεροκάματο πληρώνει το βασικό ωράριο του πόστου (π.χ. 9 ώρες). Κάθε ώρα πάνω από αυτό πληρώνεται με την υπερωρία και κάθε ώρα που λείπει αφαιρείται με την κράτηση. Με τη μεγάλη βάρδια, από τις ώρες που ορίζεις (π.χ. 12) πληρώνεται αυξημένο μεροκάματο (π.χ. 1,5 φορά) και οι ώρες μετά από αυτές ως υπερωρία. Όποιος είναι γραμμένος για μεγάλη βάρδια και φύγει νωρίτερα, παίρνει το αυξημένο μεροκάματο μείον την κράτηση για κάθε ώρα που έλειψε. Πόσα άτομα χρειάζονται ορίζεται στην καρτέλα «Άτομα ανά μέρα».</div>`}
+  if(UI.setTab==='needs'){const di=UI.needDay||0;const N=S.needs[di]=S.needs[di]||{};const shs=S.shifts.filter(sh=>!sh.days||sh.days.includes(di));
+    h+=`<div class="days">${DN.map((n,i)=>`<button class="day ${i===di?'on':''}" data-act="nday" data-v="${i}"><span class="n" style="font-size:15px">${n}</span></button>`).join('')}</div><div class="grid2">`;
+    shs.forEach(sh=>{let t=0;h+=`<section class="card"><h2 style="margin-bottom:6px">${esc(sh.name)} <span class="sub">${sh.a}–${sh.b}</span></h2>`;
+      S.roles.filter(r=>forRole(sh,r.id)).forEach(r=>{const v=(N[sh.id]||{})[r.id]||0;t+=v;h+=`<div class="nrow"><span>${esc(r.name)}</span><span class="step"><button data-act="nstep" data-id="${r.id}" data-s="${sh.id}" data-v="-1" aria-label="${esc(r.name)}: ένα λιγότερο">−</button><span id="nd_${r.id}_${sh.id}">${v}</span><button data-act="nstep" data-id="${r.id}" data-s="${sh.id}" data-v="1" aria-label="${esc(r.name)}: ένα παραπάνω">+</button></span></div>`});
+      h+=`<div class="nrow tot"><span>Σύνολο ${DF[di]}</span><b class="num">${t}</b></div></section>`});
+    h+=`</div><div class="bar" style="margin:12px 0"><span class="sub">Αντιγραφή ${DF[di].toLowerCase()==='τρίτη'?'της Τρίτης':'αυτής της μέρας'} σε:</span><button class="btn sm" data-act="ncopy" data-v="0123">Δευ–Πεμ</button><button class="btn sm" data-act="ncopy" data-v="456">Παρ–Κυρ</button><button class="btn sm" data-act="ncopy" data-v="0123456">Όλη την εβδομάδα</button></div>
+    <div class="hint">Με αυτούς τους αριθμούς γεμίζει το «Αυτόματο πρόγραμμα» και βγαίνει η ένδειξη «λείπουν».</div>`}
+  if(UI.setTab==='staff'){const q=UI.staffQ||'',nq=norm(q),hid=p=>nq&&!norm(p.name).includes(nq)?'hidden':'';
+    h+=`<section class="card"><div class="bar" style="margin-bottom:10px"><button class="btn pri" data-act="addstaff">+ Νέος υπάλληλος</button><input class="inp" type="search" id="staffq" placeholder="Αναζήτηση ονόματος" value="${esc(q)}" style="flex:1;min-width:180px" aria-label="Αναζήτηση ονόματος"><span class="sub">${S.staff.filter(p=>p.active).length} ενεργοί υπάλληλοι</span></div>
+    <div class="tw desk"><table><thead><tr><th>Όνομα</th><th>Μέρες</th><th class="n">Μεροκάματο</th><th class="n">Υπερωρία/ώρα</th><th class="n">Κράτηση/ώρα</th><th></th></tr></thead><tbody>`;
+    S.roles.forEach(r=>{const ps=S.staff.filter(p=>p.role===r.id);if(!ps.length)return;h+=`<tr class="grp" data-gh="${r.id}"><td colspan="6">${esc(r.name)}</td></tr>`;
+      ps.forEach(p=>{const pr=payOf(S,p);h+=`<tr data-g="${r.id}" data-q="${esc(norm(p.name))}" ${hid(p)} style="${p.active?'':'opacity:.5'}"><td style="white-space:nowrap"><b>${esc(p.name)}</b>${p.lead?' <span class="pill">υπεύθυνος</span>':''}${p.active?'':' <span class="pill warn">ανενεργός</span>'}</td><td class="sub">${daysLbl(p)}</td><td class="n"><b>${eur(pr.wage)}</b></td><td class="n">${eur(pr.ot)}</td><td class="n">${eur(pr.cut)}</td><td class="n"><button class="btn sm" data-act="editstaff" data-id="${p.id}">Επεξεργασία</button></td></tr>`})});
+    h+=`</tbody></table></div><div class="mob">`;
+    S.roles.forEach(r=>{const ps=S.staff.filter(p=>p.role===r.id);if(!ps.length)return;h+=`<div class="sgrp" data-gh="${r.id}">${esc(r.name)}</div>`;
+      ps.forEach(p=>{const pr=payOf(S,p);h+=`<button class="srow" data-act="editstaff" data-id="${p.id}" data-g="${r.id}" data-q="${esc(norm(p.name))}" ${hid(p)} style="${p.active?'':'opacity:.55'}"><span><b>${esc(p.name)}</b>${p.lead?' <span class="pill">υπεύθυνος</span>':''}${p.active?'':' <span class="pill warn">ανενεργός</span>'}<span class="sub">${daysLbl(p)} · μεροκάματο ${eur(pr.wage)}</span></span><span class="chev" aria-hidden="true">›</span></button>`})});
+    h+=`</div></section>`}
+  if(UI.setTab==='data')h+=`<section class="card stack"><div>Τα δεδομένα αυτής της έκδοσης μένουν μόνο σε αυτόν τον browser. Το κατάστημα και τα ονόματα είναι ενδεικτικά.</div>
+    <div class="bar"><button class="btn ${UI.arm==='reset'?'arm':'danger'}" data-act="reset">${UI.arm==='reset'?'Πάτα ξανά: σβήνονται όλα':'Επαναφορά δεδομένων επίδειξης'}</button></div></section>`;
+  return h;
+}
+
+/* ---------- Παράθυρα ---------- */
+function sheet(html){$('#layer').innerHTML=`<div class="scrim" data-act="close"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;const f=$('#layer select,#layer input');if(f&&!matchMedia('(pointer:coarse)').matches)f.focus()}
+function closeSheet(){$('#layer').innerHTML=''}
+function weekCount(ws,pid){let n=0;for(let i=0;i<7;i++)if((S.sched[addD(ws,i)]||[]).some(e=>e.p===pid))n++;return n}
+function addSheet(d,sid,rid,extra){
+  const sh=shiftOf(S,sid),r=roleOf(S,rid),day=S.sched[d]||[],busy=new Set(day.map(e=>e.p)),ws=schedStart(d);
+  const ps=S.staff.filter(p=>p.active&&(rid?p.role===rid:true)&&!busy.has(p.id));
+  sheet(`<h2>${extra?'Ήρθε εκτός προγράμματος':'Προσθήκη: '+esc(r.name)}</h2><div class="sub">${DF[dow(d)]} ${dm(d)} · ${esc(sh.name)}</div>
+  ${ps.length?`<label class="f">Άτομο<select id="m_p">${(rid?[r]:S.roles).map(rr=>{const list=ps.filter(p=>p.role===rr.id);if(!list.length)return'';return `<optgroup label="${esc(rr.name)}">${list.map(p=>`<option value="${p.id}">${esc(p.name)} · ${weekCount(ws,p.id)} βάρδιες${worksOn(p,d)?'':' · δεν δουλεύει αυτή τη μέρα'}${(q=>q?' · '+reqText(q):'')(blockOf(S,p.id,d,sh.a,sh.b))}</option>`).join('')}</optgroup>`}).join('')}</select></label>
+  <div class="form"><label class="f">Από<input id="m_a" type="time" value="${sh.a}"></label><label class="f">Έως<input id="m_b" type="time" value="${sh.b}"></label></div>${S.zones.length?`<label class="f">Χώρος<select id="m_z"><option value="">Χωρίς χώρο</option>${S.zones.map(z=>`<option ${""===z?'selected':''}>${esc(z)}</option>`).join('')}</select></label>`:''}`:'<div class="empty">Δεν υπάρχει ελεύθερο άτομο γι\' αυτή τη μέρα.</div>'}
+  <div class="acts"><button class="btn" data-act="close">Άκυρο</button>${ps.length?`<button class="btn pri" data-act="saveadd" data-d="${d}" data-s="${sid}" data-x="${extra?1:''}">Προσθήκη</button>`:''}</div>`);
+}
+function editSheet(d,id){
+  const e=(S.sched[d]||[]).find(x=>x.id===id);if(!e)return;const p=staffOf(S,e.p),sh=shiftOf(S,e.s);
+  sheet(`<h2>${esc(p.name)}</h2><div class="sub">${esc(roleOf(S,p.role).one)} · ${DF[dow(d)]} ${dm(d)}</div>
+  <label class="f">Βάρδια<select id="m_s">${shiftsOn(S,d).filter(x=>x.id===e.s||(dayShiftOf(S,d,x.id)?(x.need||{})[p.role]>0:forRole(x,p.role))).map(s=>`<option value="${s.id}" ${s.id===e.s?'selected':''}>${esc(s.name)} ${s.a}–${s.b}</option>`).join('')}</select></label>
+  <div class="form"><label class="f">Από<input id="m_a" type="time" value="${e.a}"></label><label class="f">Έως<input id="m_b" type="time" value="${e.b}"></label></div>${S.zones.length?`<label class="f">Χώρος<select id="m_z"><option value="">Χωρίς χώρο</option>${S.zones.map(z=>`<option ${e.z===z?'selected':''}>${esc(z)}</option>`).join('')}</select></label>`:''}
+  ${(()=>{const o=shiftsOn(S,d).filter(x=>x.id!==e.s&&forRole(x,p.role));return o.length?`<label class="f">Παράταση για να καλύψει και τη βάρδια<select id="m_cov"><option value="">Όχι</option>${o.map(x=>`<option value="${x.id}" ${e.cov===x.id?'selected':''}>${esc(x.name)} ${x.a}–${x.b}</option>`).join('')}</select></label><div class="hint" style="margin-top:-8px">Οι ώρες αλλάζουν μόνες τους. Πληρώνεται με βάση τις συνολικές ώρες: υπερωρία ή αυξημένο μεροκάματο μεγάλης βάρδιας.</div>`:''})()}
+  <div class="acts"><button class="btn danger" data-act="delentry" data-d="${d}" data-id="${id}" style="margin-right:auto">Αφαίρεση</button><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveedit" data-d="${d}" data-id="${id}">Αποθήκευση</button></div>`);
+}
+
+/* ---------- Θέσεις που λείπουν ---------- */
+function gapsOf(S,ws){const out=[];const all=addD(ws,6)<TODAY;
+  for(let i=0;i<7;i++){const d=addD(ws,i);if(!all&&d<TODAY)continue;const day=S.sched[d]||[];
+    shiftsOn(S,d).forEach(sh=>S.roles.forEach(r=>{const n=needOf(S,d,sh.id,r.id)-day.filter(e=>inSh(e,sh.id)&&staffOf(S,e.p).role===r.id).length;if(n>0)out.push({d,sh,r,n})}))}
+  return out}
+// Παράταση: η βάρδια του ατόμου απλώνεται ώστε να πιάνει και την άλλη βάρδια.
+function spanOf(e,sh){const nm=t=>{const m=mins(t);return m<360?m+1440:m};const s1=nm(e.a),l1=hoursBetween(e.a,e.b)*60,s2=nm(sh.a);const l2=hoursBetween(sh.a,sh.b)*60;
+  const a=Math.min(s1,s2),b=Math.max(s1+l1,s2+l2);const f=m=>pad(Math.floor(((m%1440)+1440)%1440/60))+':'+pad(((m%60)+60)%60);return{a:f(a),b:f(b),extra:(b-a-l1)/60}}
+function gapSheet(ws){const g=gapsOf(S,ws);
+  if(!g.length){sheet(`<h2>Δεν λείπει καμία θέση</h2><div class="sub">Όλες οι βάρδιες ${swLabel(ws)} έχουν τα άτομα που χρειάζονται.</div><div class="acts"><button class="btn pri" data-act="close">Κλείσιμο</button></div>`);return}
+  const tot=g.reduce((a,x)=>a+x.n,0);
+  sheet(`<h2>${tot===1?'Λείπει 1 θέση':'Λείπουν '+tot+' θέσεις'}</h2><div class="sub">Για κάθε θέση: βάλε άλλο άτομο ή δώσε παράταση ωραρίου σε κάποιον που δουλεύει ήδη εκείνη τη μέρα. Η παράταση πληρώνεται ως υπερωρία.</div>
+  <div class="stack" style="gap:0">${g.map(x=>`<div style="border-top:1px solid var(--line);padding:10px 0"><b>${DF[dow(x.d)]} ${dm(x.d)}</b> · ${esc(x.sh.name)} <span class="sub">${x.sh.a}–${x.sh.b}</span>
+    <div style="margin:3px 0 8px"><span class="pill bad">${esc(x.r.name)}: ${x.n===1?'λείπει 1':'λείπουν '+x.n}</span>${(S.dayNotes||{})[x.d]?` <span class="pill warn">${esc(S.dayNotes[x.d])}</span>`:''}</div>
+    ${x.d>=TODAY?`<div class="bar"><button class="btn sm" data-act="add" data-g="1" data-d="${x.d}" data-s="${x.sh.id}" data-r="${x.r.id}">+ Βάλε άτομο</button><button class="btn sm" data-act="cover" data-g="1" data-d="${x.d}" data-s="${x.sh.id}" data-r="${x.r.id}">Παράταση ωραρίου</button><button class="btn sm" data-act="gapgo" data-d="${x.d}">Άνοιγμα μέρας</button></div>`:'<span class="sub">Η μέρα πέρασε.</span>'}</div>`).join('')}</div>
+  <div class="acts"><button class="btn pri" data-act="close">Κλείσιμο</button></div>`)}
+function coverSheet(d,sid,rid){const sh=shiftOf(S,sid),r=roleOf(S,rid),day=S.sched[d]||[];
+  const c=day.filter(e=>!inSh(e,sid)&&!e.cov&&staffOf(S,e.p).role===rid).map(e=>({e,p:staffOf(S,e.p),sp:spanOf(e,sh)})).filter(x=>x.sp.extra>0).sort((a,b)=>a.sp.extra-b.sp.extra);
+  sheet(`<h2>Παράταση ωραρίου</h2><div class="sub">${DF[dow(d)]} ${dm(d)} · ${esc(sh.name)} ${sh.a}–${sh.b} · ${esc(r.name)}. Διάλεξε ποιος μένει παραπάνω (ή έρχεται νωρίτερα) για να καλύψει τη θέση. Τις ακριβείς ώρες τις αλλάζεις μετά πατώντας το όνομά του.</div>
+  ${c.length?`<div class="stack" style="gap:0">${c.map(x=>{const q=blockOf(S,x.p.id,d,x.sp.a,x.sp.b);return `<div class="prow"><div><b>${esc(x.p.name)}</b><span class="sub">${esc(shiftOf(S,x.e.s).name)} ${x.e.a}–${x.e.b} → <b>${x.sp.a}–${x.sp.b}</b> (${hh(hoursBetween(x.sp.a,x.sp.b))})</span><span class="sub" style="color:var(--warn)">+${hh(x.sp.extra)} · +${eur(payCalc(S,x.p,hoursBetween(x.sp.a,x.sp.b),hoursBetween(x.sp.a,x.sp.b)).cost-payCalc(S,x.p,hoursBetween(x.e.a,x.e.b),hoursBetween(x.e.a,x.e.b)).cost)}</span>${q?`<span class="sub" style="color:var(--bad)">${esc(reqText(q))}</span>`:''}</div><div class="pa"><button class="btn sm pri" data-act="docover" data-d="${d}" data-id="${x.e.id}" data-s="${sid}" data-g="${UI.fromGaps?1:''}">Επιλογή</button></div></div>`}).join('')}</div>`:`<div class="empty">Κανείς από ${esc(r.name.toLowerCase())} δεν δουλεύει άλλη βάρδια εκείνη τη μέρα. Δοκίμασε «Βάλε άτομο».</div>`}
+  <div class="acts"><button class="btn" data-act="close">Άκυρο</button></div>`)}
+function afterGapFix(){if(UI.fromGaps){UI.fromGaps=false;if(gapsOf(S,UI.ws).length)gapSheet(UI.ws);else toast('Καλύφθηκαν όλες οι θέσεις')}}
+function exSheet(d,id){
+  const x=id?dayShiftOf(S,d,id):{name:'Έκτακτη βάρδια',a:'12:00',b:'18:00',need:{}};
+  sheet(`<h2>${id?'Αλλαγή έκτακτης βάρδιας':'Έκτακτη βάρδια'}</h2><div class="sub">Μόνο για ${DF[dow(d)]} ${dm(d)}</div>
+  <label class="f">Όνομα<input id="x_name" value="${esc(x.name)}"></label>
+  <div class="form"><label class="f">Έναρξη<input id="x_a" type="time" value="${x.a}"></label><label class="f">Λήξη<input id="x_b" type="time" value="${x.b}"></label></div>
+  <div class="sub" style="font-weight:600">Πόσα άτομα χρειάζονται</div>
+  <div class="form" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">${S.roles.map(r=>`<label class="f">${esc(r.name)}<input id="x_r_${r.id}" type="number" min="0" max="50" inputmode="numeric" value="${(x.need||{})[r.id]||0}"></label>`).join('')}</div>
+  <div class="acts">${id?`<button class="btn danger" data-act="delex" data-d="${d}" data-id="${id}" style="margin-right:auto">Διαγραφή βάρδιας</button>`:''}<button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveex" data-d="${d}" data-id="${id||''}">Αποθήκευση</button></div>`);
+}
+function staffSheet(id){
+  const p=id?S.staff.find(x=>x.id===id):null;const r=roleOf(S,p?p.role:S.roles[0].id);const pr=p?payOf(S,p):{wage:r.wage,ot:r.ot,cut:r.cut};
+  sheet(`<h2>${p?esc(p.name):'Νέος υπάλληλος'}</h2>
+  <label class="f">Ονοματεπώνυμο<input id="f_name" value="${p?esc(p.name):''}" autocomplete="off"></label>
+  <div class="form"><label class="f">Ειδικότητα<select id="f_role">${S.roles.map(x=>`<option value="${x.id}" ${x.id===r.id?'selected':''}>${esc(x.one||x.name)}</option>`).join('')}</select></label>
+  <label class="f">Τηλέφωνο<input id="f_phone" inputmode="tel" value="${p?esc(p.phone||''):''}"></label></div>
+  <div class="form"><label class="f">Μεροκάματο (€)<input id="f_wage" type="number" min="0" step="0.5" inputmode="decimal" value="${pr.wage}"></label>
+  <label class="f">Υπερωρία (€ την ώρα)<input id="f_ot" type="number" min="0" step="0.5" inputmode="decimal" value="${pr.ot}"></label>
+  <label class="f">Κράτηση (€ την ώρα)<input id="f_cut" type="number" min="0" step="0.5" inputmode="decimal" value="${pr.cut}"></label></div>
+  <div class="hint" style="margin-top:-6px">Μεροκάματο για ολόκληρη βάρδια. Υπερωρία για κάθε ώρα μετά τη λήξη, κράτηση για κάθε ώρα που λείπει.</div>
+  <div class="f" style="display:flex;flex-direction:column;gap:6px"><span class="sub" style="font-weight:600">Μέρες που δουλεύει</span><div class="wdays" id="f_days">${DN.map((n,i)=>`<button type="button" class="${!p||(p.days?p.days.includes(i):p.off!==i)?'on':''}" data-act="sfday" aria-pressed="${!p||(p.days?p.days.includes(i):p.off!==i)}">${n}</button>`).join('')}</div><span class="hint" style="margin-top:0">Πάτα μια μέρα για να την ανάψεις ή να τη σβήσεις. Το αυτόματο πρόγραμμα τον βάζει μόνο στις αναμμένες μέρες.</span></div>
+  <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="f_lead" ${p&&p.lead?'checked':''}> Μπορεί να είναι υπεύθυνος βάρδιας</label>
+  ${p?`<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="f_active" ${p.active?'checked':''}> Ενεργός (αν τον ξετσεκάρεις δεν μπαίνει στο πρόγραμμα, το ιστορικό μένει)</label>`:''}
+  <div class="acts"><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savestaff" data-id="${p?p.id:''}">${p?'Αποθήκευση':'Προσθήκη'}</button></div>`);
+}
+
+/* ---------- Σχεδίαση ---------- */
+function render(){
+  renderNav();
+  const P={prog:pageProg,att:pageAtt,cost:pageCost,pay:pagePay,set:pageSet}[UI.page]||pageProg;
+  $('#main').innerHTML=P();saveUI();
+}
+
+/* ---------- Ενέργειες ---------- */
+function payText(ws){const P=S.paid[ws]||{};const rows=weekPay(S,ws).filter(r=>r.total>0);
+  return S.set.name+'\nΠληρωμές εβδομάδας '+wkLabel(ws)+' ('+DF[dow(payDate(S,ws))]+' '+dm(payDate(S,ws))+')\n\n'+
+  rows.map(r=>r.p.name+' · '+r.n+' βάρδιες · '+eur(r.total)+(P[r.p.id]?' · πληρώθηκε':'')).join('\n')+'\n\nΣύνολο: '+eur(rows.reduce((a,r)=>a+r.total,0))}
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,D=b.dataset;
+  if(a==='close'){if(ev.target===b||b.tagName==='BUTTON')closeSheet();return}
+  const armed=UI.arm;if(!['clear','payall','reset','delshift'].includes(a))UI.arm=null;
+  switch(a){
+  case'go':UI.page=D.id;UI.arm=null;window.scrollTo(0,0);break;
+  case'wk':UI.ws=addD(UI.ws,7*D.n);break;
+  case'gonext':UI.ws=addD(schedStart(TODAY),7);UI.view='day';break;
+  case'fixcf':{const cf=conflicts(S,UI.ws);cf.forEach(x=>{S.sched[x.d]=S.sched[x.d].filter(e=>e!==x.e)});const r=autoWeek(S,UI.ws);S.userEdited=true;save();toast(`Βγήκαν ${cf.length}, μπήκαν ${r.added} αντικαταστάτες`+(r.short?`, λείπουν ${r.short}`:''));break}
+  case'addreq':reqSheet(null);return;
+  case'editreq':reqSheet(D.id);return;
+  case'savereq':{const g=id=>$('#'+id);const k=g('q_k').value;const q=D.id?S.reqs.find(x=>x.id===D.id):{id:nid('q')};
+    const all=k==='leave'||g('q_all').value==='1';
+    Object.assign(q,{p:g('q_p').value,k,all,note:g('q_note').value.trim()});
+    if(k==='week'){q.wd=+g('q_wd').value;delete q.from;delete q.to}else{q.from=g('q_from').value;q.to=k==='leave'?(g('q_to').value||q.from):q.from;if(q.to<q.from)q.to=q.from}
+    if(!all){q.a=g('q_a').value;q.b=g('q_b').value}else{delete q.a;delete q.b}
+    if(!D.id)S.reqs.push(q);closeSheet();commit();toast('Το αίτημα καταχωρήθηκε');return}
+  case'delreq':S.reqs=S.reqs.filter(x=>x.id!==D.id);closeSheet();commit();return;
+  case'view':UI.view=D.v;break;
+  case'day':UI.day=D.d;break;
+  case'auto':{const r=autoWeek(S,UI.ws);S.userEdited=true;save();toast(r.added||r.removed?refitMsg(r):r.short?`Δεν βρέθηκαν διαθέσιμα άτομα για ${r.short} θέσεις`:'Το πρόγραμμα είναι ήδη όπως πρέπει');if(r.short&&gapsOf(S,UI.ws).length){render();gapSheet(UI.ws);return};break}
+  case'clear':if(armed!=='clear'){UI.arm='clear';break}UI.arm=null;for(let i=0;i<7;i++){const d=addD(UI.ws,i);if(d>=TODAY)S.sched[d]=[]}S.userEdited=true;save();toast('Καθαρίστηκαν οι μέρες από σήμερα και μετά');break;
+  case'add':UI.fromGaps=!!D.g;addSheet(D.d,D.s,D.r,false);return;
+  case'gaps':gapSheet(UI.ws);return;
+  case'gapgo':closeSheet();UI.day=D.d;UI.view='day';UI.shF='';break;
+  case'cover':UI.fromGaps=!!D.g;coverSheet(D.d,D.s,D.r);return;
+  case'docover':{const e=(S.sched[D.d]||[]).find(x=>x.id===D.id);const sp=spanOf(e,shiftOf(S,D.s));Object.assign(e,{a:sp.a,b:sp.b,cov:D.s});UI.fromGaps=!!D.g;closeSheet();commit();toast(`${staffOf(S,e.p).name}: ${sp.a}–${sp.b}, +${hh(sp.extra)} υπερωρία`);afterGapFix();return}
+  case'extra':addSheet(D.d,D.s,'',true);return;
+  case'saveadd':{const p=$('#m_p').value,aa=$('#m_a').value,bb=$('#m_b').value;const e={id:nid('e'),p,s:D.s,a:aa,b:bb};if(D.x)e.x=1;if($('#m_z')&&$('#m_z').value)e.z=$('#m_z').value;(S.sched[D.d]=S.sched[D.d]||[]).push(e);UI.afterAdd=UI.fromGaps;
+    if(D.x){(S.att[D.d]=S.att[D.d]||{})[e.id]={st:'yes',a:aa,b:bb}}closeSheet();commit();afterGapFix();return}
+  case'edit':editSheet(D.d,D.id);return;
+  case'saveedit':{const e=S.sched[D.d].find(x=>x.id===D.id);const ns=$('#m_s').value,moved=e.s!==ns,old=e.cov||'',cv=$('#m_cov')?$('#m_cov').value:'';e.s=ns;e.a=$('#m_a').value;e.b=$('#m_b').value;const o=shiftOf(S,e.s);
+    if(moved){e.a=o.a;e.b=o.b}
+    if(cv&&cv!==e.s&&(moved||cv!==old)){const sp=spanOf({a:o.a,b:o.b},shiftOf(S,cv));Object.assign(e,{a:sp.a,b:sp.b,cov:cv})}
+    else if(!cv||cv===e.s){if(old&&!moved){e.a=o.a;e.b=o.b}delete e.cov}if($('#m_z')){if($('#m_z').value)e.z=$('#m_z').value;else delete e.z}closeSheet();commit();return}
+  case'delentry':S.sched[D.d]=S.sched[D.d].filter(x=>x.id!==D.id);if(S.att[D.d])delete S.att[D.d][D.id];closeSheet();commit();return;
+  case'cyc':{const day=S.sched[D.d]=S.sched[D.d]||[];const i=day.findIndex(e=>e.p===D.p);
+    const rid=staffOf(S,D.p).role;const L=shiftsOn(S,D.d).filter(sh=>dayShiftOf(S,D.d,sh.id)?(sh.need||{})[rid]>0:forRole(sh,rid));if(!L.length)break;
+    if(i<0){const sh=L[0];day.push({id:nid('e'),p:D.p,s:sh.id,a:sh.a,b:sh.b})}
+    else{const k=L.findIndex(s=>s.id===day[i].s);if(k<L.length-1){const sh=L[k+1];Object.assign(day[i],{s:sh.id,a:sh.a,b:sh.b})}else{if(S.att[D.d])delete S.att[D.d][day[i].id];day.splice(i,1)}}
+    S.userEdited=true;save();break}
+  case'attd':UI.attD=addD(UI.attD,+D.n);break;
+  case'atttoday':UI.attD=TODAY;break;
+  case'st':{const A=S.att[D.d]=S.att[D.d]||{};const e=S.sched[D.d].find(x=>x.id===D.id);
+    if(A[D.id]&&A[D.id].st===D.v)delete A[D.id];else A[D.id]=D.v==='yes'?{st:'yes',a:(A[D.id]&&A[D.id].a)||e.a,b:(A[D.id]&&A[D.id].b)||e.b}:{st:'no'};S.userEdited=true;save();break}
+  case'allin':{const A=S.att[D.d]=S.att[D.d]||{};let n=0;(S.sched[D.d]||[]).filter(e=>e.s===D.s).forEach(e=>{if(!A[e.id]){A[e.id]={st:'yes',a:e.a,b:e.b};n++}});S.userEdited=true;save();toast(n?`Σημειώθηκαν ${n} παρουσίες`:'Όλοι είχαν ήδη σημειωθεί');break}
+  case'cmode':UI.costMode=D.v;break;
+  case'costd':UI.costD=addD(UI.costD,+D.n);break;
+  case'costw':UI.costWs=addD(UI.costWs,7*D.n);break;
+  case'payws':UI.payWs=D.w;break;
+  case'pay1':{const r=weekPay(S,UI.payWs).find(x=>x.p.id===D.p);S.paid[UI.payWs][D.p]={amount:r.total,date:TODAY};S.userEdited=true;save();break}
+  case'unpay':delete S.paid[UI.payWs][D.p];S.userEdited=true;save();break;
+  case'payall':if(armed!=='payall'){UI.arm='payall';break}UI.arm=null;{const P=S.paid[UI.payWs];weekPay(S,UI.payWs).forEach(r=>{if(r.total>0&&!P[r.p.id]&&(!UI.payRole||r.p.role===UI.payRole))P[r.p.id]={amount:r.total,date:TODAY}})}S.userEdited=true;save();toast('Σημειώθηκαν ως πληρωμένοι');break;
+  case'copypay':{const t=payText(UI.payWs);const ok=()=>toast('Η λίστα αντιγράφηκε');try{navigator.clipboard.writeText(t).then(ok,()=>showText(t,'Λίστα πληρωμών'))}catch(e){showText(t,'Λίστα πληρωμών')}return}
+  case'stab':UI.setTab=D.v;break;
+  case'nday':UI.needDay=+D.v;break;
+  case'ncopy':{const src=JSON.stringify(S.needs[UI.needDay||0]||{});D.v.split('').forEach(i=>{S.needs[i]=JSON.parse(src)});{const m=refitMsg(refit(S,d=>D.v.includes(String(dow(d)))));toast('Αντιγράφηκε'+(m?'. '+m:''))}S.userEdited=true;save();break}
+  case'shday':{const sh=S.shifts.find(x=>x.id===D.id);let ds=sh.days?sh.days.slice():[0,1,2,3,4,5,6];const i=+D.v;ds=ds.includes(i)?ds.filter(x=>x!==i):ds.concat(i).sort();if(!ds.length){toast('Η βάρδια πρέπει να τρέχει τουλάχιστον μία μέρα');return}sh.days=ds.length===7?undefined:ds;commit();return}
+  case'shrole':{const sh=S.shifts.find(x=>x.id===D.id);if(!D.v)delete sh.roles;else{let rs=sh.roles?sh.roles.slice():[];rs=rs.includes(D.v)?rs.filter(x=>x!==D.v):rs.concat(D.v);if(rs.length&&rs.length<S.roles.length)sh.roles=rs;else delete sh.roles}commit();return}
+  case'dneed':{const N=S.dayNeeds[D.d]=S.dayNeeds[D.d]||{};const M=N[D.s]=N[D.s]||{};const v=Math.max(0,needOf(S,D.d,D.s,D.r)+(+D.v));if(v===baseNeed(S,D.d,D.s,D.r))delete M[D.r];else M[D.r]=v;if(!Object.keys(M).length)delete N[D.s];if(!Object.keys(N).length)delete S.dayNeeds[D.d];if(D.d>=TODAY){const r=autoWeek(S,schedStart(D.d),[D.d]);const m=refitMsg(r);if(m)toast(m)}S.userEdited=true;save();break}
+  case'dneedreset':delete S.dayNeeds[D.d];if(D.d>=TODAY&&(S.sched[D.d]||[]).length){const m=refitMsg(autoWeek(S,schedStart(D.d),[D.d]));if(m)toast(m)}S.userEdited=true;save();break;
+  case'showall':UI.showAll=!UI.showAll;break;
+  case'shf':UI.shF=D.v;break;
+  case'attsh':UI.attShift=D.v;break;
+  case'atttodo':UI.attTodo=!UI.attTodo;break;
+  case'nstep':{const di=UI.needDay||0;const N=S.needs[di]=S.needs[di]||{};const M=N[D.s]=N[D.s]||{};M[D.id]=Math.max(0,Math.min(50,(M[D.id]||0)+(+D.v)));{const m=refitMsg(refit(S,d=>dow(d)===di));if(m)toast(m)}S.userEdited=true;save();break}
+  case'copyroster':S.pub=S.pub||{};S.pub[D.w]=TODAY;save();copyText(rosterText(D.w,UI.shRole||''),'Το πρόγραμμα αντιγράφηκε. Επικόλλησέ το στην ομάδα Viber ή WhatsApp.');break;
+  case'persmsgs':persSheet(UI.ws);return;
+  case'copyp':copyText(personText(D.w,staffOf(S,D.p)),'Αντιγράφηκε για '+staffOf(S,D.p).name);return;
+  case'exshift':exSheet(D.d,D.id);return;
+  case'saveex':{const g=id=>$('#'+id);const L=S.dayShifts[D.d]=S.dayShifts[D.d]||[];let x=D.id?L.find(y=>y.id===D.id):null;if(!x){x={id:nid('s')};L.push(x)}
+    x.name=g('x_name').value.trim()||'Έκτακτη βάρδια';x.a=g('x_a').value;x.b=g('x_b').value;x.need={};S.roles.forEach(r=>{const n=+g('x_r_'+r.id).value||0;if(n>0)x.need[r.id]=n});
+    (S.sched[D.d]||[]).forEach(e=>{if(e.s===x.id){e.a=x.a;e.b=x.b}});closeSheet();const r=D.d>=TODAY?autoWeek(S,schedStart(D.d),[D.d]):{};commit();toast('Η βάρδια αποθηκεύτηκε'+(refitMsg(r)?'. '+refitMsg(r):''));return}
+  case'delex':{S.dayShifts[D.d]=(S.dayShifts[D.d]||[]).filter(y=>y.id!==D.id);if(S.sched[D.d])S.sched[D.d]=S.sched[D.d].filter(e=>e.s!==D.id);closeSheet();commit();return}
+  case'addshift':S.shifts.push({id:nid('s'),name:'Νέα βάρδια',a:'09:00',b:'15:00'});commit();return;
+  case'delshift':if(armed!=='dsh'+D.id){UI.arm='dsh'+D.id;break}UI.arm=null;S.shifts=S.shifts.filter(s=>s.id!==D.id);commit();return;
+  case'addrole':{const id=nid('r');S.roles.push({id,name:'Νέα ειδικότητα',one:'Νέα ειδικότητα',wage:50,ot:7,cut:5.5,bh:9,lon:false,lh:12,lx:1.5});commit();return}
+  case'sfday':b.classList.toggle('on');b.setAttribute('aria-pressed',b.classList.contains('on'));return;
+  case'addstaff':staffSheet(null);return;
+  case'editstaff':staffSheet(D.id);return;
+  case'savestaff':{const g=id=>$('#'+id);const name=g('f_name').value.trim();if(!name){g('f_name').focus();toast('Γράψε όνομα');return}
+    const num=id=>Math.max(0,+String(g(id).value).replace(',','.')||0);
+    let p=D.id?S.staff.find(x=>x.id===D.id):null;if(!p){p={id:nid('p'),active:true};S.staff.push(p)}
+    Object.assign(p,{name,role:g('f_role').value,phone:g('f_phone').value.trim(),wage:num('f_wage'),ot:num('f_ot'),cut:num('f_cut'),lead:g('f_lead').checked});
+    {const on=[...document.querySelectorAll('#f_days button')].map((b,i)=>b.classList.contains('on')?i:-1).filter(i=>i>=0);if(!on.length){toast('Διάλεξε τουλάχιστον μία μέρα');return}if(on.length===7){delete p.days;p.off=-1}else{p.days=on;p.off=-1}}
+    if(g('f_active'))p.active=g('f_active').checked;
+    // βγαίνει από τις μελλοντικές μέρες που πλέον δεν δουλεύει και οι θέσεις ξαναγεμίζουν
+    {const gone=[];Object.keys(S.sched).forEach(d=>{if(d<TODAY)return;const A=S.att[d]||{};const L=S.sched[d];for(let i=L.length-1;i>=0;i--){const e=L[i];if(e.p===p.id&&!A[e.id]&&(!worksOn(p,d)||!p.active)){L.splice(i,1);gone.push(d)}}});
+     const r=refit(S,d=>gone.includes(d));if(gone.length){const m=refitMsg(r);toast((D.id?'Αποθηκεύτηκε':'Ο υπάλληλος προστέθηκε')+'. Βγήκε από '+gone.length+(gone.length===1?' βάρδια':' βάρδιες')+(m?'. '+m.replace('Το πρόγραμμα άλλαξε: ',''):''));closeSheet();commit();return}}
+    closeSheet();commit();toast(D.id?'Αποθηκεύτηκε':'Ο υπάλληλος προστέθηκε');return}
+  case'reset':if(armed!=='reset'){UI.arm='reset';break}UI.arm=null;PUB=0;S=demo();save();toast('Τα δεδομένα επίδειξης επανήλθαν');break;
+  }
+  render();
+});
+// Αναζήτηση στο προσωπικό χωρίς να ξαναζωγραφίζεται η σελίδα (κρατάει το πληκτρολόγιο ανοιχτό)
+document.addEventListener('input',ev=>{if(ev.target.id!=='staffq')return;UI.staffQ=ev.target.value;const q=norm(ev.target.value.trim());
+  document.querySelectorAll('#main [data-q]').forEach(el=>{el.hidden=!!q&&!el.dataset.q.includes(q)});
+  document.querySelectorAll('#main [data-gh]').forEach(g=>{g.hidden=![...g.parentElement.querySelectorAll(`[data-g="${g.dataset.gh}"]`)].some(x=>!x.hidden)})});
+function showText(t,title){sheet(`<h2>${esc(title||"Κείμενο για αντιγραφή")}</h2><textarea class="inp" id="m_txt" rows="12" style="width:100%;font-size:13px">${esc(t)}</textarea><div class="acts"><button class="btn pri" data-act="close">Κλείσιμο</button></div>`);const x=$('#m_txt');x.focus();x.select()}
+document.addEventListener('change',ev=>{
+  const el=ev.target;
+  if(el.id==='q_k'||el.id==='q_all'){reqFields();return}
+  if(el.id==='f_role'){const r=roleOf(S,el.value);['wage','ot','cut'].forEach(k=>{$('#f_'+k).value=r[k]});return}const k=el.dataset.ch;if(!k)return;const D=el.dataset;const v=el.type==='checkbox'?el.checked:el.value;
+  switch(k){
+  case'lead':if(v)S.lead[D.k]=v;else delete S.lead[D.k];break;
+  case'dnote':if(v.trim())S.dayNotes[D.d]=v.trim();else delete S.dayNotes[D.d];break;
+  case'ta':case'tb':{const A=S.att[D.d]=S.att[D.d]||{};const e=(S.sched[D.d]||[]).find(x=>x.id===D.id);if(!e||!v)break;const at=A[D.id]=A[D.id]&&A[D.id].st==='yes'?A[D.id]:{st:'yes',a:e.a,b:e.b};at[k==='ta'?'a':'b']=v;break}
+  case'payrole':UI.payRole=v;render();return;
+  case'shrole':UI.shRole=v;render();return;
+  case'set':S.set[D.k]=D.k==='name'?v:+v;if(D.k==='pubDay'){PUB=+v;UI.ws=schedStart(TODAY)}break;
+  case'setv':S.set[D.k]=v;break;
+  case'zones':S.zones=v.split(',').map(x=>x.trim()).filter(Boolean);break;
+  case'shift':{const s=S.shifts.find(x=>x.id===D.id);s[D.k]=v;break}
+  case'role':{const r=S.roles.find(x=>x.id===D.id);if(['wage','ot','cut','bh','lh','lx'].includes(D.k))r[D.k]=Math.max(0,+v||0);else if(D.k==='lon')r.lon=!!v;else{r[D.k]=v;if(D.k==='name')r.one=v}break}
+  case'need':{const di=UI.needDay||0;const N=S.needs[di]=S.needs[di]||{};(N[D.s]=N[D.s]||{})[D.id]=Math.max(0,+v||0);const m=refitMsg(refit(S,d=>dow(d)===di));if(m)toast(m);break}
+  case'staff':{const p=S.staff.find(x=>x.id===D.id);if(['wage','ot','cut'].includes(D.k))p[D.k]=v===''?null:Math.max(0,+v||0);else if(D.k==='off')p.off=+v;else p[D.k]=v;break}
+  }
+  commit();
+});
+render();
+})();
+</script>

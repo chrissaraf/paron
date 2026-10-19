@@ -1,0 +1,60 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@600;800&family=Commissioner:wght@400;600;700&display=block" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1400px;font-family:Commissioner,sans-serif;background:#e9ebee;padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.hd{padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.hd h2{font:800 26px 'Fira Sans Condensed';color:#222}
+.sw{display:flex;gap:6px}.sw span{width:34px;height:34px;border-radius:8px;border:1px solid rgba(0,0,0,.1)}
+.logos{display:grid;grid-template-columns:1fr 1fr 110px}
+.lg{height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.wm{font:800 60px/1 'Fira Sans Condensed';display:flex;align-items:center}
+.wm svg{width:.8em;height:.8em;margin:0 3px}
+.tg{font:600 12px 'Fira Sans Condensed';letter-spacing:3.5px}
+.ic{display:flex;align-items:center;justify-content:center}
+.ic div{width:80px;height:80px;border-radius:19px;display:flex;align-items:center;justify-content:center}
+.ic svg{width:52px;height:52px}
+.ui{padding:18px 20px 22px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.scr{border-radius:14px;overflow:hidden;border:1px solid rgba(0,0,0,.08)}
+.bar{padding:10px 14px;font:700 15px Commissioner;display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:14px;border-top:1px solid rgba(0,0,0,.06)}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px Commissioner}
+.pill{margin-left:auto;font:600 12px Commissioner;padding:3px 9px;border-radius:99px}
+.btn{display:block;margin:12px 14px;text-align:center;padding:11px;border-radius:11px;font:700 15px Commissioner}
+.tabs{display:flex;justify-content:space-around;padding:9px 6px;font:600 12px Commissioner}
+.why{font-size:14px;line-height:1.45;color:#444}
+.why b{color:#111}
+.rec{font:700 12px Commissioner;letter-spacing:1px;padding:4px 10px;border-radius:99px;background:#111;color:#fff}
+</style></head><body>
+<script>
+const person=(c,f)=>`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="${c}"/><circle cx="50" cy="38" r="14" fill="${f}"/><path d="M24 80 C28 60 72 60 76 80" fill="${f}"/></svg>`;
+const P=[
+ {n:'1. Μελάνι & Κοράλλι',rec:1,ink:'#1D2440',acc:'#FF5B4A',btn:'#D63F31',btnT:'#fff',bg:'#FFF7F3',soft:'#FFE3DE',softT:'#A12C21',dark:'#151A30',
+  why:'<b>Ζεστό και ανθρώπινο.</b> Το κοράλλι ξεχωρίζει από τα μπλε των ανταγωνιστών, θυμίζει λίγο το πορτοκαλί του εργοταξίου και ταιριάζει εξίσου σε εστιατόριο και κατάστημα.'},
+ {n:'2. Δάσος & Λάιμ',ink:'#0E3B34',acc:'#C4F04A',btn:'#0E3B34',btnT:'#C4F04A',bg:'#F4F7F1',soft:'#E6F6C4',softT:'#2E5310',dark:'#0B2C27',
+  why:'<b>Φρέσκο, «πράσινο φως».</b> Το λάιμ λέει «παρών, όλα εντάξει». Μοντέρνο, αλλά λίγο πιο τεχνολογικό και λιγότερο ζεστό.'},
+ {n:'3. Μπλε νύχτας & Πορτοκαλί',ink:'#10264A',acc:'#FF7A1A',btn:'#FF7A1A',btnT:'#10264A',bg:'#F3F6FA',soft:'#FFE6D3',softT:'#9A4300',dark:'#0C1C38',
+  why:'<b>Σίγουρο και επαγγελματικό.</b> Δοκιμασμένος συνδυασμός που εμπνέει εμπιστοσύνη, αλλά είναι πιο κοντά σε ό,τι ήδη υπάρχει στην αγορά.'},
+ {n:'4. Βαθύ μωβ & Κεχριμπάρι',ink:'#2B1747',acc:'#FFB547',btn:'#2B1747',btnT:'#FFB547',bg:'#F7F4FA',soft:'#FFEBCB',softT:'#7A4A00',dark:'#22123A',
+  why:'<b>Διαφορετικό και premium.</b> Ξεχωρίζει πολύ, αλλά για συνεργεία και οικοδομή μπορεί να φανεί υπερβολικά «lifestyle».'},
+];
+document.write(P.map(p=>`<div class="card">
+<div class="hd"><h2>${p.n}</h2><div style="display:flex;gap:10px;align-items:center">${p.rec?'<span class="rec">ΠΡΟΤΑΣΗ</span>':''}<div class="sw"><span style="background:${p.ink}"></span><span style="background:${p.acc}"></span><span style="background:${p.bg}"></span></div></div></div>
+<div class="logos">
+ <div class="lg" style="background:${p.bg}"><div class="wm" style="color:${p.ink}">PAR${person(p.acc,p.ink)}N</div><div class="tg" style="color:${p.ink};opacity:.7">ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ</div></div>
+ <div class="lg" style="background:${p.dark}"><div class="wm" style="color:#fff">PAR${person(p.acc,p.dark)}N</div><div class="tg" style="color:#fff;opacity:.65">ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ</div></div>
+ <div class="ic" style="background:${p.bg}"><div style="background:${p.ink}">${person(p.acc,p.ink)}</div></div>
+</div>
+<div class="ui">
+ <div class="scr" style="background:#fff">
+  <div class="bar" style="background:${p.ink};color:#fff">Σήμερα · Πέμ 16/10 <span style="background:${p.acc};color:${p.ink};font-size:12px;padding:3px 9px;border-radius:99px">8 παρόντες</span></div>
+  <div class="row"><div class="av" style="background:${p.soft};color:${p.softT}">ΓΚ</div>Γιώργος Κ.<span class="pill" style="background:${p.soft};color:${p.softT}">08:00–16:00</span></div>
+  <div class="row"><div class="av" style="background:${p.soft};color:${p.softT}">ΜΠ</div>Μαρία Π.<span class="pill" style="background:${p.soft};color:${p.softT}">12:00–20:00</span></div>
+  <div class="btn" style="background:${p.btn};color:${p.btnT}">Αποστολή προγράμματος</div>
+  <div class="tabs" style="border-top:1px solid #eee;color:#888"><span style="color:${p.btn==p.ink?p.ink:p.btn}">● Πρόγραμμα</span><span>Ομάδα</span><span>Πληρωμές</span></div>
+ </div>
+ <div class="why">${p.why}</div>
+</div></div>`).join(''));
+</script>
+</body></html>
