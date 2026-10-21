@@ -439,6 +439,14 @@ textarea{width:100%;font-size:13.5px;line-height:1.5;min-height:0}
 .form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
 .form label{display:grid;gap:6px;align-content:start;font-size:13px;color:var(--ink-2);font-weight:560}
 .form label.full{grid-column:1/-1}
+.form>details.more{grid-column:1/-1;border-top:1px solid var(--line);padding-top:6px}
+.form>details.more>summary{cursor:pointer;min-height:40px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:14.5px;font-weight:600;color:var(--brand)}
+.form>details.more>summary .note{font-weight:450}
+.form>details.more>summary{list-style:none}.form>details.more>summary::-webkit-details-marker{display:none}
+.form>details.more>summary::before{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin:0 4px 0 2px;transition:transform .15s}
+.form>details.more[open]>summary::before{transform:rotate(45deg)}
+@media (prefers-reduced-motion:reduce){.form>details.more>summary::before{transition:none}}
+.form>details.more>.form{margin-top:10px}
 .form input,.form select{width:100%}
 input[type=checkbox],input[type=radio]{width:20px;height:20px;min-width:20px;min-height:0;padding:0;margin:0;flex:none;accent-color:var(--brand);cursor:pointer;box-shadow:none}
 @media (max-width:520px){.form{grid-template-columns:minmax(0,1fr)}}
@@ -3775,6 +3783,8 @@ function vAppts(){
     :`<section class="panel"><p class="empty">${f==='done'?'Δεν έχει σημειωθεί ακόμη κανένα ραντεβού ως «Έγινε».':'Δεν υπάρχουν ραντεβού'+(who?' για αυτό το άτομο':'')+'. Πρόσθεσε ένα με «Νέο ραντεβού».'}</p></section>`}
   <p class="note">Τα ραντεβού δεν μετράνε μεροκάματο και δεν αλλάζουν τα συνεργεία. Μπαίνουν στο πρόγραμμα όσων πηγαίνουν, στο Σήμερα και στο μήνυμα Viber της ημέρας.</p>`;
 }
+// τα σπάνια πεδία μιας φόρμας μαζεμένα κάτω από «Περισσότερα στοιχεία», για να μένει σύντομη η φόρμα
+const moreBox=(inner,open,hint)=>`<details class="more"${open?' open':''}><summary>Περισσότερα στοιχεία${hint?`<span class="note">${h(hint)}</span>`:''}</summary><div class="form">${inner}</div></details>`;
 function apptForm(a,pre){
   const isNew=!a,me=AUTH.user&&W(AUTH.user.workerId);
   a=a||{id:uid('a'),date:UI.tab==='today'&&UI.day?UI.day:TODAY,time:'10:00',end:'',title:'',client:'',phone:'',place:'',projectId:'',people:[me?me.id:OWNER],notes:'',status:'open',...(pre||{})};
@@ -3785,15 +3795,15 @@ function apptForm(a,pre){
   <form class="form" id="apf" data-id="${a.id}" data-new="${isNew?1:0}">
     <label class="full">Τι ραντεβού είναι<input id="ap_title" value="${h(a.title)}" placeholder="π.χ. Αυτοψία για ανακαίνιση μπάνιου"></label>
     <label>Ημερομηνία<input id="ap_date" type="date" value="${h(a.date)}"></label>
-    <label>Έργο${sel('ap_proj',[['','Χωρίς έργο, νέος πελάτης'],...projOpts()],a.projectId)}</label>
     <label>Ώρα<input id="ap_time" type="time" value="${h(a.time||'')}"></label>
-    <label>Έως (αν το ξέρεις)<input id="ap_end" type="time" value="${h(a.end||'')}"></label>
     <label>Πελάτης<input id="ap_client" value="${h(a.client||'')}" placeholder="Όνομα ή εταιρεία"${hasF('clients')?' list="ap_cl" autocomplete="off"':''}>${hasF('clients')?`<datalist id="ap_cl">${cliOpts().map(([,n])=>`<option value="${h(n)}">`).join('')}</datalist>`:''}</label>
     <label>Τηλέφωνο πελάτη<input id="ap_phone" type="tel" value="${h(a.phone||'')}"></label>
     <label class="full">Διεύθυνση<input id="ap_place" value="${h(a.place||'')}" placeholder="Πού γίνεται το ραντεβού"></label>
+    ${moreBox(`<label>Έργο${sel('ap_proj',[['','Χωρίς έργο, νέος πελάτης'],...projOpts()],a.projectId)}</label>
+    <label>Έως (αν το ξέρεις)<input id="ap_end" type="time" value="${h(a.end||'')}"></label>
     <div class="fs"><span class="fl">Ποιοι πηγαίνουν</span><div class="wd"><span class="grp-l" style="margin-top:0">Διοίκηση και γραφείο</span>${box(OWNER,ownerName())}${office.map(w=>box(w.id,w.name,SP(w.specialtyId)?.name||'')).join('')}${grp('Αρχιεργάτες και τεχνίτες',leads)}${grp('Συνεργάτες',ext)}${grp('Βοηθοί',help)}</div></div>
     <label class="full">Σημειώσεις<textarea id="ap_notes" rows="3" placeholder="Τι πρέπει να δουν ή να φέρουν">${h(a.notes||'')}</textarea></label>
-    <p class="note full" style="grid-column:1/-1;margin:0">Δεν μετράει μεροκάματο. Όσοι έχουν συνεργείο εκείνη τη μέρα το κρατούν, και το ραντεβού μπαίνει στο πρόγραμμά τους και στο μήνυμα Viber.</p>
+    <p class="note full" style="grid-column:1/-1;margin:0">Δεν μετράει μεροκάματο. Όσοι έχουν συνεργείο εκείνη τη μέρα το κρατούν, και το ραντεβού μπαίνει στο πρόγραμμά τους και στο μήνυμα Viber.</p>`,!isNew&&!!(a.projectId||a.end||a.notes||(a.people||[]).length>1),'Έργο, ποιοι πηγαίνουν'+((a.people||[]).length?' ('+(a.people||[]).length+')':'')+', σημειώσεις')}
   </form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delappt" data-id="${a.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveappt">Αποθήκευση</button></div>`);
 }
@@ -3867,14 +3877,14 @@ function dutyForm(x){
   openModal(`<h2>${isNew?'Νέα υπενθύμιση':'Επεξεργασία υπενθύμισης'}</h2><form class="form" id="df" data-id="${x.id}" data-new="${isNew?1:0}">
   <label class="full">Τι πρέπει να γίνει<input id="d_title" value="${h(x.title)}" placeholder="π.χ. Υπογραφή σύμβασης με τον πελάτη"></label>
   <label>Ποιος${personSel('d_worker',x.workerId)}</label>
-  <label>Έργο (προαιρετικό)${sel('d_proj',[['','Γενική'],...projOpts()],x.projectId)}</label>
   <label>Πότε${sel('d_freq',[['once','Μία φορά'],['daily','Κάθε εργάσιμη μέρα'],['days','Συγκεκριμένες μέρες της εβδομάδας'],['month','Κάθε μήνα']],f)}</label>
   <label data-fq="once"${hid('once')}>Ημερομηνία<input id="d_date" type="date" value="${h(x.date||day)}"></label>
   <label data-fq="month"${hid('month')}>Μέρα του μήνα<input id="d_dom" type="number" min="1" max="31" inputmode="numeric" value="${h(x.dom||+day.slice(8))}"></label>
-  <label>Ώρα (προαιρετικό)<input id="d_time" type="time" value="${h(x.time||'')}"></label>
   <div class="fs" data-fq="days"${hid('days')}><span class="fl">Μέρες</span><div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-dd="${d}"${(x.days||[]).includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></div>
+  ${moreBox(`<label>Ώρα<input id="d_time" type="time" value="${h(x.time||'')}"></label>
+  <label>Έργο${sel('d_proj',[['','Γενική'],...projOpts()],x.projectId)}</label>
   <label class="full">Σημειώσεις<textarea id="d_notes" rows="2" placeholder="Ό,τι χρειάζεται για να γίνει">${h(x.notes||'')}</textarea></label>
-  <p class="note full" style="grid-column:1/-1;margin:0">Μπαίνει στη λίστα της ημέρας του ατόμου και στο μήνυμα Viber του. Αν είναι για μία φορά και δεν τσεκαριστεί, συνεχίζει να φαίνεται ως εκκρεμότητα.</p></form>
+  <p class="note full" style="grid-column:1/-1;margin:0">Μπαίνει στη λίστα της ημέρας του ατόμου και στο μήνυμα Viber του. Αν είναι για μία φορά και δεν τσεκαριστεί, συνεχίζει να φαίνεται ως εκκρεμότητα.</p>`,!isNew&&!!(x.time||x.projectId||x.notes),'Ώρα, έργο, σημειώσεις')}</form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delduty" data-id="${x.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveduty">Αποθήκευση</button></div>`);
 }
 // ποιοι μπορούν να είναι υπεύθυνοι: αρχιεργάτες/τεχνίτες της ειδικότητας και συνεργάτες της ειδικότητας
@@ -3883,21 +3893,25 @@ function taskForm(t,pid){
   const isNew=!t;t=t||{id:uid('t'),projectId:pid||UI.fProj||S.projects[0]?.id,title:'',specialtyId:UI.fSpec||siteSpecs()[0]?.id,responsibleId:'',helpers:1,days:3,priority:2,after:'',earliest:'',status:'todo'};
   const leads=leadOpts(t.specialtyId);
   const deps=S.tasks.filter(x=>x.projectId===t.projectId&&x.id!==t.id);
-  openModal(`<h2>${isNew?'Νέα εργασία':'Επεξεργασία εργασίας'}</h2>
+  // από τη σελίδα ενός έργου το έργο είναι ήδη γνωστό: η επιλογή του πάει στα «Περισσότερα»
+  const projUp=isNew&&!pid,projSel=`<label>Έργο${sel('f_project',projOpts(),t.projectId,'data-re="1"')}</label>`;
+  const moreHint=[projUp?'':'Έργο','υπεύθυνος','προτεραιότητα','πότε ξεκινά',t.price?'τιμή συνεργάτη':'',hasF('materials')?'υλικά':'',hasF('wx')?'στεγνή μέρα':''].filter(Boolean).join(', ').replace(/^./,c=>c.toUpperCase());
+  openModal(`<h2>${isNew?'Νέα εργασία':'Επεξεργασία εργασίας'}</h2>${projUp?'':`<p class="note" style="margin:-6px 0 12px">${h(pname(t.projectId))}</p>`}
   <form class="form" id="tf" data-id="${t.id}" data-new="${isNew?1:0}">
     <label class="full">Τίτλος εργασίας<input id="f_title" required value="${h(t.title)}" placeholder="π.χ. Σοβάδες 3ου ορόφου"></label>
-    <label>Έργο${sel('f_project',projOpts(),t.projectId,'data-re="1"')}</label>
-    <label>Ειδικότητα${sel('f_spec',specOpts(),t.specialtyId,'data-re="1"')}</label>
+    ${projUp?projSel:''}
+    <label${projUp?'':' class="full"'}>Ειδικότητα${sel('f_spec',specOpts(),t.specialtyId,'data-re="1"')}</label>
+    <label>Μέρες εργασίας<input id="f_days" type="number" min="1" max="200" inputmode="numeric" value="${+t.days||1}"></label>
+    <label>Βοηθοί που χρειάζονται<input id="f_help" type="number" min="0" max="10" inputmode="numeric" value="${+t.helpers||0}"></label>
+    ${moreBox(`${projUp?'':projSel}
     <label>Υπεύθυνος${sel('f_resp',[['','Αυτόματα'],...leads],t.responsibleId)}</label>
-    <label>Βοηθοί που χρειάζονται<input id="f_help" type="number" min="0" max="10" value="${+t.helpers||0}"></label>
-    <label>Μέρες εργασίας<input id="f_days" type="number" min="1" max="200" value="${+t.days||1}"></label>
     <label>Προτεραιότητα${sel('f_prio',[[1,'Υψηλή'],[2,'Κανονική'],[3,'Χαμηλή']],t.priority)}</label>
     <label>Ξεκινά μετά από${sel('f_after',[['','Καμία προϋπόθεση'],...deps.map(x=>[x.id,x.title])],t.after)}</label>
     <label>Όχι νωρίτερα από<input id="f_earliest" type="date" value="${h(t.earliest)}"></label>
     <label>Τιμή συνεργάτη κατ' αποκοπή (€)<input id="f_price" type="number" min="0" step="50" value="${+t.price||''}" placeholder="μόνο αν την κάνει συνεργάτης"></label>
     ${hasF('rating')?`<label>Δυσκολία${sel('f_diff',[5,4,3,2,1].map(k=>[k,DIFF_L[k]]),tDiff(t))}<span class="note">Στις δύσκολες το πρόγραμμα βάζει τους πιο έμπειρους, με εναλλαγή.</span></label>`:''}
     ${hasF('materials')?matFields(t):''}
-    <label class="full ck"${hasF('wx')?'':' hidden'}><input type="checkbox" id="f_dry"${t.dry?' checked':''}> <span><b>Θέλει στεγνή μέρα.</b> Εξωτερική εργασία, όπως σκυροδέτηση, μόνωση ταράτσας ή σοβάς όψης: δεν μπαίνει στο πρόγραμμα τις μέρες που η πρόγνωση δίνει βροχή στο έργο.</span></label>
+    <label class="full ck"${hasF('wx')?'':' hidden'}><input type="checkbox" id="f_dry"${t.dry?' checked':''}> <span><b>Θέλει στεγνή μέρα.</b> Εξωτερική εργασία, όπως σκυροδέτηση, μόνωση ταράτσας ή σοβάς όψης: δεν μπαίνει στο πρόγραμμα τις μέρες που η πρόγνωση δίνει βροχή στο έργο.</span></label>`,!isNew&&!!(t.responsibleId||t.after||t.earliest||+t.price||t.dry||(+t.priority||2)!==2),moreHint)}
   </form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="deltask" data-id="${t.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savetask">Αποθήκευση</button></div>`);
 }
@@ -3987,14 +4001,15 @@ function projForm(p,pre){
   openModal(`<h2>${isNew?'Νέο έργο':'Επεξεργασία έργου'}</h2><form class="form" id="pf" data-id="${p.id}" data-new="${isNew?1:0}">
   <label class="full">Όνομα έργου<input id="g_name" value="${h(p.name)}" placeholder="π.χ. Ανακαίνιση γραφείων Πυλαίας"></label>
   <label class="full">Διεύθυνση<input id="g_loc" value="${h(p.location)}"></label>
-  ${hasF('clients')?`<label>Πελάτης${sel('g_cli',[['','Χωρίς πελάτη'],...cliOpts()],cliById(p.clientId)?p.clientId:'')}</label>`:''}
+  ${hasF('clients')?`<label class="full">Πελάτης${sel('g_cli',[['','Χωρίς πελάτη'],...cliOpts()],cliById(p.clientId)?p.clientId:'')}</label>`:''}
+  ${moreBox(`
   ${hasF('wx')?`<label class="full">Περιοχή για τον καιρό<span class="inl"><input id="g_place" value="${h(p.place||'')}" placeholder="π.χ. Καλαμαριά · κενό = η έδρα (${h(wxCfg().place||'')})" data-lat="${hasLL(p)?p.lat:''}" data-lon="${hasLL(p)?p.lon:''}" data-q="${h(p.place||'')}"><button type="button" class="btn" data-act="geo" data-t="g">Εύρεση</button></span><span class="note" id="g_geo">${hasLL(p)?h(geoNote(p)):''}</span></label>`:''}
   ${hasF('acc')?`<label>ΑΜΟΕ<input id="g_amoe" value="${h(p.amoe||'')}"><span class="note">Αριθμός Μητρώου Οικοδομοτεχνικού Έργου, για τον λογιστή.</span></label>`:''}
   ${hasF('profit')?`<label>Τιμή συμβολαίου (€, χωρίς ΦΠΑ)<input id="g_contract" type="number" min="0" step="100" value="${+p.contract||''}"><span class="note">Τι πληρώνει ο πελάτης, για το κέρδος του έργου.</span></label>`:''}
   <label>Προϋπολογισμός εργατικών (€)<input id="g_budget" type="number" min="0" step="100" value="${+p.budget||0}"></label>
   ${hasF('deadline')?`<label>Παράδοση έργου<input id="g_due" type="date" value="${h(p.due||'')}"><span class="note">Σε προειδοποιεί αν το πρόγραμμα τελειώνει αργότερα.</span></label>`:''}
   ${!hasF('pm')?'':`<label class="full">Διαχειριστές έργου<div class="wd">${S.workers.filter(isPM).map(w=>`<label><input type="checkbox" data-mgr="${w.id}"${(p.managers||[]).includes(w.id)?' checked':''}> ${h(w.name)}</label>`).join('')||'<span class="note">Δεν υπάρχει κανείς με ειδικότητα διαχείρισης έργων.</span>'}</div></label>`}
-  <label>Χρώμα${sel('g_color',[['p1','Μπλε'],['p2','Πορτοκαλί'],['p3','Πράσινο'],['p4','Μωβ'],['p5','Κόκκινο'],['p6','Πετρόλ']],p.color)}</label></form>
+  <label>Χρώμα${sel('g_color',[['p1','Μπλε'],['p2','Πορτοκαλί'],['p3','Πράσινο'],['p4','Μωβ'],['p5','Κόκκινο'],['p6','Πετρόλ']],p.color)}</label>`,false,['Προϋπολογισμός',hasF('profit')?'τιμή συμβολαίου':'',hasF('deadline')?'παράδοση':'',hasF('pm')?'διαχειριστές':'','χρώμα'].filter(Boolean).join(', '))}</form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delproj" data-id="${p.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveproj">Αποθήκευση</button></div>`);
 }
 
@@ -4018,14 +4033,14 @@ function workerForm(w){
   <label>Ειδικότητα${sel('h_spec',specOpts(true),w.specialtyId)}</label>
   <label>Ρόλος${sel('h_role',Object.entries(ROLES).filter(([k])=>k!=='ext'),w.role)}</label>
   <label>Βασικό μεροκάματο (€)<input id="h_wage" type="number" min="0" step="5" value="${+w.wage||0}"></label>
-  <label>Τηλέφωνο (Viber)<input id="h_phone" value="${h(w.phone)}"></label>
-  ${hasF('lang')?`<label>Γλώσσα${sel('h_lang',I18N.LANGS.map(([k,n,g])=>[k,k==='el'?g:n+' · '+g]),w.lang||'el')}<span class="note">Η σελίδα του και τα μηνύματα Viber και κινητού. Οι μεταφράσεις θέλουν ακόμη έλεγχο από κάποιον που μιλά τη γλώσσα.</span></label>`:''}
+  <label>Τηλέφωνο (Viber)<input id="h_phone" type="tel" value="${h(w.phone)}"></label>
+  ${moreBox(`${hasF('lang')?`<label>Γλώσσα${sel('h_lang',I18N.LANGS.map(([k,n,g])=>[k,k==='el'?g:n+' · '+g]),w.lang||'el')}<span class="note">Η σελίδα του και τα μηνύματα Viber και κινητού. Οι μεταφράσεις θέλουν ακόμη έλεγχο από κάποιον που μιλά τη γλώσσα.</span></label>`:''}
   ${hasF('acc')?`<label>ΑΜΚΑ<input id="h_amka" inputmode="numeric" maxlength="16" value="${h(w.amka||'')}"><span class="note">Για την κατάσταση του λογιστή.</span></label>`:''}
   ${hasF('avail')?`<label>Δεύτερη ειδικότητα${sel('h_spec2',[['','Καμία'],...siteSpecs().filter(x=>x.id!=='gen').map(x=>[x.id,x.name])],w.spec2||'')}<span class="note">Μπαίνει και εκεί όταν λείπουν άτομα.</span></label>
   <label class="full">Μέρες που δουλεύει<div class="wd">${[1,2,3,4,5,6,0].filter(d=>S.settings.workdays.includes(d)).map(d=>`<label><input type="checkbox" data-wday="${d}"${!Array.isArray(w.days)||!w.days.length||w.days.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div><span class="note">Τις άλλες εργάσιμες έχει ρεπό και δεν μπαίνει στο πρόγραμμα.</span></label>`:''}
   ${hasF('rating')&&!isOffice(w)?`<label>Βαθμός${sel('h_rate',[5,4,3,2,1].map(k=>[k,RATE_L[k]]),wRate(w))}<span class="note">Τον βλέπει μόνο το γραφείο, ποτέ ο εργαζόμενος.</span></label>`:''}
   <label class="full">Μέρες άδειας<input id="h_off" value="${h((w.off||[]).join(', '))}" placeholder="ΕΕΕΕ-ΜΜ-ΗΗ, χωρισμένες με κόμμα"></label>
-  ${hasF('equip')?expEditor(w.exp,'person'):''}</form>
+  ${hasF('equip')?expEditor(w.exp,'person'):''}`,false,[hasF('lang')?'Γλώσσα':'',hasF('acc')?'ΑΜΚΑ':'',hasF('avail')?'δεύτερη ειδικότητα, μέρες':'',hasF('rating')&&!isOffice(w)?'βαθμός':'','άδειες',hasF('equip')?'λήξεις':''].filter(Boolean).join(', ').replace(/^./,c=>c.toUpperCase()))}</form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delworker" data-id="${w.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveworker">Αποθήκευση</button></div>`);
 }
 function ratesForm(w){
@@ -4627,12 +4642,12 @@ function vClient(R){const c=cliById(UI.cli),ps=cliProjects(c),st=cliState(c);
 function cliForm(c,o={}){const isNew=!c;c=c||cliNew({name:o.name||''});
   openModal(`<h2>${isNew?'Νέος πελάτης':'Επεξεργασία πελάτη'}</h2><form class="form" id="clif" data-id="${c.id}" data-new="${isNew?1:0}"${o.p?` data-p="${h(o.p)}"`:''}>
     <label class="full">Όνομα ή επωνυμία<input id="k_name" value="${h(c.name)}" placeholder="π.χ. Οικογένεια Παπαδοπούλου ή Αφοί Δημητρίου ΟΕ"></label>
-    <label>Υπεύθυνος επικοινωνίας<input id="k_person" value="${h(c.person||'')}" placeholder="Αν είναι εταιρεία"></label>
-    <label>Τηλέφωνο<input id="k_phone" type="tel" value="${h(c.phone||'')}"></label>
+    <label class="full">Τηλέφωνο<input id="k_phone" type="tel" value="${h(c.phone||'')}"></label>
+    ${moreBox(`<label>Υπεύθυνος επικοινωνίας<input id="k_person" value="${h(c.person||'')}" placeholder="Αν είναι εταιρεία"></label>
     <label>Email<input id="k_email" type="email" value="${h(c.email||'')}"></label>
     <label>ΑΦΜ<input id="k_afm" inputmode="numeric" maxlength="14" value="${h(c.afm||'')}"><span class="note">Για τιμολόγια και συμβόλαια.</span></label>
     <label class="full">Διεύθυνση<input id="k_addr" value="${h(c.addr||'')}"></label>
-    <label class="full">Τι πρέπει να ξέρουμε<textarea id="k_notes" rows="3" placeholder="π.χ. Μένουν στο σπίτι όσο γίνεται η δουλειά">${h(c.notes||'')}</textarea></label></form>
+    <label class="full">Τι πρέπει να ξέρουμε<textarea id="k_notes" rows="3" placeholder="π.χ. Μένουν στο σπίτι όσο γίνεται η δουλειά">${h(c.notes||'')}</textarea></label>`,!isNew&&!!(c.person||c.email||c.afm||c.addr||c.notes),'Email, ΑΦΜ, διεύθυνση, σημειώσεις')}</form>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delcli" data-c="${c.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savecli">Αποθήκευση</button></div>`)}
 function cliSave(){const f=document.getElementById('clif');if(!f)return;const g=x=>document.getElementById(x).value.trim(),isNew=f.dataset.new==='1';
   const v={name:g('k_name').replace(/\s+/g,' '),person:g('k_person'),phone:g('k_phone'),email:g('k_email'),afm:g('k_afm'),addr:g('k_addr'),notes:g('k_notes')};
@@ -4681,13 +4696,13 @@ function partnerForm(w){
   const isNew=!w;w=w||{id:uid('w'),name:'',company:'',afm:'',specialtyId:siteSpecs()[0]?.id,role:'ext',pay:'job',wage:0,phone:'',off:[],rates:{}};
   openModal(`<h2>${isNew?'Νέος συνεργάτης':'Επεξεργασία συνεργάτη'}</h2><form class="form" id="xf" data-id="${w.id}" data-new="${isNew?1:0}">
   <label class="full">Επωνυμία<input id="x_company" value="${h(w.company)}" placeholder="π.χ. Αλουμίνια Παπαγεωργίου"></label>
-  <label>Υπεύθυνος επικοινωνίας<input id="x_name" value="${h(w.name)}"></label>
-  <label>ΑΦΜ<input id="x_afm" value="${h(w.afm)}" inputmode="numeric"></label>
   <label>Ειδικότητα${sel('x_spec',specOpts(),w.specialtyId)}</label>
   <label>Τηλέφωνο (Viber)<input id="x_phone" value="${h(w.phone)}" inputmode="tel"></label>
   <label>Τρόπος πληρωμής${sel('x_pay',[['job','Κατ\' αποκοπή ανά εργασία'],['day','Με μεροκάματο']],w.pay)}</label>
   <label>Μεροκάματο (€, αν πληρώνεται έτσι)<input id="x_wage" type="number" min="0" step="5" value="${+w.wage||''}"></label>
-  <label class="full">Μέρες που δεν είναι διαθέσιμος<input id="x_off" value="${h((w.off||[]).join(', '))}" placeholder="ΕΕΕΕ-ΜΜ-ΗΗ, χωρισμένες με κόμμα"></label></form>
+  ${moreBox(`<label>Υπεύθυνος επικοινωνίας<input id="x_name" value="${h(w.name)}"></label>
+  <label>ΑΦΜ<input id="x_afm" value="${h(w.afm)}" inputmode="numeric"></label>
+  <label class="full">Μέρες που δεν είναι διαθέσιμος<input id="x_off" value="${h((w.off||[]).join(', '))}" placeholder="ΕΕΕΕ-ΜΜ-ΗΗ, χωρισμένες με κόμμα"></label>`,false,'Υπεύθυνος, ΑΦΜ, μέρες που λείπει')}</form>
   <p class="note">Την τιμή κατ' αποκοπή τη γράφεις σε κάθε εργασία που του αναθέτεις.</p>
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delworker" data-id="${w.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savepartner">Αποθήκευση</button></div>`);
 }
