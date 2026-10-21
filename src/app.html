@@ -868,6 +868,8 @@ body:not(.in) .app{display:none}
 .daystrip button[aria-pressed="true"] b{color:#fff}
 .daystrip button.is-today:not([aria-pressed="true"]){border-color:var(--brand)}
 .daystrip button.closed{border-style:dashed}
+.sched th.hol{color:var(--muted)}.sched th .holname{display:block;font-size:11.5px;font-weight:500;color:var(--muted);margin-top:4px;white-space:normal}
+.sched td.hol{background:repeating-linear-gradient(135deg,transparent 0 8px,color-mix(in srgb,var(--line) 55%,transparent) 8px 9px)}
 .day-schedule{display:grid;gap:16px;min-width:0}
 .day-schedule>.form{margin:0}.day-schedule .projgrid{grid-template-columns:1fr}
 .schedule-summary{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
@@ -1865,7 +1867,10 @@ function quickAssign(){
 }
 function vWeek(R){
   if(!UI.week)UI.week=viewStart(UI.day||TODAY);
-  const days=weekDays(UI.week);
+  // οι αργίες που πέφτουν σε εργάσιμη μένουν στον πίνακα ως στήλη «Αργία», χωρίς πρόγραμμα
+  const days=Array.from({length:7},(_,i)=>add(UI.week,i)).filter(d=>isWork(d)||(holName(d)&&S.settings.workdays.includes(dow(d))));
+  const holCell=d=>{const n=holName(d);return `<td class="c hol${d===TODAY?' today':''}"><div class="cell off" title="${h(n)}">${n==='Κλειστά'?'Κλειστά':'Αργία'}</div></td>`};
+  const thDay=d=>`<th class="${d===TODAY?'today':''}${isWork(d)?'':' hol'}">${fmt(d)}${isWork(d)?wxHead(d):`<small class="holname">${h(holName(d))}</small>`}</th>`;
   const mobile=`<div class="mobile-schedule"><div class="day-schedule"><div class="pagehead"><div><h1>Πρόγραμμα</h1><p class="note">Οι άνθρωποι και οι εργασίες κάθε ημέρας</p></div><button class="btn pri" data-act="quickassign">${ico('plus')}Ανάθεση</button>${scheduleWeekNav()}</div>${daySchedule(R)}<details class="auxiliary"><summary>Αποστολή και εξαγωγή</summary><div class="bar">${expBtns('week')}<button class="btn" data-act="sendweek">${ico('send')}Αποστολή εβδομάδας</button></div></details></div></div>`;
   const nav=`<div class="bar"><h1 class="grow">Εβδομάδα ${fmtS(UI.week)} – ${fmtS(add(UI.week,6))}</h1>
     <div class="seg"><button data-act="wmode" data-m="workers"${UI.weekMode==='workers'?' aria-pressed="true"':''}>Ανά εργαζόμενο</button><button data-act="wmode" data-m="projects"${UI.weekMode==='projects'?' aria-pressed="true"':''}>Ανά έργο</button></div>
@@ -1874,7 +1879,7 @@ function vWeek(R){
   const legend=`<div class="legend">${S.projects.map(p=>`<span><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</span>`).join('')}<span><i class="dot" style="background:var(--gen)"></i>Αποθήκη</span><span><b>Έντονα</b> = υπεύθυνος</span><span>${ico('pin')}το όρισες εσύ</span></div>`;
   if(UI.weekMode==='projects'){
     const rows=[...S.projects.map(p=>p.id),'gen','office'].map(pid=>{
-      const cells=days.map(d=>{
+      const cells=days.map(d=>{if(!isWork(d))return holCell(d);
         const day=R.byDay[d]||{jobs:[],gen:[]};
         let inner='';
         if(pid==='gen')inner=day.gen.map(g=>`<div>${h(short(g.w.name))}</div>`).join('');
@@ -1887,13 +1892,13 @@ function vWeek(R){
         return `<td class="pc${d===TODAY?' today':''}">${inner?`<div class="cell" style="--pc:${pc(pid)}">${inner}</div><div class="note mono">${n} άτομα</div>`:'<div class="cell idle">—</div>'}</td>`}).join('');
       const tot=R.asg.filter(a=>days.includes(a.date)&&a.projectId===pid);
       return `<tr><td class="w"><b>${h(pname(pid))}</b></td>${cells}<td class="n mono">${nf(md(tot))}<div class="note">${eur(tot.reduce((s,a)=>s+a.wage,0))}</div></td></tr>`}).join('');
-    return mobile+`<div class="desktop-schedule">`+nav+holNote(UI.week)+legend+rainPanel(R,days)+wxNote()+`<section class="panel scroll"><table class="sched"><thead><tr><th>Έργο</th>${days.map(d=>`<th class="${d===TODAY?'today':''}">${fmt(d)}${wxHead(d)}</th>`).join('')}<th class="n">Μεροκ.</th></tr></thead><tbody>${rows}</tbody></table></section></div>`;
+    return mobile+`<div class="desktop-schedule">`+nav+holNote(UI.week)+legend+rainPanel(R,days)+wxNote()+`<section class="panel scroll"><table class="sched"><thead><tr><th>Έργο</th>${days.map(thDay).join('')}<th class="n">Μεροκ.</th></tr></thead><tbody>${rows}</tbody></table></section></div>`;
   }
   const rows=[...S.specialties,{id:'__ext',name:'Εξωτερικοί συνεργάτες'}].map(sp=>{
     const ws=sp.id==='__ext'?S.workers.filter(isExt):S.workers.filter(w=>w.specialtyId===sp.id&&!isExt(w));if(!ws.length)return '';
     return `<tr class="grp"><td colspan="${days.length+2}">${h(sp.name)}</td></tr>`+ws.map(w=>{
       let n=0,c=0;
-      const cells=days.map(d=>{
+      const cells=days.map(d=>{if(!isWork(d))return holCell(d);
         const x=whatDoes(R,w.id,d);R.asg.filter(a=>a.date===d&&a.workerId===w.id).forEach(a=>{n+=a.share||1;c+=a.wage})
         const pin=x.forced?ico('pin','pin'):'';
         const wt=((R.byDay[d]||{}).wet||[]).filter(t=>t.responsibleId===w.id);
@@ -1912,7 +1917,7 @@ function vWeek(R){
       return `<tr><td class="w"><b>${h(w.name)}</b><div class="note">${isExt(w)?h((w.company?w.company+' · ':'')+(SP(w.specialtyId)?.name||'')):ROLES[w.role]+' · '+eur(w.wage)}</div></td>${cells}<td class="n mono">${nf(n)}<div class="note">${eur(c)}</div></td></tr>`}).join('')}).join('');
   const dayCost=days.map(d=>R.asg.filter(a=>a.date===d).reduce((s,a)=>s+a.wage,0));
   return mobile+`<div class="desktop-schedule">`+nav+holNote(UI.week)+legend+rainPanel(R,days)+wxNote()+`<p class="note">Πάτα ένα κελί για να ορίσεις εσύ σε ποιο έργο δουλεύει ο εργαζόμενος ή να του δώσεις άδεια. Τα υπόλοιπα προσαρμόζονται μόνα τους.</p>
-  <section class="panel scroll"><table class="sched"><thead><tr><th>Εργαζόμενος</th>${days.map(d=>`<th class="${d===TODAY?'today':''}">${fmt(d)}${wxHead(d)}</th>`).join('')}<th class="n">Μεροκ.</th></tr></thead>
+  <section class="panel scroll"><table class="sched"><thead><tr><th>Εργαζόμενος</th>${days.map(thDay).join('')}<th class="n">Μεροκ.</th></tr></thead>
   <tbody>${rows}<tr class="total"><td>Κόστος ημέρας</td>${dayCost.map(c=>`<td class="n mono">${eur(c)}</td>`).join('')}<td class="n mono">${eur(dayCost.reduce((a,b)=>a+b,0))}</td></tr></tbody></table></section></div>`;
 }
 function wxDayForm(d){
