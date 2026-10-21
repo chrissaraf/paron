@@ -1,0 +1,29 @@
+<section class="sec tight" id="start">
+  <div class="wrap">
+    <div class="sched">
+      <div class="sched-top"><span>ΤΟ ΠΡΟΓΡΑΜΜΑ ΣΑΣ ΓΙΑ ΑΥΡΙΟ</span><span class="pill">30 ΗΜΕΡΕΣ ΔΩΡΕΑΝ</span></div>
+      <dl>
+        <div><dt>ΔΟΥΛΕΙΑ</dt><dd>Οργάνωση των ομάδων σας</dd></div>
+        <div><dt>ΜΑΖΙ ΜΕ</dt><dd>{{NAME}}</dd></div>
+        <div><dt>ΕΝΑΡΞΗ</dt><dd>Από αύριο το πρωί</dd></div>
+      </dl>
+      <div class="sched-body">
+        <h2>Ζητήστε δοκιμή. Σας καλούμε εμείς.</h2>
+        <p class="sub">Σας καλούμε, σας δείχνουμε την εφαρμογή με τα δικά σας δεδομένα και στέλνετε το πρώτο πρόγραμμα την ίδια μέρα.</p>
+        <form class="lead-form" id="leadForm" novalidate>
+          <label>Ονοματεπώνυμο<input id="fName" name="name" autocomplete="name" required></label>
+          <label>Εταιρεία<input id="fCompany" name="company" autocomplete="organization"></label>
+          <label>Τηλέφωνο<input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
+          <label>Άτομα στην ομάδα
+            <select id="fSize" name="size">
+              <option>Έως 5</option><option selected>6 έως 15</option><option>16 έως 40</option><option>Πάνω από 40</option>
+            </select>
+          </label>
+          <label class="full"><span>Email <span class="small">(προαιρετικό)</span></span><input id="fEmail" name="email" type="email" autocomplete="email"></label>
+          <button class="btn pri full" type="submit">Θέλω δοκιμή 30 ημερών <svg><use href="#i-arrow"/></svg></button>
+          <div class="form-ok full" id="formOk" hidden><svg><use href="#i-ok"/></svg><span id="formOkText"></span></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
