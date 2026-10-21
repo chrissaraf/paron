@@ -963,6 +963,11 @@ main>*{min-width:0}
 @media (max-width:1100px){.bar>h1,.bar>h1.grow{flex:1 1 auto;min-width:min(100%,300px)}}
 /* πλαϊνό μενού: οι πέντε περιοχές, και κάτω από την ανοιχτή οι σελίδες της */
 .nav .areas{gap:4px}
+.nav .area-head{display:flex;align-items:stretch;gap:4px}.nav .area-head>.area{flex:1;min-width:0}
+.nav .area-toggle{display:grid;place-items:center;flex:0 0 44px;min-height:44px;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink-2);cursor:pointer}
+.nav .area-toggle:hover{background:var(--bg);color:var(--ink)}.nav .area-toggle:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.nav .area-toggle .chev{width:18px;height:18px;transform:rotate(-90deg)}.nav .area-toggle[aria-expanded="true"] .chev{transform:none}
+.nav .subs[hidden]{display:none}
 .nav .ni.area.open:not([aria-current]){color:var(--ink);font-weight:640}
 .nav .ni.area.open:not([aria-current])>svg{color:var(--ink)}
 .nav .subs{display:grid;gap:2px;margin:0 0 6px}
@@ -1063,7 +1068,7 @@ async function pull(again,quiet){if(isWorker())return false;if(saveT&&SYNC)retur
   if(again)return false;await push();return pull(true)}catch(e){if(!quiet)toast('Δεν βρέθηκε ο server. Δουλεύεις με τα δεδομένα αυτού του browser.');return false}}
 setS(load());LAST=JSON.stringify(S);
 
-let UI={proj:'',closed:[],tab:'today',day:null,week:null,weekDay:null,weekProj:'',projectView:'overview',weekMode:'workers',person:'',taskMode:'site',fProj:'',fSpec:'',fStat:'open',period:'week',from:'',to:'',payWeek:null};
+let UI={proj:'',closed:[],areaOpen:{},tab:'today',day:null,week:null,weekDay:null,weekProj:'',projectView:'overview',weekMode:'workers',person:'',taskMode:'site',fProj:'',fSpec:'',fStat:'open',period:'week',from:'',to:'',payWeek:null};
 try{const t=localStorage.getItem(LS+'.tab');if(t&&TABS.some(x=>x[0]===t))UI.tab=t;UI.proj=localStorage.getItem(LS+'.proj')||'';UI.cli=localStorage.getItem(LS+'.cli')||'';UI.closed=JSON.parse(localStorage.getItem(LS+'.nav')||'[]')}catch(e){}
 if(location.hash&&TABS.some(x=>'#'+x[0]===location.hash))UI.tab=location.hash.slice(1);
 
@@ -1474,11 +1479,11 @@ function renderNav(){
   const sb=isWorker()||offF('search')?'':hasF('search')?`<button class="ni nsearch" data-act="search">${ico('search')}<span>Αναζήτηση</span><kbd>/</kbd></button>`:`<button class="ni nsearch" data-act="upsell" data-f="search">${ico('search')}<span>Αναζήτηση</span>${lockTag('search')}</button>`;
   const ms=document.getElementById('msearch');if(ms){ms.hidden=isWorker()||offF('search');ms.dataset.act=hasF('search')?'search':'upsell';ms.dataset.f='search'}
   const cur=areaOf(UI.tab),cs=subOf(UI.tab);
-  document.getElementById('nav').innerHTML=sb+(isWorker()?'':`<div class="items areas">${AREAS.map(a=>{const xs=subsOf(a),open=a.k===cur;
+  document.getElementById('nav').innerHTML=sb+(isWorker()?'':`<div class="items areas">${AREAS.map(a=>{const xs=subsOf(a),active=a.k===cur,open=UI.areaOpen[a.k]??active;
     if(!xs.length&&a.subs.length)return '';
     const one=xs.length<2;
-    return `<button class="ni area${open?' open':''}" data-tab="${areaTab(a)}"${open&&one?' aria-current="page"':''}>${ico(a.i)}<span>${a.l}</span>${one&&xs[0]&&TAB_F[xs[0][0]]?lockTag(TAB_F[xs[0][0]]):''}</button>`
-      +(open&&!one?`<div class="subs">${xs.map(([k,l])=>`<button class="ni sub" data-tab="${k}"${cs===k?' aria-current="page"':''}><span>${l}</span>${TAB_F[k]?lockTag(TAB_F[k]):''}</button>`).join('')}</div>`:'')}).join('')}</div>`)+(!isWorker()?'':navGroups().map(g=>{
+    return `<div class="area-group"><div class="area-head"><button class="ni area${active?' open':''}" data-tab="${areaTab(a)}"${active&&one?' aria-current="page"':''}>${ico(a.i)}<span>${a.l}</span>${one&&xs[0]&&TAB_F[xs[0][0]]?lockTag(TAB_F[xs[0][0]]):''}</button>${one?'':`<button type="button" class="area-toggle" id="nav-toggle-${a.k}" data-act="areatoggle" data-area="${a.k}" aria-expanded="${open}" aria-controls="nav-area-${a.k}" aria-label="${open?'Σύμπτυξη':'Ανάπτυξη'}: ${a.l}">${chev}</button>`}</div>`
+      +(!one?`<div class="subs" id="nav-area-${a.k}"${open?'':' hidden'}>${xs.map(([k,l])=>`<button class="ni sub" data-tab="${k}"${cs===k?' aria-current="page"':''}><span>${l}</span>${TAB_F[k]?lockTag(TAB_F[k]):''}</button>`).join('')}</div>`:'')+'</div>'}).join('')}</div>`)+(!isWorker()?'':navGroups().map(g=>{
     const closed=UI.closed.includes(g.k)&&!g.items.some(([k])=>UI.tab===k);
     return `<div class="ng${closed?' closed':''}"><button class="gh" data-act="navgroup" data-g="${g.k}" aria-expanded="${!closed}"><span>${g.l}</span>${chev}</button><div class="items">${g.items.map(([k,l])=>`<button class="ni" data-tab="${k}"${UI.tab===k?' aria-current="page"':''}>${ico(NAVI[k]||'day')}<span>${l}</span></button>`).join('')}</div></div>`}).join(''));
   document.getElementById('navb').innerHTML=`${AUTH.user?`<div class="me"><span class="av" aria-hidden="true">${h(initials(AUTH.user.name))}</span><span class="me-t"><b>${h(AUTH.user.name)}</b><small>${TRH(ROLE_L[AUTH.user.role]||'')}</small></span><button class="iconbtn" data-act="logout" title="${TRH('Αποσύνδεση')}" aria-label="${TRH('Αποσύνδεση')}">${ico('out')}</button></div>`:''}
@@ -3719,7 +3724,7 @@ document.addEventListener('click',e=>{
   // αν άλλαξε η μέρα με την εφαρμογή ανοιχτή, η χθεσινή καταγράφεται πριν από την αλλαγή
   if(AUTH.user&&!isWorker()&&pastPending()&&freezePast(schedule()))save(true);
   const tab=e.target.closest('[data-tab]');
-  if(tab){UI.tab=tab.dataset.tab;if(tab.dataset.p){if(UI.proj!==tab.dataset.p)UI.projectView='overview';UI.proj=tab.dataset.p;if(tab.dataset.view)UI.projectView=tab.dataset.view}if(tab.dataset.c){UI.cli=tab.dataset.c;try{localStorage.setItem(LS+'.cli',UI.cli)}catch(err){}}if(tab.dataset.pw)UI.payWeek=tab.dataset.pw;UI.sec=tab.dataset.sec||'';if(UI.tab==='settings')UI.setCat=tab.dataset.cat||'';try{localStorage.setItem(LS+'.tab',UI.tab);localStorage.setItem(LS+'.proj',UI.proj)}catch(err){}
+  if(tab){UI.tab=tab.dataset.tab;if(tab.dataset.p){if(UI.proj!==tab.dataset.p)UI.projectView='overview';UI.proj=tab.dataset.p;if(tab.dataset.view)UI.projectView=tab.dataset.view}if(tab.dataset.c){UI.cli=tab.dataset.c;try{localStorage.setItem(LS+'.cli',UI.cli)}catch(err){}}if(tab.dataset.pw)UI.payWeek=tab.dataset.pw;UI.sec=tab.dataset.sec||'';const area=areaOf(UI.tab);if(area)UI.areaOpen[area]=true;if(UI.tab==='settings')UI.setCat=tab.dataset.cat||'';try{localStorage.setItem(LS+'.tab',UI.tab);localStorage.setItem(LS+'.proj',UI.proj)}catch(err){}
     setNav();closeModal();window.scrollTo(0,0);render();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id;
@@ -3735,6 +3740,7 @@ document.addEventListener('click',e=>{
     case 'quickassign':quickAssign();break;
     case 'chooseassign':{const wid=document.getElementById('qa_worker').value,d=document.getElementById('qa_day').value;if(!W(wid)||!d){toast('Διάλεξε εργαζόμενο και ημέρα.');break}if(!isWork(d)){toast('Διάλεξε εργάσιμη ημέρα. Οι εργάσιμες αλλάζουν στις Ρυθμίσεις.');break}assignForm(wid,d);break}
     case 'navopen':setNav(true);break;
+    case 'areatoggle':{if(isWorker())break;const area=AREAS.find(x=>x.k===el.dataset.area);if(!area||subsOf(area).length<2)break;UI.areaOpen[area.k]=!(UI.areaOpen[area.k]??(area.k===areaOf(UI.tab)));renderNav();document.getElementById('nav-toggle-'+area.k)?.focus();break}
     case 'setcat':UI.setCat=el.dataset.cat||'';window.scrollTo(0,0);render();break;
     case 'logout':authLogout();break;
     case 'pushon':pushEnable();break;
@@ -3883,7 +3889,7 @@ document.addEventListener('click',e=>{
       cliAddLog(c,{k,d:/^\d{4}-\d\d-\d\d$/.test(d)&&d<=TODAY?d:TODAY,text:t,by:AUTH.user?AUTH.user.name:''});UI.hmsg='Πελάτης «'+c.name+'»: '+cliKind(k).toLowerCase();commit('Μπήκε στο ιστορικό.');break}
     case 'clidel':{const c=cliById(el.dataset.c);if(!c)break;if(!el.dataset.sure){el.dataset.sure=1;el.classList.add('sure');el.textContent='Διαγραφή;';break}
       c.log=(c.log||[]).filter(r=>r.id!==id);UI.hmsg='Πελάτης «'+c.name+'»: διαγραφή σημείωσης';commit('Η σημείωση διαγράφηκε.');break}
-    case 'qcli':cliGo(el.dataset.c);closeModal();render();window.scrollTo(0,0);break;
+    case 'qcli':UI.areaOpen.projects=true;cliGo(el.dataset.c);closeModal();render();window.scrollTo(0,0);break;
     case 'cmake':{const p=P(el.dataset.p);if(!p)break;p.share={...(p.share||{}),t:newTok(),at:stamp()};UI.hmsg='Σελίδα πελάτη: σύνδεσμος για «'+p.name+'»';commit('Ο σύνδεσμος είναι έτοιμος. Στείλ’ τον στον πελάτη.');break}
     case 'ccopy':{const p=P(el.dataset.p);if(p&&clLink(p))copy(clLink(p),document.getElementById('cl_url'));break}
     case 'cnew':{const p=P(el.dataset.p);if(!p)break;if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Ο παλιός σταματά. Πάτα ξανά';break}
@@ -4058,8 +4064,8 @@ document.addEventListener('click',e=>{
     case 'sumwk':sumForm(add(UI.sumWs||viewStart(TODAY),+el.dataset.dir));break;
     case 'sumviber':openViber(ownerW(),weekSumText(weekSum(schedule(),el.dataset.ws||TODAY)));break;
     case 'sumcopy':{const ta=document.getElementById('sumtext');copy(ta.value,ta);break}
-    case 'qperson':UI.tab='person';UI.person=id;UI.week=viewStart(TODAY);closeModal();render();window.scrollTo(0,0);break;
-    case 'qproj':UI.tab='project';UI.proj=el.dataset.p;closeModal();render();window.scrollTo(0,0);break;
+    case 'qperson':UI.areaOpen.week=true;UI.tab='person';UI.person=id;UI.week=viewStart(TODAY);closeModal();render();window.scrollTo(0,0);break;
+    case 'qproj':UI.areaOpen.projects=true;UI.tab='project';UI.proj=el.dataset.p;closeModal();render();window.scrollTo(0,0);break;
     case 'histall':UI.histAll=true;render();break;
     case 'payviber':{const r=payData(schedule(),UI.payWeek).find(x=>x.w.id===id);if(r)openViber(r.w,payText(r,UI.payWeek));break}
     case 'payall':{if(!el.dataset.sure){el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά';break}
@@ -4216,3 +4222,4 @@ setInterval(()=>{const ae=document.activeElement;if(!SERVER||!AUTH.user||isWorke
 boot();
 })();
 </script>
+
