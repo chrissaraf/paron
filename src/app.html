@@ -3255,7 +3255,7 @@ function vSettings(){
     <label>Όνομα του εργολάβου<input id="s_owner" value="${h(S.settings.ownerName||'')}" placeholder="Εργολάβος"></label>
     <label>Κινητό του εργολάβου για Viber<input id="s_ownerph" type="tel" value="${h(S.settings.ownerPhone||'')}" placeholder="π.χ. 694 123 4567"><span class="note">Παίρνει τα ραντεβού και τις υπενθυμίσεις του μαζί με τους άλλους.</span></label>
     <label class="full">Εργάσιμες μέρες<div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-wd="${d}"${S.settings.workdays.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></label>
-    <label class="full ck"><input type="checkbox" id="s_fill"${S.settings.fillIdle?' checked':''}> <span>Δουλειά για όλους κάθε μέρα: όσοι περισσεύουν ενισχύουν συνεργεία της ειδικότητάς τους ή πάνε στην αποθήκη</span></label></div></section>
+    <label class="full ck"><input type="checkbox" id="s_fill"${S.settings.fillIdle?' checked':''}> <span>Δουλειά για όλους κάθε μέρα: όσοι περισσεύουν συμπληρώνουν συνεργεία που τους λείπουν βοηθοί, αλλιώς πάνε στην αποθήκη. Καμία εργασία δεν παίρνει περισσότερους από όσους ζητά</span></label></div></section>
   ${rateSettings()}
   <section class="panel"><h2>Αργίες και κλειστές μέρες</h2>
     <p class="note">Αυτές τις μέρες δεν μπαίνει πρόγραμμα, δεν μετράνε μεροκάματα και δεν στέλνεται Viber. Οι εργασίες συνεχίζουν την επόμενη εργάσιμη.</p>
@@ -3977,7 +3977,7 @@ document.addEventListener('change',e=>{
   else if(t.id==='s_rate'){S.settings.rate=Object.assign(rateCfg(),{on:t.checked});commit(t.checked?'Το πρόγραμμα βάζει τους πιο έμπειρους στις δύσκολες εργασίες, με εναλλαγή.':'Το πρόγραμμα δεν λαμβάνει υπόψη βαθμούς και δυσκολία.')}
   else if(t.id==='s_rhard'||t.id==='s_rstreak'||t.id==='s_rbonus'){const v=Math.max(t.id==='s_rbonus'?0:1,Math.round(+t.value||0)),k={s_rhard:'hard',s_rstreak:'streak',s_rbonus:'bonus'}[t.id];S.settings.rate=Object.assign(rateCfg(),{[k]:k==='streak'?Math.min(10,v):k==='bonus'?Math.min(100,v):Math.min(5,Math.max(3,v))});
     commit(k==='bonus'?(v?'Η πρόταση μπόνους είναι '+S.settings.rate.bonus+'%.':'Χωρίς πρόταση μπόνους.'):k==='streak'?'Μετά από '+S.settings.rate.streak+(S.settings.rate.streak==1?' μέρα':' μέρες')+' σε δύσκολη ακολουθεί πιο ελαφριά.':'Δύσκολες θεωρούνται οι εργασίες με δυσκολία '+S.settings.rate.hard+' και πάνω.')}
-  else if(t.id==='s_fill'){S.settings.fillIdle=t.checked;commit(t.checked?'Όλοι έχουν δουλειά κάθε μέρα.':'Όσοι περισσεύουν μένουν χωρίς ανάθεση.')}
+  else if(t.id==='s_fill'){S.settings.fillIdle=t.checked;commit(t.checked?'Όλοι έχουν δουλειά κάθε μέρα.':'Όσοι περισσεύουν μένουν χωρίς ανάθεση και δεν πληρώνονται εκείνη τη μέρα.')}
   else if(t.dataset.wd!=null){const d=+t.dataset.wd;const s=new Set(S.settings.workdays);t.checked?s.add(d):s.delete(d);if(!s.size){t.checked=true;toast('Χρειάζεται τουλάχιστον μία εργάσιμη μέρα.');return}S.settings.workdays=[...s].sort();commit('Οι εργάσιμες μέρες άλλαξαν.')}
   else if(t.dataset.re){
     const v=readTaskForm();

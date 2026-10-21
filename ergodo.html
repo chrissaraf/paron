@@ -1488,7 +1488,7 @@ function demo(){
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   const xw=EXPW_DEMO();workers.forEach(w=>{if(xw[w.id])w.exp=xw[w.id]});
   profitDemo({projects,tasks});attDemoSites({projects});
-  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],diarySeed:true,diary:diaryDemo([1,2,3,4,5,6]),wxLog:wxLogDemo([1,2,3,4,5,6]),eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]).map(a=>({...a,clientId:CLI_DEMO.a[a.id]})),cliDemo:true,clients:cliDemo(),settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:true,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],diarySeed:true,diary:diaryDemo([1,2,3,4,5,6]),wxLog:wxLogDemo([1,2,3,4,5,6]),eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]).map(a=>({...a,clientId:CLI_DEMO.a[a.id]})),cliDemo:true,clients:cliDemo(),idleOff:true,settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:false,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 /* ---------- Αρχεία Excel ----------
    Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
@@ -2078,7 +2078,7 @@ function migrate(o){
     d.specialties.forEach(s=>{if(!o.specialties.some(x=>x.id===s.id))o.specialties.push(s)});
     d.workers.forEach(w=>{if(!o.workers.some(x=>x.id===w.id))o.workers.push(w)});
     o.duties=d.duties.filter(x=>o.workers.some(w=>w.id===x.workerId));
-    o.overrides={};o.payments={};o.dutyDone={};o.settings.fillIdle=true;o.v=2;
+    o.overrides={};o.payments={};o.dutyDone={};o.settings.fillIdle=false;o.v=2;
   }
   if(o&&Array.isArray(o.projects)){
     const o2=(o.specialties||[]).find(s=>s.id==='o2');if(o2&&o2.pm==null)o2.pm=true;
@@ -2123,6 +2123,8 @@ function migrate(o){
   if(o&&Array.isArray(o.workers)&&Array.isArray(o.tasks)&&!o.fieldDemo){
     o.fieldDemo=true;const d=demo(),same=(a,b,k)=>{const x=(a||[]).find(y=>y.id===k),z=(b||[]).find(y=>y.id===k);return x&&z&&(x.name||x.title)===(z.name||z.title)};
     if(!(o.field||[]).length&&same(o.workers,d.workers,'w1')&&same(o.workers,d.workers,'w3')&&same(o.tasks,d.tasks,'t1'))o.field=d.field}
+  // μία φορά (v42, ζήτημα του Χρήστου): όσοι περισσεύουν μένουν χωρίς ανάθεση και χωρίς μεροκάματο, σαν ρεπό
+  if(o&&o.settings&&!o.idleOff){o.idleOff=true;o.settings.fillIdle=false}
   // μία φορά: demo προθεσμίες σε demo έργα
   if(o&&Array.isArray(o.projects)&&!o.dueDemo){
     o.dueDemo=true;const d=demo();
@@ -2406,7 +2408,9 @@ function unpackDay(rec,d,asg,waiting){
   if(S.settings.fillIdle)S.workers.filter(w=>(rec.e||[]).includes(w.id)&&!inDay.has(w.id)&&!isOff(w,d)&&!isOffice(w)&&!isExt(w)).forEach(w=>{
     const lj=w.role!=='voith'&&(jobs.find(j=>!j.lead&&j.task.responsibleId===w.id)||jobs.find(j=>!j.lead&&canSpec(w,j.task.specialtyId)));
     if(lj){lj.lead=w;lj.sub=w.id!==lj.task.responsibleId;return}
-    const j=jobs.find(j=>j.lead&&canSpec(w,j.task.specialtyId))||(w.role==='voith'?jobs.find(j=>j.lead):null);
+    // μόνο σε συνεργείο που του λείπουν βοηθοί, ποτέ πάνω από όσους ζητά η εργασία
+    const short=j=>j.lead&&j.helpers.length<(+j.task.helpers||0);
+    const j=jobs.find(j=>short(j)&&canSpec(w,j.task.specialtyId))||(w.role==='voith'?jobs.find(short):null);
     if(j){j.helpers.push(w);j.extra.add(w.id)}else gen.push({w,forced:false})});
   jobs=jobs.filter(j=>j.lead||j.helpers.length);
   // μεροκάματα: όπου το άτομο έμεινε στην ίδια θέση κρατιέται το ποσό που καταγράφηκε
@@ -2504,13 +2508,15 @@ function schedule(){
         if(rem[t.id]===0){finish[t.id]=day;left--}
       }
     }
-    // όλοι να έχουν δουλειά: όσοι περισσεύουν ενισχύουν συνεργεία ή πάνε αποθήκη
-    if(S.settings.fillIdle&&jobs.length){
+    // όλοι να έχουν δουλειά: όσοι περισσεύουν συμπληρώνουν συνεργεία που τους λείπουν βοηθοί, αλλιώς πάνε αποθήκη.
+    // Η εργασία δεν παίρνει ποτέ περισσότερους από όσους ζητά.
+    if(S.settings.fillIdle){
       S.workers.filter(w=>!busy.has(w.id)&&!isExt(w)).forEach(w=>{
-        let same=jobs.filter(j=>j.task.specialtyId===w.specialtyId);if(!same.length&&sp2(w))same=jobs.filter(j=>j.task.specialtyId===sp2(w));
-        let cand=same.length?same:(w.role==='voith'?jobs.slice():[]);
+        const room=jobs.filter(j=>j.helpers.length<(+j.task.helpers||0));
+        let same=room.filter(j=>j.task.specialtyId===w.specialtyId);if(!same.length&&sp2(w))same=room.filter(j=>j.task.specialtyId===sp2(w));
+        let cand=same.length?same:(w.role==='voith'?room.slice():[]);
         // κουρασμένος από δύσκολες: πάει σε ελαφριά εργασία ή στην αποθήκη, όχι ξανά σε δύσκολη
-        if(RO&&cand.length&&cand.every(j=>tired(w,j.task))){const lite=jobs.filter(j=>!isHard(j.task)&&(canSpec(w,j.task.specialtyId)||w.role==='voith'));cand=lite}
+        if(RO&&cand.length&&cand.every(j=>tired(w,j.task))){const lite=room.filter(j=>!isHard(j.task)&&(canSpec(w,j.task.specialtyId)||w.role==='voith'));cand=lite}
         if(cand.length){cand.sort((a,b)=>((tired(w,a.task)?1:0)-(tired(w,b.task)?1:0))||(a.helpers.length-(+a.task.helpers||0))-(b.helpers.length-(+b.task.helpers||0))||a.helpers.length-b.helpers.length);const j=cand[0];j.helpers.push(w);j.extra.add(w.id)}
         else gen.push({w,forced:false});
         busy.add(w.id)});
@@ -5060,7 +5066,7 @@ function vSettings(){
     <label>Όνομα του εργολάβου<input id="s_owner" value="${h(S.settings.ownerName||'')}" placeholder="Εργολάβος"></label>
     <label>Κινητό του εργολάβου για Viber<input id="s_ownerph" type="tel" value="${h(S.settings.ownerPhone||'')}" placeholder="π.χ. 694 123 4567"><span class="note">Παίρνει τα ραντεβού και τις υπενθυμίσεις του μαζί με τους άλλους.</span></label>
     <label class="full">Εργάσιμες μέρες<div class="wd">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-wd="${d}"${S.settings.workdays.includes(d)?' checked':''}> ${DAYS[d]}</label>`).join('')}</div></label>
-    <label class="full ck"><input type="checkbox" id="s_fill"${S.settings.fillIdle?' checked':''}> <span>Δουλειά για όλους κάθε μέρα: όσοι περισσεύουν ενισχύουν συνεργεία της ειδικότητάς τους ή πάνε στην αποθήκη</span></label></div></section>
+    <label class="full ck"><input type="checkbox" id="s_fill"${S.settings.fillIdle?' checked':''}> <span>Δουλειά για όλους κάθε μέρα: όσοι περισσεύουν συμπληρώνουν συνεργεία που τους λείπουν βοηθοί, αλλιώς πάνε στην αποθήκη. Καμία εργασία δεν παίρνει περισσότερους από όσους ζητά</span></label></div></section>
   ${rateSettings()}
   <section class="panel"><h2>Αργίες και κλειστές μέρες</h2>
     <p class="note">Αυτές τις μέρες δεν μπαίνει πρόγραμμα, δεν μετράνε μεροκάματα και δεν στέλνεται Viber. Οι εργασίες συνεχίζουν την επόμενη εργάσιμη.</p>
@@ -5782,7 +5788,7 @@ document.addEventListener('change',e=>{
   else if(t.id==='s_rate'){S.settings.rate=Object.assign(rateCfg(),{on:t.checked});commit(t.checked?'Το πρόγραμμα βάζει τους πιο έμπειρους στις δύσκολες εργασίες, με εναλλαγή.':'Το πρόγραμμα δεν λαμβάνει υπόψη βαθμούς και δυσκολία.')}
   else if(t.id==='s_rhard'||t.id==='s_rstreak'||t.id==='s_rbonus'){const v=Math.max(t.id==='s_rbonus'?0:1,Math.round(+t.value||0)),k={s_rhard:'hard',s_rstreak:'streak',s_rbonus:'bonus'}[t.id];S.settings.rate=Object.assign(rateCfg(),{[k]:k==='streak'?Math.min(10,v):k==='bonus'?Math.min(100,v):Math.min(5,Math.max(3,v))});
     commit(k==='bonus'?(v?'Η πρόταση μπόνους είναι '+S.settings.rate.bonus+'%.':'Χωρίς πρόταση μπόνους.'):k==='streak'?'Μετά από '+S.settings.rate.streak+(S.settings.rate.streak==1?' μέρα':' μέρες')+' σε δύσκολη ακολουθεί πιο ελαφριά.':'Δύσκολες θεωρούνται οι εργασίες με δυσκολία '+S.settings.rate.hard+' και πάνω.')}
-  else if(t.id==='s_fill'){S.settings.fillIdle=t.checked;commit(t.checked?'Όλοι έχουν δουλειά κάθε μέρα.':'Όσοι περισσεύουν μένουν χωρίς ανάθεση.')}
+  else if(t.id==='s_fill'){S.settings.fillIdle=t.checked;commit(t.checked?'Όλοι έχουν δουλειά κάθε μέρα.':'Όσοι περισσεύουν μένουν χωρίς ανάθεση και δεν πληρώνονται εκείνη τη μέρα.')}
   else if(t.dataset.wd!=null){const d=+t.dataset.wd;const s=new Set(S.settings.workdays);t.checked?s.add(d):s.delete(d);if(!s.size){t.checked=true;toast('Χρειάζεται τουλάχιστον μία εργάσιμη μέρα.');return}S.settings.workdays=[...s].sort();commit('Οι εργάσιμες μέρες άλλαξαν.')}
   else if(t.dataset.re){
     const v=readTaskForm();
