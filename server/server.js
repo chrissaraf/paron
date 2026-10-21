@@ -222,7 +222,7 @@ async function runSend(date, trigger, week = false, changed = false) {
     const R = C.schedule();
     const log = readJSON(F.log, []);
     let sent = 0, dry = 0, failed = 0, skipped = 0;
-    const days = week ? C.weekDays(C.weekStart(date)) : [date];
+    const days = week ? C.weekDays(C.viewStart(date)) : [date];
     const owner = C.ownerW();   // ο εργολάβος, αν έχει κινητό στις Ρυθμίσεις: μόνο ραντεβού και υπενθυμίσεις
     for (const w of owner.phone ? [...S.workers, owner] : S.workers) {
       if (only && !only.has(w.id)) continue;
@@ -235,7 +235,7 @@ async function runSend(date, trigger, week = false, changed = false) {
       if (!week && !only && w.id !== C.OWNER && C.isRest(w, date) && !C.isLeave(w, date)) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Ρεπό' }); continue; }
       if (w.id === C.OWNER && !days.some(d => C.dayBlock(R, w, d).trim())) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Χωρίς ραντεβού ή υπενθυμίσεις' }); continue; }
       if (!phone) { skipped++; log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); continue; }
-      const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date, !!only);
+      const text = week ? C.personText(R, w, C.viewStart(date)) : C.personDayText(R, w, date, !!only);
       try { const r = await sendOne(phone, text); r.status === 'sent' ? sent++ : dry++; log.push({ ...entry, status: r.status, text }); }
       catch (e) { failed++; log.push({ ...entry, status: 'error', error: e.message, text }); }
     }
@@ -247,9 +247,9 @@ async function runSend(date, trigger, week = false, changed = false) {
       if (!us.length || (only && !only.has(w.id))) continue;
       if (!only && C.isExt(w) && !C.hasJob(R, w.id, days)) continue;
       if (!week && !only && C.isRest(w, date) && !C.isLeave(w, date)) continue;
-      const text = week ? C.personText(R, w, C.weekStart(date)) : C.personDayText(R, w, date, !!only);
+      const text = week ? C.personText(R, w, C.viewStart(date)) : C.personDayText(R, w, date, !!only);
       const l = C.langOf(w);   // στη γλώσσα του εργαζόμενου, όπως και το μήνυμα
-      const title = week ? C.I18N.tx(l, 'Το πρόγραμμά σου για την εβδομάδα {d}', { d: C.fmtSX(l, C.weekStart(date)) }) : C.I18N.tx(l, only ? 'Άλλαξε το πρόγραμμά σου για {d}' : 'Το πρόγραμμά σου για {d}', { d: C.fmtX(l, date) });
+      const title = week ? C.I18N.tx(l, 'Το πρόγραμμά σου για την εβδομάδα {d}', { d: C.fmtSX(l, C.viewStart(date)) }) : C.I18N.tx(l, only ? 'Άλλαξε το πρόγραμμά σου για {d}' : 'Το πρόγραμμά σου για {d}', { d: C.fmtX(l, date) });
       pushed += (await pushTo(us, 'day', { title, body: pushBody(text), url: '/', tag: 'day-' + (week ? 'w' : '') + date })).sent;
     }
     const what = only ? ' με την αλλαγή' : '';
@@ -565,7 +565,7 @@ http.createServer(async (req, res) => {
         if (!w) return send(res, 200, { unlinked: true, name: me.name });
         C.setState(withPlan(S)); C.today();
         const q = url.searchParams.get('week') || '';
-        return send(res, 200, C.myView(C.schedule(), w, C.weekStart(/^\d{4}-\d{2}-\d{2}$/.test(q) ? q : C.ds(new Date()))));
+        return send(res, 200, C.myView(C.schedule(), w, C.viewStart(/^\d{4}-\d{2}-\d{2}$/.test(q) ? q : C.ds(new Date()))));
       }
       // η γλώσσα του: η σελίδα του, τα μηνύματα Viber και οι ειδοποιήσεις έρχονται σε αυτή
       if (url.pathname === '/api/my/lang' && req.method === 'POST') {
