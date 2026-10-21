@@ -733,7 +733,8 @@ function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(
 function blankState(cur){
   const o=demo(),st=(cur&&cur.settings)||{};
   Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false,diary:[],wxLog:{},clients:[]});
-  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:viewStart(TODAY)});if(!st.yard)delete o.settings.yard;
+  o.teams=[];
+  o.settings=Object.assign({},o.settings,{scheduleMode:'manual',manualFrom:TODAY,preferTeams:true},st,{start:TODAY,payFrom:viewStart(TODAY)});if(!st.yard)delete o.settings.yard;
   if(cur&&cur.hist)o.hist=cur.hist;
   return o;
 }
@@ -918,7 +919,7 @@ const isExt=w=>!!w&&w.role==='ext';
 // people: άτομα στα έργα (γραφείο και εργολάβος δεν μετράνε), office: χρήστες γραφείου (0 = χωρίς όριο). Τα όρια μόνο προειδοποιούν.
 const PLANS=[{id:'mastoras',name:'Μάστορας',gen:'Μάστορα',price:9.99,people:5,office:1},{id:'synergeio',name:'Συνεργείο',gen:'Συνεργείου',price:19.99,people:15,office:3},{id:'ergotaxio',name:'Εργοτάξιο',gen:'Εργοταξίου',price:39.99,people:40,office:0}];
 const FEATS={wx:['synergeio','Πρόγραμμα με τον καιρό'],partners:['synergeio','Συνεργάτες'],appts:['synergeio','Ραντεβού με πελάτες'],clients:['synergeio','Καρτέλα πελάτη'],pm:['synergeio','Διαχειριστές έργων'],
-  gaps:['synergeio','Τι λείπει: κενά στο πρόγραμμα'],deadline:['synergeio','Προθεσμία παράδοσης ανά έργο'],avail:['synergeio','Διαθεσιμότητα και δεύτερη ειδικότητα'],search:['synergeio','Αναζήτηση σε όλη την εφαρμογή'],weekly:['synergeio','Εβδομαδιαία σύνοψη για τον εργολάβο'],setup:['synergeio','Οδηγός πρώτης ρύθμισης'],
+  gaps:['synergeio','Τι λείπει: κενά στο πρόγραμμα'],deadline:['synergeio','Προθεσμία παράδοσης ανά έργο'],avail:['synergeio','Διαθεσιμότητα εργαζομένων'],search:['synergeio','Αναζήτηση σε όλη την εφαρμογή'],weekly:['synergeio','Εβδομαδιαία σύνοψη για τον εργολάβο'],setup:['synergeio','Οδηγός πρώτης ρύθμισης'],
   progress:['synergeio','Πρόοδος από το εργοτάξιο'],leave:['synergeio','Άδειες από το κινητό'],acc:['synergeio','Κατάσταση για τον λογιστή'],export:['synergeio','Εξαγωγή σε Excel και PDF'],push:['synergeio','Ειδοποιήσεις στο κινητό'],
   rating:['ergotaxio','Βαθμός εργαζομένου και δυσκολία εργασίας'],history:['ergotaxio','Ιστορικό αλλαγών με αναίρεση'],profit:['ergotaxio','Κέρδος ανά έργο'],gps:['ergotaxio','Παρουσίες με GPS'],materials:['ergotaxio','Υλικά πριν την εργασία'],equip:['ergotaxio','Μηχανήματα, οχήματα και λήξεις'],diary:['ergotaxio','Ημερολόγιο έργου με φωτογραφίες'],client:['ergotaxio','Σελίδα προόδου για τον πελάτη']};
 const planIx=id=>{const i=PLANS.findIndex(p=>p.id===id);return i<0?PLANS.length-1:i};   // χωρίς ρύθμιση: το ανώτερο
@@ -960,9 +961,59 @@ const isRest=(w,d)=>availOn()&&Array.isArray(w.days)&&w.days.length>0&&!w.days.i
 const isLeave=(w,d)=>(w.off||[]).includes(d)||ov(d,w.id)?.type==='off';
 const isOff=(w,d)=>isLeave(w,d)||isRest(w,d);
 const offWord=(w,d,l)=>tx(l,isLeave(w,d)?(S.overrides[d+'|'+w.id]?.why==='absent'?'Απουσία':'Άδεια'):'Ρεπό');
-// δεύτερη ειδικότητα: μπαίνει βοηθός ή αναπληρωτής υπεύθυνος και σε αυτή
-const sp2=w=>availOn()&&w&&w.spec2&&w.spec2!==w.specialtyId?w.spec2:null;
-const canSpec=(w,sid)=>w.specialtyId===sid||sp2(w)===sid;
+// Πολλές ειδικότητες, με συμβατότητα για τα παλιά αρχεία με κύρια και spec2.
+const workerSpecs=w=>w?[...new Set([w.specialtyId,...(Array.isArray(w.specialtyIds)?w.specialtyIds:[w.spec2])].filter(Boolean))]:[];
+const sp2=w=>workerSpecs(w).find(id=>id!==w.specialtyId)||null;
+const canSpec=(w,sid)=>!!sid&&workerSpecs(w).includes(sid);
+const taskSpecs=t=>t?[...new Set((Array.isArray(t.specialtyIds)?t.specialtyIds:[t.specialtyId]).filter(Boolean))]:[];
+const canTask=(w,t)=>taskSpecs(t).some(id=>canSpec(w,id));
+const manualOn=d=>S.settings.scheduleMode==='manual'&&(!S.settings.manualFrom||d>=S.settings.manualFrom);
+const teamOf=wid=>(S.teams||[]).find(t=>(t.workerIds||[]).includes(wid));
+const teamRank=(w,lead)=>S.settings.preferTeams!==false&&lead&&teamOf(lead.id)?(teamOf(w.id)?.id===teamOf(lead.id).id?0:8):0;
+function saveTeam(input){
+  const name=String(input.name||'').trim(),workerIds=[...new Set(input.workerIds||[])];
+  if(!name)return {err:'Γράψε όνομα για την ομάδα.'};
+  if(!workerIds.length)return {err:'Διάλεξε τουλάχιστον έναν εργαζόμενο.'};
+  if(workerIds.some(id=>!W(id)||isOffice(W(id))||isExt(W(id))))return {err:'Οι ομάδες περιλαμβάνουν εργαζομένους εργοταξίου.'};
+  const clash=workerIds.find(id=>(S.teams||[]).some(t=>t.id!==input.id&&(t.workerIds||[]).includes(id)));
+  if(clash)return {err:W(clash).name+' ανήκει ήδη σε άλλη ομάδα.'};
+  const team={id:input.id||uid('team'),name,workerIds};
+  if(!Array.isArray(S.teams))S.teams=[];
+  const existing=S.teams.find(t=>t.id===team.id);if(existing)Object.assign(existing,team);else S.teams.push(team);
+  return {team};
+}
+function setPlacement(wid,d,placement){
+  const w=W(wid),type=placement.type;
+  if(!w||!/^\d{4}-\d{2}-\d{2}$/.test(d)||ds(pd(d))!==d||!isWork(d))return {err:'Διάλεξε εργαζόμενο και εργάσιμη ημέρα.'};
+  if(d<nextWork(S.settings.start||TODAY))return {err:'Η ημέρα προηγείται της αρχής του προγράμματος. Άλλαξε πρώτα την ημερομηνία έναρξης στις ρυθμίσεις.'};
+  if(!['project','tasks','task','gen','off','none','auto'].includes(type))return {err:'Διάλεξε πού θα δουλέψει.'};
+  if(type==='none'&&isOffice(w))return {err:'Για εργαζόμενο γραφείου καταχώρισε άδεια ή απουσία.'};
+  if(['project','tasks','task','gen'].includes(type)&&(isOffice(w)||isRest(w,d)))return {err:'Ο εργαζόμενος είναι στο γραφείο ή έχει ρεπό εκείνη την ημέρα.'};
+  if(type==='project'&&(!P(placement.projectId)||P(placement.projectId).closed||isExt(w)&&w.pay==='job'))return {err:'Διάλεξε ανοιχτό έργο. Για συνεργάτη κατ’ αποκοπή διάλεξε συγκεκριμένη εργασία.'};
+  if((type==='tasks'||type==='task')&&(!taskIdsOf(placement).length||taskIdsOf(placement).some(id=>!T(id)||T(id).status==='done')))return {err:'Διάλεξε ανοιχτή εργασία.'};
+  const k=d+'|'+wid;
+  w.off=(w.off||[]).filter(x=>x!==d);
+  if(type==='auto')delete S.overrides[k];
+  else S.overrides[k]=type==='project'?{type,projectId:placement.projectId}:type==='tasks'?{type,taskIds:[...new Set(placement.taskIds)]}:type==='task'?{type,taskId:placement.taskId}:{type};
+  return {ok:true};
+}
+function placeTeam(teamId,d,placement){
+  const team=(S.teams||[]).find(t=>t.id===teamId);
+  if(!team||!isWork(d)||!P(placement.projectId)||P(placement.projectId).closed)return {err:'Διάλεξε ομάδα, ανοιχτό έργο και εργάσιμη ημέρα.'};
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||ds(pd(d))!==d||d<nextWork(S.settings.start||TODAY))return {err:'Διάλεξε ημέρα από την αρχή του προγράμματος και μετά.'};
+  const t=placement.taskId&&T(placement.taskId);
+  if(placement.taskId&&(!t||t.projectId!==placement.projectId||t.status==='done'))return {err:'Η εργασία δεν ανήκει στο επιλεγμένο έργο ή έχει ολοκληρωθεί.'};
+  let assigned=0,skipped=0;
+  (team.workerIds||[]).forEach(id=>{const w=W(id);if(!w||isOffice(w)||isExt(w)||isOff(w,d)){skipped++;return}
+    const r=setPlacement(id,d,t?{type:'task',taskId:t.id}:{type:'project',projectId:placement.projectId});if(r.err)skipped++;else assigned++});
+  return {assigned,skipped};
+}
+function projectRows(d,old=[]){
+  return S.workers.filter(w=>!isOff(w,d)&&!isOffice(w)&&!(isExt(w)&&w.pay==='job')&&ov(d,w.id)?.type==='project'&&P(ov(d,w.id).projectId)).map(w=>{
+    const projectId=ov(d,w.id).projectId,previous=old.find(a=>a.workerId===w.id&&a.projectId===projectId&&a.manual);
+    return {date:d,taskId:null,projectId,workerId:w.id,wage:previous?previous.wage:rate(w,projectId),manual:true};
+  });
+}
 const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return +(r!==''&&r!=null?r:w.wage)||0};
 /* ---------- Υπενθυμίσεις ----------
    Τι έχει να κάνει ο καθένας κάθε μέρα, και ο εργολάβος. Αποθηκεύονται στο S.duties (τα παλιά «καθήκοντα γραφείου»).
@@ -1078,7 +1129,7 @@ function packDay(R,d){const D=R.byDay[d],ids=xs=>xs.filter(Boolean).map(w=>w.id)
     j:D.jobs.map(j=>({t:j.task.id,tt:j.task.title,p:j.task.projectId,sp:j.task.specialtyId,l:j.lead?j.lead.id:null,h:ids(j.helpers),x:[...(j.extra||[])],f:[...(j.forced||[])],m:[...(j.multi||[])],s:j.sub?1:0,k:j.short?1:0,n:j.dayNo,r:j.rain?1:0})),
     g:D.gen.map(g=>[g.w.id,g.forced?1:0]),w:(D.wet||[]).map(t=>t.id),
     q:(R.waiting[d]||[]).map(x=>[x.task.id,x.reason,x.rain?1:0]),
-    a:R.asg.filter(a=>a.date===d).map(a=>[a.taskId,a.projectId,a.workerId,a.wage,a.share||0,(a.job?1:0)|(a.pm?2:0)]),
+    a:R.asg.filter(a=>a.date===d).map(a=>[a.taskId,a.projectId,a.workerId,a.wage,a.share||0,(a.job?1:0)|(a.pm?2:0)|(a.manual?4:0)]),
     e:S.workers.map(w=>w.id)}}
 function unpackDay(rec,d,asg,waiting){
   let jobs=rec.j.map(x=>({task:T(x.t)||{id:x.t,title:x.tt||'',projectId:x.p,specialtyId:x.sp,days:0,gone:true},lead:x.l?anyone(x.l)||null:null,sub:!!x.s,
@@ -1086,7 +1137,7 @@ function unpackDay(rec,d,asg,waiting){
   let gen=(rec.g||[]).map(([w,f])=>({w:anyone(w),forced:!!f})).filter(g=>g.w);
   const q=(rec.q||[]).map(([t,reason,r])=>({task:T(t),reason,rain:!!r})).filter(x=>x.task);if(q.length)waiting[d]=q;
   const wet=(rec.w||[]).map(T).filter(Boolean);
-  const A=(rec.a||[]).map(([t,p,w,wage,sh,fl])=>Object.assign({date:d,taskId:t,projectId:p,workerId:w,wage},sh?{share:sh}:{},fl&1?{job:true}:{},fl&2?{pm:true}:{}));
+  const A=(rec.a||[]).map(([t,p,w,wage,sh,fl])=>Object.assign({date:d,taskId:t,projectId:p,workerId:w,wage},sh?{share:sh}:{},fl&1?{job:true}:{},fl&2?{pm:true}:{},fl&4?{manual:true}:{}));
   if(rec.fp===dayFp(d)){asg.push(...A);return {jobs,gen,wet}}
   // διόρθωση: όποιος είναι πια σε άδεια ή έχει χειροκίνητη ανάθεση φεύγει από τη θέση του
   const gone=w=>isOff(w,d)||!!ov(d,w.id);
@@ -1097,15 +1148,15 @@ function unpackDay(rec,d,asg,waiting){
     taskIdsOf(o).forEach(id=>{const t=T(id);if(!t)return;let j=jobs.find(x=>x.task.id===id);
       if(!j){j={task:t,lead:null,sub:false,helpers:[],forced:new Set(),extra:new Set(),multi:new Set(),short:false,dayNo:null,rain:false,past:true};jobs.push(j)}
       j.forced.add(w.id);
-      if(!j.lead&&w.role!=='voith'&&canSpec(w,t.specialtyId)){j.lead=w;j.sub=w.id!==t.responsibleId}else j.helpers.push(w)})});
+      if(!j.lead&&w.role!=='voith'&&canTask(w,t)){j.lead=w;j.sub=w.id!==t.responsibleId}else j.helpers.push(w)})});
   // όποιος ξαναβρέθηκε διαθέσιμος (π.χ. σβήστηκε η άδεια) ενισχύει συνεργείο της ειδικότητάς του ή πάει αποθήκη
-  const inDay=new Set();jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>inDay.add(w.id)));gen.forEach(g=>inDay.add(g.w.id));
-  if(S.settings.fillIdle)S.workers.filter(w=>(rec.e||[]).includes(w.id)&&!inDay.has(w.id)&&!isOff(w,d)&&!isOffice(w)&&!isExt(w)).forEach(w=>{
-    const lj=w.role!=='voith'&&(jobs.find(j=>!j.lead&&j.task.responsibleId===w.id)||jobs.find(j=>!j.lead&&canSpec(w,j.task.specialtyId)));
+  const direct=projectRows(d,A),inDay=new Set(direct.map(a=>a.workerId));jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>inDay.add(w.id)));gen.forEach(g=>inDay.add(g.w.id));
+  if(!manualOn(d)&&S.settings.fillIdle)S.workers.filter(w=>(rec.e||[]).includes(w.id)&&!inDay.has(w.id)&&!isOff(w,d)&&!isOffice(w)&&!isExt(w)&&ov(d,w.id)?.type!=='none').forEach(w=>{
+    const lj=w.role!=='voith'&&(jobs.find(j=>!j.lead&&j.task.responsibleId===w.id&&canTask(w,j.task))||jobs.find(j=>!j.lead&&canTask(w,j.task)));
     if(lj){lj.lead=w;lj.sub=w.id!==lj.task.responsibleId;return}
     // μόνο σε συνεργείο που του λείπουν βοηθοί, ποτέ πάνω από όσους ζητά η εργασία
     const short=j=>j.lead&&j.helpers.length<(+j.task.helpers||0);
-    const j=jobs.find(j=>short(j)&&canSpec(w,j.task.specialtyId))||(w.role==='voith'?jobs.find(short):null);
+    const j=jobs.find(j=>short(j)&&canTask(w,j.task))||(w.role==='voith'?jobs.find(short):null);
     if(j){j.helpers.push(w);j.extra.add(w.id)}else gen.push({w,forced:false})});
   jobs=jobs.filter(j=>j.lead||j.helpers.length);
   // μεροκάματα: όπου το άτομο έμεινε στην ίδια θέση κρατιέται το ποσό που καταγράφηκε
@@ -1114,6 +1165,7 @@ function unpackDay(rec,d,asg,waiting){
   jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>{const n=cnt[w.id],o=old[j.task.id+'|'+w.id];if(n>1)j.multi.add(w.id);
     asg.push(Object.assign({date:d,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:o&&(o.share||1)===(n>1?1/n:1)?o.wage:dayCost(w,j.task)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
   gen.forEach(g=>{const o=old['null|'+g.w.id];asg.push({date:d,taskId:null,projectId:'gen',workerId:g.w.id,wage:o&&o.projectId==='gen'?o.wage:rate(g.w,'gen')})});
+  asg.push(...direct);
   // γραφείο: όπως καταγράφηκε, εκτός από όσους λείπουν ή άλλαξαν διαχείριση έργων εκείνη τη μέρα
   S.workers.filter(w=>isOffice(w)&&(rec.e||[]).includes(w.id)&&!isOff(w,d)).forEach(w=>{
     const mine=A.filter(a=>a.workerId===w.id&&!a.taskId&&a.projectId!=='gen');
@@ -1133,11 +1185,13 @@ function pastPending(){today();const P0=S.past||{};let d=nextWork(S.settings.sta
 function schedule(){
   today();
   const start=nextWork(S.settings.start||TODAY);
-  const minEnd=add(weekStart(TODAY),13);
+  const entered=Object.keys(S.overrides||{}).map(k=>k.slice(0,10)).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&ds(pd(d))===d&&d>=start);
+  const minEnd=[add(weekStart(TODAY),13),...entered].sort().at(-1);
+  const horizon=Math.max(500,Math.round((pd(minEnd)-pd(start))/86400000)+1);
   // μια εργασία που ολοκληρώθηκε μετράει ως ανοιχτή στις μέρες πριν την ολοκλήρωσή της, ώστε να μην αλλάζουν οι περασμένες μέρες
   const live=(t,d)=>t.status!=='done'||(!!t.doneOn&&d<t.doneOn);
   const open=S.tasks.filter(t=>live(t,start));
-  const rem={},begin={},finish={},prevCrew={},waiting={},lastOn={};
+  const rem={},begin={},finish={},prevCrew={},waiting={},lastOn={},dayCount={};
   open.forEach(t=>rem[t.id]=Math.max(1,+t.days||1));
   const byDay={},asg=[],PAST=S.past||{};
   let left=open.length,day=start,idleStreak=0,guard=0;
@@ -1148,7 +1202,7 @@ function schedule(){
   const tired=(w,t)=>RO&&isHard(t)&&(hardRun[w.id]||0)>=+RC.streak;
   // ταίριασμα βαθμού και δυσκολίας: στις δύσκολες οι καλύτεροι, στις εύκολες φυλάγονται
   const fit=(w,t)=>!RO?0:(tired(w,t)?100:0)+(isHard(t)?-(wRate(w)-3)*0.5:tDiff(t)<=2?(wRate(w)-3)*0.3:0);
-  while(guard<500&&((left>0&&idleStreak<40)||day<=minEnd)){
+  while(guard<horizon&&((left>0&&idleStreak<40)||day<=minEnd)){
     guard++;
     if(!isWork(day)){day=add(day,1);continue}
     // όσες ολοκληρώθηκαν από σήμερα και μετά δεν παίρνουν άλλες μέρες
@@ -1156,7 +1210,7 @@ function schedule(){
     // περασμένη μέρα που έχει καταγραφεί: μένει όπως ήταν
     const rec=day<TODAY?PAST[day]:null;let jobs,gen,wet;
     if(rec){({jobs,gen,wet}=unpackDay(rec,day,asg,waiting));
-      jobs.forEach(j=>{const t=j.task;if(j.dayNo==null)j.dayNo=rem[t.id]>0?(+t.days||1)-rem[t.id]+1:+t.days||1;if(j.lead&&rem[t.id]>0){if(!begin[t.id])begin[t.id]=day;lastOn[t.id]=day;rem[t.id]--;if(rem[t.id]===0){finish[t.id]=day;left--}}
+      jobs.forEach(j=>{const t=j.task;if(j.dayNo==null)j.dayNo=Math.max((+t.days||1)-rem[t.id]+1,(dayCount[t.id]||0)+1);if(j.lead){dayCount[t.id]=j.dayNo;if(!begin[t.id])begin[t.id]=day;lastOn[t.id]=day;if(rem[t.id]>0){rem[t.id]--;if(rem[t.id]===0)left--}if(rem[t.id]===0)finish[t.id]=day}
         prevCrew[t.id]=j.helpers.filter(w=>!j.extra.has(w.id)).map(w=>w.id)});
     }else{
     const busy=new Set(S.workers.filter(w=>isOff(w,day)||isOffice(w)).map(w=>w.id));
@@ -1164,62 +1218,65 @@ function schedule(){
     const forced={};gen=[];
     S.workers.forEach(w=>{if(busy.has(w.id))return;const o=ov(day,w.id);if(!o)return;
       if(o.type==='task'||o.type==='tasks'){taskIdsOf(o).forEach(id=>{const t=T(id);if(t&&live(t,day)){(forced[t.id]=forced[t.id]||[]).push(w);busy.add(w.id)}})}
-      else if(o.type==='gen'){gen.push({w,forced:true});busy.add(w.id)}});
+      else if(o.type==='gen'){gen.push({w,forced:true});busy.add(w.id)}
+      else if(o.type==='project'||o.type==='none')busy.add(w.id)});
     jobs=[];wet=[];
     // όσες θέλουν στεγνή μέρα και στο έργο τους βρέχει μένουν για την επόμενη στεγνή· το συνεργείο πάει αλλού
     const ready=open.filter(t=>{
-      // χειροκίνητη ανάθεση: μετρά ακόμη κι αν τελείωσαν οι μέρες που είχε η εργασία (παίρνει επιπλέον μέρα)
       if(!live(t,day))return false;if(forced[t.id])return true;if(rem[t.id]<=0)return false;
+      if(manualOn(day))return false;
       if(!((!t.earliest||t.earliest<=day)&&depOk(t,day)))return false;
       if(t.dry&&rainy(t.projectId,day)){wet.push(t);(waiting[day]=waiting[day]||[]).push({task:t,reason:'Βροχή: θέλει στεγνή μέρα',rain:true});return false}
       return true})
       .sort((a,b)=>(a.priority-b.priority)||((begin[a.id]?0:1)-(begin[b.id]?0:1))||(RO?tDiff(b)-tDiff(a):0)||((a.earliest||'').localeCompare(b.earliest||''))||S.tasks.indexOf(a)-S.tasks.indexOf(b));
     for(const t of ready){
       const fx=forced[t.id]||[];
-      let lead=fx.find(w=>w.id===t.responsibleId)||fx.find(w=>w.role!=='voith'&&canSpec(w,t.specialtyId))||null,sub=false;
+      let lead=fx.find(w=>w.id===t.responsibleId)||fx.find(w=>w.role!=='voith'&&canTask(w,t))||null,sub=false;
       if(lead)sub=lead.id!==t.responsibleId;
-      else if(rem[t.id]<=0)lead=fx[0]||null;   // επιπλέον μέρα: δουλεύουν μόνο όσοι ορίστηκαν με το χέρι
-      else{
+      else if(rem[t.id]<=0)lead=fx[0]||null;
+      else if(!manualOn(day)){
         const r=W(t.responsibleId);
-        if(r&&!busy.has(r.id))lead=r;
+        if(r&&!busy.has(r.id)&&r.role!=='voith'&&canTask(r,t))lead=r;
         else if(isExt(r))lead=null;   // ο συνεργάτης δεν αντικαθίσταται από το προσωπικό
-        else{lead=S.workers.filter(w=>canSpec(w,t.specialtyId)&&w.role!=='voith'&&!isExt(w)&&!busy.has(w.id)).sort((a,b)=>((a.specialtyId===t.specialtyId?0:1)-(b.specialtyId===t.specialtyId?0:1))||fit(a,t)-fit(b,t))[0]||null;sub=!!lead}
+        else{lead=S.workers.filter(w=>canTask(w,t)&&w.role!=='voith'&&!isExt(w)&&!busy.has(w.id)).sort((a,b)=>(teamRank(a,r)-teamRank(b,r))||((taskSpecs(t).includes(a.specialtyId)?0:1)-(taskSpecs(t).includes(b.specialtyId)?0:1))||fit(a,t)-fit(b,t))[0]||null;sub=!!lead}
         if(lead)busy.add(lead.id);
         else{lead=fx.find(w=>w.role!=='voith')||null;sub=!!lead}
       }
       if(!lead&&!fx.length){(waiting[day]=waiting[day]||[]).push({task:t,reason:W(t.responsibleId)&&isOff(W(t.responsibleId),day)?(isExt(W(t.responsibleId))?'Ο συνεργάτης δεν είναι διαθέσιμος':isLeave(W(t.responsibleId),day)?'Ο υπεύθυνος είναι σε άδεια':'Ο υπεύθυνος έχει ρεπό'):(isExt(W(t.responsibleId))?'Ο συνεργάτης είναι σε άλλη εργασία':'Ο υπεύθυνος είναι σε άλλη εργασία')});continue}
       const helpers=fx.filter(w=>w!==lead);
       const need=Math.max(0,+t.helpers||0);
-      if(lead&&helpers.length<need&&rem[t.id]>0){
+      if(!manualOn(day)&&lead&&helpers.length<need&&rem[t.id]>0){
         const prev=prevCrew[t.id]||[];
-        const near=w=>w.specialtyId===t.specialtyId?0:sp2(w)===t.specialtyId?0.5:1;
-        const pool=S.workers.filter(w=>w.role==='voith'&&!busy.has(w.id)&&(canSpec(w,t.specialtyId)||w.specialtyId==='gen'))
-          .sort((a,b)=>((prev.includes(a.id)?0:2)+near(a)+fit(a,t))-((prev.includes(b.id)?0:2)+near(b)+fit(b,t)));
+        const near=w=>taskSpecs(t).includes(w.specialtyId)?0:canTask(w,t)?0.5:1;
+        const pool=S.workers.filter(w=>w.role==='voith'&&!busy.has(w.id)&&(canTask(w,t)||w.specialtyId==='gen'))
+          .sort((a,b)=>(teamRank(a,lead)+(prev.includes(a.id)?0:2)+near(a)+fit(a,t))-(teamRank(b,lead)+(prev.includes(b.id)?0:2)+near(b)+fit(b,t)));
         pool.slice(0,need-helpers.length).forEach(w=>{helpers.push(w);busy.add(w.id)});
       }
       prevCrew[t.id]=helpers.map(w=>w.id);
-      jobs.push({task:t,lead,sub,helpers,forced:new Set(fx.map(w=>w.id)),extra:new Set(),short:helpers.length<need,dayNo:(+t.days||1)-rem[t.id]+1,rain:!!t.dry&&rainy(t.projectId,day)});
+      const dayNo=Math.max((+t.days||1)-rem[t.id]+1,(dayCount[t.id]||0)+1);
+      jobs.push({task:t,lead,sub,helpers,forced:new Set(fx.map(w=>w.id)),extra:new Set(),short:helpers.length<need,dayNo,rain:!!t.dry&&rainy(t.projectId,day)});
       if(lead){
         if(!begin[t.id])begin[t.id]=day;
-        lastOn[t.id]=day;
-        if(rem[t.id]>0){rem[t.id]--;if(rem[t.id]===0){finish[t.id]=day;left--}}else{rem[t.id]--;finish[t.id]=day}
+        lastOn[t.id]=day;dayCount[t.id]=dayNo;
+        if(rem[t.id]>0){rem[t.id]--;if(rem[t.id]===0)left--}
+        if(rem[t.id]===0)finish[t.id]=day;
       }
     }
     // όλοι να έχουν δουλειά: όσοι περισσεύουν συμπληρώνουν συνεργεία που τους λείπουν βοηθοί, αλλιώς πάνε αποθήκη.
     // Η εργασία δεν παίρνει ποτέ περισσότερους από όσους ζητά.
-    if(S.settings.fillIdle){
+    if(!manualOn(day)&&S.settings.fillIdle){
       S.workers.filter(w=>!busy.has(w.id)&&!isExt(w)).forEach(w=>{
         const room=jobs.filter(j=>j.helpers.length<(+j.task.helpers||0));
-        let same=room.filter(j=>j.task.specialtyId===w.specialtyId);if(!same.length&&sp2(w))same=room.filter(j=>j.task.specialtyId===sp2(w));
+        let same=room.filter(j=>taskSpecs(j.task).includes(w.specialtyId));if(!same.length)same=room.filter(j=>canTask(w,j.task));
         let cand=same.length?same:(w.role==='voith'?room.slice():[]);
         // κουρασμένος από δύσκολες: πάει σε ελαφριά εργασία ή στην αποθήκη, όχι ξανά σε δύσκολη
-        if(RO&&cand.length&&cand.every(j=>tired(w,j.task))){const lite=room.filter(j=>!isHard(j.task)&&(canSpec(w,j.task.specialtyId)||w.role==='voith'));cand=lite}
-        if(cand.length){cand.sort((a,b)=>((tired(w,a.task)?1:0)-(tired(w,b.task)?1:0))||(a.helpers.length-(+a.task.helpers||0))-(b.helpers.length-(+b.task.helpers||0))||a.helpers.length-b.helpers.length);const j=cand[0];j.helpers.push(w);j.extra.add(w.id)}
+        if(RO&&cand.length&&cand.every(j=>tired(w,j.task))){const lite=room.filter(j=>!isHard(j.task)&&(canTask(w,j.task)||w.role==='voith'));cand=lite}
+        if(cand.length){cand.sort((a,b)=>((tired(w,a.task)?1:0)-(tired(w,b.task)?1:0))||(teamRank(w,a.lead)-teamRank(w,b.lead))||(a.helpers.length-(+a.task.helpers||0))-(b.helpers.length-(+b.task.helpers||0))||a.helpers.length-b.helpers.length);const j=cand[0];j.helpers.push(w);j.extra.add(w.id)}
         else gen.push({w,forced:false});
         busy.add(w.id)});
     }
     // εναλλαγή: όποιος έχει κουραστεί σε δύσκολη αλλάζει θέση με κάποιον από ελαφριά εργασία που μπορεί να τον αντικαταστήσει
-    if(RO){const ok=(w,t)=>canSpec(w,t.specialtyId)||(w.role==='voith'&&w.specialtyId==='gen');
+    if(RO&&!manualOn(day)){const ok=(w,t)=>canTask(w,t)||(w.role==='voith'&&w.specialtyId==='gen');
       jobs.forEach(j=>{if(!isHard(j.task))return;
         j.helpers.forEach((w,i)=>{if(j.forced.has(w.id)||!tired(w,j.task))return;
           for(const k of jobs){if(k===j||isHard(k.task)||!ok(w,k.task))continue;
@@ -1232,6 +1289,7 @@ function schedule(){
     jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>{const n=cnt[w.id];if(n>1)j.multi.add(w.id);
       asg.push(Object.assign({date:day,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:dayCost(w,j.task)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
     gen.forEach(g=>asg.push({date:day,taskId:null,projectId:'gen',workerId:g.w.id,wage:rate(g.w,'gen')}));
+    asg.push(...projectRows(day));
     S.workers.filter(w=>isOffice(w)&&!isOff(w,day)).forEach(w=>{
       const pp=pmProjects(w.id,day);
       if(pp.length)pp.forEach(pid=>asg.push({date:day,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
@@ -1244,15 +1302,26 @@ function schedule(){
     idleStreak=jobs.length?0:idleStreak+1;
     day=add(day,1);
   }
+  // Οι πρόσθετες χειροκίνητες ημέρες δεν αυξάνουν τη συμφωνία κατ’ αποκοπή.
+  // Τα καταγεγραμμένα ποσά παραμένουν ως είχαν· οι επόμενες ημέρες παίρνουν μόνο το υπόλοιπο.
+  const jobSpent={};
+  asg.forEach(a=>{if(!a.job)return;const t=T(a.taskId);if(!t)return;
+    const k=a.taskId+'|'+a.workerId,spent=jobSpent[k]||0;
+    const recorded=a.date<TODAY&&(PAST[a.date]?.a||[]).some(([tid,pid,wid,wage,share,fl])=>tid===a.taskId&&pid===a.projectId&&wid===a.workerId&&wage===a.wage&&(share||1)===(a.share||1)&&(fl&1));
+    if(!recorded)a.wage=Math.min(a.wage,Math.max(0,(+t.price||0)-spent));
+    jobSpent[k]=spent+a.wage;
+  });
   const unplanned=open.filter(t=>rem[t.id]>0&&t.status!=='done');
-  const end=Object.values(finish).sort().pop()||start;
+  const manualEnd=asg.filter(a=>a.manual||(manualOn(a.date)&&ov(a.date,a.workerId))).map(a=>a.date);
+  const end=[...Object.values(finish),...manualEnd].sort().pop()||start;
   return {start,end,byDay,asg,begin,finish,rem,waiting,unplanned};
 }
 // τι κάνει ένας εργαζόμενος μια μέρα
 const taskIdsOf=o=>!o?[]:o.type==='tasks'?(o.taskIds||[]):o.type==='task'?[o.taskId]:[];
 function whatDoes(R,wid,d){
-  const w=anyone(wid)||{id:wid};const res={off:isOff(w,d),job:null,lead:false,jobs:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d),appts:apptsOn(d,wid)};
+  const w=anyone(wid)||{id:wid};const res={off:isOff(w,d),job:null,lead:false,jobs:[],projects:[],gen:false,forced:!!ov(d,wid)&&ov(d,wid).type!=='off',duties:dutiesFor(wid,d),pm:pmProjects(wid,d),appts:apptsOn(d,wid)};
   if(res.off)return res;
+  res.projects=[...new Set(R.asg.filter(a=>a.date===d&&a.workerId===wid&&a.manual).map(a=>a.projectId))];
   const day=R.byDay[d];
   if(day){
     for(const j of day.jobs){const lead=!!(j.lead&&j.lead.id===wid);if(lead||j.helpers.some(x=>x.id===wid))res.jobs.push({job:j,lead})}
@@ -1262,7 +1331,7 @@ function whatDoes(R,wid,d){
   return res;
 }
 // έχει δουλειά σε έργο κάποια από αυτές τις μέρες (για να μη στέλνεται κενό μήνυμα σε συνεργάτες)
-const hasJob=(R,wid,days)=>days.some(d=>whatDoes(R,wid,d).jobs.length>0||apptsOn(d,wid).length>0);
+const hasJob=(R,wid,days)=>days.some(d=>{const x=whatDoes(R,wid,d);return x.jobs.length>0||x.projects.length>0||apptsOn(d,wid).length>0});
 const weekDays=ws=>{const a=[];for(let i=0;i<7;i++){const d=add(ws,i);if(isWork(d))a.push(d)}return a};
 // --- γλώσσα του εργαζόμενου (όλα τα πακέτα· κλείνει από Ρυθμίσεις → Λειτουργίες) ---
 // w.lang: κωδικός γλώσσας ('' = ελληνικά)· w.langAt: πότε άλλαξε, για να μη χάνεται όταν αποθηκεύει το γραφείο παλιότερα δεδομένα
@@ -1286,11 +1355,12 @@ function mergeLang(o,cur){if(!o||!cur||!Array.isArray(o.workers)||!Array.isArray
 // (τα ονόματα μένουν όπως τα γράφει το γραφείο, ώστε να συνεννοούνται)
 function dayBlock(R,w,d,l){
   const x=whatDoes(R,w.id,d);let s='';const Z=(ind,str)=>{const t=tlitL(l,str);return t?ind+t+'\n':''},nm=n=>short(nameL(l,n));
-  const pl=p=>p.name+' ('+p.location+')';
+  const pl=p=>p?p.name+(p.location?' ('+p.location+')':''):'Έργο που αφαιρέθηκε';
   if(x.off)return offWord(w,d,l)+'\n';
   if(x.jobs.length){if(x.jobs.length>1)s+=tx(l,'{n} εργασίες σήμερα:',{n:x.jobs.length})+'\n';
     x.jobs.forEach(({job,lead})=>{const p=P(job.task.projectId);s+=pl(p)+'\n'+Z('    ',pl(p))+'  '+job.task.title+(lead?tx(l,', υπεύθυνος'):'')+'\n'+Z('    ',job.task.title);
     const others=[job.lead,...job.helpers].filter(o=>o&&o.id!==w.id).map(o=>nm(o.name));if(others.length)s+='  '+tx(l,'Μαζί:')+' '+others.join(', ')+'\n'})}
+  else if(x.projects.length)s+=x.projects.map(pid=>pl(P(pid))+'\n'+Z('    ',pl(P(pid)))).join('');
   else if(x.gen)s+=tx(l,'Αποθήκη και συντήρηση εξοπλισμού')+'\n';
   else if(x.pm.length)s+=tx(l,'Διαχείριση έργων:')+'\n'+x.pm.map(pid=>'  '+pl(P(pid))+'\n'+Z('    ',pl(P(pid)))).join('');
   else if(w.id===OWNER);
@@ -1361,7 +1431,7 @@ function weekSumText(X){
 }
 // το καθημερινό μήνυμα που φεύγει αυτόματα
 // ο καιρός της μέρας εκεί που δουλεύει (στο πρώτο έργο του, αλλιώς στην έδρα)
-function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.pm.length?x.pm[0]:'',d)}
+function wxFor(R,wid,d){const x=whatDoes(R,wid,d);if(x.off||wxCfg().on===false)return null;return wxDay(x.jobs.length?x.jobs[0].job.task.projectId:x.projects[0]||x.pm[0]||'',d)}
 function personDayText(R,w,d,upd){
   const f=wxFor(R,w.id,d),l=langOf(w);
   const hi=w.id===OWNER&&!(S.settings&&S.settings.ownerName)?'Καλημέρα! ':tx(l,'Γεια σου {n}!',{n:hiName(w,l)})+' ';
@@ -1451,7 +1521,8 @@ function personWeek(R,w,ws,l){
       o.items.push({kind:'job',tid:t.id,project:p.name,location:p.location||'',color:p.color||'',task:t.title,lead,rep,
       with:[job.lead,...job.helpers].filter(q=>q&&q.id!==w.id).map(q=>q.name)})});
     if(!x.jobs.length){
-      if(x.gen)o.items.push({kind:'gen',title:tx(l,'Αποθήκη και συντήρηση εξοπλισμού')});
+      if(x.projects.length)x.projects.forEach(pid=>{const p=P(pid)||{name:'Έργο που αφαιρέθηκε'};o.items.push({kind:'job',tid:null,project:p.name,location:p.location||'',color:p.color||'',task:'Ανάθεση στο έργο',lead:false,rep:null,with:R.asg.filter(a=>a.date===d&&a.projectId===pid&&a.workerId!==w.id).map(a=>W(a.workerId)?.name).filter(Boolean)})});
+      else if(x.gen)o.items.push({kind:'gen',title:tx(l,'Αποθήκη και συντήρηση εξοπλισμού')});
       else if(x.pm.length)x.pm.forEach(pid=>{const p=P(pid);o.items.push({kind:'pm',project:p.name,location:p.location||'',color:p.color||'',task:tx(l,'Διαχείριση έργου')})});
       else if(isOffice(w))o.items.push({kind:'office',title:spL(l,SP(w.specialtyId)?.name||'Γραφείο')});
       else o.items.push({kind:'none',title:tx(l,isExt(w)?'Καμία εργασία':'Χωρίς ανάθεση ακόμη. Θα ενημερωθείς.')});
@@ -1472,4 +1543,5 @@ root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeL
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
+Object.assign(root.ErgoCore,{workerSpecs,taskSpecs,canTask,manualOn,teamOf,saveTeam,setPlacement,placeTeam});
 })(typeof window!=='undefined'?window:globalThis);

@@ -12,5 +12,6 @@ module.exports={fragment,fullPage};
 if(require.main===module){
   fs.writeFileSync(path.join(__dirname,'ergodo.html'),fragment());
   fs.writeFileSync(path.join(__dirname,'index.html'),fullPage());
-  console.log('OK: ergodo.html, index.html');
+  require('./tools/presentation/presentation').writePresentation(fullPage);
+  console.log('OK: ergodo.html, index.html, tools/paron-demo.html, tools/presentation-guide.html');
 }
