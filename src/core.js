@@ -37,9 +37,17 @@ const uid=p=>p+Math.random().toString(36).slice(2,8);
 const short=n=>{const p=String(n||'').trim().split(/\s+/);return p.length>1?p[0]+' '+p[p.length-1][0]+'.':p[0]};
 function weekStart(s){const d=dow(s);return add(s,d===0?-6:1-d)}
 // η εβδομάδα όπως φαίνεται στο πρόγραμμα: ξεκινά τη μέρα settings.weekFrom (0 Κυριακή … 6 Σάββατο, προεπιλογή Σάββατο).
-// Πληρωμές και σύνοψη εργολάβου μένουν Δευτέρα–Κυριακή (weekStart).
+// Με την ίδια εβδομάδα μετράνε και οι πληρωμές, το κόστος εβδομάδας και η σύνοψη του εργολάβου (από v45).
 const weekFrom=()=>S&&S.settings&&S.settings.weekFrom!=null&&S.settings.weekFrom!==''?+S.settings.weekFrom:6;
 function viewStart(s){return add(s,-((dow(s)-weekFrom()+7)%7))}
+// ξαναγράφει τις εγγραφές πληρωμών στην αρχή της εβδομάδας που ισχύει τώρα (π.χ. από Δευτέρα σε Σάββατο).
+// Κάθε εβδομάδα πάει σε αυτή που έχει τις περισσότερες μέρες της (η μέση της, +3). Αν δύο παλιές εβδομάδες πέσουν στην ίδια, ενώνονται: τα ποσά και οι πληρωμές δεν χάνονται.
+function rekeyPay(o){if(!o||!o.payments)return o;const f=o.settings&&o.settings.weekFrom!=null&&o.settings.weekFrom!==''?+o.settings.weekFrom:6;
+  const vs=d=>add(d,-((dow(d)-f+7)%7)),P2={};
+  Object.keys(o.payments).forEach(k=>{const i=k.indexOf('|');const w=k.slice(0,i),id=k.slice(i+1),v=o.payments[k];if(!/^\d{4}-\d{2}-\d{2}$/.test(w)){P2[k]=v;return}
+    const nk=vs(add(w,3))+'|'+id,x=P2[nk];if(!x){P2[nk]=v;return}
+    P2[nk]={...x,earned:(+x.earned||0)+(+v.earned||0),days:(+x.days||0)+(+v.days||0),lock:!!(x.lock&&v.lock),pays:[...(x.pays||[]),...(v.pays||[])],...(x.bonus!=null||v.bonus!=null?{bonus:(+x.bonus||0)+(+v.bonus||0)}:{})}});
+  o.payments=P2;if(o.settings&&o.settings.payFrom)o.settings.payFrom=vs(add(o.settings.payFrom,3));return o}
 /* ---------- Demo δεδομένα ---------- */
 // ραντεβού στα demo: ο εργολάβος με τον ηλεκτρολόγο σε αυτοψία, παράδοση προσφοράς, επιμέτρηση με τον αλουμινά
 function apDemo(wd){
@@ -173,7 +181,7 @@ function demo(){
   workers.forEach(w=>{if(RATE_DEMO.w[w.id])w.rating=RATE_DEMO.w[w.id]});projects.forEach(p=>{if(DUE_DEMO[p.id]!=null)p.due=add(TODAY,DUE_DEMO[p.id])});workers.forEach(w=>{if(AVAIL_DEMO.days[w.id])w.days=AVAIL_DEMO.days[w.id].slice();if(AVAIL_DEMO.spec2[w.id])w.spec2=AVAIL_DEMO.spec2[w.id]});tasks.forEach(t=>{if(RATE_DEMO.t[t.id])t.diff=RATE_DEMO.t[t.id];if(t.status==='done')t.doneOn=doneDemo()});
   const xw=EXPW_DEMO();workers.forEach(w=>{if(xw[w.id])w.exp=xw[w.id]});
   profitDemo({projects,tasks});attDemoSites({projects});
-  return {v:2,profitDemo:true,attSeed:true,attDemo:true,att:[],diarySeed:true,diary:diaryDemo([1,2,3,4,5,6]),wxLog:wxLogDemo([1,2,3,4,5,6]),eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]).map(a=>({...a,clientId:CLI_DEMO.a[a.id]})),cliDemo:true,clients:cliDemo(),idleOff:true,settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:false,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:weekStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
+  return {v:2,payWk:true,profitDemo:true,attSeed:true,attDemo:true,att:[],diarySeed:true,diary:diaryDemo([1,2,3,4,5,6]),wxLog:wxLogDemo([1,2,3,4,5,6]),eqDemo:true,equip:eqDemo(),fieldDemo:true,field:fieldDemo(),sumDemo:true,extDemo:true,rateDemo:true,dueDemo:true,availDemo:true,extEmp:true,wxDemo:true,apDemo:true,remDemo:true,cpay:[],wxMark:{},appts:apDemo([1,2,3,4,5,6]).map(a=>({...a,clientId:CLI_DEMO.a[a.id]})),cliDemo:true,clients:cliDemo(),idleOff:true,settings:{start:weekStart(TODAY),workdays:[1,2,3,4,5,6],fillIdle:false,autoSend:false,sendTime:'06:30',wx:wxDefaults(),hol:holDefaults(),closed:[],payFrom:viewStart(TODAY),payCarry:true,payDay:6,payMethod:'cash',plan:'ergotaxio',yard:{lat:40.65592,lon:22.86531,r:200}},specialties:[...sp,...o.specialties],workers:[...workers,...o.workers],projects,tasks,duties:[...o.duties,...remDemo([1,2,3,4,5,6])],overrides:{},payments:{},dutyDone:{}};
 }
 /* ---------- Αρχεία Excel ----------
    Μικρός συγγραφέας .xlsx χωρίς βιβλιοθήκες: ZIP χωρίς συμπίεση με τα ελάχιστα XML του Excel.
@@ -725,7 +733,7 @@ function fieldDemo(){let y=add(TODAY,-1);if(dow(y)===0)y=add(y,-1);const nw=add(
 function blankState(cur){
   const o=demo(),st=(cur&&cur.settings)||{};
   Object.assign(o,{specialties:[],workers:[],projects:[],tasks:[],duties:[],appts:[],cpay:[],overrides:{},payments:{},dutyDone:{},wxMark:{},past:{},field:[],equip:[],att:[],attDemo:false,diary:[],wxLog:{},clients:[]});
-  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:weekStart(TODAY)});if(!st.yard)delete o.settings.yard;
+  o.settings=Object.assign({},o.settings,st,{start:TODAY,payFrom:viewStart(TODAY)});if(!st.yard)delete o.settings.yard;
   if(cur&&cur.hist)o.hist=cur.hist;
   return o;
 }
@@ -835,8 +843,10 @@ function migrate(o){
   if(o&&o.settings&&!Array.isArray(o.settings.closed))o.settings.closed=[];
   // πληρωμές: από {amount,days,date} (μία πλήρης πληρωμή) σε {earned,days,pays:[…]} που δέχεται μερικά ποσά
   if(o&&o.payments)Object.keys(o.payments).forEach((k,i)=>{const v=o.payments[k];if(v&&!Array.isArray(v.pays))o.payments[k]={earned:+v.amount||0,days:v.days||0,lock:true,pays:[{id:'p'+i+uid(''),amount:+v.amount||0,date:v.date||'',method:'',note:''}]}});
+  // v45: οι πληρωμές μετράνε με την εβδομάδα του προγράμματος (Σάββατο–Παρασκευή)
+  if(o&&o.settings&&!o.payWk){rekeyPay(o);o.payWk=true}
   // τα υπόλοιπα μετράνε από την εβδομάδα που μπήκε η δυνατότητα, όχι από παλιές εβδομάδες που πληρώθηκαν εκτός εφαρμογής
-  if(o&&o.settings&&!o.settings.payFrom)o.settings.payFrom=weekStart(ds(new Date()));
+  if(o&&o.settings&&!o.settings.payFrom)o.settings.payFrom=viewStart(ds(new Date()));
   if(o&&o.settings&&!o.settings.wx)o.settings.wx=wxDefaults();
   if(o&&(!o.wxMark||typeof o.wxMark!=='object'))o.wxMark={};
   if(o&&!Array.isArray(o.appts))o.appts=[];
@@ -1307,7 +1317,7 @@ const SUM_D={day:5,time:'17:00',auto:false};
 const sumCfg=()=>({...SUM_D,...((S&&S.settings&&S.settings.sum)||{})});
 const nf1=n=>String(Math.round(n*10)/10).replace('.',',');
 function weekSum(R,ws){
-  ws=weekStart(ws||TODAY);const we=add(ws,6),nws=add(ws,7),nwe=add(ws,13),days=weekDays(ws);
+  ws=viewStart(ws||TODAY);const we=add(ws,6),nws=add(ws,7),nwe=add(ws,13),days=weekDays(ws);
   const A=R.asg.filter(a=>a.date>=ws&&a.date<=we),dl=hasF('deadline');
   const sum=xs=>({cost:xs.reduce((s,a)=>s+a.wage,0),md:xs.reduce((s,a)=>s+(a.share||1),0)});
   const projects=S.projects.map(p=>{
@@ -1455,7 +1465,7 @@ function myView(R,w,ws,l){l=l||langOf(w);const o=personWeek(R,w,ws,l);o.lang=isO
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,officeDemo,demo,migrate,
+root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,rekeyPay,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,

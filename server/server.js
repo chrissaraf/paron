@@ -268,9 +268,9 @@ async function runSum(date, trigger) {
   C.setState(withPlan(S));
   if (!C.hasF('weekly')) return { ok: false, message: C.planHas('weekly') ? 'Η σύνοψη εβδομάδας είναι κλειστή στις Ρυθμίσεις.' : 'Η σύνοψη εβδομάδας δεν περιλαμβάνεται στο πακέτο.' };
   const owner = C.ownerW(), phone = normPhone(owner.phone);
-  const text = C.weekSumText(C.weekSum(C.schedule(), C.weekStart(date)));
+  const text = C.weekSumText(C.weekSum(C.schedule(), C.viewStart(date)));
   const entry = { at: now(), date, trigger: trigger + '-sum', kind: 'sum', workerId: C.OWNER, name: owner.name, phone: owner.phone || '' };
-  const pushed = pushOn(S) ? (await pushTo(USERS.filter(u => u.role === 'admin'), 'sum', { title: 'Σύνοψη εβδομάδας ' + C.fmtS(C.weekStart(date)), body: pushBody(text), url: '/?tab=today', tag: 'sum-' + date })).sent : 0;
+  const pushed = pushOn(S) ? (await pushTo(USERS.filter(u => u.role === 'admin'), 'sum', { title: 'Σύνοψη εβδομάδας ' + C.fmtS(C.viewStart(date)), body: pushBody(text), url: '/?tab=today', tag: 'sum-' + date })).sent : 0;
   const log = readJSON(F.log, []);
   let r;
   if (!phone) { log.push({ ...entry, status: 'skipped', error: 'Χωρίς σωστό κινητό' }); r = pushed ? { ok: true, message: 'Η σύνοψη στάλθηκε ως ειδοποίηση στο κινητό. Για Viber γράψε το κινητό του εργολάβου στις Ρυθμίσεις.' } : { ok: false, message: 'Δεν υπάρχει σωστό κινητό του εργολάβου στις Ρυθμίσεις.' }; }
