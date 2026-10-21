@@ -1743,7 +1743,7 @@ function vToday(R){
     const mg=managersOf(p.id,d);
     return `<article class="pcard" style="--pc:${pc(p)}"><div class="ph"><h3><button class="lnk" data-tab="project" data-p="${p.id}">${h(p.name)}</button></h3>${wxChip(f,rainy(p.id,d))}<span class="note">${h(p.location)}</span></div>
       ${hasF('pm')?`<div class="mgr"><span class="lbl">Διαχείριση</span>${mg.length?mg.map(w=>`<span class="chip lead${ov(d,w.id)?.type==='pm'?' fx':''}">${h(w.name)}</span>`).join(''):'<span class="tag warn">Κανένας διαχειριστής</span>'}<button class="btn sm ghost" data-act="pmday" data-p="${p.id}" data-d="${d}">Αλλαγή</button></div>`:''}
-      ${pj.length?pj.map(j=>`<div class="job"><div class="t"><b>${h(j.task.title)}</b><span class="tag mute">${h(SP(j.task.specialtyId)?.name)}</span><span class="note mono">μέρα ${j.dayNo}/${j.task.days}</span>
+      ${pj.length?pj.map(j=>`<div class="job"><div class="t"><b>${h(j.task.title)}</b><span class="tag mute">${h(SP(j.task.specialtyId)?.name)}</span><span class="note mono">${j.dayNo>(+j.task.days||1)?'επιπλέον μέρα':'μέρα '+j.dayNo+'/'+j.task.days}</span>
         ${j.sub?'<span class="tag warn">Αναπληρωτής υπεύθυνος</span>':''}${!j.lead?'<span class="tag bad">Χωρίς υπεύθυνο</span>':''}${j.short?'<span class="tag bad">Λείπουν βοηθοί</span>':''}${progTags(j.task.id,d)}${matTag(R,j.task)}${j.rain?`<span class="tag rain">${ico('rain')}Βροχή, αλλά το όρισες εσύ</span>`:''}</div>
         <div class="chips">${[j.lead,...j.helpers].filter(Boolean).map(w=>crewChip(j,w,d)).join('')}</div></div>`).join('')
         :(pw.length?'':'<div class="empty">Καμία εργασία αυτή τη μέρα.</div>')}
@@ -1841,7 +1841,7 @@ function daySchedule(R,pid=''){
   const projects=S.projects.filter(p=>!selected||p.id===selected);
   const cards=projects.map(p=>{
     const pa=A.filter(a=>a.projectId===p.id),jobs=day.jobs.filter(j=>j.task.projectId===p.id),wet=(day.wet||[]).filter(t=>t.projectId===p.id);
-    const tasks=jobs.map(j=>`<div class="job"><div class="t"><b>${h(j.task.title)}</b><span class="tag mute">${j.dayNo}/${j.task.days} μέρες</span>${j.short?'<span class="tag bad">Λείπουν βοηθοί</span>':''}</div><div class="crew-list">${crew(pa.filter(a=>a.taskId===j.task.id))}</div></div>`).join('');
+    const tasks=jobs.map(j=>`<div class="job"><div class="t"><b>${h(j.task.title)}</b><span class="tag mute">${j.dayNo>(+j.task.days||1)?'επιπλέον μέρα':j.dayNo+'/'+j.task.days+' μέρες'}</span>${j.short?'<span class="tag bad">Λείπουν βοηθοί</span>':''}</div><div class="crew-list">${crew(pa.filter(a=>a.taskId===j.task.id))}</div></div>`).join('');
     const other=pa.filter(a=>!jobs.some(j=>j.task.id===a.taskId));
     return `<article class="pcard" style="--pc:${pc(p)}"><div class="ph"><h3><button class="lnk" data-tab="project" data-p="${p.id}">${h(p.name)}</button></h3><span class="tag mute">${new Set(pa.map(a=>a.workerId)).size} άτομα</span><span class="note">${h(p.location)}</span></div>${tasks}${other.length?`<div class="job"><b>Διαχείριση έργου</b><div class="crew-list">${crew(other)}</div></div>`:''}${wet.map(t=>`<div class="job"><b>${h(t.title)}</b><span class="tag rain">Αναβάλλεται λόγω βροχής</span></div>`).join('')}${!pa.length&&!wet.length?'<p class="empty">Καμία ανάθεση αυτή τη μέρα.</p>':''}<div class="cardfoot"><span class="note">Μεροκάματα ημέρας</span><b class="mono">${eur(pa.reduce((s,a)=>s+a.wage,0))}</b></div></article>`;
   }).join('');
