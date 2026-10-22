@@ -1,0 +1,66 @@
+name: Deploy
+
+# Μετά από κάθε Merge στο main, και μόνο αν περάσει το CI, ανεβάζει τη νέα έκδοση στον VPS (Hetzner).
+# Χειροκίνητα: Actions → Deploy → Run workflow.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_DOMAIN: ${{ secrets.VPS_DOMAIN }}
+    steps:
+      - name: Υπάρχει VPS;
+        id: cfg
+        run: |
+          if [ -z "$VPS_HOST" ]; then
+            echo "::notice::Δεν έχει οριστεί ακόμα το secret VPS_HOST, οπότε δεν γίνεται deploy (δες docs/hetzner.md)."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.cfg.outputs.skip != '1'
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Κλειδί SSH
+        if: steps.cfg.outputs.skip != '1'
+        env:
+          KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          if [ -n "$KNOWN" ]; then printf '%s\n' "$KNOWN" > ~/.ssh/known_hosts
+          else ssh-keyscan -T 15 "$VPS_HOST" > ~/.ssh/known_hosts 2>/dev/null; fi
+
+      - name: Ανέβασμα και εγκατάσταση
+        if: steps.cfg.outputs.skip != '1'
+        env:
+          ADMIN_PW: ${{ secrets.ERGO_ADMIN_PASSWORD }}
+        run: |
+          [ -n "$ADMIN_PW" ] || { echo "::error::Λείπει το secret ERGO_ADMIN_PASSWORD (κωδικός του πρώτου διαχειριστή)."; exit 1; }
+          DOMAIN="${VPS_DOMAIN:-$(echo "$VPS_HOST" | tr . -).sslip.io}"   # χωρίς δικό μας domain: https στο <ip>.sslip.io
+          echo "Διεύθυνση: https://$DOMAIN"
+          tar -czf /tmp/paron.tgz server src public deploy build.js package.json index.html README.md
+          SSH="ssh -i $HOME/.ssh/id_deploy -o BatchMode=yes root@$VPS_HOST"
+          $SSH 'rm -rf /opt/paron-src && mkdir -p /opt/paron-src && tar -xzf - -C /opt/paron-src' < /tmp/paron.tgz
+          printf '%s\n' "$ADMIN_PW" | $SSH "read -r PW; export PARON_ADMIN_PASSWORD=\"\$PW\" PARON_QUICK=1; bash /opt/paron-src/deploy/install.sh '$DOMAIN'"
+
+      - name: Έλεγχος online
+        if: steps.cfg.outputs.skip != '1'
+        run: |
+          DOMAIN="${VPS_DOMAIN:-$(echo "$VPS_HOST" | tr . -).sslip.io}"
+          for i in $(seq 1 30); do curl -fsS "https://$DOMAIN/api/health" && exit 0; sleep 5; done
+          echo "::warning::Η εφαρμογή τρέχει στον VPS αλλά το https://$DOMAIN δεν απαντά ακόμα (DNS ή πιστοποιητικό)."
