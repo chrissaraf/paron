@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Έλεγχος σύνταξης server
+        run: node --check server/server.js && node --check server/webpush.js
+      - name: Tests
+        run: npm test
+      - name: Το ergodo.html / index.html είναι χτισμένα από το src
+        run: |
+          node build.js
+          git diff --exit-code -- ergodo.html index.html || { echo "Τρέξε 'node build.js' και κάνε commit τα ergodo.html / index.html."; exit 1; }
