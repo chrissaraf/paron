@@ -7,6 +7,9 @@
 # υπηρεσία που ξεκινά μόνη της, τείχος προστασίας (μόνο 22, 80, 443), αυτόματες ενημερώσεις
 # ασφαλείας και νυχτερινό αντίγραφο των δεδομένων. Αν ξανατρέξει, ενημερώνει την εφαρμογή
 # και κρατά δεδομένα, χρήστες και ρυθμίσεις.
+#
+# Από το GitHub Actions (deploy.yml): PARON_QUICK=1 παραλείπει τα πακέτα συστήματος όταν υπάρχουν ήδη,
+# και ο κωδικός του πρώτου διαχειριστή έρχεται από το PARON_ADMIN_PASSWORD αντί να φτιαχτεί τυχαίος.
 set -euo pipefail
 
 DOMAIN="${1:-}"; EMAIL="${2:-}"
@@ -23,10 +26,13 @@ die() { printf '\n\033[1;31mΣφάλμα: %s\033[0m\n' "$*" >&2; exit 1; }
 command -v apt-get >/dev/null || die "χρειάζεται Ubuntu ή Debian."
 export DEBIAN_FRONTEND=noninteractive
 
+QUICK=0; [ -n "${PARON_QUICK:-}" ] && command -v node >/dev/null && command -v caddy >/dev/null && QUICK=1
+if [ "$QUICK" = 0 ]; then
 say "Πακέτα συστήματος"
 apt-get update -q
 apt-get install -y -q curl ca-certificates gnupg ufw unattended-upgrades rsync debian-keyring debian-archive-keyring apt-transport-https
 timedatectl set-timezone Europe/Athens 2>/dev/null || true
+fi
 
 say "Node.js"
 NODE_MAJOR=0; command -v node >/dev/null && NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]')
@@ -57,7 +63,7 @@ mv "$APP.new" "$APP"; chown -R root:root "$APP"; chmod -R a+rX "$APP"
 FIRST=0
 if [ ! -f "$ENVF" ]; then
   FIRST=1
-  PASS="$(tr -dc 'a-km-np-zA-HJ-NP-Z2-9' </dev/urandom | head -c 14 || true)"
+  PASS="${PARON_ADMIN_PASSWORD:-$(tr -dc 'a-km-np-zA-HJ-NP-Z2-9' </dev/urandom | head -c 14 || true)}"
   cat > "$ENVF" <<ENV
 # Ρυθμίσεις PARON. Μετά από αλλαγή: systemctl restart ergodo
 PORT=8080
@@ -159,7 +165,14 @@ chmod 644 "$R/etc/cron.d/ergodo-backup"
 
 say "Έλεγχος"
 ok=0; for i in $(seq 1 20); do curl -fs http://127.0.0.1:8080/api/health >/dev/null && { ok=1; break; }; sleep 1; done
-[ "$ok" = 1 ] || { journalctl -u ergodo -n 30 --no-pager; die "η εφαρμογή δεν ξεκίνησε."; }
+if [ "$ok" != 1 ]; then
+  journalctl -u ergodo -n 30 --no-pager || true
+  if [ -d "$APP.old" ]; then   # γυρνά στην προηγούμενη έκδοση για να μη μείνει η εφαρμογή κάτω
+    rm -rf "$APP.bad"; mv "$APP" "$APP.bad"; mv "$APP.old" "$APP"; systemctl restart ergodo
+    die "η νέα έκδοση δεν ξεκίνησε· τρέχει ξανά η προηγούμενη (η νέα είναι στο $APP.bad)."
+  fi
+  die "η εφαρμογή δεν ξεκίνησε."
+fi
 rm -rf "$APP.old"
 IP="$(curl -fs4 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}' || true)"
 DNS="$(getent ahostsv4 "$DOMAIN" 2>/dev/null | awk 'NR==1{print $1}' || true)"
@@ -170,7 +183,10 @@ if [ "$DNS" != "$IP" ]; then
   echo "  ΠΡΟΣΟΧΗ: το $DOMAIN δείχνει σε '${DNS:-πουθενά}'. Βάλε εγγραφή A προς $IP στον πάροχο του domain."
   echo "  Το https ενεργοποιείται μόνο του λίγα λεπτά αφού γίνει αυτό."
 fi
-if [ "$FIRST" = 1 ]; then
+if [ "$FIRST" = 1 ] && [ -n "${PARON_ADMIN_PASSWORD:-}" ]; then
+  echo "  Πρώτη σύνδεση:  όνομα χρήστη ergolavos   κωδικός: αυτός που έβαλες στο GitHub (ERGO_ADMIN_PASSWORD)"
+  echo "  Άλλαξέ τον από «Ο λογαριασμός μου» και φτιάξε τους χρήστες από Ρυθμίσεις → Χρήστες."
+elif [ "$FIRST" = 1 ]; then
   echo "  Πρώτη σύνδεση:  όνομα χρήστη ergolavos   κωδικός $PASS"
   echo "  Άλλαξέ τον αμέσως από «Ο λογαριασμός μου» και φτιάξε τους χρήστες από Ρυθμίσεις → Χρήστες."
 fi
