@@ -447,6 +447,7 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;min-width:20px;min
 .checks{display:grid;gap:10px}
 .ck,.form label.ck{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:14.5px;color:var(--ink);font-weight:450;line-height:1.4}
 .ck input{margin-top:0}
+.otbtn{font-variant-numeric:tabular-nums;white-space:nowrap}
 .impgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:6px 10px;align-items:center;font-size:14px}.impgrid select{min-width:0;width:100%}
 .modal.wide{width:min(860px,100%)}
 #impf{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}#impf .lbl{font-weight:600;margin:0 0 6px}
@@ -3095,6 +3096,10 @@ function earnedAll(R){let L=LEDG.get(R);if(L)return L;L={};
 const weekAmt=(rec,live)=>rec&&rec.lock?+rec.earned||0:live;
 // μπόνους δύσκολης εργασίας: μόνο πρόταση, μπαίνει στο ποσό όταν το δεχτεί το γραφείο (rec.bonus)
 const recBonus=rec=>r2(rec&&rec.bonus||0);
+// υπερωρίες της εβδομάδας: ώρες × (μεροκάματο / 8). Η τιμή ώρας κρατιέται όπως ήταν όταν γράφτηκαν (rec.ot={h,rate})
+const otRate=w=>(+w.wage||0)/8;
+const recOt=rec=>rec&&rec.ot&&rec.ot.h?r2(rec.ot.h*rec.ot.rate):0;
+const recEmpty=rec=>!rec.pays.length&&!rec.lock&&rec.bonus==null&&!rec.bonusOff&&!(rec.ot&&rec.ot.h);
 function bonusSug(R,ws,wid){const pct=+rateCfg().bonus||0;if(!rateOn()||!pct)return null;const we=add(ws,6);
   const A=R.asg.filter(a=>a.workerId===wid&&!a.job&&a.taskId&&a.date>=ws&&a.date<=we&&T(a.taskId)&&isHard(T(a.taskId)));if(!A.length)return null;
   const base=r2(A.reduce((s,a)=>s+a.wage,0)),days=A.reduce((s,a)=>s+(a.share||1),0),amount=r2(base*pct/100);return amount>=0.5?{days,base,pct,amount}:null}
@@ -3105,17 +3110,17 @@ function carryIn(R,ws){
   Object.keys(L).forEach(w=>Object.keys(L[w]).forEach(id=>(ids[w]=ids[w]||new Set()).add(id)));
   Object.keys(S.payments).forEach(k=>{const [w,id]=k.split('|');(ids[w]=ids[w]||new Set()).add(id)});
   Object.keys(ids).forEach(w=>{if(w<from||w>=ws)return;
-    ids[w].forEach(id=>{const rec=S.payments[w+'|'+id],e=(L[w]||{})[id];const v=weekAmt(rec,e?r2(e.amount):0)+recBonus(rec)-paySum(rec);if(Math.abs(v)>=0.005)c[id]=r2((c[id]||0)+v)})});
+    ids[w].forEach(id=>{const rec=S.payments[w+'|'+id],e=(L[w]||{})[id];const v=weekAmt(rec,e?r2(e.amount):0)+recBonus(rec)+recOt(rec)-paySum(rec);if(Math.abs(v)>=0.005)c[id]=r2((c[id]||0)+v)})});
   return c;
 }
 function payData(R,ws){
   const E=earnedAll(R)[ws]||{},C=carryIn(R,ws);
   return S.workers.filter(w=>!(isExt(w)&&w.pay==='job')).map(w=>{
     const e=E[w.id]||{amount:0,days:0,parts:{}},rec=S.payments[ws+'|'+w.id],live=r2(e.amount);
-    const wages=r2(weekAmt(rec,live)),bonus=recBonus(rec),amount=r2(wages+bonus),days=rec&&rec.lock?+rec.days||0:e.days,carry=C[w.id]||0,paid=r2(paySum(rec)),due=r2(amount+carry);
+    const wages=r2(weekAmt(rec,live)),bonus=recBonus(rec),ot=recOt(rec),otH=rec&&rec.ot?+rec.ot.h||0:0,otR=rec&&rec.ot&&rec.ot.h?rec.ot.rate:otRate(w),amount=r2(wages+bonus+ot),days=rec&&rec.lock?+rec.days||0:e.days,carry=C[w.id]||0,paid=r2(paySum(rec)),due=r2(amount+carry);
     const sug=rec&&(rec.bonus!=null||rec.bonusOff)?null:bonusSug(R,ws,w.id);
-    return {w,days,wages,bonus,sug,amount,live,parts:Object.values(e.parts),carry,paid,pays:rec?rec.pays:[],due,rest:r2(due-paid),lock:!!(rec&&rec.lock)};
-  }).filter(r=>r.days||Math.abs(r.carry)>=0.5||r.pays.length||r.bonus);
+    return {w,days,wages,bonus,ot,otH,otR,sug,amount,live,parts:Object.values(e.parts),carry,paid,pays:rec?rec.pays:[],due,rest:r2(due-paid),lock:!!(rec&&rec.lock)};
+  }).filter(r=>r.days||Math.abs(r.carry)>=0.5||r.pays.length||r.bonus||r.ot);
 }
 const payState=r=>Math.abs(r.rest)<0.5?(r.paid||r.carry?['ok','Εξοφλήθηκε']:['mute','—']):r.rest<0?['ok','Προκαταβολή']:r.paid?['warn','Μερική']:['bad','Εκκρεμεί'];
 const carryWord=()=>S.settings.payCarry===false?'':'περνά στην επόμενη εβδομάδα';
@@ -3138,6 +3143,7 @@ function payText(r,ws){const l=ErgoCore.langOf(r.w),T0=(k,p)=>ErgoCore.tx(l,k,p)
   let s=T0('Γεια σου {n}!',{n:ErgoCore.hiName(r.w,l)})+'\n'+T0('Πληρωμή εβδομάδας {a} – {b}',{a:fx(ws),b:fx(add(ws,6))})+'\n\n';
   s+=T0('Μέρες: {n}',{n:nf(r.days)})+'\n'+T0('Μεροκάματα: {x}',{x:money(r.wages)})+'\n';
   if(r.bonus)s+=T0('Μπόνους για δύσκολη εργασία: {x}',{x:money(r.bonus)})+'\n';
+  if(r.ot)s+=T0('Υπερωρίες: {x}',{x:nf(r.otH)+' × '+money(r.otR)+' = '+money(r.ot)})+'\n';
   if(Math.abs(r.carry)>=0.5)s+=T0(r.carry>0?'Από προηγούμενες εβδομάδες: {x}':'Προκαταβολή από πριν: −{x}',{x:money(Math.abs(r.carry))})+'\n';
   r.pays.forEach(p=>s+=(p.method?T0('Πληρωμή {d} ({m}): {x}',{d:ErgoCore.fmtX(l,p.date),m:T0(payM(p.method).toLowerCase()),x:money(p.amount)}):T0('Πληρωμή {d}: {x}',{d:ErgoCore.fmtX(l,p.date),x:money(p.amount)}))+'\n');
   s+=(Math.abs(r.rest)<0.5?T0('Εξοφλήθηκε.'):r.rest>0?T0(cw?'Υπόλοιπο: {x}, περνά στην επόμενη εβδομάδα.':'Υπόλοιπο: {x}.',{x:money(r.rest)}):T0(cw?'Προκαταβολή: {x}, αφαιρείται την επόμενη εβδομάδα.':'Προκαταβολή: {x}.',{x:money(-r.rest)}))+'\n';
@@ -3151,6 +3157,7 @@ function payForm(wid){
     ${Math.abs(r.carry)>=0.5?`<div><span>${r.carry>0?'Από προηγούμενες εβδομάδες':'Προκαταβολή από πριν'}</span><b class="mono">${r.carry>0?'':'−'}${money(Math.abs(r.carry))}</b></div>`:''}
     <div><span>Μεροκάματα εβδομάδας (${nf(r.days)} ${r.days==1?'μέρα':'μέρες'})</span><b class="mono">${money(r.wages)}</b></div>
     ${r.bonus?`<div><span>Μπόνους για δύσκολη εργασία</span><b class="mono">${money(r.bonus)}</b></div>`:''}
+    ${r.ot?`<div><span>Υπερωρίες (${nf(r.otH)} ${r.otH==1?'ώρα':'ώρες'} × ${money(r.otR)})</span><b class="mono">${money(r.ot)}</b></div>`:''}
     ${r.paid?`<div><span>Πληρώθηκαν ήδη</span><b class="mono">−${money(r.paid)}</b></div>`:''}
     <div class="tot"><span>${r.rest<0?'Δόθηκαν παραπάνω':'Μένουν'}</span><b class="mono">${money(Math.abs(r.rest))}</b></div>
   </div>
@@ -3165,6 +3172,13 @@ function payForm(wid){
   ${r.pays.length?`<div class="payhist"><div class="lbl">Πληρωμές αυτής της εβδομάδας</div>${r.pays.map(p=>`<div class="bar note"><span class="mono">${fmt(p.date)}</span><span class="grow">${h([payM(p.method),p.note].filter(Boolean).join(' · '))}</span><b class="mono">${money(p.amount)}</b><button class="btn sm ghost" data-act="delpay" data-id="${h(p.id)}" data-w="${wid}">Αναίρεση</button></div>`).join('')}</div>`:''}
   <div class="acts"><button class="btn" data-act="payviber" data-id="${wid}">${ico('send')}Στείλε του την κατάσταση</button><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savepay">Καταχώριση πληρωμής</button></div>`);
 }
+function otForm(wid){const R=schedule(),ws=UI.payWeek,r=payData(R,ws).find(x=>x.w.id===wid);if(!r)return;
+  openModal(`<h2>Υπερωρίες: ${h(r.w.name)}</h2><p class="note">Εβδομάδα ${fmtS(ws)} – ${fmtS(add(ws,6))}. Η ώρα πληρώνεται όσο το μεροκάματο δια 8: ${money(r.w.wage)} / 8 = <b>${money(r.otR)}</b>.</p>
+  <form class="form" id="otf" data-id="${wid}" data-rate="${r.otR}"><label>Ώρες υπερωρίας την εβδομάδα<input id="ot_h" type="number" min="0" step="0.5" inputmode="decimal" value="${r.otH||''}"></label>
+  <p class="payafter" id="ot_after">${r.otH?`${nf(r.otH)} × ${money(r.otR)} = <b>${money(r.ot)}</b>`:'Γράψε πόσες ώρες.'}</p></form>
+  <div class="acts">${r.otH?'<button class="btn" data-act="otdel">Χωρίς υπερωρίες</button>':''}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="otsave">Αποθήκευση</button></div>`)}
+function otSet(wid,hrs,rate){const k=UI.payWeek+'|'+wid,rec=S.payments[k]=S.payments[k]||{earned:0,days:0,pays:[]};
+  if(hrs>0)rec.ot={h:hrs,rate};else delete rec.ot;if(recEmpty(rec))delete S.payments[k]}
 function jobSection(R){
   const ws=S.workers.filter(w=>isExt(w)&&w.pay==='job');if(!ws.length)return '';
   const rows=ws.map(w=>{const a=jobAccount(R,w);return `<tr><td class="tt-main"><b>${h(w.company||w.name)}</b><div class="note">${h(workerSpecText(w))}</div></td>
@@ -3184,33 +3198,33 @@ function vPay(R){
   if(!UI.payWeek)UI.payWeek=viewStart(TODAY);
   const ws=UI.payWeek,rows=payData(R,ws),carryOn=S.settings.payCarry!==false;
   const sum=f=>r2(rows.reduce((s,r)=>s+f(r),0));
-  const total=sum(r=>r.amount),carry=sum(r=>Math.max(0,r.carry)),adv=sum(r=>Math.max(0,-r.carry)),paid=sum(r=>r.paid),left=sum(r=>Math.max(0,r.rest));
+  const total=sum(r=>r.amount),otT=sum(r=>r.ot),otHT=rows.reduce((s,r)=>s+r.otH,0),carry=sum(r=>Math.max(0,r.carry)),adv=sum(r=>Math.max(0,-r.carry)),paid=sum(r=>r.paid),left=sum(r=>Math.max(0,r.rest));
   const nLeft=rows.filter(r=>r.rest>=0.5).length,nPays=rows.reduce((s,r)=>s+r.pays.length,0);
   const byP={};rows.forEach(r=>r.parts.forEach(p=>byP[p.pid]=(byP[p.pid]||0)+p.n*p.rate));
   const pday=payDayOf(ws),past=add(ws,6)<TODAY;
   const body=rows.map(r=>{const [c,l]=payState(r);return `<tr><td class="tt-main"><b>${h(isExt(r.w)?r.w.company||r.w.name:r.w.name)}</b><div class="note">${h(SP(r.w.specialtyId)?.name)}${isExt(r.w)?' · συνεργάτης':''}</div>
-      <details class="pay-breakdown"><summary>${nf(r.days)} μεροκάματα · ${money(r.amount)}</summary><div class="pparts">${r.parts.map(p=>`<span><i class="dot" style="background:${pc(p.pid)}"></i>${h(pname(p.pid))} <span class="mono">${nf(p.n)} × ${money(p.rate)}</span></span>`).join('')}</div>${r.lock&&Math.abs(r.live-r.wages)>=0.5?`<div class="note">Με το τωρινό πρόγραμμα βγαίνουν ${money(r.live)}</div>`:''}${bonusLine(r)}</details></td>
-    <td class="n mono" data-l="Μέρες">${nf(r.days)}</td><td class="n mono" data-l="Εβδομάδα">${money(r.amount)}</td>
+      <details class="pay-breakdown"><summary>${nf(r.days)} μεροκάματα · ${money(r.amount)}</summary><div class="pparts">${r.parts.map(p=>`<span><i class="dot" style="background:${pc(p.pid)}"></i>${h(pname(p.pid))} <span class="mono">${nf(p.n)} × ${money(p.rate)}</span></span>`).join('')}</div>${r.lock&&Math.abs(r.live-r.wages)>=0.5?`<div class="note">Με το τωρινό πρόγραμμα βγαίνουν ${money(r.live)}</div>`:''}${r.ot?`<div class="note">Μεροκάματα ${money(r.wages)} και υπερωρίες ${nf(r.otH)} ${r.otH==1?'ώρα':'ώρες'} × ${money(r.otR)} = ${money(r.ot)}</div>`:''}${bonusLine(r)}</details></td>
+    <td class="n mono" data-l="Μέρες">${nf(r.days)}</td><td class="n mono" data-l="Υπερωρίες"><button class="btn sm ghost otbtn" data-act="ot" data-id="${r.w.id}" title="Υπερωρίες: ${h(r.w.name)}">${r.otH?`${nf(r.otH)} ώρ. · ${money(r.ot)}`:'+ ώρες'}</button></td><td class="n mono" data-l="Εβδομάδα">${money(r.amount)}</td>
     <td class="n mono" data-l="Από πριν">${Math.abs(r.carry)>=0.5?(r.carry>0?money(r.carry):'<span title="προκαταβολή">−'+money(-r.carry)+'</span>'):'—'}</td>
     <td class="n mono" data-l="Πληρώθηκαν">${r.paid?money(r.paid):'—'}${r.pays.length>1?`<div class="note">${r.pays.length} πληρωμές</div>`:''}</td>
     <td class="n" data-l="Υπόλοιπο"><b class="mono" style="color:${r.rest>=0.5?'var(--bad)':'var(--ok)'}">${money(Math.abs(r.rest))}</b> <span class="tag ${c}">${l}</span></td>
     <td class="tt-acts"><button class="btn sm${r.rest>=0.5?' pri':''}" data-act="pay" data-id="${r.w.id}">${ico('cash')}Πληρωμή</button><button class="btn sm ghost" data-act="payviber" data-id="${r.w.id}" title="Στείλε του την κατάσταση στο Viber" aria-label="Viber: ${h(r.w.name)}">${ico('send')}<span class="lbl">Viber</span></button></td></tr>`}).join('');
   const co=S.settings.company&&S.settings.company.name;
-  const txt=(co?co+'\n':'')+'ΠΛΗΡΩΜΕΣ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n'+rows.map(r=>r.w.name+': '+nf(r.days)+' μέρες, '+money(r.amount)+(r.bonus?' (μαζί με μπόνους '+money(r.bonus)+')':'')
+  const txt=(co?co+'\n':'')+'ΠΛΗΡΩΜΕΣ ΕΒΔΟΜΑΔΑΣ '+fmtS(ws)+' – '+fmtS(add(ws,6))+'\n\n'+rows.map(r=>r.w.name+': '+nf(r.days)+' μέρες, '+money(r.amount)+(r.bonus?' (μαζί με μπόνους '+money(r.bonus)+')':'')+(r.ot?' (μαζί με υπερωρίες '+nf(r.otH)+' ώρες, '+money(r.ot)+')':'')
     +(Math.abs(r.carry)>=0.5?(r.carry>0?' + '+money(r.carry)+' από πριν':' − '+money(-r.carry)+' προκαταβολή'):'')
     +(r.paid?', πληρώθηκαν '+money(r.paid):'')+(Math.abs(r.rest)<0.5?', εξοφλήθηκε':r.rest>0?', μένουν '+money(r.rest):', προκαταβολή '+money(-r.rest))).join('\n')
-    +'\n\nΜεροκάματα: '+money(total)+(carry?'\nΑπό πριν: '+money(carry):'')+'\nΠληρώθηκαν: '+money(paid)+'\nΜένουν: '+money(left);
+    +'\n\nΣύνολο: '+money(total)+(otT?' (υπερωρίες '+money(otT)+')':'')+(carry?'\nΑπό πριν: '+money(carry):'')+'\nΠληρώθηκαν: '+money(paid)+'\nΜένουν: '+money(left);
   return `<div class="pagehead"><div><h1>Πληρωμές</h1><p class="note">${past?'Ημέρα πληρωμής:':pday===TODAY?'Σήμερα πληρώνεις:':'Επόμενη πληρωμή:'} ${fmt(pday)}</p></div><div class="bgrp"><button class="btn" data-act="pweek" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="pweek" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="pweek" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div></div>
   <textarea id="paytext" rows="8" hidden readonly>${h(txt)}</textarea>
   <div class="kpis">
-    <div class="kpi"><span class="lbl">Μεροκάματα εβδομάδας</span><span class="v">${money(total)}</span><span class="s">${nf(rows.reduce((s,r)=>s+r.days,0))} μεροκάματα</span></div>
+    <div class="kpi"><span class="lbl">Σύνολο εβδομάδας</span><span class="v">${money(total)}</span><span class="s">${nf(rows.reduce((s,r)=>s+r.days,0))} μεροκάματα${otT?' και '+money(otT)+' υπερωρίες':''}</span></div>
     <div class="kpi"><span class="lbl">Από προηγούμενες</span><span class="v">${money(carry)}</span><span class="s">${!carryOn?'η μεταφορά είναι κλειστή':adv?'και '+money(adv)+' προκαταβολές':'υπόλοιπα που μεταφέρθηκαν'}</span></div>
     <div class="kpi"><span class="lbl">Πληρώθηκαν</span><span class="v" style="color:var(--ok)">${money(paid)}</span><span class="s">${nPays==1?'1 πληρωμή':nPays+' πληρωμές'}</span></div>
     <div class="kpi"><span class="lbl">Μένουν</span><span class="v" style="color:${left?'var(--bad)':'var(--ok)'}">${money(left)}</span><span class="s">${nLeft?(nLeft==1?'1 άτομο':nLeft+' άτομα')+(carryOn?', περνούν στην επόμενη':''):'όλοι εξοφλήθηκαν'}</span></div>
   </div>
   ${payAttNote(R,ws)}
-  <section class="panel scroll"><table class="tt pay"><thead><tr><th>Εργαζόμενος και έργα</th><th class="n">Μέρες</th><th class="n">Εβδομάδα</th><th class="n">Από πριν</th><th class="n">Πληρώθηκαν</th><th class="n">Υπόλοιπο</th><th></th></tr></thead><tbody>${body||'<tr><td colspan="7" class="empty">Κανένα μεροκάματο αυτή την εβδομάδα.</td></tr>'}
-  ${rows.length?`<tr class="total"><td class="tt-main">Σύνολο</td><td class="n mono" data-l="Μέρες">${nf(rows.reduce((s,r)=>s+r.days,0))}</td><td class="n mono" data-l="Εβδομάδα">${money(total)}</td><td class="n mono" data-l="Από πριν">${money(r2(carry-adv))}</td><td class="n mono" data-l="Πληρώθηκαν">${money(paid)}</td><td class="n mono" data-l="Μένουν">${money(left)}</td><td></td></tr>`:''}</tbody></table>
+  <section class="panel scroll"><table class="tt pay"><thead><tr><th>Εργαζόμενος και έργα</th><th class="n">Μέρες</th><th class="n">Υπερωρίες</th><th class="n">Εβδομάδα</th><th class="n">Από πριν</th><th class="n">Πληρώθηκαν</th><th class="n">Υπόλοιπο</th><th></th></tr></thead><tbody>${body||'<tr><td colspan="8" class="empty">Κανένα μεροκάματο αυτή την εβδομάδα.</td></tr>'}
+  ${rows.length?`<tr class="total"><td class="tt-main">Σύνολο</td><td class="n mono" data-l="Μέρες">${nf(rows.reduce((s,r)=>s+r.days,0))}</td><td class="n mono" data-l="Υπερωρίες">${otT?nf(otHT)+' ώρ. · '+money(otT):'—'}</td><td class="n mono" data-l="Εβδομάδα">${money(total)}</td><td class="n mono" data-l="Από πριν">${money(r2(carry-adv))}</td><td class="n mono" data-l="Πληρώθηκαν">${money(paid)}</td><td class="n mono" data-l="Μένουν">${money(left)}</td><td></td></tr>`:''}</tbody></table>
   ${Object.keys(byP).length?`<details class="legend-d"><summary>${ico('chart')}Μεροκάματα ανά έργο</summary><div class="note">${Object.entries(byP).sort((a,b)=>b[1]-a[1]).map(([pid,c])=>`<div class="bar"><i class="dot" style="background:${pc(pid)}"></i><span class="grow">${h(pname(pid))}</span><span class="mono">${money(c)}</span></div>`).join('')}</div></details>`:''}</section>
   <p class="note">Τα ποσά βγαίνουν από το πρόγραμμα της εβδομάδας με το μεροκάματο κάθε εργαζόμενου ανά έργο. Αν κάποιος έλειψε, δήλωσέ το ως άδεια στο πρόγραμμα πριν την πληρωμή. Όταν η εβδομάδα πληρωθεί από την τελευταία εργάσιμη και μετά, το ποσό της κλειδώνει και δεν αλλάζει αν αλλάξει το πρόγραμμα.</p>
   <details class="auxiliary"><summary>Ενέργειες εβδομάδας και οδηγίες</summary><div class="bar">${expBtns('pay')}<button class="btn" data-act="copypay">Αντιγραφή κατάστασης</button><button class="btn" data-act="payall"${nLeft?'':' disabled'}>Εξόφληση όλων</button></div>  <p class="note paynote">${ico('info')}<span>${past?'Η μέρα πληρωμής ήταν':pday===TODAY?'Σήμερα είναι η μέρα πληρωμής,':'Μέρα πληρωμής:'} <b>${fmt(pday)}</b>. ${carryOn?'Μπορείς να δώσεις μέρος του ποσού: ό,τι μένει περνά στην επόμενη εβδομάδα, και ό,τι δοθεί παραπάνω αφαιρείται ως προκαταβολή.':'Η μεταφορά υπολοίπου είναι κλειστή στις Ρυθμίσεις, οπότε κάθε εβδομάδα μετρά μόνη της.'}</span></p>
@@ -4161,6 +4175,10 @@ document.addEventListener('click',e=>{
     case 'savespec':{const n=document.getElementById('sp_name').value.trim();if(!n){toast('Γράψε όνομα ειδικότητας.');break}const pm=document.getElementById('sp_pm').checked;const office=pm||document.getElementById('sp_office').checked;
       const i=office?S.specialties.length:S.specialties.findIndex(s=>s.id==='gen');S.specialties.splice(i<0?S.specialties.length:i,0,{id:uid('s'),name:n,office,pm});commit('Η ειδικότητα προστέθηκε.');break}
     case 'pay':payForm(id);break;
+    case 'ot':otForm(id);break;
+    case 'otsave':case 'otdel':{const f=document.getElementById('otf'),wid=f.dataset.id,hrs=a==='otdel'?0:num(document.getElementById('ot_h').value),n=W(wid)?.name||'';
+      if(a==='otsave'&&!(hrs>0)&&!S.payments[UI.payWeek+'|'+wid]?.ot){toast('Γράψε πόσες ώρες.');break}
+      otSet(wid,hrs,+f.dataset.rate);const rec=S.payments[UI.payWeek+'|'+wid];commit(hrs>0?n+': '+nf(hrs)+' ώρες υπερωρία, '+money(recOt(rec))+' στο ποσό της εβδομάδας.':n+': χωρίς υπερωρίες αυτή την εβδομάδα.');break}
     case 'pamt':{const i=document.getElementById('p_amount');i.value=el.dataset.v;updPay();i.focus();if(el.dataset.v)i.select();break}
     case 'savepay':{const f=document.getElementById('payf'),wid=f.dataset.id,ws=UI.payWeek,g=x=>document.getElementById(x).value;const amount=num(g('p_amount'));
       if(amount<=0){toast('Γράψε ποσό.');break}
@@ -4168,11 +4186,11 @@ document.addEventListener('click',e=>{
       addPay(R,ws,r,{amount,date:g('p_date')||TODAY,method:g('p_method'),note:g('p_note').trim()});
       const left=r2(r.rest-amount);
       commit(r.w.name+': πληρώθηκαν '+money(amount)+'. '+(Math.abs(left)<0.5?'Εξοφλήθηκε.':left>0?'Μένουν '+money(left)+(S.settings.payCarry===false?'.':' για την επόμενη εβδομάδα.'):'Προκαταβολή '+money(-left)+'.'));break}
-    case 'delpay':{const wid=el.dataset.w,k=UI.payWeek+'|'+wid,rec=S.payments[k];if(rec){const dp=rec.pays.find(p=>p.id===id);if(dp)logChange((W(wid)?.name||'')+': διαγραφή πληρωμής '+money(dp.amount));rec.pays=rec.pays.filter(p=>p.id!==id);if(!rec.pays.length&&!rec.lock&&rec.bonus==null&&!rec.bonusOff)delete S.payments[k]}
+    case 'delpay':{const wid=el.dataset.w,k=UI.payWeek+'|'+wid,rec=S.payments[k];if(rec){const dp=rec.pays.find(p=>p.id===id);if(dp)logChange((W(wid)?.name||'')+': διαγραφή πληρωμής '+money(dp.amount));rec.pays=rec.pays.filter(p=>p.id!==id);if(recEmpty(rec))delete S.payments[k]}
       save();render();payForm(wid);toast('Η πληρωμή αναιρέθηκε.');break}
     case 'bonusok':case 'bonusno':case 'bonusundo':{const k=UI.payWeek+'|'+id,rec=S.payments[k]=S.payments[k]||{earned:0,days:0,pays:[]},n=W(id)?.name||'';
       if(a==='bonusok'){rec.bonus=num(el.dataset.v);delete rec.bonusOff}else if(a==='bonusno'){rec.bonusOff=true;delete rec.bonus}else{delete rec.bonus;delete rec.bonusOff}
-      if(!rec.pays.length&&!rec.lock&&rec.bonus==null&&!rec.bonusOff)delete S.payments[k];
+      if(recEmpty(rec))delete S.payments[k];
       commit(a==='bonusok'?n+': μπόνους '+money(rec.bonus)+' στο ποσό της εβδομάδας.':a==='bonusno'?n+': χωρίς μπόνους αυτή την εβδομάδα.':n+': το μπόνους αναιρέθηκε.');break}
     case 'undo':undoChange(id);break;
     case 'search':setNav();searchForm();break;
@@ -4292,7 +4310,7 @@ document.addEventListener('change',e=>{
 });
 // το «μένουν» στις φόρμες πληρωμής αλλάζει καθώς γράφεται το ποσό
 function updPay(){const f=document.getElementById('payf'),o=document.getElementById('p_after');if(f&&o)o.innerHTML=payAfter(+f.dataset.rest,num(document.getElementById('p_amount').value))}
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='q')searchRun(t.value);else if(t.id==='cq')cliFilter(t.value);else if(t.id==='p_amount')updPay();
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='q')searchRun(t.value);else if(t.id==='cq')cliFilter(t.value);else if(t.id==='p_amount')updPay();else if(t.id==='ot_h'){const f=document.getElementById('otf'),v=num(t.value),rt=+f.dataset.rate;document.getElementById('ot_after').innerHTML=v>0?`${nf(v)} × ${money(rt)} = <b>${money(r2(v*rt))}</b>`:'Γράψε πόσες ώρες.'}
   else if(t.id==='ml_from'||t.id==='ml_to'){const fr=document.getElementById('ml_from'),to=document.getElementById('ml_to'),n=document.getElementById('ml_days');if(t===fr&&to&&(!to.value||to.value<fr.value))to.value=fr.value;if(n)n.textContent=lvCount()}
   else if(t.id==='c_amount'){const f=document.getElementById('cpf'),o=document.getElementById('c_after');if(f&&o)o.innerHTML=cAfter(+f.dataset.rest,num(t.value))}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){guideRead();closeModal();setNav()}
