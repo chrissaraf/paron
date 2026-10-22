@@ -1054,7 +1054,7 @@ TABS.push(['teams','Ομάδες']);
 let S,saveT;
 // με τον server: τίποτα δεν ανεβαίνει πριν διαβαστούν τα δεδομένα του server, ώστε ένα παλιό αντίγραφο του browser να μη γράψει πάνω τους
 let SYNC=!SERVER;
-function setS(x){S=x;ErgoCore.setState(x)}
+function setS(x){S=x;ErgoCore.setState(x);if(x&&!x.repriced){ErgoCore.repricePast();x.repriced=true}}
 function load(){try{const r=localStorage.getItem(LS);if(r){const o=migrate(JSON.parse(r));if(o&&o.v===2)return o}}catch(e){}return demo()}
 function save(auto){if(isWorker())return;if(SERVER&&!SYNC&&!auto&&AUTH.user)toast('Δεν υπάρχει σύνδεση με τον server και η αλλαγή δεν αποθηκεύτηκε. Ξαναδοκίμασε όταν επανέλθει η σύνδεση.');const j=JSON.stringify(S);LAST=j;try{localStorage.setItem(LS,j)}catch(e){}if(SERVER&&SYNC){clearTimeout(saveT);saveT=setTimeout(()=>{saveT=null;push()},300)}}
 // ιστορικό αλλαγών (γράφεται πάντα· η σελίδα και η αναίρεση είναι στο πακέτο Εργοτάξιο)
@@ -4154,7 +4154,7 @@ document.addEventListener('click',e=>{
     case 'delcpay':{const x=(S.cpay||[]).find(c=>c.id===id);S.cpay=S.cpay.filter(c=>c.id!==id);logChange((W(x.workerId)?.company||W(x.workerId)?.name||'')+': διαγραφή πληρωμής '+money(x.amount));save();cpayForm(W(x.workerId));render();toast('Η πληρωμή αναιρέθηκε.');break}
     case 'editworker':workerForm(W(id));break;
     case 'rates':ratesForm(W(id));break;
-    case 'saverates':{const f=document.getElementById('rf');const w=W(f.dataset.id);w.rates={};f.querySelectorAll('[data-rate]').forEach(i=>{if(i.value!=='')w.rates[i.dataset.rate]=+i.value});UI.hmsg='Μεροκάματα ανά έργο: '+w.name;commit('Τα μεροκάματα ανά έργο αποθηκεύτηκαν.');break}
+    case 'saverates':{const f=document.getElementById('rf');const w=W(f.dataset.id);w.rates={};f.querySelectorAll('[data-rate]').forEach(i=>{if(i.value!=='')w.rates[i.dataset.rate]=+i.value});ErgoCore.repricePast(w.id);UI.hmsg='Μεροκάματα ανά έργο: '+w.name;commit('Τα μεροκάματα ανά έργο αποθηκεύτηκαν.');break}
     case 'saveworker':{const f=document.getElementById('wf');const g=x=>document.getElementById(x).value;
       const v={id:f.dataset.id,name:g('h_name').trim(),specialtyId:g('h_spec'),role:g('h_role'),wage:+g('h_wage')||0,phone:g('h_phone').trim(),...(document.getElementById('h_amka')?{amka:g('h_amka').replace(/\s/g,'')}:{}),off:g('h_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)),...(document.getElementById('h_rate')?{rating:+g('h_rate')}:{})};
       if(f.querySelector('.xed'))v.exp=readExp(f);
@@ -4168,7 +4168,7 @@ document.addEventListener('click',e=>{
       if(v.amka&&!okAmka(v.amka)){toast('Ο ΑΜΚΑ έχει 11 ψηφία.');break}
       if(SP(v.specialtyId)?.office)v.role='ypal';else if(v.role==='ypal'||v.role==='ext')v.role='voith';
       const teamId=document.getElementById('h_team')?.value||'';(S.teams||[]).forEach(g=>{g.workerIds=(g.workerIds||[]).filter(id=>id!==v.id);if(g.id===teamId&&!SP(v.specialtyId)?.office)g.workerIds.push(v.id)});
-      UI.hmsg=(f.dataset.new==='1'?'Νέος εργαζόμενος: ':'Αλλαγές στον εργαζόμενο ')+v.name;if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else Object.assign(W(v.id),v);commit('Ο εργαζόμενος αποθηκεύτηκε.');break}
+      UI.hmsg=(f.dataset.new==='1'?'Νέος εργαζόμενος: ':'Αλλαγές στον εργαζόμενο ')+v.name;if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else{Object.assign(W(v.id),v);ErgoCore.repricePast(v.id)}commit('Ο εργαζόμενος αποθηκεύτηκε.');break}
     case 'delworker':if(el.dataset.sure){UI.hmsg='Διαγραφή εργαζόμενου: '+(W(id)?.name||'');S.workers=S.workers.filter(w=>w.id!==id);S.duties=S.duties.filter(x=>x.workerId!==id);(S.appts||[]).forEach(a=>{a.people=(a.people||[]).filter(x=>x!==id)});
       S.cpay=(S.cpay||[]).filter(x=>x.workerId!==id);S.tasks.forEach(t=>{if(t.responsibleId===id){const l=S.workers.find(w=>w.role!=='voith'&&!isOffice(w)&&!isExt(w)&&canTask(w,t));t.responsibleId=l?l.id:''}});commit('Ο εργαζόμενος διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
     case 'newspec':openModal(`<h2>Νέα ειδικότητα</h2><form class="form" id="sf"><label class="full">Όνομα<input id="sp_name" placeholder="π.χ. Μονωτές ή Λογιστήριο"></label><label class="full ck"><input type="checkbox" id="sp_office"> <span>Ειδικότητα γραφείου (δεν μπαίνει σε συνεργεία έργων)</span></label><label class="full ck"><input type="checkbox" id="sp_pm"> <span>Διαχείριση έργων (ορίζεται σε έργα, μπορεί σε πολλά μαζί)</span></label></form><div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savespec">Αποθήκευση</button></div>`);break;

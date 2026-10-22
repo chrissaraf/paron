@@ -1174,6 +1174,13 @@ function unpackDay(rec,d,asg,waiting){
     if(pp.length)pp.forEach(pid=>asg.push({date:d,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
     else asg.push({date:d,taskId:null,projectId:'office',workerId:w.id,wage:+w.wage||0})});
   return {jobs,gen,wet}}
+// όταν αλλάξει μεροκάματο, οι περασμένες μέρες εβδομάδων που δεν έχουν κλειδώσει στις Πληρωμές παίρνουν το νέο ποσό
+// (οι κλειδωμένες εβδομάδες και οι συνεργάτες κατ' αποκοπή μένουν όπως ήταν)· επιστρέφει πόσες γραμμές άλλαξαν
+function repricePast(wid){let n=0;const pay=S.payments||{};
+  Object.keys(S.past||{}).forEach(d=>(S.past[d].a||[]).forEach(r=>{const [t,p,w,wage,sh,fl]=r;if(wid&&w!==wid||fl&1)return;const x=W(w);if(!x)return;
+    const pr=pay[viewStart(d)+'|'+w];if(pr&&pr.lock)return;
+    const nw=(p==='office'?(+x.wage||0):rate(x,p))*(sh||1);if(Math.abs(nw-(+wage||0))>0.001){r[3]=nw;n++}}));
+  return n}
 // γράφει όσες περασμένες εργάσιμες λείπουν ή άλλαξαν· επιστρέφει πόσες γράφτηκαν
 function freezePast(R){if(!S.past||typeof S.past!=='object')S.past={};let n=0;
   Object.keys(R.byDay).forEach(d=>{if(d>=TODAY)return;const r=S.past[d];if(r&&r.fp===dayFp(d))return;S.past[d]=packDay(R,d);n++});
@@ -1543,5 +1550,5 @@ root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeL
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
-Object.assign(root.ErgoCore,{workerSpecs,taskSpecs,canTask,manualOn,teamOf,saveTeam,setPlacement,placeTeam});
+Object.assign(root.ErgoCore,{repricePast,workerSpecs,taskSpecs,canTask,manualOn,teamOf,saveTeam,setPlacement,placeTeam});
 })(typeof window!=='undefined'?window:globalThis);
