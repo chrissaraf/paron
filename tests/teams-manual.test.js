@@ -103,7 +103,7 @@ test('a manually entered project placement several weeks ahead is included',()=>
 
 test('every manually entered team day counts even when it exceeds the task estimate',()=>{
   const {state}=fixture();state.settings.scheduleMode='manual';state.tasks[0].days=1;
-  const dates=Array.from({length:7},(_,i)=>C.add(C.today(),i));
+  const dates=[];for(let d=C.today();dates.length<7;d=C.add(d,1))if(C.isWork(d))dates.push(d);   // παραλείπει αργίες (π.χ. 28/10)
   for(const d of dates)assert.equal(C.placeTeam('crew',d,{projectId:'p1',taskId:'task'}).assigned,2);
   const r=C.schedule();
   for(const d of dates){
