@@ -895,6 +895,85 @@ const pname=id=>PSEUDO[id]?.name||P(id)?.name||'—';
    settings.hol={on,skip:[id]}: ποιες αργίες δεν τηρούνται· settings.closed=[ΕΕΕΕ-ΜΜ-ΗΗ]. */
 // Ορθόδοξο Πάσχα: υπολογισμός στο ιουλιανό ημερολόγιο + 13 μέρες (ισχύει για 1900-2099)
 function easter(y){const a=y%4,b=y%7,c=y%19,d=(19*c+15)%30,e=(2*a+4*b-d+34)%7,m=Math.floor((d+e+114)/31),day=(d+e+114)%31+1;return add(y+'-'+pad(m)+'-'+pad(day),13)}
+/* Γιορτές και γενέθλια του προσωπικού (φαίνονται στις Υπενθυμίσεις και στο Σήμερα, δεν στέλνεται τίποτα).
+   Ονομαστικές εορτές των πιο συνηθισμένων ονομάτων· κινητές: E = Πάσχα, E+1 = Δευτέρα του Πάσχα, κ.λπ.
+   Αν η γιορτή κάποιου είναι άλλη μέρα, τη γράφει το γραφείο στην καρτέλα του (w.nameday = 'ΜΜ-ΗΗ'). */
+const NAMEDAYS=(()=>{const T={
+  '01-01':'βασιλησ βασιλειοσ βασω βασιλικη βασιλεια',
+  '01-07':'γιαννησ ιωαννησ γιαννα ιωαννα γιαννουλα',
+  '01-17':'αντωνησ αντωνιοσ αντωνια τωνησ',
+  '01-18':'αθανασιοσ θανασησ θαναση νασοσ αθανασια σακησ',
+  '01-25':'γρηγορησ γρηγοριοσ',
+  '01-20':'ευθυμιοσ ευθυμησ θυμιοσ',
+  '02-10':'χαραλαμποσ χαραλαμπησ μπαμπησ λαμπησ',
+  '02-14':'τρυφωνασ τρυφων',
+  '02-17':'θεοδωροσ θοδωρησ θεοδωρα δωρα',
+  '03-25':'βαγγελησ ευαγγελοσ ευαγγελια βαγγελιω ευαγγελιοσ',
+  '05-05':'ειρηνη',
+  '05-21':'κωνσταντινοσ κωστασ κωστησ ντινοσ ελενη ελενα',
+  '06-29':'πετροσ παυλοσ παυλινα',
+  '06-30':'αποστολοσ αποστολησ',
+  '07-17':'μαρινα',
+  '07-20':'ηλιασ',
+  '07-26':'παρασκευη βουλα παρασκευασ',
+  '07-27':'παντελησ παντελεημων',
+  '08-15':'παναγιωτησ παναγιωτα γιωτα μαρια μαιρη μαρω δεσποινα παναγιω',
+  '08-30':'αλεξανδροσ αλεξησ αλεκοσ αλεξανδρα',
+  '09-17':'σοφια',
+  '10-26':'δημητρησ δημητριοσ μιμησ ντιμιτρι δημητρα μιτσοσ',
+  '11-08':'μιχαλησ μιχαηλ γαβριηλ αγγελοσ αγγελικη αγγελα ραφαηλ',
+  '11-13':'χρυσοστομοσ',
+  '11-14':'φιλιπποσ',
+  '11-25':'αικατερινη κατερινα καιτη',
+  '11-30':'ανδρεασ αντρεασ',
+  '12-04':'βαρβαρα',
+  '12-06':'νικολαοσ νικοσ νικολασ νικολετα νικη',
+  '12-12':'σπυροσ σπυριδων σπυριδουλα',
+  '12-15':'ελευθεριοσ λευτερησ ελευθερια',
+  '12-25':'χρηστοσ χρηστινα χριστινα χριστοσ μανωλησ εμμανουηλ',
+  '12-27':'στεφανοσ στεφανια',
+  '06-11':'βαρναβασ',
+  '07-22':'μαγδαληνη',
+  '08-06':'σωτηρησ σωτηρια',
+  '09-14':'σταυροσ σταυρουλα',
+  '10-18':'λουκασ',
+  '07-25':'αννα',
+  '10-03':'διονυσησ διονυσιοσ',
+  '11-09':'νεκταριοσ νεκταρια',
+  '09-01':'συμεων',
+  '02-11':'βλασησ βλασιοσ',
+  '08-27':'φανουριοσ',
+  '01-11':'θεοδοσησ θεοδοσιοσ',
+  '03-17':'αλεξιοσ',
+  '04-25':'μαρκοσ',
+  '09-20':'ευσταθιοσ σταθησ',
+  '10-06':'θωμασ',
+  '11-16':'ματθαιοσ',
+  '06-24':'προδρομοσ',
+  '01-12':'τατιανη',
+  '12-13':'ευγενιοσ ευγενια',
+  '11-11':'μηνασ',
+  '11-26':'στυλιανοσ στελιοσ στυλιανη στελλα',
+  '08-07':'ασημινα',
+  '07-08':'προκοπιοσ',
+  '05-15':'αχιλλεασ',
+  '12-05':'σαββασ',
+  '04-23':'γιωργοσ γεωργιοσ γιωργια γεωργια',
+  'E':'λαμπροσ αναστασησ αναστασιοσ τασοσ λαμπρινη',
+  'E+5':'ζησησ ζωη ζωιτσα',
+  'E+50':'τριανταφυλλοσ τριανταφυλλια'};
+  const M={};Object.entries(T).forEach(([d,xs])=>xs.split(' ').forEach(n=>{(M[n]=M[n]||[]).includes(d)||M[n].push(d)}));return M})();
+const nmKey=n=>String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ς/g,'σ').trim().split(/\s+/)[0]||'';
+function nameDayOn(w,d){const y=+d.slice(0,4),md=d.slice(5);if(w.nameday)return w.nameday===md;
+  const E=easter(y);
+  return (NAMEDAYS[nmKey(w.name)]||[]).some(k=>{
+    if(k[0]==='E')return add(E,+(k.slice(1)||0))===d;
+    // του Αγίου Γεωργίου: αν η 23/4 πέφτει πριν ή ανήμερα του Πάσχα, γιορτάζεται τη Δευτέρα του Πάσχα
+    if(k==='04-23'){const g=y+'-04-23';return (g<=E?add(E,1):g)===d}
+    return k===md})}
+const birthOn=(w,d)=>!!w.birth&&String(w.birth).slice(-5)===d.slice(5);
+// ποιοι γιορτάζουν ή έχουν γενέθλια μια μέρα
+const celebs=d=>S.workers.map(w=>({w,nd:nameDayOn(w,d),bd:birthOn(w,d)})).filter(x=>x.nd||x.bd);
 const HOLIDAYS=[['ny','Πρωτοχρονιά',y=>y+'-01-01'],['theo','Θεοφάνεια',y=>y+'-01-06'],['kd','Καθαρά Δευτέρα',y=>add(easter(y),-48)],['25m','25η Μαρτίου',y=>y+'-03-25'],
   ['mp','Μεγάλη Παρασκευή',y=>add(easter(y),-2)],['dp','Δευτέρα του Πάσχα',y=>add(easter(y),1)],['pm','Πρωτομαγιά',y=>y+'-05-01'],['ap','Αγίου Πνεύματος',y=>add(easter(y),50)],
   ['dek','Δεκαπενταύγουστος',y=>y+'-08-15'],['28o','28η Οκτωβρίου',y=>y+'-10-28'],['xm','Χριστούγεννα',y=>y+'-12-25'],['sx','Σύναξη της Θεοτόκου',y=>y+'-12-26']];
@@ -1547,7 +1626,7 @@ function myView(R,w,ws,l){l=l||langOf(w);const o=personWeek(R,w,ws,l);o.lang=isO
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,DROPPED,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,rekeyPay,officeDemo,demo,migrate,
+root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,DROPPED,celebs,nameDayOn,birthOn,NAMEDAYS,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,rekeyPay,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
