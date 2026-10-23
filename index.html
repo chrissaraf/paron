@@ -449,6 +449,17 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;min-width:20px;min
 .checks{display:grid;gap:10px}
 .ck,.form label.ck{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:14.5px;color:var(--ink);font-weight:450;line-height:1.4}
 .ck input{margin-top:0}
+.cell.draft{background:transparent;box-shadow:none;border:1.5px dashed var(--pc);padding:4px 26px 5px 9px}
+.sched td.hasdraft{position:relative}
+.cfm{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;padding:0;color:var(--ink)}
+.cfm svg{width:14px;height:14px}.cfm:hover,.cfm:focus-visible{background:var(--accent);border-color:var(--accent)}
+i.dashk{display:inline-block;width:18px;height:11px;border:1.5px dashed var(--muted);border-radius:4px;vertical-align:-1px;margin-right:4px}
+.legend svg,p.note>svg{width:13px;height:13px;vertical-align:-2px}
+.crew-dr{display:flex;align-items:center;gap:8px}
+.crew-dr .crew-row.draft{border:1.5px dashed var(--pc,var(--muted));border-radius:10px;padding:8px 10px;margin:6px 0;min-height:44px}
+.cfm2{flex:none;white-space:nowrap}
+.draftnote{display:flex;gap:8px;align-items:flex-start}
+@media (max-width:420px){.cfm2 span{display:none}}
 .otbtn{font-variant-numeric:tabular-nums;white-space:nowrap}
 .impgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:6px 10px;align-items:center;font-size:14px}.impgrid select{min-width:0;width:100%}
 .modal.wide{width:min(860px,100%)}
@@ -3823,6 +3834,15 @@ function payDayPanel(R,d){const v=viewStart(TODAY),ws=[v,add(v,-7)].find(w=>payD
   const rs=payData(R,ws).filter(r=>r.rest>=0.5);if(!rs.length)return '';
   const left=r2(rs.reduce((s,r)=>s+r.rest,0)),carry=r2(rs.reduce((s,r)=>s+Math.max(0,r.carry),0));
   return `<section class="panel payday"><span class="pdi">${ico('cash')}</span><div class="grow"><b>Σήμερα είναι μέρα πληρωμής</b><div class="note">Μένουν ${money(left)} σε ${rs.length==1?'1 άτομο':rs.length+' άτομα'}${carry>=0.5?', μαζί με '+money(carry)+' από προηγούμενες εβδομάδες':''}.</div></div><button class="btn pri" data-tab="pay" data-pw="${ws}">Πληρωμές</button></section>`}
+// πρόχειρο: ό,τι έβγαλε το αυτόματο πρόγραμμα από σήμερα και μετά και δεν το έχεις επιβεβαιώσει (διακεκομμένο περίγραμμα)
+const isDraft=(x,w,d)=>d>=TODAY&&isWork(d)&&!x.off&&!x.forced&&!isOffice(w)&&!manualOn(d)&&(x.jobs.length>0||x.gen);
+const draftAsg=a=>a.date>=TODAY&&!S.overrides[a.date+'|'+a.workerId]&&!manualOn(a.date)&&(a.taskId||a.projectId==='gen')&&W(a.workerId)&&!isOffice(W(a.workerId));
+// η επιβεβαίωση γράφει την πρόταση ως δική σου ανάθεση· από εκεί και πέρα δεν αλλάζει μόνη της
+function confirmPlace(R,wid,d){const w=W(wid),x=whatDoes(R,wid,d);if(!w||!isDraft(x,w,d))return false;
+  const ids=x.jobs.map(j=>j.job.task.id),pl=ids.length>1?{type:'tasks',taskIds:ids}:ids.length?{type:'task',taskId:ids[0]}:{type:'gen'};
+  return !setPlacement(wid,d,pl).err}
+const draftsIn=(R,days)=>{const out=[];days.forEach(d=>S.workers.forEach(w=>{if(isDraft(whatDoes(R,w.id,d),w,d))out.push([w.id,d])}));return out};
+const cfmAllBtn=(R,days,scope)=>{const n=draftsIn(R,days).length;return n?`<button class="btn" data-act="confirmall" data-scope="${scope}">${ico('check')}Επιβεβαίωση ${scope==='day'?'ημέρας':'όλων'} (${n})</button>`:''};
 function scheduleWeekNav(){
   return `<div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">${fmtS(UI.week)} – ${fmtS(add(UI.week,6))}</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>`;
 }
@@ -3833,7 +3853,7 @@ function daySchedule(R,pid=''){
   if(UI.weekProj&&!P(UI.weekProj))UI.weekProj='';
   const d=UI.weekDay,selected=pid||UI.weekProj||'',A=R.asg.filter(a=>a.date===d&&(!selected||a.projectId===selected));
   const people=new Set(A.map(a=>a.workerId)),day=R.byDay[d]||{jobs:[],gen:[]};
-  const crew=xs=>xs.map(a=>{const w=W(a.workerId);if(!w)return '';const lead=day.jobs.some(j=>j.task.id===a.taskId&&j.lead?.id===w.id);return `<button class="crew-row" data-act="assign" data-w="${w.id}" data-d="${d}" aria-label="Ανάθεση: ${h(w.name)}"><span><b>${h(w.name)}</b><small>${h(workerSpecText(w)||'')}${lead?' · υπεύθυνος':''}${a.share&&a.share<1?' · '+nf(a.share)+' μεροκάματο':''}</small></span><span class="crew-rate mono">${eur(a.wage)}</span>${ico('edit')}</button>`}).join('');
+  const crew=xs=>xs.map(a=>{const w=W(a.workerId);if(!w)return '';const lead=day.jobs.some(j=>j.task.id===a.taskId&&j.lead?.id===w.id);const row=`<button class="crew-row${draftAsg(a)?' draft':''}" data-act="assign" data-w="${w.id}" data-d="${d}" aria-label="Ανάθεση: ${h(w.name)}"><span><b>${h(w.name)}</b><small>${h(workerSpecText(w)||'')}${lead?' · υπεύθυνος':''}${a.share&&a.share<1?' · '+nf(a.share)+' μεροκάματο':''}</small></span><span class="crew-rate mono">${eur(a.wage)}</span>${ico('edit')}</button>`;return draftAsg(a)?`<div class="crew-dr">${row}<button class="btn sm cfm2" data-act="confirm" data-w="${w.id}" data-d="${d}" aria-label="Επιβεβαίωση: ${h(w.name)}">${ico('check')}<span>Επιβεβαίωση</span></button></div>`:row}).join('');
   const projects=S.projects.filter(p=>!selected||p.id===selected);
   const cards=projects.map(p=>{
     const pa=A.filter(a=>a.projectId===p.id),jobs=day.jobs.filter(j=>j.task.projectId===p.id),wet=(day.wet||[]).filter(t=>t.projectId===p.id);
@@ -3847,6 +3867,7 @@ function daySchedule(R,pid=''){
   return `<div class="day-schedule"><div class="daystrip" role="group" aria-label="Ημέρα προγράμματος">${dates.map(x=>`<button class="${x===TODAY?'is-today ':''}${!isWork(x)?'closed':''}" data-act="scheduleday" data-d="${x}" aria-pressed="${x===d}" aria-label="${fmt(x)}${holName(x)?', '+h(holName(x)):''}"><span>${DAYS[dow(x)]}</span><b>${pd(x).getDate()}</b></button>`).join('')}</div>
     ${!pid?`<label class="lbl">Έργο<select id="schedule_project" style="width:100%;margin-top:6px">${[['','Όλα τα έργα'],...S.projects.map(p=>[p.id,p.name])].map(([id,n])=>`<option value="${id}"${id===selected?' selected':''}>${h(n)}</option>`).join('')}</select></label>`:''}
     <div class="schedule-summary"><div><h2>${fmt(d)}</h2><p class="note">${people.size} άτομα στο πρόγραμμα</p></div>${wxHead(d,selected)}<b class="mono">${eur(A.reduce((s,a)=>s+a.wage,0))}</b></div>
+    ${A.some(draftAsg)?`<p class="note draftnote"><i class="dashk"></i><span>Με διακεκομμένο περίγραμμα είναι η πρόταση του αυτόματου προγράμματος. Πάτα «Επιβεβαίωση» για να γίνει οριστική.</span></p><div class="bar">${cfmAllBtn(R,[d],'day')}</div>`:''}
     ${!isWork(d)?`<p class="warnline">${ico('cal')}<span>${h(holName(d)||'Μη εργάσιμη ημέρα')}. Δεν υπάρχει πρόγραμμα εργασιών.</span></p>`:''}
     ${!selected?manualDayPanel(R,d):''}<div class="projgrid">${cards||'<section class="panel"><h2>Δεν υπάρχουν έργα ακόμη</h2><p class="note">Πρόσθεσε ένα έργο και τις εργασίες του για να οργανώσεις το συνεργείο.</p><button class="btn" data-act="newproj">Νέο έργο</button></section>'}</div>
     ${outside.length?`<section class="panel"><h2>Γραφείο και αποθήκη</h2><div class="crew-list">${crew(outside)}</div></section>`:''}
@@ -3869,8 +3890,8 @@ function vWeek(R){
   const nav=`<div class="bar"><h1 class="grow">Εβδομάδα ${fmtS(UI.week)} – ${fmtS(add(UI.week,6))}</h1>
     <div class="seg"><button data-act="wmode" data-m="workers"${UI.weekMode==='workers'?' aria-pressed="true"':''}>Ανά εργαζόμενο</button><button data-act="wmode" data-m="projects"${UI.weekMode==='projects'?' aria-pressed="true"':''}>Ανά έργο</button></div>
     <div class="bgrp"><button class="btn" data-act="week" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="week" data-dir="0">Τρέχουσα</button><button class="btn" data-act="week" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div>
-    <label class="btn fpick">${ico('up')}Από Excel<input type="file" id="xin" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label><button class="btn" data-act="clearweek">Άδειασμα εβδομάδας</button>${expBtns('week')}<button class="btn pri" data-act="sendweek">${ico('send')}Εβδομαδιαίο σε όλους</button></div>`;
-  const legend=`<div class="legend">${S.projects.map(p=>`<span><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</span>`).join('')}<span><i class="dot" style="background:var(--gen)"></i>Αποθήκη</span><span><b>Έντονα</b> = υπεύθυνος</span><span>${ico('pin')}το όρισες εσύ</span></div>`;
+    <label class="btn fpick">${ico('up')}Από Excel<input type="file" id="xin" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label><button class="btn" data-act="clearweek">Άδειασμα εβδομάδας</button>${cfmAllBtn(R,days.filter(isWork),'week')}${expBtns('week')}<button class="btn pri" data-act="sendweek">${ico('send')}Εβδομαδιαίο σε όλους</button></div>`;
+  const legend=`<div class="legend">${S.projects.map(p=>`<span><i class="dot" style="background:${pc(p)}"></i>${h(p.name)}</span>`).join('')}<span><i class="dot" style="background:var(--gen)"></i>Αποθήκη</span><span><b>Έντονα</b> = υπεύθυνος</span><span>${ico('pin')}το όρισες εσύ</span><span><i class="dashk"></i>πρόταση, πάτα ${ico('check')} για να γίνει οριστική</span></div>`;
   if(UI.weekMode==='projects'){
     const rows=[...S.projects.map(p=>p.id),'gen','office'].map(pid=>{
       const cells=days.map(d=>{if(!isWork(d))return holCell(d);
@@ -3909,11 +3930,12 @@ function vWeek(R){
         const apl=x.off?'':x.appts.map(a=>`<small class="apl" title="${h(a.title+(a.client?', '+a.client:''))}">${ico('meet')}${h(a.time||'')} ${h(a.title)}</small>`).join('');
         if(apl&&/cell idle/.test(inner))inner=`<div class="cell ap-only">${apl}</div>`;
         else if(rn||apl)inner=inner.replace(/<\/div>$/,rn+apl+'</div>');
-        return `<td class="c${d===TODAY?' today':''}" data-act="assign" data-w="${w.id}" data-d="${d}" title="Πάτα για να ορίσεις πού δουλεύει">${inner}</td>`}).join('');
+        const dr=isDraft(x,w,d);if(dr)inner=inner.replace(/class="cell"/g,'class="cell draft"');
+        return `<td class="c${d===TODAY?' today':''}${dr?' hasdraft':''}" data-act="assign" data-w="${w.id}" data-d="${d}" title="${dr?'Πρόταση του αυτόματου προγράμματος. Πάτα ✓ για να γίνει οριστική ή το κελί για αλλαγή':'Πάτα για να ορίσεις πού δουλεύει'}">${inner}${dr?`<button class="cfm" data-act="confirm" data-w="${w.id}" data-d="${d}" aria-label="Επιβεβαίωση: ${h(w.name)}, ${fmt(d)}">${ico('check')}</button>`:''}</td>`}).join('');
       return `<tr><td class="w"><b>${h(w.name)}</b><div class="note">${isExt(w)?h((w.company?w.company+' · ':'')+(workerSpecText(w)||'')):ROLES[w.role]+' · '+eur(w.wage)}</div></td>${cells}<td class="n mono">${nf(n)}<div class="note">${eur(c)}</div></td></tr>`}).join('')}).join('');
   const dayCost=days.map(d=>R.asg.filter(a=>a.date===d).reduce((s,a)=>s+a.wage,0));
   const manualPanel=manualDayPanel(R,UI.weekDay||days.find(d=>d>=TODAY)||days[0]||TODAY);
-  return mobile+`<div class="desktop-schedule">`+nav+(manualPanel?`<details class="auxiliary"><summary>Αναθέσεις ημέρας ανά άτομο και ομάδα</summary>${manualPanel}</details>`:'')+holNote(UI.week)+legend+rainPanel(R,days)+wxNote()+`<p class="note">Πάτα ένα κελί για να ορίσεις εσύ σε ποιο έργο δουλεύει ο εργαζόμενος ή να του δώσεις άδεια. Τα υπόλοιπα προσαρμόζονται μόνα τους.</p>
+  return mobile+`<div class="desktop-schedule">`+nav+(manualPanel?`<details class="auxiliary"><summary>Αναθέσεις ημέρας ανά άτομο και ομάδα</summary>${manualPanel}</details>`:'')+holNote(UI.week)+legend+rainPanel(R,days)+wxNote()+`<p class="note">Τα κελιά με διακεκομμένο περίγραμμα είναι πρόταση του αυτόματου προγράμματος και μπορεί να αλλάξουν. Πάτα ${ico('check')} για να γίνει οριστική, ή πάτα το κελί για να ορίσεις εσύ πού δουλεύει ή να δώσεις άδεια.</p>
   <section class="panel scroll"><table class="sched"><thead><tr><th>Εργαζόμενος</th>${days.map(thDay).join('')}<th class="n">Μεροκ.</th></tr></thead>
   <tbody>${rows}<tr class="total"><td>Κόστος ημέρας</td>${dayCost.map(c=>`<td class="n mono">${eur(c)}</td>`).join('')}<td class="n mono">${eur(dayCost.reduce((a,b)=>a+b,0))}</td></tr></tbody></table></section></div>`;
 }
@@ -5765,6 +5787,10 @@ document.addEventListener('click',e=>{
   const a=el.dataset.act,id=el.dataset.id;
   if(a==='bg'&&e.target!==el)return;
   switch(a){
+    case 'confirm':{const R=schedule(),w=W(el.dataset.w);if(confirmPlace(R,el.dataset.w,el.dataset.d))commit((w?w.name+', ':'')+fmt(el.dataset.d)+': η ανάθεση έγινε οριστική.');else{toast('Αυτή η ανάθεση δεν είναι πια πρόταση.');render()}break}
+    case 'confirmall':{const R=schedule(),days=el.dataset.scope==='day'?[UI.weekDay]:Array.from({length:7},(_,i)=>add(UI.week,i)).filter(isWork);let n=0;
+      draftsIn(R,days).forEach(([wid,d])=>{if(confirmPlace(R,wid,d))n++});
+      commit(n?(n==1?'1 ανάθεση έγινε οριστική.':n+' αναθέσεις έγιναν οριστικές.'):'Δεν υπάρχουν προτάσεις για επιβεβαίωση.');break}
     case 'impgo':impApply();closeModal();break;
     case 'clearweek':{if(!el.dataset.sure){el.dataset.sure='1';el.textContent='Πάτα ξανά για άδειασμα';setTimeout(()=>{if(el.isConnected){delete el.dataset.sure;el.textContent='Άδειασμα εβδομάδας'}},4000);break}
       const r=clearWeek(UI.week);if(!r.days.length){toast('Δεν υπάρχουν μέρες από σήμερα και μετά σε αυτή την εβδομάδα.');break}
