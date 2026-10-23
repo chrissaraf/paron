@@ -136,12 +136,14 @@ test('today lets the contractor tap a crew member to edit that day directly',()=
   assert.match(html,new RegExp('data-act="assign" data-w="w1" data-d="'+V.UI.day+'"'));
 });
 
-test('project overview includes materials in cost even when there are no labour assignments',()=>{
+// το κέρδος και τα έξοδα έργου πήγαν στο BuildPilot: δεν φαίνονται, αλλά τα δεδομένα μένουν
+test('project overview hides material costs and keeps them in the data',()=>{
   const {C,V}=app(),state=C.blankState();
   state.projects=[{id:'site',name:'Ανακαίνιση',location:'',color:'p1',budget:1000,contract:5000,costs:[{id:'material',kind:'mat',amount:3210,date:C.today(),desc:'Πλακάκια'}]}];
   V.setS(state);V.UI.proj='site';const schedule=C.schedule();
-  assert.ok(V.vProjects(schedule).includes(C.eur(3210)));
-  assert.ok(V.vProject(schedule).includes(C.eur(3210)));
+  assert.ok(!V.vProjects(schedule).includes(C.eur(3210)));
+  assert.ok(!V.vProject(schedule).includes(C.eur(3210)));
+  assert.equal(state.projects[0].costs.length,1);
 });
 
 test('editing a worker preserves every selected specialty including legacy secondary skills',()=>{

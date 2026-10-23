@@ -918,7 +918,7 @@ const isExt=w=>!!w&&w.role==='ext';
 // Πακέτα συνδρομής. Κάθε λειτουργία ανοίγει από το χαμηλότερο πακέτο που την έχει· ό,τι δεν είναι στο FEATS υπάρχει σε όλα.
 // people: άτομα στα έργα (γραφείο και εργολάβος δεν μετράνε), office: χρήστες γραφείου (0 = χωρίς όριο). Τα όρια μόνο προειδοποιούν.
 const PLANS=[{id:'mastoras',name:'Μάστορας',gen:'Μάστορα',price:9.99,people:5,office:1},{id:'synergeio',name:'Συνεργείο',gen:'Συνεργείου',price:19.99,people:15,office:3},{id:'ergotaxio',name:'Εργοτάξιο',gen:'Εργοταξίου',price:39.99,people:40,office:0}];
-const FEATS={wx:['synergeio','Πρόγραμμα με τον καιρό'],partners:['synergeio','Συνεργάτες'],appts:['synergeio','Ραντεβού με πελάτες'],clients:['synergeio','Καρτέλα πελάτη'],pm:['synergeio','Διαχειριστές έργων'],
+const FEATS={wx:['synergeio','Πρόγραμμα με τον καιρό'],partners:['synergeio','Συνεργάτες'],appts:['synergeio','Ραντεβού με πελάτες'],clients:['synergeio','Λίστα πελατών'],pm:['synergeio','Διαχειριστές έργων'],
   gaps:['synergeio','Τι λείπει: κενά στο πρόγραμμα'],deadline:['synergeio','Προθεσμία παράδοσης ανά έργο'],avail:['synergeio','Διαθεσιμότητα εργαζομένων'],search:['synergeio','Αναζήτηση σε όλη την εφαρμογή'],weekly:['synergeio','Εβδομαδιαία σύνοψη για τον εργολάβο'],setup:['synergeio','Οδηγός πρώτης ρύθμισης'],
   progress:['synergeio','Πρόοδος από το εργοτάξιο'],leave:['synergeio','Άδειες από το κινητό'],acc:['synergeio','Κατάσταση για τον λογιστή'],export:['synergeio','Εξαγωγή σε Excel και PDF'],push:['synergeio','Ειδοποιήσεις στο κινητό'],
   rating:['ergotaxio','Βαθμός εργαζομένου και δυσκολία εργασίας'],history:['ergotaxio','Ιστορικό αλλαγών με αναίρεση'],profit:['ergotaxio','Κέρδος ανά έργο'],gps:['ergotaxio','Παρουσίες με GPS'],materials:['ergotaxio','Υλικά πριν την εργασία'],equip:['ergotaxio','Μηχανήματα, οχήματα και λήξεις'],diary:['ergotaxio','Ημερολόγιο έργου με φωτογραφίες'],client:['ergotaxio','Σελίδα προόδου για τον πελάτη']};
@@ -927,7 +927,10 @@ const planOf=st=>PLANS[planIx(((st||S&&S.settings)||{}).plan)];
 const planHas=(f,st)=>!FEATS[f]||planIx(planOf(st).id)>=planIx(FEATS[f][0]);
 // λειτουργίες που έκλεισε ο διαχειριστής στις Ρυθμίσεις (settings.off)· τα δεδομένα τους μένουν
 const isOn=(f,st)=>!((((st||S&&S.settings)||{}).off)||[]).includes(f);
-const hasF=(f,st)=>planHas(f,st)&&isOn(f,st);
+// Λειτουργίες που έφυγαν από το PARON (απόφαση 23/10/2026): κέρδος ανά έργο (πάει στο BuildPilot) και παρουσίες με GPS.
+// Ο κώδικας και τα δεδομένα τους μένουν, απλώς δεν εμφανίζονται.
+const DROPPED=['profit','gps'];
+const hasF=(f,st)=>!DROPPED.includes(f)&&planHas(f,st)&&isOn(f,st);
 const needPlan=f=>FEATS[f]?PLANS[planIx(FEATS[f][0])]:PLANS[0];
 const planPeople=()=>S.workers.filter(w=>!isOffice(w)).length;
 // Βαθμός εργαζομένου (1-5, τον βλέπει μόνο το γραφείο) και δυσκολία εργασίας (1-5).
@@ -1411,9 +1414,8 @@ function weekSum(R,ws){
     return {p,...sum(PA),done,prog,next,nDone:ts.length-open.length,nAll:ts.length,fin,unpl,due,late,bad:!!due&&open.length>0&&(unpl>0||late>0),pf}});
   return {ws,we,last:days[days.length-1]||we,nws,days,...sum(A),other:sum(A.filter(a=>!P(a.projectId))),projects,
     nDone:projects.reduce((s,x)=>s+x.done.length,0),nBad:projects.filter(x=>x.bad).length,
-    apNext:hasF('appts')?(S.appts||[]).filter(a=>a.date>=nws&&a.date<=nwe&&a.status!=='done').length:0,
-    exp:hasF('equip')?expAll().filter(o=>o.x.due<=nwe):[],
-    mat:hasF('materials')?matTodo(R,nwe):[]};
+    // η σύνοψη κρατά μόνο μέρες, πρόοδο και κόστος μεροκάματων
+    apNext:0,exp:[],mat:[]};
 }
 function weekSumText(X){
   const L=['ΣΥΝΟΨΗ ΕΒΔΟΜΑΔΑΣ '+fmtS(X.ws)+' – '+fmtS(X.last),'',
