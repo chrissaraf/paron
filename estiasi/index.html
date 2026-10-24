@@ -319,6 +319,12 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--
 label.f input,label.f select{width:100%;min-width:0}
 label.f input,label.f select,.inp{padding:8px 10px;border:1px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink);min-height:40px}
 td .inp{padding:5px 7px;width:100%;min-width:70px}
+input[type=time],input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left}
+.form{align-items:end}
+details.help>summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:44px}
+details.help>summary::-webkit-details-marker{display:none}
+details.help>summary::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin-left:2px}
+details.help[open]>summary::after{transform:rotate(45deg);margin-top:-4px}
 .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
 
 /* Παράθυρο */
@@ -445,7 +451,7 @@ td .inp{padding:5px 7px;width:100%;min-width:70px}
 .scard details.help summary{min-height:44px;display:flex;align-items:center}
 .nadj button{min-width:44px;min-height:44px}
 .scard .wdays{flex-wrap:wrap}
-.scard .wdays button{min-width:44px;min-height:44px}
+.scard .wdays button{flex:1 1 0;min-width:0;min-height:44px;padding-inline:0}
 @media (max-width:600px){
   .chip .approx{color:var(--muted)}
   .form input,.form select,.times input{min-height:44px}
@@ -1085,7 +1091,7 @@ function pageSet(){
     </div><div class="hint">Το μεροκάματο, η υπερωρία και η κράτηση ανά ώρα ρυθμίζονται στις «Ειδικότητες και αμοιβές» και, αν χρειάζεται, ανά άτομο στο «Προσωπικό».</div></section>`;
   if(UI.setTab==='shifts'){h+=`<div class="grid2">`;
     S.shifts.forEach(sh=>{h+=`<section class="card scard"><label class="f">Όνομα βάρδιας<input class="inp" id="sh_n_${sh.id}" data-ch="shift" data-id="${sh.id}" data-k="name" value="${esc(sh.name)}"></label>
-      <div class="form"><label class="f">Σταθερή έναρξη<input class="inp" type="time" id="sh_a_${sh.id}" data-ch="shift" data-id="${sh.id}" data-k="a" value="${sh.a}"></label><label class="f">Συνηθισμένη διάρκεια (ώρες)<input class="inp" type="number" min="0.5" max="24" step="0.5" inputmode="decimal" data-ch="shift" data-id="${sh.id}" data-k="dur" value="${sh.dur??''}" placeholder="Από την ειδικότητα"></label></div>
+      <div class="form"><label class="f">Σταθερή έναρξη<input class="inp" type="time" id="sh_a_${sh.id}" data-ch="shift" data-id="${sh.id}" data-k="a" value="${sh.a}"></label><label class="f">Διάρκεια (ώρες)<input class="inp" type="number" min="0.5" max="24" step="0.5" inputmode="decimal" data-ch="shift" data-id="${sh.id}" data-k="dur" value="${sh.dur??''}" placeholder="Βασικό ωράριο"></label></div>
       <div class="hint">Κενή διάρκεια: βασικό ωράριο κάθε ειδικότητας, συνήθως 9 ώρες. Η λήξη είναι εκτίμηση. Η πραγματική γράφεται στο «Έφυγε».</div>
       <details class="help"><summary>Διαφορετική έναρξη ανά μέρα</summary><div class="form">${DF.map((n,i)=>`<label class="f">${n}<input type="time" data-ch="shstart" data-id="${sh.id}" data-day="${i}" value="${(sh.starts||{})[i]||''}"></label>`).join('')}</div><div class="hint">Κενή ώρα: χρησιμοποιείται η σταθερή έναρξη ${sh.a}.</div></details>
       <div class="sub lbl">Μέρες</div><div class="wdays">${DN.map((n,i)=>`<button class="${!sh.days||sh.days.includes(i)?'on':''}" data-act="shday" data-id="${sh.id}" data-v="${i}" aria-pressed="${!sh.days||sh.days.includes(i)}">${n}</button>`).join('')}</div>
@@ -1170,7 +1176,7 @@ function exSheet(d,id){
   const x=id?dayShiftOf(S,d,id):{name:'Έκτακτη βάρδια',a:'12:00',b:'21:00',dur:null,need:{}};
   sheet(`<h2>${id?'Αλλαγή έκτακτης βάρδιας':'Έκτακτη βάρδια'}</h2><div class="sub">Μόνο για ${DF[dow(d)]} ${dm(d)}</div>
   <label class="f">Όνομα<input id="x_name" value="${esc(x.name)}"></label>
-  <div class="form"><label class="f">Έναρξη<input id="x_a" type="time" value="${x.a}"></label><label class="f">Συνηθισμένη διάρκεια (ώρες)<input id="x_dur" type="number" min="0.5" max="24" step="0.5" inputmode="decimal" value="${x.dur??''}" placeholder="Από την ειδικότητα"></label></div><div class="hint">Κενή διάρκεια: βασικό ωράριο ειδικότητας. Η λήξη είναι περίπου.</div>
+  <div class="form"><label class="f">Έναρξη<input id="x_a" type="time" value="${x.a}"></label><label class="f">Διάρκεια (ώρες)<input id="x_dur" type="number" min="0.5" max="24" step="0.5" inputmode="decimal" value="${x.dur??''}" placeholder="Βασικό ωράριο"></label></div><div class="hint">Κενή διάρκεια: βασικό ωράριο ειδικότητας. Η λήξη είναι περίπου.</div>
   <div class="sub" style="font-weight:600">Πόσα άτομα χρειάζονται</div>
   <div class="form" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">${S.roles.map(r=>`<label class="f">${esc(r.name)}<input id="x_r_${r.id}" type="number" min="0" max="50" inputmode="numeric" value="${(x.need||{})[r.id]||0}"></label>`).join('')}</div>
   <div class="acts">${id?`<button class="btn danger" data-act="delex" data-d="${d}" data-id="${id}" style="margin-right:auto">Διαγραφή βάρδιας</button>`:''}<button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveex" data-d="${d}" data-id="${id||''}">Αποθήκευση</button></div>`);
