@@ -5,26 +5,29 @@
 <style>
 /* Διάταξη: πλαϊνό μενού σε υπολογιστή, κάτω μπάρα σε κινητό. Χρώματα PARON (δάσος, ελιά, φασκόμηλο). */
 :root{
-  --bg:#E8ECE4; --card:#F6F8F3; --ink:#14231F; --muted:#56645E; --line:#D3DAD0;
-  --brand:#0E3B34; --deep:#0B2C27; --on-brand:#C2CF7E; --accent:#C2CF7E;
+  --bg:#F2F5F2; --card:#FFFFFF; --sunk:#F5F7F4; --hover:#E5EBE4; --ink:#162925; --ink-2:#31443F; --muted:#56675F; --line:#DEE5DE; --line-2:#BFC9BA;
+  --brand:#0E3B34; --brand-2:#185247; --deep:#0E3B34; --on-brand:#C2CF7E; --accent:#C2CF7E; --accent-ink:#0E3B34;
   --soft:#E8EDCD; --soft-ink:#2E5310;
-  --ok:#2C6A39; --ok-bg:#DCEBD9; --warn:#8A5200; --warn-bg:#F6E7C8; --bad:#A3302A; --bad-bg:#F5DAD6;
-  --est:#B9C4B4;
+  --ok:#1B7041; --ok-bg:#DDF0E3; --warn:#8A5000; --warn-bg:#FAEBCF; --bad:#B8342A; --bad-bg:#F9E0DC;
+  --est:#B9C4B4; --logo-ink:#0E3B34;
   --f-body:"Commissioner",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-logo:"Fira Sans Condensed","Arial Narrow",sans-serif;
-  --r:12px;
+  --r:16px;
+  --pop:0 18px 44px -14px rgba(14,40,35,.30),0 2px 6px rgba(14,40,35,.08);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#07201C; --card:#0B2C27; --ink:#E6ECE4; --muted:#9DB0A8; --line:#1E4A42;
-  --brand:#C2CF7E; --deep:#041814; --on-brand:#0B2C27; --accent:#C2CF7E;
-  --soft:#1C4532; --soft-ink:#DCE6AE;
-  --ok:#9FD3A6; --ok-bg:#163A23; --warn:#F0C674; --warn-bg:#3A2E12; --bad:#F2A49C; --bad-bg:#3D1C19; --est:#3A5C54;
+  --bg:#071F1B; --card:#0B2C27; --sunk:#09251F; --hover:#133A33; --ink:#E4EEE9; --ink-2:#C2D2CA; --muted:#93AAA1; --line:#18433B; --line-2:#26564C;
+  --brand:#C2CF7E; --brand-2:#D0DB93; --deep:#062420; --on-brand:#0E3B34; --accent:#C2CF7E; --accent-ink:#0E3B34;
+  --soft:#24391D; --soft-ink:#D5E1A0;
+  --ok:#5cc58a; --ok-bg:#133222; --warn:#e9a84c; --warn-bg:#33290f; --bad:#f07a6f; --bad-bg:#3a1d1a; --est:#3A5C54; --logo-ink:#E4EEE9;
+  --pop:0 18px 44px -14px rgba(0,0,0,.65),0 2px 6px rgba(0,0,0,.3);
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#07201C; --card:#0B2C27; --ink:#E6ECE4; --muted:#9DB0A8; --line:#1E4A42;
-  --brand:#C2CF7E; --deep:#041814; --on-brand:#0B2C27; --accent:#C2CF7E;
-  --soft:#1C4532; --soft-ink:#DCE6AE;
-  --ok:#9FD3A6; --ok-bg:#163A23; --warn:#F0C674; --warn-bg:#3A2E12; --bad:#F2A49C; --bad-bg:#3D1C19; --est:#3A5C54;
+  --bg:#071F1B; --card:#0B2C27; --sunk:#09251F; --hover:#133A33; --ink:#E4EEE9; --ink-2:#C2D2CA; --muted:#93AAA1; --line:#18433B; --line-2:#26564C;
+  --brand:#C2CF7E; --brand-2:#D0DB93; --deep:#062420; --on-brand:#0E3B34; --accent:#C2CF7E; --accent-ink:#0E3B34;
+  --soft:#24391D; --soft-ink:#D5E1A0;
+  --ok:#5cc58a; --ok-bg:#133222; --warn:#e9a84c; --warn-bg:#33290f; --bad:#f07a6f; --bad-bg:#3a1d1a; --est:#3A5C54; --logo-ink:#E4EEE9;
+  --pop:0 18px 44px -14px rgba(0,0,0,.65),0 2px 6px rgba(0,0,0,.3);
   color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -36,44 +39,58 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num,td.n,.kpi b{font-variant-numeric:tabular-nums}
 
-/* Κέλυφος */
-.app{display:grid;grid-template-columns:232px 1fr;min-height:100%}
-.side{background:var(--deep);color:#E6ECE4;padding:20px 14px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}
-.logo{display:flex;align-items:center;gap:1px;font-family:var(--f-logo);font-weight:800;font-size:30px;letter-spacing:.5px;color:#F6F8F3;line-height:1}
+/* Κέλυφος: ίδιο με το PARON των κατασκευαστικών */
+.app{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100%}
+.side{background:var(--bg);color:var(--ink);border-right:1px solid var(--line);padding:20px 14px calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto}
+.side-top{padding:0 10px}
+.logo{display:flex;align-items:center;gap:1px;font-family:var(--f-logo);font-weight:800;font-size:30px;letter-spacing:.5px;color:var(--logo-ink);line-height:1}
 .logo .o{width:26px;height:26px;border-radius:50%;background:#C2CF7E;display:inline-grid;place-items:center;margin:0 1px}
 .logo .o svg{width:16px;height:16px;fill:#0E3B34}
-.brandsub{font-size:12.5px;color:#9DB0A8;margin-top:6px;letter-spacing:.3px}
-.nav{display:flex;flex-direction:column;gap:4px}
-.nav button{display:flex;align-items:center;gap:12px;background:none;border:0;color:#CBD6CF;padding:11px 12px;border-radius:10px;text-align:left;font-weight:500}
-.nav button svg{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.nav button:hover{background:#12403A}
-.nav button.on{background:#C2CF7E;color:#0B2C27;font-weight:650}
-.side .co{margin-top:auto;font-size:13px;color:#9DB0A8;border-top:1px solid #1E4A42;padding-top:14px}
-.side .co b{display:block;color:#E6ECE4;font-weight:600}
-main{min-width:0;padding-block:22px 40px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1180px;width:100%}
+.brandsub{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--muted);margin-top:7px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--ink-2);padding:8px 10px;min-height:42px;border-radius:10px;text-align:left;font-size:14.5px;font-weight:520}
+.nav button svg,.iconbtn svg,.btn svg,.quick svg,.alert .ai svg{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button svg{color:var(--muted)}
+.nav button:hover{background:var(--hover);color:var(--ink)}
+.nav button:hover svg{color:var(--ink)}
+.nav button.on{background:var(--accent);color:var(--accent-ink);font-weight:660}
+.nav button.on svg{color:currentColor}
+.side-bottom{margin-top:auto;display:grid;gap:2px}
+.me{display:flex;align-items:center;gap:10px;padding:8px 6px 8px 10px;margin-bottom:6px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--soft);color:var(--soft-ink);display:grid;place-items:center;font-weight:650;font-size:13px;letter-spacing:.02em;flex:none}
+.me-t{display:grid;min-width:0;flex:1;line-height:1.25}
+.me-t b{font-size:14px;font-weight:620;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me-t small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iconbtn{width:36px;height:36px;display:inline-grid;place-items:center;border:1px solid transparent;background:none;border-radius:10px;color:var(--muted);padding:0;flex:none}
+.iconbtn:hover{background:var(--hover);color:var(--ink)}
+.iconbtn svg{width:19px;height:19px}
+main{min-width:0;padding-block:28px 48px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));max-width:1180px;width:100%}
 .mtop{display:none}
 .tabbar{display:none}
 
-h1{font-size:24px;margin:0;font-weight:700;text-wrap:balance}
+h1{font-size:28px;margin:0;font-weight:760;letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
 h2{font-size:17px;margin:0;font-weight:650}
 .sub{color:var(--muted);font-size:13.5px}
 .head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-bottom:18px}
 .head .grow{flex:1;min-width:200px}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 
-.btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:10px;font-weight:550;font-size:14px}
-.btn:hover{border-color:var(--muted)}
-.btn.pri{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
-.btn.sm{padding:5px 10px;font-size:13px}
-.btn.danger{color:var(--bad)}
+.btn{border:1px solid var(--line-2);background:var(--card);padding:8px 14px;border-radius:10px;font-weight:560;font-size:14.5px;line-height:1.2;min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:8px;vertical-align:middle}
+.btn:hover{background:var(--sunk);border-color:var(--muted)}
+.btn svg{width:18px;height:18px}
+.btn.pri{background:var(--brand);color:var(--on-brand);border-color:var(--brand);font-weight:660}
+.btn.pri:hover{background:var(--brand-2);border-color:var(--brand-2)}
+.btn.sm{min-height:32px;padding:5px 10px;font-size:13.5px;border-radius:8px}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn.danger:hover{background:var(--bad-bg);border-color:var(--bad)}
 .btn.arm{background:var(--bad);color:#fff;border-color:var(--bad)}
 .ic{width:36px;height:36px;padding:0;display:inline-grid;place-items:center}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;background:var(--card)}
 .seg button{border:0;background:none;padding:7px 13px;font-weight:550;font-size:14px}
-.seg button.on{background:var(--brand);color:var(--on-brand)}
-.wk{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:660}
+.wk{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line-2);border-radius:10px;padding:3px}
 .wk button{border:0;background:none;width:32px;height:30px;border-radius:8px;font-size:18px;line-height:1}
-.wk button:hover{background:var(--soft)}
+.wk button:hover{background:var(--hover)}
 .wk span{min-width:150px;text-align:center;font-weight:600;font-size:14px}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
@@ -106,12 +123,70 @@ h2{font-size:17px;margin:0;font-weight:650}
 .role:last-child{padding-bottom:0}
 .role .rn{font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 9px;font-size:13.5px;display:inline-flex;gap:6px;align-items:baseline}
+.chip{border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:4px 9px;font-size:13.5px;display:inline-flex;gap:6px;align-items:baseline}
 .chip small{color:var(--muted);font-size:11.5px}
 .chip.lead{border-color:var(--brand)}
 .chip.bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
 .chip.add{border-style:dashed;color:var(--muted);background:none}
 .chip:hover{border-color:var(--muted)}
+
+/* Σήμερα */
+.head>.grow>.sub.keep{display:block}
+.kstrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.kstrip>div{padding:16px 20px 18px;border-left:1px solid var(--line);min-width:0;display:grid;gap:2px;align-content:start}
+.kstrip>div:first-child{border-left:0}
+.kstrip span{font-size:13px;color:var(--muted);font-weight:560}
+.kstrip b{font-size:30px;font-weight:760;letter-spacing:-.025em;line-height:1.15;font-variant-numeric:tabular-nums}
+.kstrip b small{font-size:16px;font-weight:560;letter-spacing:0;color:var(--ink-2)}
+.kstrip em{font-style:normal;font-size:13px;color:var(--muted)}
+.kstrip em.bad{color:var(--bad);font-weight:600}
+.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.quick button{display:flex;align-items:center;gap:10px;min-height:58px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:14px;font-weight:600;text-align:left;min-width:0}
+.quick button:hover{background:var(--sunk);border-color:var(--line-2)}
+.quick svg{color:var(--ink-2)}
+.quick .pill{margin-left:auto}
+.alert{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--r);background:var(--soft);border:1px solid color-mix(in srgb,var(--soft-ink) 35%,transparent);margin-bottom:16px}
+.alert .ai{width:40px;height:40px;border-radius:10px;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;flex:none}
+.alert .grow{flex:1;min-width:0}
+.alert b{display:block;font-size:15px}
+.alert .grow>span{font-size:13.5px;color:var(--ink-2)}
+.alert .bar{flex:none}
+.alert.bad{background:var(--bad-bg);border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
+.alert.bad .ai{background:var(--bad);color:#fff}
+.sect{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:24px 0 12px}
+.sect h2{font-size:18px}
+.lnk{border:0;background:none;padding:6px 4px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px;flex:none}
+.tshift{padding:0;overflow:hidden}
+.tshift .th{padding:14px 16px;background:var(--sunk);border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:6px 10px;flex-wrap:wrap}
+.tshift .th .sub{font-size:13.5px}
+.tshift .tr{display:grid;grid-template-columns:130px 1fr;gap:8px 12px;align-items:start;padding:12px 16px;border-top:1px solid var(--line)}
+.tshift .th+.tr{border-top:0}
+.tshift .rl{font-size:13.5px;font-weight:600;color:var(--ink-2);padding-top:6px}
+.tp{display:flex;flex-wrap:wrap;gap:6px}
+.person{display:inline-flex;align-items:baseline;gap:6px;border-radius:999px;padding:6px 12px;background:var(--sunk);border:1px solid var(--line);font-size:14px;font-weight:550}
+.person small{font-size:12px;color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.person.lead{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.person.lead small{color:var(--on-brand);opacity:.85}
+.person.yes{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.person.yes::before{content:"✓";color:var(--ok);font-weight:700}
+.person.lead.yes::before{color:var(--on-brand)}
+.person.no{color:var(--muted);text-decoration:line-through}
+.tshift .none{padding:12px 16px;color:var(--muted);font-size:14px}
+/* «Περισσότερα»: ενέργειες που δεν χρειάζονται κάθε μέρα */
+.more{position:relative}
+.more>summary{list-style:none}
+.more>summary::-webkit-details-marker{display:none}
+.more .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:25;min-width:230px;display:grid;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--pop);padding:6px}
+.more .menu button{border:0;background:none;text-align:left;padding:10px 12px;border-radius:8px;min-height:44px;font-weight:560}
+.more .menu button:hover{background:var(--hover)}
+.more .menu .danger{color:var(--bad)}
+.more .menu .arm{background:var(--bad);color:#fff}
+details.dspec{margin-top:16px}
+details.dspec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;min-height:28px}
+details.dspec>summary::-webkit-details-marker{display:none}
+details.dspec>summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-top:-4px}
+details.dspec[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+details.dspec[open]>summary{margin-bottom:10px}
 
 /* Πίνακες */
 .tw{overflow-x:auto;margin:0 -16px;padding:0 16px}
@@ -140,8 +215,8 @@ tfoot td{font-weight:700;border-top:2px solid var(--line)}
 .fchips button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;display:inline-flex;gap:7px;align-items:center}
 .fchips button b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .fchips button b.bad{color:var(--bad)}
-.fchips button.on{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
-.fchips button.on b{color:var(--on-brand)}
+.fchips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.fchips button.on b{color:var(--accent-ink)}
 .pgbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px}
 .pgbar i{display:block;height:100%;background:var(--ok);border-radius:99px}
 .step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card);flex:none}
@@ -242,13 +317,13 @@ label.chk{display:flex;gap:8px;align-items:center;min-height:44px;font-size:14px
 label.f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--muted);font-weight:500}
 .form>*{min-width:0}
 label.f input,label.f select{width:100%;min-width:0}
-label.f input,label.f select,.inp{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+label.f input,label.f select,.inp{padding:8px 10px;border:1px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink);min-height:40px}
 td .inp{padding:5px 7px;width:100%;min-width:70px}
 .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
 
 /* Παράθυρο */
-.scrim{position:fixed;inset:0;background:rgba(4,20,17,.45);display:grid;place-items:center;z-index:50;padding:16px}
-.sheet{background:var(--card);border-radius:16px;padding:20px;width:min(440px,100%);display:flex;flex-direction:column;gap:14px;border:1px solid var(--line);max-height:90vh;overflow:auto}
+.scrim{position:fixed;inset:0;background:rgba(8,26,23,.46);display:grid;place-items:center;z-index:50;padding:16px}
+.sheet{background:var(--card);border-radius:16px;padding:20px;width:min(440px,100%);display:flex;flex-direction:column;gap:14px;border:1px solid var(--line);box-shadow:var(--pop);max-height:90vh;overflow:auto}
 .sheet .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:-20px;background:var(--card);padding:10px 0 4px;margin-bottom:-4px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--deep);color:#E6ECE4;padding:10px 16px;border-radius:10px;font-size:14px;z-index:60}
 .empty{color:var(--muted);text-align:center;padding:30px 10px}
@@ -256,17 +331,20 @@ td .inp{padding:5px 7px;width:100%;min-width:70px}
 @media (max-width:900px){
   .app{grid-template-columns:1fr}
   .side{display:none}
-  .mtop{display:flex;align-items:center;justify-content:space-between;background:var(--deep);padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
-  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--deep)}
-  .mtop .logo{font-size:24px}.mtop .logo .o{width:21px;height:21px}.mtop .logo .o svg{width:13px;height:13px}
-  .mtop span{color:#9DB0A8;font-size:13px}
-  main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 96px}
-  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:30;padding:6px max(4px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
-  .tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--muted);padding:5px 0;border-radius:10px;font-weight:550}
-  .tabbar svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .tabbar button.on{color:var(--ink)}
-  .tabbar button.on svg{background:var(--accent);color:#0B2C27;border-radius:999px;padding:2px 12px;width:46px;box-sizing:border-box;height:26px}
-  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .mtop{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+  .mtop .logo{font-size:25px}.mtop .logo .o{width:22px;height:22px}.mtop .logo .o svg{width:13px;height:13px}
+  .mtop .mr{display:flex;align-items:center;gap:10px;min-width:0}
+  .mtop .mr span{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .mtop .iconbtn{width:40px;height:40px;border:1px solid var(--line);background:var(--card);color:var(--ink-2)}
+  .mtop .iconbtn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px calc(104px + env(safe-area-inset-bottom,0px))}
+  .tabbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--card) 92%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  .tabbar button{border:0;background:none;display:grid;justify-items:center;align-content:center;gap:4px;font-size:11.5px;color:var(--muted);padding:4px 2px;min-height:56px;font-weight:560;min-width:0}
+  .tabbar button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tabbar svg{width:22px;height:22px;padding:4px 16px;box-sizing:content-box;border-radius:999px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabbar button.on{color:var(--ink);font-weight:660}
+  .tabbar button.on svg{background:var(--accent);color:var(--accent-ink)}
+  .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 }
 @media (max-width:600px){
   body{font-size:15.5px}
@@ -290,7 +368,7 @@ td .inp{padding:5px 7px;width:100%;min-width:70px}
   .note button{margin:8px 8px 0 0}
   .pbar{display:grid;grid-template-columns:1fr 1fr}
   .pbar>.sub{grid-column:1/-1}
-  .days{position:sticky;top:calc(48px + env(safe-area-inset-top,0px));z-index:15;background:var(--bg);margin:-4px -16px 12px;padding:8px 16px;border-bottom:1px solid var(--line)}
+  .days{position:sticky;top:calc(61px + env(safe-area-inset-top,0px));z-index:15;background:var(--bg);margin:-4px -16px 12px;padding:8px 16px;border-bottom:1px solid var(--line)}
   .days .day{min-height:58px;justify-content:center}
   .fchips{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
   .fchips button{padding:9px 15px}
@@ -342,7 +420,21 @@ td .inp{padding:5px 7px;width:100%;min-width:70px}
   .scrim{padding:16px}
   .wk span{min-width:118px}
   .bars{gap:5px}.bcol .v{font-size:10.5px}
-  h1{font-size:21px}
+  h1{font-size:24px}
+  .head>.btn.pri{flex:1 1 100%;min-height:46px}
+  .kstrip{grid-template-columns:1fr 1fr}
+  .kstrip>div{padding:14px 16px}
+  .kstrip>div:nth-child(3){grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}
+  .kstrip b{font-size:26px}
+  .quick{grid-template-columns:1fr 1fr}
+  .alert{flex-wrap:wrap}
+  .alert .bar{flex:1 1 100%}
+  .alert .bar .btn{flex:1}
+  .tshift .tr{grid-template-columns:1fr;gap:6px}
+  .tshift .rl{padding-top:0}
+  .pbar{grid-template-columns:1fr auto}
+  .alert .btn{min-height:44px}
+  .pbar>.more>summary{width:100%}
 }
 @media (prefers-reduced-motion:no-preference){.btn,.chip,.day{transition:background .15s,border-color .15s}}
 .arrival{font-variant-numeric:tabular-nums;font-weight:700}
@@ -362,16 +454,16 @@ td .inp{padding:5px 7px;width:100%;min-width:70px}
 
 <div class="app">
   <aside class="side">
-    <div>
+    <div class="side-top">
       <div class="logo" aria-label="PARON">PAR<span class="o"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="4.4" r="2.9"/><path d="M2.6 15c0-3.3 2.4-5.6 5.4-5.6s5.4 2.3 5.4 5.6z"/></svg></span>N</div>
-      <div class="brandsub">Εστίαση · Όλοι στη θέση τους</div>
+      <div class="brandsub">ΟΛΟΙ ΣΤΗ ΘΕΣΗ ΤΟΥΣ</div>
     </div>
-    <nav class="nav" id="nav"></nav>
-    <div class="co" id="coName"></div>
+    <nav class="nav" id="nav" aria-label="Μενού"></nav>
+    <div class="side-bottom"><div class="me" id="me"></div><nav class="nav" id="setNav"></nav></div>
   </aside>
   <header class="mtop">
     <div class="logo" aria-label="PARON">PAR<span class="o"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="4.4" r="2.9"/><path d="M2.6 15c0-3.3 2.4-5.6 5.4-5.6s5.4 2.3 5.4 5.6z"/></svg></span>N</div>
-    <span id="coNameM"></span>
+    <div class="mr"><span id="coNameM"></span><button class="iconbtn" id="mset" data-act="go" data-id="set" aria-label="Ρυθμίσεις"></button></div>
   </header>
   <main id="main"></main>
   <nav class="tabbar" id="tabbar"></nav>
@@ -418,9 +510,16 @@ const IC={
  chk:'<svg viewBox="0 0 24 24"><path d="M9 5H6.5A2.5 2.5 0 0 0 4 7.5v11A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-11A2.5 2.5 0 0 0 17.5 5H15"/><rect x="9" y="3" width="6" height="4" rx="1.2"/><path d="m8.5 14 2.5 2.5 4.5-5"/></svg>',
  cost:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
  pay:'<svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10.5h19M6.5 15h3"/></svg>',
+ today:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><rect x="7.5" y="13" width="4" height="4" rx="1"/></svg>',
+ grid:'<svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M9.2 9.5v11M14.8 9.5v11M3.5 15h17"/></svg>',
+ req:'<svg viewBox="0 0 24 24"><path d="M4 13.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4.5M4 13.5 6.5 5h11l2.5 8.5M4 13.5h4.5l1.5 2.5h4l1.5-2.5H20"/></svg>',
+ share:'<svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg>',
+ ppl:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M16 4.8a3.2 3.2 0 0 1 0 6.4M18 14.3c1.9.8 3 2.9 3 5.7"/></svg>',
+ warn:'<svg viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.3"/></svg>',
+ out:'<svg viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>',
  set:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
 };
-const PAGES=[['prog','Πρόγραμμα','cal'],['att','Παρουσίες','chk'],['cost','Κόστος','cost'],['pay','Πληρωμές','pay'],['set','Ρυθμίσεις','set']];
+const PAGES=[['today','Σήμερα','today'],['prog','Πρόγραμμα','grid'],['att','Παρουσίες','chk'],['cost','Κόστος','cost'],['pay','Πληρωμές','pay']],SETP=['set','Ρυθμίσεις','set'];
 
 /* ---------- Δεδομένα επίδειξης ---------- */
 function fem(s){return s.replace(/ός$/,'ού').replace(/ος$/,'ου').replace(/ής$/,'ή').replace(/ης$/,'η').replace(/άς$/,'ά').replace(/ας$/,'α')}
@@ -698,19 +797,59 @@ async function pwSave(){try{await api('POST','password',{current:$('#pw_c').valu
 async function logout(){if(pushT||pushing)await pushNow();try{await api('POST','logout',{})}catch(e){}location.reload()}
 
 /* ---------- Κατάσταση οθόνης ---------- */
-const UI={page:'prog',ws:schedStart(TODAY),day:TODAY,view:'day',attD:TODAY,costMode:'day',costD:TODAY,costWs:monday(TODAY),payWs:null,payRole:'',setTab:'gen',arm:null};
-try{const t=localStorage.getItem(KEY+'.ui');if(t)Object.assign(UI,JSON.parse(t),{arm:null})}catch(e){}
-if(location.hash&&PAGES.some(p=>p[0]===location.hash.slice(1)))UI.page=location.hash.slice(1);
-function saveUI(){try{localStorage.setItem(KEY+'.ui',JSON.stringify({page:UI.page,view:UI.view,costMode:UI.costMode,setTab:UI.setTab}))}catch(e){}}
+const UI={page:'today',ws:schedStart(TODAY),day:TODAY,view:'day',attD:TODAY,costMode:'day',costD:TODAY,costWs:monday(TODAY),payWs:null,payRole:'',setTab:'gen',arm:null};
+try{const t=localStorage.getItem(KEY+'.ui');if(t){const o=JSON.parse(t);Object.assign(UI,o,{arm:null});if(!o.home)UI.page='today'}}catch(e){}
+if(location.hash&&PAGES.concat([SETP]).some(p=>p[0]===location.hash.slice(1)))UI.page=location.hash.slice(1);
+function saveUI(){try{localStorage.setItem(KEY+'.ui',JSON.stringify({page:UI.page,view:UI.view,costMode:UI.costMode,setTab:UI.setTab,home:1}))}catch(e){}}
 function commit(){S.userEdited=true;save();render()}
 function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
 
 /* ---------- Πλοήγηση ---------- */
 function renderNav(){
-  const h=PAGES.map(([id,n,ic])=>`<button data-act="go" data-id="${id}" class="${UI.page===id?'on':''}">${IC[ic]}<span>${n}</span></button>`).join('');
-  $('#nav').innerHTML=h;$('#tabbar').innerHTML=h;
-  $('#coName').innerHTML='<b>'+esc(S.set.name)+'</b>'+S.staff.filter(p=>p.active).length+' άτομα προσωπικό';
+  const nb=([id,n,ic])=>`<button data-act="go" data-id="${id}" class="${UI.page===id?'on':''}"${UI.page===id?' aria-current="page"':''}>${IC[ic]}<span>${n}</span></button>`;
+  $('#nav').innerHTML=PAGES.map(nb).join('');$('#tabbar').innerHTML=PAGES.map(nb).join('');$('#setNav').innerHTML=nb(SETP);
+  const n=S.staff.filter(p=>p.active).length,who=ME?ME.name:S.set.name,sub=ME?(ROLEN[ME.role]||'')+' · '+S.set.name:n+' άτομα προσωπικό';
+  $('#me').innerHTML=`<span class="av" aria-hidden="true">${esc(ini(who))}</span><span class="me-t"><b>${esc(who)}</b><small>${esc(sub)}</small></span>${ME?`<button class="iconbtn" data-act="logout" aria-label="Αποσύνδεση" title="Αποσύνδεση">${IC.out}</button>`:''}`;
   $('#coNameM').textContent=S.set.name;
+  const m=$('#mset');m.innerHTML=IC.set;m.classList.toggle('on',UI.page==='set');
+}
+// αρχικά για το εικονίδιο του χρήστη, χωρίς τόνους (κεφαλαία)
+const ini=n=>String(n).trim().split(/\s+/).map(w=>w.replace(/[^\p{L}]/gu,'')).filter(Boolean).slice(0,2).map(w=>w[0]).join('').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+
+/* ---------- Σήμερα ---------- */
+const al=(cls,ic,t,sub,btns)=>`<div class="alert ${cls}"><span class="ai">${IC[ic]}</span><div class="grow"><b>${t}</b><span>${sub}</span></div><div class="bar">${btns}</div></div>`;
+function pageToday(){
+  const d=TODAY,day=S.sched[d]||[],A=S.att[d]||{},f=fillOf(d),c=dayCost(S,d);
+  const ws=schedStart(TODAY),nx=addD(ws,7),pubD=addD(nx,-1),nreq=(S.reqs||[]).filter(q=>reqActive(q,nx)).length;
+  const came=day.filter(e=>(A[e.id]||{}).st==='yes').length,no=day.filter(e=>(A[e.id]||{}).st==='no').length,miss=Math.max(0,f.need-f.have);
+  let h=`<div class="head"><div class="grow"><h1>Σήμερα</h1><div class="sub keep">${DF[dow(d)]} ${dm(d)} · ${day.length?day.length+(day.length===1?' άτομο':' άτομα')+' στο πρόγραμμα':'χωρίς πρόγραμμα'}</div></div>${day.length?`<button class="btn pri" data-act="golink" data-id="att" data-d="${d}">${IC.chk}Παρουσίες</button>`:''}</div>`;
+  h+=`<div class="kstrip"><div><span>Στο πρόγραμμα</span><b>${day.length} <small>${day.length===1?'άτομο':'άτομα'}</small></b><em class="${miss&&S.staff.length?'bad':''}">${!S.staff.length?'Βάλε πρώτα το προσωπικό':miss?(miss===1?'Λείπει 1 θέση':'Λείπουν '+miss+' θέσεις'):f.need?'Όλες οι θέσεις καλύφθηκαν':'Καμία βάρδια σήμερα'}</em></div>
+    <div><span>Ήρθαν</span><b>${came} <small>από ${day.length}</small></b><em>${no?no+(no===1?' δεν ήρθε':' δεν ήρθαν'):came<day.length&&day.length?'Γράψε τις ώρες στις Παρουσίες':day.length?'Πέρασαν όλοι':'—'}</em></div>
+    <div><span>Κόστος ημέρας</span><b>${eur0(c.total)}</b><em>${c.est?'Εκτίμηση μέχρι να γραφτούν οι ώρες':day.length?'Με τις ώρες παρουσίας':'—'}${c.ot?' · υπερωρίες '+hh(c.ot):''}</em></div></div>`;
+  // τι θέλει προσοχή: ένα πλαίσιο για το καθένα
+  if(!S.staff.length)h+=al('','ppl','Ξεκίνα από το προσωπικό','Βάλε τα άτομα και τι πληρώνεται κάθε πόστο. Μετά το πρόγραμμα βγαίνει αυτόματα.','<button class="btn pri" data-act="gostaff">Προσωπικό</button><button class="btn" data-act="goroles">Ειδικότητες και αμοιβές</button>');
+  const cf=conflicts(S,ws);
+  if(cf.length)h+=al('bad','warn',cf.length===1?'1 βάρδια πέφτει πάνω σε αίτημα':cf.length+' βάρδιες πέφτουν πάνω σε αίτημα',cf.slice(0,3).map(x=>esc(staffOf(S,x.e.p).name)+' '+DN[dow(x.d)]).join(', ')+(cf.length>3?'…':''),`<button class="btn" data-act="golink" data-id="prog" data-v="day" data-d="${cf[0].d}">Στο πρόγραμμα</button>`);
+  const gn=gapsOf(S,ws).reduce((a,g)=>a+g.n,0);
+  if(gn&&S.staff.length)h+=al('bad','warn',gn===1?'Λείπει 1 θέση αυτή την εβδομάδα':'Λείπουν '+gn+' θέσεις αυτή την εβδομάδα','Κάλυψέ τες με άλλο άτομο ή με παράταση ωραρίου.','<button class="btn" data-act="todaygaps">Δες ποιες</button>');
+  if(!(S.sched[nx]||[]).length&&addD(pubD,-3)<=TODAY&&S.staff.length)h+=al('','grid',(pubD===TODAY?'Σήμερα':DF[dow(pubD)]+' '+dm(pubD))+' βγαίνει το νέο πρόγραμμα',swLabel(nx)+(nreq?' · πέρασε πρώτα '+(nreq===1?'το αίτημα':'τα '+nreq+' αιτήματα'):''),`${nreq?`<button class="btn" data-act="golink" data-id="prog" data-v="req" data-d="${d}">Αιτήματα</button>`:''}<button class="btn pri" data-act="gonext">Νέο πρόγραμμα</button>`);
+  const pws=addD(TODAY,-(7+(+S.set.payDay||0)));
+  if(dow(pws)===0){const st=weekStatus(pws),P=S.paid[pws]||{},rest=st.rows.filter(r=>!P[r.p.id]);
+    if(rest.length)h+=al('','pay','Σήμερα είναι μέρα πληρωμής',`Μένουν ${eur0(rest.reduce((a,r)=>a+r.total,0))} σε ${rest.length===1?'1 άτομο':rest.length+' άτομα'} για ${wkLabel(pws)}.`,`<button class="btn pri" data-act="golink" data-id="pay" data-w="${pws}">Πληρωμές</button>`)}
+  h+=`<div class="quick"><button data-act="golink" data-id="prog" data-v="week" data-d="${d}">${IC.grid}<span>Εβδομάδα</span></button>
+    <button data-act="golink" data-id="prog" data-v="req" data-d="${d}">${IC.req}<span>Αιτήματα</span>${nreq?`<span class="pill">${nreq}</span>`:''}</button>
+    <button data-act="golink" data-id="prog" data-v="share" data-d="${d}">${IC.share}<span>Κοινοποίηση</span></button>
+    <button data-act="gostaff">${IC.ppl}<span>Προσωπικό</span></button></div>`;
+  h+=`<div class="sect"><div><h2>Οι βάρδιες σήμερα</h2><div class="sub">Ποιος δουλεύει και τι ώρα έρχεται</div></div><button class="lnk" data-act="golink" data-id="prog" data-v="day" data-d="${d}">Αλλαγές</button></div>`;
+  const shs=shiftsOn(S,d).filter(sh=>day.some(e=>inSh(e,sh.id))||S.roles.some(r=>needOf(S,d,sh.id,r.id)));
+  if(!shs.length)return h+`<div class="card empty">Δεν υπάρχει πρόγραμμα για σήμερα.<div style="margin-top:12px"><button class="btn" data-act="golink" data-id="prog" data-v="day" data-d="${d}">Στο πρόγραμμα</button></div></div>`;
+  h+='<div class="grid2">';
+  shs.forEach(sh=>{const inS=day.filter(e=>inSh(e,sh.id)),lead=S.lead[d+'|'+sh.id]||'';let lack=0;
+    const rows=S.roles.map(r=>{const es=inS.filter(e=>staffOf(S,e.p).role===r.id),n=needOf(S,d,sh.id,r.id);lack+=Math.max(0,n-es.length);if(!es.length&&!n)return'';
+      return `<div class="tr"><span class="rl">${esc(r.name)}</span><div class="tp">${es.map(e=>{const p=staffOf(S,e.p),st=(A[e.id]||{}).st;
+        return `<span class="person${p.id===lead?' lead':''}${st==='yes'?' yes':st==='no'?' no':''}">${esc(p.name)}${e.a!==sh.a?` <small>${esc(e.a)}</small>`:''}${e.z?` <small>${esc(e.z)}</small>`:''}</span>`}).join('')}${es.length<n?`<span class="pill bad">${n-es.length===1?'λείπει 1':'λείπουν '+(n-es.length)}</span>`:''}</div></div>`}).join('');
+    h+=`<section class="card tshift"><div class="th"><h2>${esc(sh.name)}</h2><span class="sub">${planHTML(sh)} · ${inS.length} ${inS.length===1?'άτομο':'άτομα'}</span>${lack?`<span class="pill bad">−${lack}</span>`:''}</div>${rows||'<div class="none">Κανείς ακόμη.</div>'}</section>`});
+  return h+'</div>';
 }
 
 /* ---------- Πρόγραμμα ---------- */
@@ -725,13 +864,13 @@ function pageProg(){
   if(UI.view==='req')return h+pageReq(nx);
   if(UI.view==='share')return h+pageShare(ws);
   const nxEmpty=!(S.sched[nx]||[]).length;
-  if(ws!==nx&&nxEmpty&&addD(pubD,-3)<=TODAY)h+=`<div class="note info">${pubD===TODAY?'Σήμερα':DF[dow(pubD)]+' '+dm(pubD)} βγαίνει το πρόγραμμα ${swLabel(nx)}. Πέρασε πρώτα τα αιτήματα (${nreq}) και μετά φτιάξ' το.<button class="btn sm" data-act="view" data-v="req">Αιτήματα</button><button class="btn sm pri" data-act="gonext">Στο νέο πρόγραμμα</button></div>`;
-  if(!S.staff.length)h+=`<div class="note info">Ξεκίνα βάζοντας το προσωπικό σου και τι πληρώνεται κάθε πόστο.<button class="btn sm pri" data-act="gostaff">Προσωπικό</button><button class="btn sm" data-act="goroles">Ειδικότητες και αμοιβές</button></div>`;
+  if(ws!==nx&&nxEmpty&&addD(pubD,-3)<=TODAY)h+=al('','grid',(pubD===TODAY?'Σήμερα':DF[dow(pubD)]+' '+dm(pubD))+' βγαίνει το νέο πρόγραμμα',swLabel(nx)+(nreq?' · πέρασε πρώτα '+(nreq===1?'το αίτημα':'τα '+nreq+' αιτήματα'):''),`${nreq?'<button class="btn" data-act="view" data-v="req">Αιτήματα</button>':''}<button class="btn pri" data-act="gonext">Νέο πρόγραμμα</button>`);
+  if(!S.staff.length)h+=al('','ppl','Ξεκίνα από το προσωπικό','Βάλε τα άτομα και τι πληρώνεται κάθε πόστο. Μετά το πρόγραμμα βγαίνει αυτόματα.','<button class="btn pri" data-act="gostaff">Προσωπικό</button><button class="btn" data-act="goroles">Ειδικότητες και αμοιβές</button>');
   const cf=conflicts(S,ws);
   if(cf.length)h+=`<div class="note" style="background:var(--bad-bg);color:var(--bad)">${cf.length} ${cf.length===1?'βάρδια πέφτει':'βάρδιες πέφτουν'} πάνω σε αίτημα: ${cf.slice(0,3).map(x=>esc(staffOf(S,x.e.p).name)+' '+DN[dow(x.d)]).join(', ')}${cf.length>3?'…':''}.<button class="btn sm" data-act="fixcf">Αφαίρεση και αντικατάσταση</button></div>`;
   let tot=0,need=0;for(let i=0;i<7;i++){const f=fillOf(addD(ws,i));tot+=f.have;need+=f.need}
   h+=`<div class="bar pbar" style="margin-bottom:14px"><button class="btn pri" data-act="auto">Αυτόματο πρόγραμμα</button>
-    <button class="btn ${UI.arm==='clear'?'arm':'danger'}" data-act="clear">${UI.arm==='clear'?'Πάτα ξανά για καθάρισμα':'Καθάρισμα εβδομάδας'}</button>
+    <details class="more"${UI.arm==='clear'?' open':''}><summary class="btn">Περισσότερα</summary><div class="menu"><button class="${UI.arm==='clear'?'arm':'danger'}" data-act="clear">${UI.arm==='clear'?'Πάτα ξανά για καθάρισμα':'Καθάρισμα εβδομάδας'}</button></div></details>
     <span class="sub">${need-tot>0?`<button class="btn sm" style="color:var(--bad);border-color:var(--bad);background:var(--bad-bg)" data-act="gaps">${need-tot===1?'Λείπει 1 θέση':'Λείπουν '+(need-tot)+' θέσεις'}: δες ποιες</button>`:`<span class="pill ok">Όλες οι θέσεις καλύφθηκαν</span>`}</span></div>`;
   if(UI.view==='week')return h+progWeek(ws);
   h+='<div class="days">';
@@ -751,8 +890,9 @@ function pageProg(){
       es.forEach(e=>{const p=staffOf(S,e.p);const diff=e.a!==sh.a||e.b!==sh.b;const q=blockOf(S,p.id,d,e.a,e.b);h+=`<button class="chip ${p.id===lead?'lead':''} ${q?'bad':''}" data-act="edit" data-d="${d}" data-id="${e.id}" ${q?`title="${esc(reqText(q))}"`:''}>${esc(p.name)} ${planHTML(e)}${e.z?` <small>${esc(e.z)}</small>`:''}${e.nt?` <small>${esc(e.nt)}</small>`:''}${e.cov?` <small>${e.cov===sh.id?'παράταση από '+esc(shiftOf(S,e.s).name):'καλύπτει και '+esc(shiftOf(S,e.cov).name)}</small>`:''}${q?' <small>αίτημα</small>':''}</button>`});
       h+=`<button class="chip add" data-act="add" data-d="${d}" data-s="${sh.id}" data-r="${r.id}">+ Προσθήκη</button>${d>=TODAY&&shs.length>1?`<button class="chip add" ${es.length<n?'style="color:var(--bad);border-color:var(--bad)"':''} data-act="cover" data-d="${d}" data-s="${sh.id}" data-r="${r.id}">Παράταση ωραρίου</button>`:''}</div></div>`});
     h+=`</section>`});
-  return h+`</div><section class="card" style="margin-top:16px"><h2 style="margin-bottom:6px">Ειδικά για ${DF[dow(d)]} ${dm(d)}</h2><div class="sub" style="margin-bottom:10px">Για πάρτι, εκδήλωση ή αργία: γράψε σημείωση, άλλαξε με − και + πόσα άτομα θέλει κάθε πόστο μόνο αυτή τη μέρα, ή βάλε έκτακτη βάρδια. Μετά πάτα «Αυτόματο πρόγραμμα». Για μόνιμες βάρδιες σε συγκεκριμένες μέρες ή πόστα: Ρυθμίσεις → Βάρδιες.</div>
-  <div class="bar"><input class="inp" id="dn_${d}" data-ch="dnote" data-d="${d}" placeholder="π.χ. Πάρτι 150 ατόμων" value="${esc((S.dayNotes||{})[d]||'')}" style="flex:1;min-width:200px"><button class="btn" data-act="exshift" data-d="${d}">+ Έκτακτη βάρδια</button><button class="btn" data-act="showall">${UI.showAll?'Κρύψε τα κενά πόστα':'Δείξε όλα τα πόστα'}</button>${(S.dayNeeds||{})[d]?`<button class="btn danger" data-act="dneedreset" data-d="${d}">Επαναφορά ατόμων</button>`:''}</div></section>`;
+  const dsOpen=UI.showAll||(S.dayNotes||{})[d]||(S.dayNeeds||{})[d]||((S.dayShifts||{})[d]||[]).length;
+  return h+`</div><details class="card dspec"${dsOpen?' open':''}><summary><h2>Ειδικά για ${DF[dow(d)]} ${dm(d)}</h2><span class="sub">Πάρτι, εκδήλωση, αργία, έκτακτη βάρδια</span></summary><div class="sub" style="margin-bottom:10px">Για πάρτι, εκδήλωση ή αργία: γράψε σημείωση, άλλαξε με − και + πόσα άτομα θέλει κάθε πόστο μόνο αυτή τη μέρα, ή βάλε έκτακτη βάρδια. Μετά πάτα «Αυτόματο πρόγραμμα». Για μόνιμες βάρδιες σε συγκεκριμένες μέρες ή πόστα: Ρυθμίσεις → Βάρδιες.</div>
+  <div class="bar"><input class="inp" id="dn_${d}" data-ch="dnote" data-d="${d}" placeholder="π.χ. Πάρτι 150 ατόμων" value="${esc((S.dayNotes||{})[d]||'')}" style="flex:1;min-width:200px"><button class="btn" data-act="exshift" data-d="${d}">+ Έκτακτη βάρδια</button><button class="btn" data-act="showall">${UI.showAll?'Κρύψε τα κενά πόστα':'Δείξε όλα τα πόστα'}</button>${(S.dayNeeds||{})[d]?`<button class="btn danger" data-act="dneedreset" data-d="${d}">Επαναφορά ατόμων</button>`:''}</div></details>`;
 }
 function progWeek(ws){
   let h=`<div class="card"><details class="help" style="margin-bottom:8px"><summary>Πώς αλλάζω βάρδια</summary><div class="sub">Πάτα ένα κελί. Κάθε πάτημα πάει στην επόμενη βάρδια της μέρας και μετά σε κενό (ρεπό). Ρεπό είναι η σταθερή μέρα ξεκούρασης. «άδεια», «όχι» και «ώρες» έρχονται από τα αιτήματα.</div></details><div class="tw desk"><table class="wgrid"><thead><tr><th>Άτομο</th>`;
@@ -1053,7 +1193,7 @@ function staffSheet(id){
 /* ---------- Σχεδίαση ---------- */
 function render(){
   renderNav();
-  const P={prog:pageProg,att:pageAtt,cost:pageCost,pay:pagePay,set:pageSet}[UI.page]||pageProg;
+  const P={today:pageToday,prog:pageProg,att:pageAtt,cost:pageCost,pay:pagePay,set:pageSet}[UI.page]||pageToday;
   $('#main').innerHTML=P();saveUI();
 }
 
@@ -1062,13 +1202,16 @@ function payText(ws){const P=S.paid[ws]||{};const rows=weekPay(S,ws).filter(r=>r
   return S.set.name+'\nΠληρωμές εβδομάδας '+wkLabel(ws)+' ('+DF[dow(payDate(S,ws))]+' '+dm(payDate(S,ws))+')\n\n'+
   rows.map(r=>r.p.name+' · '+r.n+' βάρδιες · '+eur(r.total)+(P[r.p.id]?' · πληρώθηκε':'')).join('\n')+'\n\nΣύνολο: '+eur(rows.reduce((a,r)=>a+r.total,0))}
 document.addEventListener('click',ev=>{
+  document.querySelectorAll('details.more[open]').forEach(x=>{if(!x.contains(ev.target))x.open=false});
   const b=ev.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,D=b.dataset;
   if(a==='close'){if(ev.target===b||b.tagName==='BUTTON')closeSheet();return}
   const armed=UI.arm;if(!['clear','payall','reset','delshift','userdel'].includes(a))UI.arm=null;
   switch(a){
   case'go':UI.page=D.id;UI.arm=null;window.scrollTo(0,0);break;
   case'wk':UI.ws=addD(UI.ws,7*D.n);break;
-  case'gonext':UI.ws=addD(schedStart(TODAY),7);UI.view='day';break;
+  case'gonext':UI.page='prog';UI.ws=addD(schedStart(TODAY),7);UI.view='day';window.scrollTo(0,0);break;
+  case'golink':UI.page=D.id;if(D.v)UI.view=D.v;if(D.d){UI.day=D.d;UI.ws=schedStart(D.d);UI.attD=D.d}if(D.w)UI.payWs=D.w;window.scrollTo(0,0);break;
+  case'todaygaps':UI.page='prog';UI.view='day';UI.ws=schedStart(TODAY);UI.day=TODAY;render();gapSheet(UI.ws);return;
   case'fixcf':{const cf=conflicts(S,UI.ws);cf.forEach(x=>{S.sched[x.d]=S.sched[x.d].filter(e=>e!==x.e)});const r=autoWeek(S,UI.ws);S.userEdited=true;save();toast(`Βγήκαν ${cf.length}, μπήκαν ${r.added} αντικαταστάτες`+(r.short?`, λείπουν ${r.short}`:''));break}
   case'addreq':reqSheet(null);return;
   case'editreq':reqSheet(D.id);return;
