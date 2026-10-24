@@ -860,6 +860,7 @@ body:not(.in) .app{display:none}
 .auth-go:disabled{opacity:.6;cursor:wait}
 .auth-help{text-align:center;font-size:13.5px;margin:0}
 .auth-foot{margin:0;font-size:12.5px;color:#98a2ab;text-align:center;max-width:340px}
+.auth-co{font-size:14px;margin-top:14px}.auth-co a{color:inherit;text-decoration:underline;padding:10px 4px;display:inline-block}
 /* γλώσσα: επιλογή στη σύνδεση και στον λογαριασμό, γραμμή με λατινικούς χαρακτήρες κάτω από έργα και εργασίες */
 .auth-card label.auth-lang{display:flex;align-items:center;gap:8px;justify-self:end;margin:-8px -8px -4px 0;color:var(--ink-2)}
 .auth-lang svg{width:18px;height:18px;flex:none}
@@ -1285,6 +1286,16 @@ function showAuth(mode,msg){
   ${SERVER?'':`<p class="auth-foot">${TRH('Σε αυτή την έκδοση οι λογαριασμοί μένουν σε αυτόν τον browser. Στον server της εταιρείας φυλάγονται κεντρικά.')}</p>`}</div>`;
   a.hidden=false;fitLogo();
   const f=document.getElementById(setup?'a_name':'a_user');if(f)f.focus();
+  if(SERVER)coLink(a);
+}
+// πολλές εταιρείες στον ίδιο server (gateway): ποια εταιρεία είναι και σύνδεσμος για άλλη ή νέα
+function coLink(a){
+  fetch('/co/api/current').then(r=>r.ok?r.json():null).then(c=>{
+    const box=a.querySelector('.auth-in');if(!c||!box||box.querySelector('.auth-co'))return;
+    const p=document.createElement('p');p.className='auth-foot auth-co';
+    p.innerHTML=`${c.main?'':`${TRH('Εταιρεία')}: <b>${h(c.name||c.code)}</b> · `}<a href="/co">${TRH(c.signup?'Άλλη εταιρεία ή νέα εταιρεία':'Άλλη εταιρεία')}</a>`;
+    box.appendChild(p);
+  }).catch(()=>{});
 }
 function enter(u){
   AUTH.user=u;PUSH.st=null;SYNC=!SERVER;
