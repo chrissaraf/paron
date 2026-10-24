@@ -759,7 +759,8 @@ function loginScreen(msg){
     <label class="f">Κωδικός<input id="l_p" type="password" autocomplete="current-password"></label>
     <div class="sub" id="l_err" role="alert" style="color:var(--bad)">${esc(msg||'')}</div>
     <button class="btn pri" type="submit">Σύνδεση</button>
-    <div class="sub">Ξέχασες τον κωδικό; Ζήτα από τον διαχειριστή να σου βάλει νέο.</div></form></div>`;
+    <div class="sub">Ξέχασες τον κωδικό; Ζήτα από τον διαχειριστή να σου βάλει νέο.</div>
+    <a class="lnk" href="/co" style="justify-self:start;align-self:flex-start">Άλλη ή νέα εταιρεία</a></form></div>`;
 }
 document.addEventListener('submit',async e=>{
   const f=e.target;e.preventDefault();
