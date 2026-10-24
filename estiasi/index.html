@@ -130,6 +130,38 @@ h2{font-size:17px;margin:0;font-weight:650}
 .chip.add{border-style:dashed;color:var(--muted);background:none}
 .chip:hover{border-color:var(--muted)}
 
+/* Ρυθμίσεις: κατηγορίες */
+.setwrap{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
+.setnav{display:grid;gap:2px;position:sticky;top:20px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:6px}
+.setnav button{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;text-align:left;font-size:14.5px;color:var(--ink-2);background:none;border:0;border-radius:10px;padding:8px 10px}
+.setnav button>svg,.setnav .chev svg,.setback svg{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.setnav button>svg{color:var(--muted)}
+.setnav button>span{display:grid;gap:2px;min-width:0;flex:1}
+.setnav button b{font-weight:560}
+.setnav button small,.setnav .chev{display:none}
+.setnav button:hover{background:var(--hover);color:var(--ink)}
+.setnav button[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.setnav button[aria-current="page"] b{font-weight:660}
+.setnav button[aria-current="page"]>svg{color:currentColor}
+.setbody{display:grid;gap:16px;min-width:0}
+.setbody>.grid2,.setbody>.card{margin:0}
+.setback{display:none}
+@media (max-width:900px){
+  .setwrap{grid-template-columns:minmax(0,1fr);gap:12px}
+  .setnav{position:static;padding:0;gap:0;overflow:hidden}
+  .setnav button{border-radius:0;border-top:1px solid var(--line);min-height:68px;padding:10px 14px}
+  .setnav button:first-child{border-top:0}
+  .setnav button>svg{width:22px;height:22px}
+  .setnav button small{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .setnav .chev{display:block;color:var(--muted);font-style:normal;line-height:0}
+  .setnav .chev svg{width:18px;height:18px}
+  .setnav button[aria-current="page"]{background:none;color:var(--ink-2)}
+  .setnav button[aria-current="page"]>svg{color:var(--muted)}
+  .setnav button[aria-current="page"] b{font-weight:560}
+  .setwrap.has-cat .setnav,.setwrap.no-cat .setbody{display:none}
+  .setback{display:inline-flex;align-items:center;gap:4px;justify-self:start;min-height:44px;border:0;background:none;padding:0;font-weight:600;color:var(--ink)}
+}
+
 /* Σήμερα */
 .head>.grow>.sub.keep{display:block}
 .kstrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
@@ -335,7 +367,7 @@ details.help[open]>summary::after{transform:rotate(45deg);margin-top:-4px}
 .empty{color:var(--muted);text-align:center;padding:30px 10px}
 
 @media (max-width:900px){
-  .app{grid-template-columns:1fr}
+  .app{grid-template-columns:1fr;align-content:start}
   .side{display:none}
   .mtop{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
   .mtop .logo{font-size:25px}.mtop .logo .o{width:22px;height:22px}.mtop .logo .o svg{width:13px;height:13px}
@@ -523,6 +555,12 @@ const IC={
  ppl:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M16 4.8a3.2 3.2 0 0 1 0 6.4M18 14.3c1.9.8 3 2.9 3 5.7"/></svg>',
  warn:'<svg viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.3"/></svg>',
  out:'<svg viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>',
+ store:'<svg viewBox="0 0 24 24"><path d="M4 10v9.5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V10M3 6.5 5 3.5h14l2 3v1.5a2.8 2.8 0 0 1-5.5 0 2.8 2.8 0 0 1-5.5 0 2.8 2.8 0 0 1-5.5 0z"/><path d="M10 20.5v-5h4v5"/></svg>',
+ clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+ euro:'<svg viewBox="0 0 24 24"><path d="M17.5 6.5A7 7 0 1 0 17.5 17.5M4 10.5h9M4 13.5h9"/></svg>',
+ user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
+ chev:'<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
+ back:'<svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>',
  set:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
 };
 const PAGES=[['today','Σήμερα','today'],['prog','Πρόγραμμα','grid'],['att','Παρουσίες','chk'],['cost','Κόστος','cost'],['pay','Πληρωμές','pay']],SETP=['set','Ρυθμίσεις','set'];
@@ -1077,9 +1115,12 @@ function pagePay(){
 
 /* ---------- Ρυθμίσεις ---------- */
 function pageSet(){
-  const T=[['gen','Γενικά'],['shifts','Βάρδιες'],['needs','Άτομα ανά μέρα'],['roles','Ειδικότητες και αμοιβές'],['staff','Προσωπικό'],['data',SERVER?'Λογαριασμός':'Δεδομένα']];
+  // όπως στην κατασκευαστική: λίστα κατηγοριών αριστερά (στο κινητό πρώτα η λίστα, μετά η κατηγορία με «πίσω»)
+  const T=[['gen','Γενικά','store','Όνομα, μέρες προγράμματος και πληρωμής'],['shifts','Βάρδιες','clock','Ώρες έναρξης, διάρκεια, μέρες'],['needs','Άτομα ανά μέρα','grid','Πόσα άτομα θέλει κάθε βάρδια'],['roles','Ειδικότητες και αμοιβές','euro','Μεροκάματο, υπερωρία, ωράριο'],['staff','Προσωπικό','ppl','Άτομα, τηλέφωνα, μέρες εργασίας'],SERVER?['data','Λογαριασμός και χρήστες','user','Κωδικός, χρήστες, αποσύνδεση']:['data','Δεδομένα','user','Επαναφορά δεδομένων επίδειξης']];
+  if(!T.some(t=>t[0]===UI.setTab))UI.setTab='gen';
   let h=`<div class="head"><div class="grow"><h1>Ρυθμίσεις</h1><div class="sub">Όλες οι αλλαγές αποθηκεύονται αμέσως.</div></div></div>
-  <div class="seg tabs" style="margin-bottom:16px;flex-wrap:wrap">${T.map(([k,n])=>`<button data-act="stab" data-v="${k}" class="${UI.setTab===k?'on':''}">${n}</button>`).join('')}</div>`;
+  <div class="setwrap ${UI.setPick?'has-cat':'no-cat'}"><nav class="setnav" aria-label="Κατηγορίες ρυθμίσεων">${T.map(([k,n,ic,d])=>`<button data-act="stab" data-v="${k}"${UI.setTab===k?' aria-current="page"':''}>${IC[ic]}<span><b>${n}</b><small>${d}</small></span><i class="chev">${IC.chev}</i></button>`).join('')}</nav>
+  <div class="setbody"><button class="setback" data-act="setlist">${IC.back}Όλες οι ρυθμίσεις</button>`;
   const s=S.set;
   if(UI.setTab==='gen')h+=`<section class="card"><div class="form">
     <label class="f">Όνομα καταστήματος<input id="s_name" data-ch="set" data-k="name" value="${esc(s.name)}"></label>
@@ -1125,7 +1166,7 @@ function pageSet(){
   if(UI.setTab==='data'&&SERVER)h+=acctHTML();
   else if(UI.setTab==='data')h+=`<section class="card stack"><div>Τα δεδομένα αυτής της έκδοσης μένουν μόνο σε αυτόν τον browser. Το κατάστημα και τα ονόματα είναι ενδεικτικά.</div>
     <div class="bar"><button class="btn ${UI.arm==='reset'?'arm':'danger'}" data-act="reset">${UI.arm==='reset'?'Πάτα ξανά: σβήνονται όλα':'Επαναφορά δεδομένων επίδειξης'}</button></div></section>`;
-  return h;
+  return h+'</div></div>';
 }
 
 /* ---------- Παράθυρα ---------- */
@@ -1214,7 +1255,7 @@ document.addEventListener('click',ev=>{
   if(a==='close'){if(ev.target===b||b.tagName==='BUTTON')closeSheet();return}
   const armed=UI.arm;if(!['clear','payall','reset','delshift','userdel'].includes(a))UI.arm=null;
   switch(a){
-  case'go':UI.page=D.id;UI.arm=null;window.scrollTo(0,0);break;
+  case'go':if(D.id==='set'&&UI.page!=='set')UI.setPick=false;UI.page=D.id;UI.arm=null;window.scrollTo(0,0);break;
   case'wk':UI.ws=addD(UI.ws,7*D.n);break;
   case'gonext':UI.page='prog';UI.ws=addD(schedStart(TODAY),7);UI.view='day';window.scrollTo(0,0);break;
   case'golink':UI.page=D.id;if(D.v)UI.view=D.v;if(D.d){UI.day=D.d;UI.ws=schedStart(D.d);UI.attD=D.d}if(D.w)UI.payWs=D.w;window.scrollTo(0,0);break;
@@ -1265,7 +1306,8 @@ document.addEventListener('click',ev=>{
   case'unpay':delete S.paid[UI.payWs][D.p];S.userEdited=true;save();break;
   case'payall':if(armed!=='payall'){UI.arm='payall';break}UI.arm=null;{const P=S.paid[UI.payWs];weekPay(S,UI.payWs).forEach(r=>{if(r.total>0&&!P[r.p.id]&&(!UI.payRole||r.p.role===UI.payRole))P[r.p.id]={amount:r.total,date:TODAY}})}S.userEdited=true;save();toast('Σημειώθηκαν ως πληρωμένοι');break;
   case'copypay':{const t=payText(UI.payWs);const ok=()=>toast('Η λίστα αντιγράφηκε');try{navigator.clipboard.writeText(t).then(ok,()=>showText(t,'Λίστα πληρωμών'))}catch(e){showText(t,'Λίστα πληρωμών')}return}
-  case'stab':UI.setTab=D.v;break;
+  case'stab':UI.setTab=D.v;UI.setPick=true;window.scrollTo(0,0);break;
+  case'setlist':UI.setPick=false;window.scrollTo(0,0);break;
   case'nday':UI.needDay=+D.v;break;
   case'ncopy':{const src=JSON.stringify(S.needs[UI.needDay||0]||{});D.v.split('').forEach(i=>{S.needs[i]=JSON.parse(src)});{const m=refitMsg(refit(S,d=>D.v.includes(String(dow(d)))));toast('Αντιγράφηκε'+(m?'. '+m:''))}S.userEdited=true;save();break}
   case'shday':{const sh=S.shifts.find(x=>x.id===D.id);let ds=sh.days?sh.days.slice():[0,1,2,3,4,5,6];const i=+D.v;ds=ds.includes(i)?ds.filter(x=>x!==i):ds.concat(i).sort();if(!ds.length){toast('Η βάρδια πρέπει να τρέχει τουλάχιστον μία μέρα');return}sh.days=ds.length===7?undefined:ds;commit();return}
@@ -1301,8 +1343,8 @@ document.addEventListener('click',ev=>{
     {const gone=[];Object.keys(S.sched).forEach(d=>{if(d<TODAY)return;const A=S.att[d]||{};const L=S.sched[d];for(let i=L.length-1;i>=0;i--){const e=L[i];if(e.p===p.id&&!A[e.id]&&(!worksOn(p,d)||!p.active)){L.splice(i,1);gone.push(d)}}});
      const r=refit(S,d=>gone.includes(d));if(gone.length){const m=refitMsg(r);toast((D.id?'Αποθηκεύτηκε':'Ο υπάλληλος προστέθηκε')+'. Βγήκε από '+gone.length+(gone.length===1?' βάρδια':' βάρδιες')+(m?'. '+m.replace('Το πρόγραμμα άλλαξε: ',''):''));closeSheet();commit();return}}
     closeSheet();commit();toast(D.id?'Αποθηκεύτηκε':'Ο υπάλληλος προστέθηκε');return}
-  case'gostaff':UI.page='set';UI.setTab='staff';break;
-  case'goroles':UI.page='set';UI.setTab='roles';break;
+  case'gostaff':UI.page='set';UI.setTab='staff';UI.setPick=true;break;
+  case'goroles':UI.page='set';UI.setTab='roles';UI.setPick=true;break;
   case'logout':logout();return;
   case'pwform':pwSheet();return;
   case'pwsave':pwSave();return;
