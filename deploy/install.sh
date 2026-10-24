@@ -10,7 +10,6 @@
 #
 # Από το GitHub Actions (deploy.yml): PARON_QUICK=1 παραλείπει τα πακέτα συστήματος όταν υπάρχουν ήδη,
 # και ο κωδικός του πρώτου διαχειριστή έρχεται από το PARON_ADMIN_PASSWORD αντί να φτιαχτεί τυχαίος.
-# PARON_EXTRA_DOMAINS: επιπλέον διευθύνσεις για την ίδια εφαρμογή (π.χ. η <ip>.sslip.io ως εφεδρική).
 set -euo pipefail
 
 DOMAIN="${1:-}"; EMAIL="${2:-}"
@@ -118,7 +117,7 @@ say "Caddy για $DOMAIN"
 {
   [ -n "$EMAIL" ] && printf '{\n\temail %s\n}\n\n' "$EMAIL"
   cat <<CADDY
-$DOMAIN${PARON_EXTRA_DOMAINS:+, $PARON_EXTRA_DOMAINS} {
+$DOMAIN {
 	encode gzip
 	header Strict-Transport-Security "max-age=31536000"
 	reverse_proxy 127.0.0.1:8080
