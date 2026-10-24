@@ -51,12 +51,14 @@ jobs:
           ADMIN_PW: ${{ secrets.ERGO_ADMIN_PASSWORD }}
         run: |
           [ -n "$ADMIN_PW" ] || { echo "::error::Λείπει το secret ERGO_ADMIN_PASSWORD (κωδικός του πρώτου διαχειριστή)."; exit 1; }
-          DOMAIN="${VPS_DOMAIN:-$(echo "$VPS_HOST" | tr . -).sslip.io}"   # χωρίς δικό μας domain: https στο <ip>.sslip.io
+          FALLBACK="$(echo "$VPS_HOST" | tr . -).sslip.io"
+          DOMAIN="${VPS_DOMAIN:-$FALLBACK}"   # χωρίς δικό μας domain: https στο <ip>.sslip.io
+          EXTRA=""; [ "$DOMAIN" != "$FALLBACK" ] && EXTRA="$FALLBACK"   # η sslip.io μένει πάντα ως εφεδρική διεύθυνση
           echo "Διεύθυνση: https://$DOMAIN"
           tar -czf /tmp/paron.tgz server src public deploy build.js package.json index.html README.md
           SSH="ssh -i $HOME/.ssh/id_deploy -o BatchMode=yes root@$VPS_HOST"
           $SSH 'rm -rf /opt/paron-src && mkdir -p /opt/paron-src && tar -xzf - -C /opt/paron-src' < /tmp/paron.tgz
-          printf '%s\n' "$ADMIN_PW" | $SSH "read -r PW; export PARON_ADMIN_PASSWORD=\"\$PW\" PARON_QUICK=1; bash /opt/paron-src/deploy/install.sh '$DOMAIN'"
+          printf '%s\n' "$ADMIN_PW" | $SSH "read -r PW; export PARON_ADMIN_PASSWORD=\"\$PW\" PARON_QUICK=1 PARON_EXTRA_DOMAINS='$EXTRA'; bash /opt/paron-src/deploy/install.sh '$DOMAIN'"
 
       - name: Έλεγχος online
         if: steps.cfg.outputs.skip != '1'
