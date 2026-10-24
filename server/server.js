@@ -326,6 +326,35 @@ setInterval(() => {
 // --- εφαρμογή για κινητά (PWA): εικονίδια, manifest, service worker ---
 // Δεν περιέχουν δεδομένα, γι' αυτό σερβίρονται χωρίς κωδικό (το κινητό τα ζητά πριν τη σύνδεση).
 const PUBLIC = { '/manifest.webmanifest': 'application/manifest+json', '/sw.js': 'text/javascript; charset=utf-8', '/icon-192.png': 'image/png', '/icon-512.png': 'image/png', '/icon-maskable-512.png': 'image/png', '/apple-touch-icon.png': 'image/png' };
+// --- κλάδος: κάθε αντίγραφο του server είναι μία εταιρεία, κατασκευαστική (build) ή εστίαση (food) ---
+// Ο πρώτος διαχειριστής τον διαλέγει μία φορά μετά την πρώτη σύνδεση και μετά δεν αλλάζει. PARON_INDUSTRY τον ορίζει από πριν.
+const INDUSTRIES = ['build', 'food'];
+F.industry = path.join(CFG.dataDir, 'industry.json');
+F.food = path.join(CFG.dataDir, 'estiasi.json');
+const FOOD_HTML = path.join(ROOT, 'estiasi', 'index.html');
+function industry() {
+  if (INDUSTRIES.includes(process.env.PARON_INDUSTRY)) return process.env.PARON_INDUSTRY;
+  const o = readJSON(F.industry, null);
+  return o && INDUSTRIES.includes(o.industry) ? o.industry : null;
+}
+// εγκαταστάσεις που υπήρχαν πριν από την επιλογή κλάδου έχουν ήδη δεδομένα κατασκευαστικής
+if (!industry() && fs.existsSync(F.state)) writeJSON(F.industry, { industry: 'build', at: now() });
+function saveFood(o) {
+  // όπως στην κατασκευαστική: ένα αντίγραφο ασφαλείας ανά μέρα, των τελευταίων 60 ημερών
+  if (fs.existsSync(F.food)) {
+    const bk = path.join(CFG.dataDir, 'estiasi-backup-' + C.ds(new Date()) + '.json');
+    if (!fs.existsSync(bk)) {
+      fs.copyFileSync(F.food, bk);
+      fs.readdirSync(CFG.dataDir).filter(f => /^estiasi-backup-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().slice(0, -60).forEach(f => fs.unlinkSync(path.join(CFG.dataDir, f)));
+    }
+  }
+  writeJSON(F.food, o);
+}
+const foodPage = () => {
+  if (!fs.existsSync(FOOD_HTML)) return '<!doctype html><meta charset="utf-8"><p style="font:16px sans-serif;padding:24px">Η εφαρμογή εστίασης δεν έχει εγκατασταθεί σε αυτόν τον server.</p>';
+  return '<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' + PWA_HEAD + '</head><body>\n' + fs.readFileSync(FOOD_HTML, 'utf8') + '\n</body></html>\n';
+};
+
 const PWA_HEAD = '<script>window.ERGO_SERVER=true</script>' +
   '<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png">' +
   '<meta name="theme-color" content="#E8ECE4" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#071F1B" media="(prefers-color-scheme: dark)"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">' +
@@ -456,7 +485,7 @@ http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x');
     // η σελίδα της εφαρμογής δεν έχει δεδομένα, γι' αυτό ανοίγει χωρίς σύνδεση και δείχνει την οθόνη σύνδεσης
     if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html'))
-      return send(res, 200, fullPage(PWA_HEAD), 'text/html; charset=utf-8');
+      return send(res, 200, industry() === 'food' ? foodPage() : fullPage(PWA_HEAD), 'text/html; charset=utf-8');
     if (url.pathname === '/api/health') return send(res, 200, { ok: true, time: now() });
     const clm = /^\/c\/([^/]{0,80})(?:\/ph\/([a-f0-9]{16})(_t)?\.jpg)?\/?$/.exec(url.pathname);   // ο κωδικός ελέγχεται στο byShare
     if (clm && req.method === 'GET') return clientPage(res, url, clm);
@@ -474,7 +503,7 @@ http.createServer(async (req, res) => {
       if (!checkPw(u, b.password || '')) { addFail(k); return send(res, 401, { error: 'Λάθος όνομα χρήστη ή κωδικός.' }); }
       FAILS.delete(k); startSession(req, res, u, b.remember !== false);
       console.log(now(), 'σύνδεση', u.username);
-      return send(res, 200, { user: pubU(u) });
+      return send(res, 200, { user: pubU(u), industry: industry() });
     }
     if (url.pathname === '/api/setup' && req.method === 'POST') {
       if (USERS.length) return send(res, 409, { error: 'Υπάρχει ήδη λογαριασμός. Κάνε σύνδεση.' });
@@ -482,12 +511,32 @@ http.createServer(async (req, res) => {
       if (err) return send(res, 400, { error: err });
       const u = makeUser({ ...b, role: 'admin' }); USERS.push(u); saveUsers(); startSession(req, res, u, true);
       console.log(now(), 'δημιουργήθηκε ο πρώτος διαχειριστής', u.username);
-      return send(res, 200, { user: pubU(u) });
+      return send(res, 200, { user: pubU(u), industry: industry() });
     }
     if (url.pathname === '/api/logout' && req.method === 'POST') { endSession(req, res); return send(res, 200, { ok: true }); }
     const me = currentUser(req);
     if (!me) return send(res, 401, { error: 'Χρειάζεται σύνδεση.', setup: !USERS.length });
-    if (url.pathname === '/api/me') return send(res, 200, { user: pubU(me) });
+    if (url.pathname === '/api/me') return send(res, 200, { user: pubU(me), industry: industry() });
+    if (url.pathname === '/api/industry' && req.method === 'POST') {
+      if (me.role !== 'admin') return send(res, 403, { error: 'Μόνο ο διαχειριστής ορίζει τον κλάδο.' });
+      if (industry()) return send(res, 409, { error: 'Ο κλάδος έχει ήδη οριστεί και δεν αλλάζει.' });
+      const b = await body();
+      if (!INDUSTRIES.includes(b.industry)) return send(res, 400, { error: 'Διάλεξε κατασκευαστική ή εστίαση.' });
+      writeJSON(F.industry, { industry: b.industry, at: now(), by: me.username });
+      console.log(now(), 'κλάδος', b.industry, 'από', me.username);
+      return send(res, 200, { industry: b.industry });
+    }
+    if (url.pathname === '/api/estiasi/state') {
+      if (industry() !== 'food') return send(res, 404, { error: 'Αυτός ο server δεν είναι για εστίαση.' });
+      if (me.role === 'worker') return send(res, 403, { error: 'Δεν έχεις πρόσβαση.' });
+      if (req.method === 'GET') return send(res, 200, readJSON(F.food, {}));
+      if (req.method === 'PUT') {
+        let o; try { o = JSON.parse(await readBody(req)); } catch { o = null; }
+        if (!o || o.v !== 9 || !Array.isArray(o.staff) || !Array.isArray(o.roles) || !Array.isArray(o.shifts)) return send(res, 400, { error: 'Μη έγκυρα δεδομένα' });
+        saveFood(o);
+        return send(res, 200, { ok: true });
+      }
+    }
     // φωτογραφία του ημερολογίου: το γραφείο βλέπει όλες, ο εργαζόμενος μόνο όσες έστειλε ο ίδιος
     const phm = /^\/api\/photo\/([a-f0-9]{16})$/.exec(url.pathname);
     if (phm && req.method === 'GET') {

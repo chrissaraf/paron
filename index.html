@@ -846,6 +846,8 @@ body:not(.in) .app{display:none}
 .auth .logo .wm small{font-size:13px;color:#B9CBC3}
 .auth-card{width:100%;background:var(--surface);color:var(--ink);border-radius:20px;padding:28px;display:grid;gap:16px;box-shadow:0 30px 70px -20px rgba(0,0,0,.6)}
 .auth-card h1{font-size:26px}
+.auth-card .ind-go{display:grid;gap:4px;justify-items:start;text-align:left;padding:16px 18px;min-height:72px;border-radius:14px}
+.auth-card .ind-go b{font-size:17px}.auth-card .ind-go span{font-size:13.5px;font-weight:450;color:var(--ink-2)}
 .auth-card>p{margin:0}
 .auth-card label{display:grid;gap:6px;font-size:13px;font-weight:560;color:var(--ink-2)}
 .auth-card label.ck{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:14.5px;font-weight:450}
@@ -3300,9 +3302,31 @@ function userErr(list,v,needPw,selfId){
   if(v.workerId&&list.some(u=>u.workerId===v.workerId&&u.id!==selfId))return 'Αυτός ο εργαζόμενος έχει ήδη λογαριασμό.';
   return '';
 }
+// Κλάδος της εταιρείας στον server: κατασκευαστική (build) ή εστίαση (food). null = δεν έχει οριστεί ακόμη.
+// Παλιός server χωρίς το πεδίο = κατασκευαστική.
+let IND='build';
+const setInd=r=>{IND='industry' in (r||{})?r.industry:'build'};
+// μετά τη σύνδεση: η εστίαση είναι άλλη σελίδα (τη δίνει ο server)· χωρίς κλάδο, ο διαχειριστής τον διαλέγει πρώτα
+function go(u){
+  if(SERVER&&IND==='food'){location.reload();return}
+  if(SERVER&&IND==null&&u.role==='admin'){showIndustry(u);return}
+  enter(u);
+}
+function showIndustry(u){
+  go.user=u;const a=document.getElementById('auth');
+  a.innerHTML=`<div class="auth-in">${LOGO_HTML}
+  <form class="auth-card" id="indf" novalidate>
+    <h1>Τι είδους επιχείρηση είναι;</h1>
+    <p class="note">Η εφαρμογή στήνεται για τον κλάδο σου. Η επιλογή γίνεται μία φορά και δεν αλλάζει αργότερα.</p>
+    <button class="btn ind-go" type="submit" value="build"><b>Κατασκευαστική</b><span>Έργα, εργασίες, συνεργεία και μεροκάματα</span></button>
+    <button class="btn ind-go" type="submit" value="food"><b>Εστίαση</b><span>Βάρδιες, παρουσίες, κόστος και πληρωμές προσωπικού</span></button>
+    <p class="auth-err" id="a_err" role="alert"></p>
+  </form></div>`;
+  a.hidden=false;fitLogo();
+}
 async function authMe(){
   if(SERVER){
-    try{return {user:(await api('me')).user}}
+    try{const r=await api('me');setInd(r);return {user:r.user}}
     catch(e){if(e.status===401)return {setup:!!(e.data&&e.data.setup)};const me=lsGet(LS+'.me',null);return me?{user:me,offline:true}:{msg:e.message}}
   }
   const us=localUsers();if(!us.length)return {setup:true};
@@ -3310,13 +3334,13 @@ async function authMe(){
   return u?{user:pubU(u)}:{};
 }
 async function authLogin(username,password,remember){
-  if(SERVER)return (await api('login',{username,password,remember})).user;
+  if(SERVER){const r=await api('login',{username,password,remember});setInd(r);return r.user}
   const u=localUsers().find(x=>x.username===normU(username));
   if(!u||await pbk(password,u.salt)!==u.hash)throw new Error(TR('Λάθος όνομα χρήστη ή κωδικός.'));
   localStart(u,remember);return pubU(u);
 }
 async function authSetup(v){
-  if(SERVER)return (await api('setup',v)).user;
+  if(SERVER){const r=await api('setup',v);setInd(r);return r.user}
   const us=localUsers();if(us.length)throw new Error('Υπάρχει ήδη λογαριασμός. Κάνε σύνδεση.');
   const err=userErr(us,{...v,role:'admin'},true);if(err)throw new Error(err);
   const salt=newSalt(),u={id:uid('u'),username:normU(v.username),name:v.name.trim(),role:'admin',workerId:'',salt,hash:await pbk(v.password,salt)};
@@ -6751,12 +6775,15 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){guideRead();closeMo
   else if(e.key==='/'&&AUTH.user&&!isWorker()&&hasF('search')&&!e.target.closest('input,textarea,select,[contenteditable]')&&!document.querySelector('.modal')){e.preventDefault();searchForm()}});
 // οι φόρμες δεν φορτώνουν ξανά τη σελίδα με Enter· η φόρμα σύνδεσης συνδέει
 document.addEventListener('submit',async e=>{
-  e.preventDefault();const f=e.target;if(f.id!=='authf')return;
+  e.preventDefault();const f=e.target;
+  if(f.id==='indf'){const v=e.submitter&&e.submitter.value,err=document.getElementById('a_err');if(!v)return;f.querySelectorAll('button').forEach(b=>b.disabled=true);
+    try{await api('industry',{industry:v});IND=v;go(go.user)}catch(x){err.textContent=x.message||'Κάτι πήγε στραβά. Δοκίμασε ξανά.';f.querySelectorAll('button').forEach(b=>b.disabled=false)}return}
+  if(f.id!=='authf')return;
   const g=id=>{const x=document.getElementById(id);return x?x.value:''},err=document.getElementById('a_err'),btn=f.querySelector('.auth-go');
   err.textContent='';btn.disabled=true;
   try{
-    if(f.dataset.mode==='setup'){if(g('a_pw')!==g('a_pw2'))throw new Error('Οι δύο κωδικοί δεν είναι ίδιοι.');UI.firstRun=true;enter(await authSetup({name:g('a_name'),username:g('a_user'),password:g('a_pw')}))}
-    else{if(!g('a_user')||!g('a_pw'))throw new Error(TR('Γράψε όνομα χρήστη και κωδικό.'));enter(await authLogin(g('a_user'),g('a_pw'),document.getElementById('a_rem').checked))}
+    if(f.dataset.mode==='setup'){if(g('a_pw')!==g('a_pw2'))throw new Error('Οι δύο κωδικοί δεν είναι ίδιοι.');UI.firstRun=true;go(await authSetup({name:g('a_name'),username:g('a_user'),password:g('a_pw')}))}
+    else{if(!g('a_user')||!g('a_pw'))throw new Error(TR('Γράψε όνομα χρήστη και κωδικό.'));go(await authLogin(g('a_user'),g('a_pw'),document.getElementById('a_rem').checked))}
   }catch(x){if(document.getElementById('a_err')){err.textContent=x.message||TR('Κάτι πήγε στραβά. Δοκίμασε ξανά.');btn.disabled=false}}
 });
 async function loadVStatus(){const el=document.getElementById('vstatus');if(!el)return;
@@ -6777,7 +6804,7 @@ fitLogo();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitL
 async function boot(){
   setLang(lsGet(LS+'.lang','el'));   // η γλώσσα που διάλεξε ο εργαζόμενος σε αυτή τη συσκευή
   const a=await authMe();
-  if(a.user){enter(a.user);if(a.offline)toast(TR('Χωρίς σύνδεση με τον server. Βλέπεις τα τελευταία δεδομένα.'))}
+  if(a.user){go(a.user);if(a.offline)toast(TR('Χωρίς σύνδεση με τον server. Βλέπεις τα τελευταία δεδομένα.'))}
   else showAuth(a.setup?'setup':'login',a.msg||'');
 }
 window.addEventListener('focus',()=>{if(!SERVER||!AUTH.user||document.querySelector('.modal'))return;
