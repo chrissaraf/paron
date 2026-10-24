@@ -3791,6 +3791,13 @@ function sumForm(ws){UI.sumWs=viewStart(ws||TODAY);const X=weekSum(schedule(),UI
   ${ownerW().phone||!VIBER?'':'<p class="note">Γράψε το κινητό του εργολάβου στις <a href="#settings" data-tab="settings" data-cat="company">Ρυθμίσεις → Εταιρεία</a>, για να ανοίγει κατευθείαν η δική του συνομιλία στο Viber.</p>'}
   <textarea id="sumtext" rows="6" hidden readonly>${h(weekSumText(X))}</textarea>
   <div class="acts"><span class="grow"></span><button class="btn" data-act="close">Κλείσιμο</button><button class="btn pri" data-act="sumshare" data-ws="${X.ws}">${ico('send')}Κοινοποίηση</button>${VIBER?`<button class="btn pri" data-act="sumviber" data-ws="${X.ws}">${ico('send')}Αποστολή στον εργολάβο</button>`:''}</div>`)}
+// το πρόγραμμα της μέρας ως ειδοποίηση στο κινητό κάθε πρωί (χωρίς Viber)
+function dayPushPanel(){if(!hasF('push'))return '';
+  return `<section class="panel"><h2>Το πρόγραμμα κάθε πρωί στο κινητό</h2>
+    <p class="note">Κάθε εργάσιμη μέρα, την ώρα που ορίζεις, κάθε εργαζόμενος παίρνει ειδοποίηση στο κινητό με το δικό του πρόγραμμα. Τη λαμβάνουν όσοι έχουν λογαριασμό και άνοιξαν τις ειδοποιήσεις. Δεν κοστίζει τίποτα.${SERVER?'':' Λειτουργεί όταν η εφαρμογή τρέχει online.'}</p>
+    <div class="form" style="margin-top:8px">
+      <label class="ck full"><input type="checkbox" id="s_auto"${S.settings.autoSend?' checked':''}> <span>Ενεργή</span></label>
+      <label>Ώρα<input type="time" id="s_time" value="${h(S.settings.sendTime||'06:30')}"></label></div></section>`}
 function sumSettings(){
   if(!hasF('weekly'))return offF('weekly')?'':`<section class="panel"><h2>Σύνοψη εβδομάδας για τον εργολάβο</h2>${upsell('weekly')}</section>`;
   const c=sumCfg();
@@ -3798,10 +3805,10 @@ function sumSettings(){
     <p class="note">Τι ολοκληρώθηκε, τι προχωρά, πόσο κόστισε κάθε έργο σε μεροκάματα και αν προλαβαίνει την παράδοση. Τη μέρα της σύνοψης εμφανίζεται στο Σήμερα, για να τη δεις ή να την αντιγράψεις.</p>
     <div class="form" style="margin-top:8px">
       <label>Μέρα σύνοψης${sel('s_sumday',[1,2,3,4,5,6,0].map(d=>[d,DAYF[d]]),c.day)}</label>
-      ${VIBER?`<label>Ώρα αποστολής<input type="time" id="s_sumtime" value="${h(c.time)}"></label>
-      <label class="ck full"><input type="checkbox" id="s_sumauto"${c.auto?' checked':''}> <span>Αυτόματη αποστολή στο Viber του εργολάβου</span></label>`:''}</div>
+      <label>Ώρα αποστολής<input type="time" id="s_sumtime" value="${h(c.time)}"></label>
+      <label class="ck full"><input type="checkbox" id="s_sumauto"${c.auto?' checked':''}> <span>${VIBER?'Αυτόματη αποστολή στο Viber του εργολάβου':'Αυτόματα ως ειδοποίηση στο κινητό του διαχειριστή'}</span></label></div>
     ${S.settings.ownerPhone||!VIBER?'':'<p class="note" style="margin-top:8px">Για να φεύγει στο Viber, γράψε το κινητό του εργολάβου στην <button class="lnk" data-act="setcat" data-cat="company" style="text-decoration:underline">Εταιρεία</button>.</p>'}
-    ${SERVER||!VIBER?'':'<p class="note" style="margin-top:8px">Η αυτόματη αποστολή λειτουργεί όταν η εφαρμογή τρέχει από τον server της εταιρείας. Από εδώ τη στέλνεις με το κουμπί.</p>'}
+    ${SERVER?'':'<p class="note" style="margin-top:8px">Η αυτόματη αποστολή λειτουργεί όταν η εφαρμογή τρέχει online. Μέχρι τότε τη βλέπεις και την κοινοποιείς από εδώ.</p>'}
     <div class="bar" style="margin-top:10px"><button class="btn" data-act="weeksum">Προβολή σύνοψης</button>${SERVER&&VIBER?'<button class="btn" data-act="sumsend">Αποστολή τώρα από τον server</button>':''}</div></section>`}
 function manualDayPanel(R,d){
   if(!manualOn(d)||!isWork(d))return '';
@@ -5688,7 +5695,7 @@ function vSettings(){
     <div class="wd" style="margin-top:6px">${S.workers.map(w=>`<label title="${h(w.phone||'χωρίς τηλέφωνο')}"><input type="checkbox" data-viber="${w.id}"${w.viber!==false&&w.phone?' checked':''}${w.phone?'':' disabled'}> ${h(short(w.name))}</label>`).join('')}</div>
     <div class="bar" style="margin-top:12px"><button class="btn" data-act="vpreview">Προεπισκόπηση επόμενης εργάσιμης</button>${SERVER?'<button class="btn pri" data-act="vsend">Αποστολή τώρα για σήμερα</button>':''}</div>
     <div id="vpreview"></div>
-    ${SERVER?'<div id="vstatus" class="note" style="margin-top:12px">Φόρτωση κατάστασης…</div>':''}</section>`:''}
+    ${SERVER?'<div id="vstatus" class="note" style="margin-top:12px">Φόρτωση κατάστασης…</div>':''}</section>`:dayPushPanel()}
   ${pushPanel()}
   ${sumSettings()}`,
     feats:()=>featPanel(),
@@ -6419,10 +6426,10 @@ document.addEventListener('change',e=>{
   else if(t.id==='pfrom'||t.id==='pto'){UI[t.id==='pfrom'?'from':'to']=t.value;render()}
   else if(t.id==='s_wfrom'){S.settings.weekFrom=+t.value;rekeyPay(S);UI.week=null;UI.payWeek=null;UI.sumWs=null;commit('Η εβδομάδα (πρόγραμμα και πληρωμές) είναι πλέον '+DAYS_L[+t.value]+' έως '+DAYS_L[(+t.value+6)%7]+'.')}
   else if(t.id==='s_start'){S.settings.start=t.value||TODAY;commit('Η έναρξη άλλαξε. Το πρόγραμμα ξαναστήθηκε.')}
-  else if(t.id==='s_auto'){S.settings.autoSend=t.checked;commit(t.checked?'Η αυτόματη αποστολή ενεργοποιήθηκε στις '+(S.settings.sendTime||'06:30')+'.':'Η αυτόματη αποστολή σταμάτησε.')}
+  else if(t.id==='s_auto'){S.settings.autoSend=t.checked;commit(t.checked?(VIBER?'Η αυτόματη αποστολή ενεργοποιήθηκε στις ':'Η πρωινή ειδοποίηση ενεργοποιήθηκε στις ')+(S.settings.sendTime||'06:30')+'.':VIBER?'Η αυτόματη αποστολή σταμάτησε.':'Η πρωινή ειδοποίηση σταμάτησε.')}
   else if(t.id==='s_sumday'){S.settings.sum={...sumCfg(),day:+t.value};commit('Η σύνοψη της εβδομάδας θα ετοιμάζεται κάθε '+DAYF[+t.value]+'.')}
   else if(t.id==='s_sumtime'){S.settings.sum={...sumCfg(),time:t.value||SUM_D.time};commit('Η ώρα της σύνοψης έγινε '+S.settings.sum.time+'.')}
-  else if(t.id==='s_sumauto'){S.settings.sum={...sumCfg(),auto:t.checked};commit(t.checked?'Η σύνοψη θα φεύγει αυτόματα στο Viber του εργολάβου.':'Η αυτόματη αποστολή της σύνοψης σταμάτησε.')}
+  else if(t.id==='s_sumauto'){S.settings.sum={...sumCfg(),auto:t.checked};commit(t.checked?(VIBER?'Η σύνοψη θα φεύγει αυτόματα στο Viber του εργολάβου.':'Η σύνοψη θα έρχεται αυτόματα ως ειδοποίηση στο κινητό.'):'Η αυτόματη αποστολή της σύνοψης σταμάτησε.')}
   else if(t.id==='s_time'){S.settings.sendTime=t.value||'06:30';commit('Η ώρα αποστολής έγινε '+S.settings.sendTime+'.')}
   else if(t.dataset.viber){W(t.dataset.viber).viber=t.checked;UI.hmsg=W(t.dataset.viber).name+(t.checked?': λαμβάνει το πρόγραμμα στο Viber':': δεν λαμβάνει το πρόγραμμα στο Viber');note(t.checked?'Θα λαμβάνει το πρόγραμμα στο Viber.':'Δεν θα λαμβάνει το πρόγραμμα στο Viber.')}
   else if(t.id==='apW'){UI.apW=t.value;render()}
