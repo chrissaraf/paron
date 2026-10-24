@@ -1022,7 +1022,7 @@ const wRate=w=>Math.min(5,Math.max(1,Math.round(+(w&&w.rating)||3)));
 const tDiff=t=>Math.min(5,Math.max(1,Math.round(+(t&&t.diff)||3)));
 const isHard=t=>tDiff(t)>=+rateCfg().hard;
 // τι κοστίζει μια μέρα ενός ατόμου σε μια εργασία: κατ' αποκοπή συνεργάτης = τιμή εργασίας / μέρες
-const dayCost=(w,t)=>isExt(w)&&w.pay==='job'?(t&&t.responsibleId===w.id?(+t.price||0)/Math.max(1,+t.days||1):0):rate(w,t?t.projectId:'gen');
+const dayCost=(w,t,d=TODAY)=>isExt(w)&&w.pay==='job'?(t&&t.responsibleId===w.id?(+t.price||0)/Math.max(1,+t.days||1):0):rate(w,t?t.projectId:'gen',d);
 // σε ποια έργα είναι ένας διαχειριστής μια μέρα (ανάθεση του έργου ή αλλαγή της ημέρας)
 function pmProjects(wid,d){
   const w=W(wid);if(!w||!isPM(w)||isOff(w,d))return [];
@@ -1097,13 +1097,22 @@ function placeTeam(teamId,d,placement){
 function projectRows(d,old=[]){
   return S.workers.filter(w=>!isOff(w,d)&&!isOffice(w)&&!(isExt(w)&&w.pay==='job')&&ov(d,w.id)?.type==='project'&&P(ov(d,w.id).projectId)).map(w=>{
     const projectId=ov(d,w.id).projectId,previous=old.find(a=>a.workerId===w.id&&a.projectId===projectId&&a.manual);
-    return {date:d,taskId:null,projectId,workerId:w.id,wage:previous?previous.wage:rate(w,projectId),manual:true};
+    return {date:d,taskId:null,projectId,workerId:w.id,wage:previous?previous.wage:rate(w,projectId,d),manual:true};
   });
 }
 // έργα στην επαρχία: όλοι όσοι δουλεύουν εκεί (εκτός γραφείου) παίρνουν επιπλέον ποσό στο μεροκάματο (Ρυθμίσεις, 20 €)
 const provAmt=()=>{const v=S&&S.settings&&S.settings.provAmt;return v===''||v==null?20:+v||0};
 const provOf=(w,pid)=>{const p=pid&&P(pid);return p&&p.prov&&!isOffice(w)&&!isExt(w)?provAmt():0};
-const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return (+(r!==''&&r!=null?r:w.wage)||0)+provOf(w,pid)};
+const validPayDate=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(+pd(d))&&ds(pd(d))===d;
+function historyAt(list,d,key,fallback){let value=fallback,from='';
+  (list||[]).forEach(r=>{if(validPayDate(r.from)&&r.from<=d&&r.from>=from&&Number.isFinite(+r[key])){value=+r[key];from=r.from}});return value}
+const wageAt=(w,d=TODAY)=>historyAt(w.wageHistory,d,'wage',+(w.wageBase??w.wage)||0);
+const overtimeRateAt=(w,d=TODAY)=>historyAt((w.overtimeRateHistory||[]).filter(r=>r.source!=='payroll'||validPayDate(r.to)&&d<=r.to),d,'rate',wageAt(w,d)/8);
+const rate=(w,pid,d=TODAY)=>{const r=w.rates&&w.rates[pid];return (r!==''&&r!=null?+r||0:wageAt(w,d))+provOf(w,pid)};
+// A manual change starts on its effective date; the previous base remains available for older days.
+function setWage(w,value,from=TODAY){if(!validPayDate(from)||!Number.isFinite(+value)||+value<0)throw new Error('Μη έγκυρη αλλαγή μεροκάματου.');
+  if(w.wageBase==null)w.wageBase=+w.wage||0;
+  w.wageHistory=(w.wageHistory||[]).filter(r=>r.from!==from).concat({from,wage:+value}).sort((a,b)=>a.from.localeCompare(b.from));w.wage=wageAt(w,TODAY)};
 /* ---------- Υπενθυμίσεις ----------
    Τι έχει να κάνει ο καθένας κάθε μέρα, και ο εργολάβος. Αποθηκεύονται στο S.duties (τα παλιά «καθήκοντα γραφείου»).
    Συχνότητα: κάθε εργάσιμη (daily), συγκεκριμένες μέρες (days), κάθε μήνα (month, μέρα dom) ή μία φορά (once, date).
@@ -1252,23 +1261,23 @@ function unpackDay(rec,d,asg,waiting){
   const old={};A.forEach(a=>{old[a.taskId+'|'+a.workerId]=a});
   const cnt={};jobs.forEach(j=>{j.multi=new Set();[j.lead,...j.helpers].filter(Boolean).forEach(w=>cnt[w.id]=(cnt[w.id]||0)+1)});
   jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>{const n=cnt[w.id],o=old[j.task.id+'|'+w.id];if(n>1)j.multi.add(w.id);
-    asg.push(Object.assign({date:d,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:o&&(o.share||1)===(n>1?1/n:1)?o.wage:dayCost(w,j.task)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
-  gen.forEach(g=>{const o=old['null|'+g.w.id];asg.push({date:d,taskId:null,projectId:'gen',workerId:g.w.id,wage:o&&o.projectId==='gen'?o.wage:rate(g.w,'gen')})});
+    asg.push(Object.assign({date:d,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:o&&(o.share||1)===(n>1?1/n:1)?o.wage:dayCost(w,j.task,d)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
+  gen.forEach(g=>{const o=old['null|'+g.w.id];asg.push({date:d,taskId:null,projectId:'gen',workerId:g.w.id,wage:o&&o.projectId==='gen'?o.wage:rate(g.w,'gen',d)})});
   asg.push(...direct);
   // γραφείο: όπως καταγράφηκε, εκτός από όσους λείπουν ή άλλαξαν διαχείριση έργων εκείνη τη μέρα
   S.workers.filter(w=>isOffice(w)&&(rec.e||[]).includes(w.id)&&!isOff(w,d)).forEach(w=>{
     const mine=A.filter(a=>a.workerId===w.id&&!a.taskId&&a.projectId!=='gen');
     if(mine.length&&!ov(d,w.id)){asg.push(...mine);return}
     const pp=pmProjects(w.id,d);
-    if(pp.length)pp.forEach(pid=>asg.push({date:d,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
-    else asg.push({date:d,taskId:null,projectId:'office',workerId:w.id,wage:+w.wage||0})});
+    if(pp.length)pp.forEach(pid=>asg.push({date:d,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid,d)/pp.length,share:1/pp.length,pm:true}));
+    else asg.push({date:d,taskId:null,projectId:'office',workerId:w.id,wage:wageAt(w,d)})});
   return {jobs,gen,wet}}
 // όταν αλλάξει μεροκάματο, οι περασμένες μέρες εβδομάδων που δεν έχουν κλειδώσει στις Πληρωμές παίρνουν το νέο ποσό
 // (οι κλειδωμένες εβδομάδες και οι συνεργάτες κατ' αποκοπή μένουν όπως ήταν)· επιστρέφει πόσες γραμμές άλλαξαν
 function repricePast(wid){let n=0;const pay=S.payments||{};
   Object.keys(S.past||{}).forEach(d=>(S.past[d].a||[]).forEach(r=>{const [t,p,w,wage,sh,fl]=r;if(wid&&w!==wid||fl&1)return;const x=W(w);if(!x)return;
     const pr=pay[viewStart(d)+'|'+w];if(pr&&pr.lock)return;
-    const nw=(p==='office'?(+x.wage||0):rate(x,p))*(sh||1);if(Math.abs(nw-(+wage||0))>0.001){r[3]=nw;n++}}));
+    const nw=(p==='office'?wageAt(x,d):rate(x,p,d))*(sh||1);if(Math.abs(nw-(+wage||0))>0.001){r[3]=nw;n++}}));
   return n}
 // γράφει όσες περασμένες εργάσιμες λείπουν ή άλλαξαν· επιστρέφει πόσες γράφτηκαν
 function freezePast(R){if(!S.past||typeof S.past!=='object')S.past={};let n=0;
@@ -1383,13 +1392,13 @@ function schedule(){
     // όποιος είναι σε πολλές εργασίες την ίδια μέρα μοιράζει το μεροκάματο ισόποσα
     const cnt={};jobs.forEach(j=>{j.multi=new Set();[j.lead,...j.helpers].filter(Boolean).forEach(w=>cnt[w.id]=(cnt[w.id]||0)+1)});
     jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>{const n=cnt[w.id];if(n>1)j.multi.add(w.id);
-      asg.push(Object.assign({date:day,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:dayCost(w,j.task)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
-    gen.forEach(g=>asg.push({date:day,taskId:null,projectId:'gen',workerId:g.w.id,wage:rate(g.w,'gen')}));
+      asg.push(Object.assign({date:day,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:dayCost(w,j.task,day)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
+    gen.forEach(g=>asg.push({date:day,taskId:null,projectId:'gen',workerId:g.w.id,wage:rate(g.w,'gen',day)}));
     asg.push(...projectRows(day));
     S.workers.filter(w=>isOffice(w)&&!isOff(w,day)).forEach(w=>{
       const pp=pmProjects(w.id,day);
-      if(pp.length)pp.forEach(pid=>asg.push({date:day,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
-      else asg.push({date:day,taskId:null,projectId:'office',workerId:w.id,wage:+w.wage||0})});
+      if(pp.length)pp.forEach(pid=>asg.push({date:day,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid,day)/pp.length,share:1/pp.length,pm:true}));
+      else asg.push({date:day,taskId:null,projectId:'office',workerId:w.id,wage:wageAt(w,day)})});
     }
     if(RO){const hd=new Set();jobs.forEach(j=>{if(isHard(j.task))[j.lead,...j.helpers].filter(Boolean).forEach(w=>hd.add(w.id))});
       S.workers.forEach(w=>{hardRun[w.id]=hd.has(w.id)?(hardRun[w.id]||0)+1:0})}
@@ -1633,10 +1642,117 @@ function myView(R,w,ws,l){l=l||langOf(w);const o=personWeek(R,w,ws,l);o.lang=isO
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
+/* ---------- Εισαγωγή προσωπικού από εβδομαδιαία μισθοδοσία ----------
+   Pure analysis first, explicit application afterwards. Only A/B and G/H/I are read.
+   Imported overtime is an archive, not an assertion that an amount is still owed. */
+const PAYROLL_PROVINCES=['ΣΕΡΙΦΟΣ','ΜΟΝΕΜΒΑΣΙΑ','ΣΙΦΝΟΣ','ΑΙΓΙΝΑ','ΑΣΤΡΟΣ ΚΥΝΟΥΡΙΑΣ','ΑΣΤΡΟΣ'];
+const payFold=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
+const payNum=v=>{if(v==null||String(v).trim()==='')return null;if(typeof v==='number')return Number.isFinite(v)?v:null;
+  let s=String(v).replace(/[€\s]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return /^-?\d+(\.\d+)?$/.test(s)?+s:null};
+const payRound=v=>Math.round((v+Number.EPSILON)*10000)/10000;
+function payrollName(raw,wage,provinces=PAYROLL_PROVINCES){
+  let name=payFold(raw),notes=false,province=false,place='';
+  // Payment annotations are not part of the employee's identity.
+  const annotation=/(?:\s*(?:\/|\+|&|-)\s*)?(?:\d+[.,]\d+\s*)?(?:ΤΡΑΠΕΖΑ|ΤΡΑΠ(?=\s|$)|TRAPEZA|TRAZEZA|METR\b|ΜΕΤΡΗΤΑ|ΜΕΤΡΗΤΑ\b).*$/;
+  const clean=name.replace(annotation,'').trim();notes=clean!==name;name=clean;
+  if(wage!=null)name=name.replace(/\s*\(\s*(\d+(?:[.,]\d+)?)\s*\)\s*$|\s*(\d{2,}(?:[.,]\d+)?)\s*$/, (m,a,b)=>payNum(a||b)===wage?'':m).trim();
+  const locations=[...provinces.map(payFold),'ΑΘΗΝΑ'].sort((a,b)=>b.length-a.length);
+  for(const p of locations){if(name.endsWith(' '+p)||name.endsWith(' ('+p+')')){name=name.slice(0,name.endsWith(' ('+p+')')?-(p.length+3):-(p.length+1)).trim();province=p!=='ΑΘΗΝΑ';place=p;break}}
+  name=name.replace(/\s*[+&/,-]+\s*$/,'').trim();
+  // Keep numbers and descriptors: two people with the same first name must not be merged by similarity.
+  return {name,key:payFold(name).replace(/[.,;:·'’()\-–&/]/g,' ').replace(/\s+/g,' ').trim(),province,place,notes};
+}
+function payrollPeriod(text,year){
+  let s=payFold(text).replace(/[A-Z]/g,c=>({A:'Α',B:'Β',E:'Ε',H:'Η',I:'Ι',K:'Κ',M:'Μ',N:'Ν',O:'Ο',P:'Ρ',T:'Τ',X:'Χ',Y:'Υ',Z:'Ζ'}[c]||c));
+  const month=['ΙΑΝΟΥΑΡΙΟΥ','ΦΕΒΡΟΥΑΡΙΟΥ','ΜΑΡΤΙΟΥ','ΑΠΡΙΛΙΟΥ','ΜΑΙΟΥ','ΙΟΥΝΙΟΥ','ΙΟΥΛΙΟΥ','ΑΥΓΟΥΣΤΟΥ','ΣΕΠΤΕΜΒΡΙΟΥ','ΟΚΤΩΒΡΙΟΥ','ΝΟΕΜΒΡΙΟΥ','ΔΕΚΕΜΒΡΙΟΥ'];
+  let d1,d2,m1,m2,y1=year,y2=year;
+  const numeric=s.match(/(\d{1,2})(?:\/(\d{1,2}))?(?:\/(\d{2,4}))?\s*[-–]\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if(numeric){d1=+numeric[1];m1=+(numeric[2]||numeric[5]);d2=+numeric[4];m2=+numeric[5];const yy=v=>+v<100?2000+ +v:+v;y2=numeric[6]?yy(numeric[6]):year;y1=numeric[3]?yy(numeric[3]):y2-(m1>m2?1:0)}
+  else {const m=s.match(/(\d{1,2})\s*([Α-Ω]+)?\s*[-–]\s*(\d{1,2})\s*([Α-Ω]+)/);if(!m)return null;
+    d1=+m[1];d2=+m[3];m2=month.indexOf(m[4])+1;m1=m[2]?month.indexOf(m[2])+1:m2;if(!m1||!m2)return null;y1=year-(m1>m2?1:0)}
+  const date=(y,m,d)=>String(y)+'-'+pad(m)+'-'+pad(d),from=date(y1,m1,d1),to=date(y2,m2,d2);
+  return validPayDate(from)&&validPayDate(to)&&from<=to?{from,to}:null;
+}
+function payrollScan(books,options={}){
+  const year=+options.year||+TODAY.slice(0,4),provinces=options.provinces||PAYROLL_PROVINCES,aliases=new Map(),sheets=[],skipped=[];
+  const alias=(raw,wage)=>{const n=payrollName(raw,wage,provinces),id=payFold(raw);if(!n.key||/(^|\s)(ΣΥΝΟΛ[ΑΟ]|ΕΡΓΑΖΟΜΕΝΟΙ|ΜΙΣΘΟΔΟΣΙΑ|ΥΠΕΡΩΡΙΕΣ)(\s|$)/.test(n.key))return null;
+    if(!aliases.has(id))aliases.set(id,{id,raw:String(raw).trim(),...n,wages:[],overtime:[]});return aliases.get(id)};
+  books.forEach((sh,index)=>{const c=sh.cells||{},head=Object.keys(c).filter(k=>/^A\d+$/.test(k)).map(k=>+k.slice(1)).find(r=>/ΕΡΓΑΖΟΜΕΝ/.test(payFold(c['A'+r]))&&/ΗΜΕΡ/.test(payFold(c['B'+r])));
+    if(!head){skipped.push({name:sh.name,reason:'Δεν βρέθηκαν οι στήλες εργαζομένου / ημερομισθίου.'});return}
+    const week=payrollPeriod(sh.name,year)||payrollPeriod(c.A4||c.A1,year),period=payrollPeriod(c.G4,week?+week.to.slice(0,4):year),s={id:String(index),name:sh.name,from:week?.from||'',to:week?.to||'',otFrom:period?.from||week?.from||'',otTo:period?.to||week?.to||'',estimated:!period};
+    sheets.push(s);
+    const rows=[...new Set(Object.keys(c).filter(k=>/^[AG]\d+$/.test(k)).map(k=>+k.slice(1)))].filter(r=>r>head).sort((a,b)=>a-b);
+    rows.forEach(r=>{const wage=payNum(c['B'+r]);if(c['A'+r]&&wage!=null&&wage>=0){const a=alias(c['A'+r],wage);if(a)a.wages.push({sheet:s.id,row:r,wage})}
+      if(!c['G'+r])return;const hours=payNum(c['H'+r]),amount=payNum(c['I'+r]);
+      if(hours==null&&amount==null||hours===0&&(!amount||amount===0))return;
+      const a=alias(c['G'+r]);if(a)a.overtime.push({sheet:s.id,row:r,hours,amount})});
+  });
+  return {year,sheets,aliases:[...aliases.values()],skipped};
+}
+function payrollTargets(scan,workers=[]){
+  const out={};scan.aliases.forEach(a=>{const matches=workers.filter(w=>w.role!=='ext'&&(payrollName(w.name).key===a.key||(w.payrollAliases||[]).includes(a.id)));
+    out[a.id]=matches.length===1?'w:'+matches[0].id:matches.length>1?'':'n:'+a.key});return out;
+}
+function payrollPlan(scan,workers=[],options={}){
+  const defaults=payrollTargets(scan,workers),groups=new Map(),errors=[],sheetMap=new Map(scan.sheets.map(s=>[s.id,{...s,...(options.sheets||{})[s.id]}])),premium=options.premium==null?20:+options.premium;
+  const gFor=a=>{const target=Object.hasOwn(options.mapping||{},a.id)?options.mapping[a.id]:defaults[a.id];if(target==='skip')return null;
+    if(!target){errors.push('Διάλεξε εργαζόμενο για «'+a.raw+'».');return null}
+    const existing=target.startsWith('w:')?workers.find(w=>w.id===target.slice(2)&&w.role!=='ext'):null;
+    if(target.startsWith('w:')&&!existing){errors.push('Η αντιστοίχιση «'+a.raw+'» δεν υπάρχει πια.');return null}
+    if(!groups.has(target))groups.set(target,{key:target,workerId:existing?.id||'',name:(options.names||{})[target]??existing?.name??a.name,aliases:[],wageRows:[],otRows:[],changes:[],effectiveWages:[],overtime:[]});return groups.get(target)};
+  scan.aliases.forEach(a=>{const g=gFor(a);if(!g)return;g.aliases.push(a.id);
+    const adjust=Object.hasOwn(options.adjust||{},a.id)?options.adjust[a.id]:a.province;
+    a.wages.forEach(r=>{const sh=sheetMap.get(r.sheet),wage=payRound(r.wage-(adjust?premium:0));if(!validPayDate(sh.from)||wage<0||!Number.isFinite(wage)){errors.push('Έλεγξε ημερομηνία / ποσό στο «'+sh.name+'».');return}g.wageRows.push({...r,from:sh.from,wage,raw:a.raw,province:adjust})});
+    a.overtime.forEach(r=>{const sh=sheetMap.get(r.sheet);if(!validPayDate(sh.otFrom)||!validPayDate(sh.otTo)||sh.otTo<sh.otFrom||!(r.hours>0)||!(r.amount>=0)){errors.push('Έλεγξε περίοδο / ώρες / ποσό υπερωρίας: «'+a.raw+'», '+sh.name+'.');return}
+      g.otRows.push({...r,from:sh.otFrom,to:sh.otTo,raw:a.raw,estimated:sh.estimated})});
+  });
+  groups.forEach(g=>{
+    if(!g.name.trim())errors.push('Συμπλήρωσε το όνομα εργαζομένου.');
+    const byDate=new Map();g.wageRows.forEach(r=>{if(!byDate.has(r.from))byDate.set(r.from,[]);byDate.get(r.from).push(r)});
+    let last=null;[...byDate].sort(([a],[b])=>a.localeCompare(b)).forEach(([from,rows])=>{const values=[...new Set(rows.map(r=>r.wage))],fix=(options.wages||{})[g.key+'|'+from];
+      const wage=fix!==undefined&&String(fix).trim()!==''?payNum(fix):values.length===1?values[0]:null;
+      if(wage==null||wage<0){errors.push('Διαφορετικά μεροκάματα για «'+g.name+'» στις '+from+'. Διάλεξε το βασικό ποσό.');g.changes.push({from,wage:null,values,rows});last=null;return}
+      g.effectiveWages.push({from,wage});if(last!==wage)g.changes.push({from,wage,values,rows});last=wage;
+    });
+    const periods=new Map();g.otRows.forEach(r=>{const key=r.from+'|'+r.to;if(!periods.has(key))periods.set(key,[]);const rs=periods.get(key),same=rs.find(x=>x.hours===r.hours&&x.amount===r.amount);if(same)same.sources.push({sheet:r.sheet,row:r.row});else rs.push({...r,sources:[{sheet:r.sheet,row:r.row}]})});
+    [...periods].sort(([a],[b])=>a.localeCompare(b)).forEach(([period,rs])=>{const ix=rs.length===1?0:(options.overtime||{})[g.key+'|'+period],r=ix!==undefined&&ix!==''?rs[+ix]:null;
+      if(!r){errors.push('Διάλεξε τη σωστή εγγραφή υπερωρίας για «'+g.name+'», '+period+'.');g.overtime.push({from:rs[0].from,to:rs[0].to,choices:rs});return}
+      g.overtime.push({...r,rate:payRound(r.amount/r.hours),choices:rs});
+    });
+    if(!g.workerId&&!g.changes.length)errors.push('Ο «'+g.name+'» εμφανίζεται μόνο στις υπερωρίες. Αντιστοίχισέ τον με εργαζόμενο που έχει μεροκάματο.');
+  });
+  // Merging by similarity is never automatic; also block accidental duplicate new display names.
+  const names=new Set();groups.forEach(g=>{const k=payrollName(g.name).key;if(names.has(k))errors.push('Το όνομα «'+g.name+'» υπάρχει σε δύο αντιστοιχίσεις. Ένωσέ τες.');names.add(k);
+    if(!g.workerId&&workers.some(w=>payrollName(w.name).key===k))errors.push('Ο «'+g.name+'» υπάρχει ήδη. Διάλεξε τον υπάρχοντα εργαζόμενο.');
+  });
+  return {groups:[...groups.values()],errors:[...new Set(errors)],sheets:[...sheetMap.values()],skipped:scan.skipped};
+}
+function applyPayroll(state,plan){
+  if(plan.errors.length)throw new Error(plan.errors[0]);if(!plan.groups.length)throw new Error('Δεν έχουν επιλεγεί εργαζόμενοι.');
+  // Validate all targets before changing any state, including when a preview became stale.
+  plan.groups.forEach(g=>{if(g.workerId&&!state.workers.some(w=>w.id===g.workerId&&w.role!=='ext'))throw new Error('Άλλαξε το προσωπικό. Άνοιξε ξανά την προεπισκόπηση.');
+    if(!g.workerId&&state.workers.some(w=>payrollName(w.name).key===payrollName(g.name).key||(w.payrollAliases||[]).some(a=>g.aliases.includes(a))))throw new Error('Ο εργαζόμενος υπάρχει ήδη. Άνοιξε ξανά την προεπισκόπηση.');
+    if(g.changes.some(r=>!validPayDate(r.from)||!Number.isFinite(r.wage)||r.wage<0))throw new Error('Μη έγκυρη αλλαγή μεροκάματου.');
+    if(g.overtime.some(r=>!validPayDate(r.from)||!validPayDate(r.to)||r.to<r.from||!(r.hours>0)||!Number.isFinite(r.amount)||r.amount<0))throw new Error('Μη έγκυρη υπερωρία.');
+  });
+  if(!state.specialties.some(s=>s.id==='gen'))state.specialties.push({...GEN});let added=0,updated=0,overtime=0;
+  plan.groups.forEach(g=>{let w=state.workers.find(w=>w.id===g.workerId);if(!w){w={id:uid('w'),name:g.name.trim(),specialtyId:'gen',specialtyIds:['gen'],role:'voith',wage:0,wageBase:0,phone:'',off:[],rates:{}};state.workers.push(w);added++}else updated++;
+    if(w.wageBase==null)w.wageBase=+w.wage||0;
+    const merge=(old,rows,key)=>{const m=new Map((old||[]).map(r=>[key(r),r]));rows.forEach(r=>m.set(key(r),r));return [...m.values()].sort((a,b)=>a.from.localeCompare(b.from))};
+    w.wageHistory=merge(w.wageHistory,(g.effectiveWages||g.changes).map(r=>({from:r.from,wage:r.wage,source:'payroll'})),r=>r.from);w.wage=wageAt(w,TODAY);
+    w.payrollAliases=[...new Set([...(w.payrollAliases||[]),...g.aliases])];
+    const oldOT=new Map((w.overtimeImports||[]).map(r=>[r.from+'|'+r.to,r]));g.overtime.forEach(r=>{const k=r.from+'|'+r.to,old=oldOT.get(k);if(!old||old.hours!==r.hours||old.amount!==r.amount)overtime++});
+    w.overtimeImports=merge(w.overtimeImports,g.overtime.map(r=>({from:r.from,to:r.to,hours:r.hours,amount:r.amount,rate:r.rate,source:'payroll',sheets:[...new Set(r.sources.map(s=>plan.sheets.find(x=>x.id===s.sheet)?.name||''))],estimated:!!r.estimated})),r=>r.from+'|'+r.to);
+    // The total may reflect several days; this is the source's observed hourly rate, retained with its period.
+    w.overtimeRateHistory=merge(w.overtimeRateHistory,g.overtime.map(r=>({from:r.from,to:r.to,rate:r.rate,source:'payroll'})),r=>r.from);
+  });return {added,updated,overtime};
+}
+
 root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,outRange,onStaff,provAmt,provOf,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,DROPPED,celebs,nameDayOn,birthOn,NAMEDAYS,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,rekeyPay,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
-Object.assign(root.ErgoCore,{repricePast,workerSpecs,taskSpecs,canTask,manualOn,teamOf,saveTeam,setPlacement,placeTeam});
+Object.assign(root.ErgoCore,{PAYROLL_PROVINCES,payrollName,payrollPeriod,payrollScan,payrollTargets,payrollPlan,applyPayroll,wageAt,overtimeRateAt,setWage,validPayDate,repricePast,workerSpecs,taskSpecs,canTask,manualOn,teamOf,saveTeam,setPlacement,placeTeam});
 })(typeof window!=='undefined'?window:globalThis);
+

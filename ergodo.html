@@ -1030,6 +1030,30 @@ main>*{min-width:0}
   .setback{display:inline-flex;align-items:center;gap:6px;justify-self:start;min-height:44px;font-weight:600;color:var(--brand)}
   .setback svg{width:18px;height:18px}
 }
+.payroll-pick{position:relative;overflow:hidden;cursor:pointer}
+.payroll-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.payroll-pick:focus-within{outline:3px solid var(--brand);outline-offset:3px}
+.modal.payroll{width:min(920px,calc(100vw - 24px));max-width:920px}
+.pay-summary{display:flex;flex-wrap:wrap;gap:10px 20px;padding:14px;background:var(--sunk);border-radius:12px;margin:14px 0}
+.pay-section,.pay-person{border:1px solid var(--line);border-radius:12px;margin:12px 0;padding:14px}
+.pay-section>summary,.pay-person>summary{cursor:pointer;font-weight:700;min-height:36px}
+.pay-section[open]>summary,.pay-person[open]>summary{margin-bottom:14px}
+.pay-alias,.pay-sheet{display:grid;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
+.payroll label{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.payroll label.ck{flex-direction:row;align-items:flex-start}
+.payroll input:not([type=checkbox]),.payroll select{max-width:100%;min-width:0;width:100%;min-height:44px}
+.payroll small{display:block;font-size:12px;margin-top:4px;overflow-wrap:anywhere}
+.payroll h3{font-size:15px;margin:22px 0 12px}
+.payroll .pay-change{display:grid;grid-template-columns:1fr minmax(100px,150px);align-items:center;margin:10px 0}
+.pay-ot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.pay-ot>div{min-width:0}
+.pay-ot small{color:var(--muted)}
+.pay-attention,.pay-errors{color:var(--bad)}
+.pay-errors{background:var(--sunk);padding:14px;border-radius:12px;font-size:14px}
+.pay-confirm{margin:24px 0 16px;font-weight:600;line-height:1.5}
+.payroll .acts{position:static;flex-wrap:wrap}
+@media(min-width:700px){.pay-alias{grid-template-columns:minmax(0,1fr) minmax(220px,1fr)}.pay-alias>.ck{grid-column:2}}
+@media(max-width:600px){.payroll .acts>.btn{flex:1 1 100%}.payroll .acts>.grow{display:none}.pay-person>summary .note{display:block;margin-top:6px}.modal.payroll{padding:18px}}
 @media (min-width:2200px){main{max-width:1640px}}
 @media (min-width:1600px){.projgrid{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}}
 @media (max-width:760px){
@@ -1411,6 +1435,7 @@ function tlit(s){
 root.ErgoI18n={LANGS,L8,RTL,okLang,isRTL,langName,DAYS,MONS,M0,tx,fill,has,fmtD,fmtM,dist,hasGreek,tlit};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.ErgoI18n;
 })(typeof window!=='undefined'?window:globalThis);
+
 
 /* PARON: κοινή λογική για browser και server */
 (function(root){
@@ -2436,7 +2461,7 @@ const wRate=w=>Math.min(5,Math.max(1,Math.round(+(w&&w.rating)||3)));
 const tDiff=t=>Math.min(5,Math.max(1,Math.round(+(t&&t.diff)||3)));
 const isHard=t=>tDiff(t)>=+rateCfg().hard;
 // τι κοστίζει μια μέρα ενός ατόμου σε μια εργασία: κατ' αποκοπή συνεργάτης = τιμή εργασίας / μέρες
-const dayCost=(w,t)=>isExt(w)&&w.pay==='job'?(t&&t.responsibleId===w.id?(+t.price||0)/Math.max(1,+t.days||1):0):rate(w,t?t.projectId:'gen');
+const dayCost=(w,t,d=TODAY)=>isExt(w)&&w.pay==='job'?(t&&t.responsibleId===w.id?(+t.price||0)/Math.max(1,+t.days||1):0):rate(w,t?t.projectId:'gen',d);
 // σε ποια έργα είναι ένας διαχειριστής μια μέρα (ανάθεση του έργου ή αλλαγή της ημέρας)
 function pmProjects(wid,d){
   const w=W(wid);if(!w||!isPM(w)||isOff(w,d))return [];
@@ -2511,13 +2536,22 @@ function placeTeam(teamId,d,placement){
 function projectRows(d,old=[]){
   return S.workers.filter(w=>!isOff(w,d)&&!isOffice(w)&&!(isExt(w)&&w.pay==='job')&&ov(d,w.id)?.type==='project'&&P(ov(d,w.id).projectId)).map(w=>{
     const projectId=ov(d,w.id).projectId,previous=old.find(a=>a.workerId===w.id&&a.projectId===projectId&&a.manual);
-    return {date:d,taskId:null,projectId,workerId:w.id,wage:previous?previous.wage:rate(w,projectId),manual:true};
+    return {date:d,taskId:null,projectId,workerId:w.id,wage:previous?previous.wage:rate(w,projectId,d),manual:true};
   });
 }
 // έργα στην επαρχία: όλοι όσοι δουλεύουν εκεί (εκτός γραφείου) παίρνουν επιπλέον ποσό στο μεροκάματο (Ρυθμίσεις, 20 €)
 const provAmt=()=>{const v=S&&S.settings&&S.settings.provAmt;return v===''||v==null?20:+v||0};
 const provOf=(w,pid)=>{const p=pid&&P(pid);return p&&p.prov&&!isOffice(w)&&!isExt(w)?provAmt():0};
-const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return (+(r!==''&&r!=null?r:w.wage)||0)+provOf(w,pid)};
+const validPayDate=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(+pd(d))&&ds(pd(d))===d;
+function historyAt(list,d,key,fallback){let value=fallback,from='';
+  (list||[]).forEach(r=>{if(validPayDate(r.from)&&r.from<=d&&r.from>=from&&Number.isFinite(+r[key])){value=+r[key];from=r.from}});return value}
+const wageAt=(w,d=TODAY)=>historyAt(w.wageHistory,d,'wage',+(w.wageBase??w.wage)||0);
+const overtimeRateAt=(w,d=TODAY)=>historyAt((w.overtimeRateHistory||[]).filter(r=>r.source!=='payroll'||validPayDate(r.to)&&d<=r.to),d,'rate',wageAt(w,d)/8);
+const rate=(w,pid,d=TODAY)=>{const r=w.rates&&w.rates[pid];return (r!==''&&r!=null?+r||0:wageAt(w,d))+provOf(w,pid)};
+// A manual change starts on its effective date; the previous base remains available for older days.
+function setWage(w,value,from=TODAY){if(!validPayDate(from)||!Number.isFinite(+value)||+value<0)throw new Error('Μη έγκυρη αλλαγή μεροκάματου.');
+  if(w.wageBase==null)w.wageBase=+w.wage||0;
+  w.wageHistory=(w.wageHistory||[]).filter(r=>r.from!==from).concat({from,wage:+value}).sort((a,b)=>a.from.localeCompare(b.from));w.wage=wageAt(w,TODAY)};
 /* ---------- Υπενθυμίσεις ----------
    Τι έχει να κάνει ο καθένας κάθε μέρα, και ο εργολάβος. Αποθηκεύονται στο S.duties (τα παλιά «καθήκοντα γραφείου»).
    Συχνότητα: κάθε εργάσιμη (daily), συγκεκριμένες μέρες (days), κάθε μήνα (month, μέρα dom) ή μία φορά (once, date).
@@ -2666,23 +2700,23 @@ function unpackDay(rec,d,asg,waiting){
   const old={};A.forEach(a=>{old[a.taskId+'|'+a.workerId]=a});
   const cnt={};jobs.forEach(j=>{j.multi=new Set();[j.lead,...j.helpers].filter(Boolean).forEach(w=>cnt[w.id]=(cnt[w.id]||0)+1)});
   jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>{const n=cnt[w.id],o=old[j.task.id+'|'+w.id];if(n>1)j.multi.add(w.id);
-    asg.push(Object.assign({date:d,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:o&&(o.share||1)===(n>1?1/n:1)?o.wage:dayCost(w,j.task)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
-  gen.forEach(g=>{const o=old['null|'+g.w.id];asg.push({date:d,taskId:null,projectId:'gen',workerId:g.w.id,wage:o&&o.projectId==='gen'?o.wage:rate(g.w,'gen')})});
+    asg.push(Object.assign({date:d,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:o&&(o.share||1)===(n>1?1/n:1)?o.wage:dayCost(w,j.task,d)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
+  gen.forEach(g=>{const o=old['null|'+g.w.id];asg.push({date:d,taskId:null,projectId:'gen',workerId:g.w.id,wage:o&&o.projectId==='gen'?o.wage:rate(g.w,'gen',d)})});
   asg.push(...direct);
   // γραφείο: όπως καταγράφηκε, εκτός από όσους λείπουν ή άλλαξαν διαχείριση έργων εκείνη τη μέρα
   S.workers.filter(w=>isOffice(w)&&(rec.e||[]).includes(w.id)&&!isOff(w,d)).forEach(w=>{
     const mine=A.filter(a=>a.workerId===w.id&&!a.taskId&&a.projectId!=='gen');
     if(mine.length&&!ov(d,w.id)){asg.push(...mine);return}
     const pp=pmProjects(w.id,d);
-    if(pp.length)pp.forEach(pid=>asg.push({date:d,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
-    else asg.push({date:d,taskId:null,projectId:'office',workerId:w.id,wage:+w.wage||0})});
+    if(pp.length)pp.forEach(pid=>asg.push({date:d,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid,d)/pp.length,share:1/pp.length,pm:true}));
+    else asg.push({date:d,taskId:null,projectId:'office',workerId:w.id,wage:wageAt(w,d)})});
   return {jobs,gen,wet}}
 // όταν αλλάξει μεροκάματο, οι περασμένες μέρες εβδομάδων που δεν έχουν κλειδώσει στις Πληρωμές παίρνουν το νέο ποσό
 // (οι κλειδωμένες εβδομάδες και οι συνεργάτες κατ' αποκοπή μένουν όπως ήταν)· επιστρέφει πόσες γραμμές άλλαξαν
 function repricePast(wid){let n=0;const pay=S.payments||{};
   Object.keys(S.past||{}).forEach(d=>(S.past[d].a||[]).forEach(r=>{const [t,p,w,wage,sh,fl]=r;if(wid&&w!==wid||fl&1)return;const x=W(w);if(!x)return;
     const pr=pay[viewStart(d)+'|'+w];if(pr&&pr.lock)return;
-    const nw=(p==='office'?(+x.wage||0):rate(x,p))*(sh||1);if(Math.abs(nw-(+wage||0))>0.001){r[3]=nw;n++}}));
+    const nw=(p==='office'?wageAt(x,d):rate(x,p,d))*(sh||1);if(Math.abs(nw-(+wage||0))>0.001){r[3]=nw;n++}}));
   return n}
 // γράφει όσες περασμένες εργάσιμες λείπουν ή άλλαξαν· επιστρέφει πόσες γράφτηκαν
 function freezePast(R){if(!S.past||typeof S.past!=='object')S.past={};let n=0;
@@ -2797,13 +2831,13 @@ function schedule(){
     // όποιος είναι σε πολλές εργασίες την ίδια μέρα μοιράζει το μεροκάματο ισόποσα
     const cnt={};jobs.forEach(j=>{j.multi=new Set();[j.lead,...j.helpers].filter(Boolean).forEach(w=>cnt[w.id]=(cnt[w.id]||0)+1)});
     jobs.forEach(j=>[j.lead,...j.helpers].filter(Boolean).forEach(w=>{const n=cnt[w.id];if(n>1)j.multi.add(w.id);
-      asg.push(Object.assign({date:day,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:dayCost(w,j.task)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
-    gen.forEach(g=>asg.push({date:day,taskId:null,projectId:'gen',workerId:g.w.id,wage:rate(g.w,'gen')}));
+      asg.push(Object.assign({date:day,taskId:j.task.id,projectId:j.task.projectId,workerId:w.id,wage:dayCost(w,j.task,day)/n},n>1?{share:1/n}:{},isExt(w)&&w.pay==='job'?{job:true}:{}))}));
+    gen.forEach(g=>asg.push({date:day,taskId:null,projectId:'gen',workerId:g.w.id,wage:rate(g.w,'gen',day)}));
     asg.push(...projectRows(day));
     S.workers.filter(w=>isOffice(w)&&!isOff(w,day)).forEach(w=>{
       const pp=pmProjects(w.id,day);
-      if(pp.length)pp.forEach(pid=>asg.push({date:day,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid)/pp.length,share:1/pp.length,pm:true}));
-      else asg.push({date:day,taskId:null,projectId:'office',workerId:w.id,wage:+w.wage||0})});
+      if(pp.length)pp.forEach(pid=>asg.push({date:day,taskId:null,projectId:pid,workerId:w.id,wage:rate(w,pid,day)/pp.length,share:1/pp.length,pm:true}));
+      else asg.push({date:day,taskId:null,projectId:'office',workerId:w.id,wage:wageAt(w,day)})});
     }
     if(RO){const hd=new Set();jobs.forEach(j=>{if(isHard(j.task))[j.lead,...j.helpers].filter(Boolean).forEach(w=>hd.add(w.id))});
       S.workers.forEach(w=>{hardRun[w.id]=hd.has(w.id)?(hardRun[w.id]||0)+1:0})}
@@ -3047,13 +3081,120 @@ function myView(R,w,ws,l){l=l||langOf(w);const o=personWeek(R,w,ws,l);o.lang=isO
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
+/* ---------- Εισαγωγή προσωπικού από εβδομαδιαία μισθοδοσία ----------
+   Pure analysis first, explicit application afterwards. Only A/B and G/H/I are read.
+   Imported overtime is an archive, not an assertion that an amount is still owed. */
+const PAYROLL_PROVINCES=['ΣΕΡΙΦΟΣ','ΜΟΝΕΜΒΑΣΙΑ','ΣΙΦΝΟΣ','ΑΙΓΙΝΑ','ΑΣΤΡΟΣ ΚΥΝΟΥΡΙΑΣ','ΑΣΤΡΟΣ'];
+const payFold=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
+const payNum=v=>{if(v==null||String(v).trim()==='')return null;if(typeof v==='number')return Number.isFinite(v)?v:null;
+  let s=String(v).replace(/[€\s]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return /^-?\d+(\.\d+)?$/.test(s)?+s:null};
+const payRound=v=>Math.round((v+Number.EPSILON)*10000)/10000;
+function payrollName(raw,wage,provinces=PAYROLL_PROVINCES){
+  let name=payFold(raw),notes=false,province=false,place='';
+  // Payment annotations are not part of the employee's identity.
+  const annotation=/(?:\s*(?:\/|\+|&|-)\s*)?(?:\d+[.,]\d+\s*)?(?:ΤΡΑΠΕΖΑ|ΤΡΑΠ(?=\s|$)|TRAPEZA|TRAZEZA|METR\b|ΜΕΤΡΗΤΑ|ΜΕΤΡΗΤΑ\b).*$/;
+  const clean=name.replace(annotation,'').trim();notes=clean!==name;name=clean;
+  if(wage!=null)name=name.replace(/\s*\(\s*(\d+(?:[.,]\d+)?)\s*\)\s*$|\s*(\d{2,}(?:[.,]\d+)?)\s*$/, (m,a,b)=>payNum(a||b)===wage?'':m).trim();
+  const locations=[...provinces.map(payFold),'ΑΘΗΝΑ'].sort((a,b)=>b.length-a.length);
+  for(const p of locations){if(name.endsWith(' '+p)||name.endsWith(' ('+p+')')){name=name.slice(0,name.endsWith(' ('+p+')')?-(p.length+3):-(p.length+1)).trim();province=p!=='ΑΘΗΝΑ';place=p;break}}
+  name=name.replace(/\s*[+&/,-]+\s*$/,'').trim();
+  // Keep numbers and descriptors: two people with the same first name must not be merged by similarity.
+  return {name,key:payFold(name).replace(/[.,;:·'’()\-–&/]/g,' ').replace(/\s+/g,' ').trim(),province,place,notes};
+}
+function payrollPeriod(text,year){
+  let s=payFold(text).replace(/[A-Z]/g,c=>({A:'Α',B:'Β',E:'Ε',H:'Η',I:'Ι',K:'Κ',M:'Μ',N:'Ν',O:'Ο',P:'Ρ',T:'Τ',X:'Χ',Y:'Υ',Z:'Ζ'}[c]||c));
+  const month=['ΙΑΝΟΥΑΡΙΟΥ','ΦΕΒΡΟΥΑΡΙΟΥ','ΜΑΡΤΙΟΥ','ΑΠΡΙΛΙΟΥ','ΜΑΙΟΥ','ΙΟΥΝΙΟΥ','ΙΟΥΛΙΟΥ','ΑΥΓΟΥΣΤΟΥ','ΣΕΠΤΕΜΒΡΙΟΥ','ΟΚΤΩΒΡΙΟΥ','ΝΟΕΜΒΡΙΟΥ','ΔΕΚΕΜΒΡΙΟΥ'];
+  let d1,d2,m1,m2,y1=year,y2=year;
+  const numeric=s.match(/(\d{1,2})(?:\/(\d{1,2}))?(?:\/(\d{2,4}))?\s*[-–]\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if(numeric){d1=+numeric[1];m1=+(numeric[2]||numeric[5]);d2=+numeric[4];m2=+numeric[5];const yy=v=>+v<100?2000+ +v:+v;y2=numeric[6]?yy(numeric[6]):year;y1=numeric[3]?yy(numeric[3]):y2-(m1>m2?1:0)}
+  else {const m=s.match(/(\d{1,2})\s*([Α-Ω]+)?\s*[-–]\s*(\d{1,2})\s*([Α-Ω]+)/);if(!m)return null;
+    d1=+m[1];d2=+m[3];m2=month.indexOf(m[4])+1;m1=m[2]?month.indexOf(m[2])+1:m2;if(!m1||!m2)return null;y1=year-(m1>m2?1:0)}
+  const date=(y,m,d)=>String(y)+'-'+pad(m)+'-'+pad(d),from=date(y1,m1,d1),to=date(y2,m2,d2);
+  return validPayDate(from)&&validPayDate(to)&&from<=to?{from,to}:null;
+}
+function payrollScan(books,options={}){
+  const year=+options.year||+TODAY.slice(0,4),provinces=options.provinces||PAYROLL_PROVINCES,aliases=new Map(),sheets=[],skipped=[];
+  const alias=(raw,wage)=>{const n=payrollName(raw,wage,provinces),id=payFold(raw);if(!n.key||/(^|\s)(ΣΥΝΟΛ[ΑΟ]|ΕΡΓΑΖΟΜΕΝΟΙ|ΜΙΣΘΟΔΟΣΙΑ|ΥΠΕΡΩΡΙΕΣ)(\s|$)/.test(n.key))return null;
+    if(!aliases.has(id))aliases.set(id,{id,raw:String(raw).trim(),...n,wages:[],overtime:[]});return aliases.get(id)};
+  books.forEach((sh,index)=>{const c=sh.cells||{},head=Object.keys(c).filter(k=>/^A\d+$/.test(k)).map(k=>+k.slice(1)).find(r=>/ΕΡΓΑΖΟΜΕΝ/.test(payFold(c['A'+r]))&&/ΗΜΕΡ/.test(payFold(c['B'+r])));
+    if(!head){skipped.push({name:sh.name,reason:'Δεν βρέθηκαν οι στήλες εργαζομένου / ημερομισθίου.'});return}
+    const week=payrollPeriod(sh.name,year)||payrollPeriod(c.A4||c.A1,year),period=payrollPeriod(c.G4,week?+week.to.slice(0,4):year),s={id:String(index),name:sh.name,from:week?.from||'',to:week?.to||'',otFrom:period?.from||week?.from||'',otTo:period?.to||week?.to||'',estimated:!period};
+    sheets.push(s);
+    const rows=[...new Set(Object.keys(c).filter(k=>/^[AG]\d+$/.test(k)).map(k=>+k.slice(1)))].filter(r=>r>head).sort((a,b)=>a-b);
+    rows.forEach(r=>{const wage=payNum(c['B'+r]);if(c['A'+r]&&wage!=null&&wage>=0){const a=alias(c['A'+r],wage);if(a)a.wages.push({sheet:s.id,row:r,wage})}
+      if(!c['G'+r])return;const hours=payNum(c['H'+r]),amount=payNum(c['I'+r]);
+      if(hours==null&&amount==null||hours===0&&(!amount||amount===0))return;
+      const a=alias(c['G'+r]);if(a)a.overtime.push({sheet:s.id,row:r,hours,amount})});
+  });
+  return {year,sheets,aliases:[...aliases.values()],skipped};
+}
+function payrollTargets(scan,workers=[]){
+  const out={};scan.aliases.forEach(a=>{const matches=workers.filter(w=>w.role!=='ext'&&(payrollName(w.name).key===a.key||(w.payrollAliases||[]).includes(a.id)));
+    out[a.id]=matches.length===1?'w:'+matches[0].id:matches.length>1?'':'n:'+a.key});return out;
+}
+function payrollPlan(scan,workers=[],options={}){
+  const defaults=payrollTargets(scan,workers),groups=new Map(),errors=[],sheetMap=new Map(scan.sheets.map(s=>[s.id,{...s,...(options.sheets||{})[s.id]}])),premium=options.premium==null?20:+options.premium;
+  const gFor=a=>{const target=Object.hasOwn(options.mapping||{},a.id)?options.mapping[a.id]:defaults[a.id];if(target==='skip')return null;
+    if(!target){errors.push('Διάλεξε εργαζόμενο για «'+a.raw+'».');return null}
+    const existing=target.startsWith('w:')?workers.find(w=>w.id===target.slice(2)&&w.role!=='ext'):null;
+    if(target.startsWith('w:')&&!existing){errors.push('Η αντιστοίχιση «'+a.raw+'» δεν υπάρχει πια.');return null}
+    if(!groups.has(target))groups.set(target,{key:target,workerId:existing?.id||'',name:(options.names||{})[target]??existing?.name??a.name,aliases:[],wageRows:[],otRows:[],changes:[],effectiveWages:[],overtime:[]});return groups.get(target)};
+  scan.aliases.forEach(a=>{const g=gFor(a);if(!g)return;g.aliases.push(a.id);
+    const adjust=Object.hasOwn(options.adjust||{},a.id)?options.adjust[a.id]:a.province;
+    a.wages.forEach(r=>{const sh=sheetMap.get(r.sheet),wage=payRound(r.wage-(adjust?premium:0));if(!validPayDate(sh.from)||wage<0||!Number.isFinite(wage)){errors.push('Έλεγξε ημερομηνία / ποσό στο «'+sh.name+'».');return}g.wageRows.push({...r,from:sh.from,wage,raw:a.raw,province:adjust})});
+    a.overtime.forEach(r=>{const sh=sheetMap.get(r.sheet);if(!validPayDate(sh.otFrom)||!validPayDate(sh.otTo)||sh.otTo<sh.otFrom||!(r.hours>0)||!(r.amount>=0)){errors.push('Έλεγξε περίοδο / ώρες / ποσό υπερωρίας: «'+a.raw+'», '+sh.name+'.');return}
+      g.otRows.push({...r,from:sh.otFrom,to:sh.otTo,raw:a.raw,estimated:sh.estimated})});
+  });
+  groups.forEach(g=>{
+    if(!g.name.trim())errors.push('Συμπλήρωσε το όνομα εργαζομένου.');
+    const byDate=new Map();g.wageRows.forEach(r=>{if(!byDate.has(r.from))byDate.set(r.from,[]);byDate.get(r.from).push(r)});
+    let last=null;[...byDate].sort(([a],[b])=>a.localeCompare(b)).forEach(([from,rows])=>{const values=[...new Set(rows.map(r=>r.wage))],fix=(options.wages||{})[g.key+'|'+from];
+      const wage=fix!==undefined&&String(fix).trim()!==''?payNum(fix):values.length===1?values[0]:null;
+      if(wage==null||wage<0){errors.push('Διαφορετικά μεροκάματα για «'+g.name+'» στις '+from+'. Διάλεξε το βασικό ποσό.');g.changes.push({from,wage:null,values,rows});last=null;return}
+      g.effectiveWages.push({from,wage});if(last!==wage)g.changes.push({from,wage,values,rows});last=wage;
+    });
+    const periods=new Map();g.otRows.forEach(r=>{const key=r.from+'|'+r.to;if(!periods.has(key))periods.set(key,[]);const rs=periods.get(key),same=rs.find(x=>x.hours===r.hours&&x.amount===r.amount);if(same)same.sources.push({sheet:r.sheet,row:r.row});else rs.push({...r,sources:[{sheet:r.sheet,row:r.row}]})});
+    [...periods].sort(([a],[b])=>a.localeCompare(b)).forEach(([period,rs])=>{const ix=rs.length===1?0:(options.overtime||{})[g.key+'|'+period],r=ix!==undefined&&ix!==''?rs[+ix]:null;
+      if(!r){errors.push('Διάλεξε τη σωστή εγγραφή υπερωρίας για «'+g.name+'», '+period+'.');g.overtime.push({from:rs[0].from,to:rs[0].to,choices:rs});return}
+      g.overtime.push({...r,rate:payRound(r.amount/r.hours),choices:rs});
+    });
+    if(!g.workerId&&!g.changes.length)errors.push('Ο «'+g.name+'» εμφανίζεται μόνο στις υπερωρίες. Αντιστοίχισέ τον με εργαζόμενο που έχει μεροκάματο.');
+  });
+  // Merging by similarity is never automatic; also block accidental duplicate new display names.
+  const names=new Set();groups.forEach(g=>{const k=payrollName(g.name).key;if(names.has(k))errors.push('Το όνομα «'+g.name+'» υπάρχει σε δύο αντιστοιχίσεις. Ένωσέ τες.');names.add(k);
+    if(!g.workerId&&workers.some(w=>payrollName(w.name).key===k))errors.push('Ο «'+g.name+'» υπάρχει ήδη. Διάλεξε τον υπάρχοντα εργαζόμενο.');
+  });
+  return {groups:[...groups.values()],errors:[...new Set(errors)],sheets:[...sheetMap.values()],skipped:scan.skipped};
+}
+function applyPayroll(state,plan){
+  if(plan.errors.length)throw new Error(plan.errors[0]);if(!plan.groups.length)throw new Error('Δεν έχουν επιλεγεί εργαζόμενοι.');
+  // Validate all targets before changing any state, including when a preview became stale.
+  plan.groups.forEach(g=>{if(g.workerId&&!state.workers.some(w=>w.id===g.workerId&&w.role!=='ext'))throw new Error('Άλλαξε το προσωπικό. Άνοιξε ξανά την προεπισκόπηση.');
+    if(!g.workerId&&state.workers.some(w=>payrollName(w.name).key===payrollName(g.name).key||(w.payrollAliases||[]).some(a=>g.aliases.includes(a))))throw new Error('Ο εργαζόμενος υπάρχει ήδη. Άνοιξε ξανά την προεπισκόπηση.');
+    if(g.changes.some(r=>!validPayDate(r.from)||!Number.isFinite(r.wage)||r.wage<0))throw new Error('Μη έγκυρη αλλαγή μεροκάματου.');
+    if(g.overtime.some(r=>!validPayDate(r.from)||!validPayDate(r.to)||r.to<r.from||!(r.hours>0)||!Number.isFinite(r.amount)||r.amount<0))throw new Error('Μη έγκυρη υπερωρία.');
+  });
+  if(!state.specialties.some(s=>s.id==='gen'))state.specialties.push({...GEN});let added=0,updated=0,overtime=0;
+  plan.groups.forEach(g=>{let w=state.workers.find(w=>w.id===g.workerId);if(!w){w={id:uid('w'),name:g.name.trim(),specialtyId:'gen',specialtyIds:['gen'],role:'voith',wage:0,wageBase:0,phone:'',off:[],rates:{}};state.workers.push(w);added++}else updated++;
+    if(w.wageBase==null)w.wageBase=+w.wage||0;
+    const merge=(old,rows,key)=>{const m=new Map((old||[]).map(r=>[key(r),r]));rows.forEach(r=>m.set(key(r),r));return [...m.values()].sort((a,b)=>a.from.localeCompare(b.from))};
+    w.wageHistory=merge(w.wageHistory,(g.effectiveWages||g.changes).map(r=>({from:r.from,wage:r.wage,source:'payroll'})),r=>r.from);w.wage=wageAt(w,TODAY);
+    w.payrollAliases=[...new Set([...(w.payrollAliases||[]),...g.aliases])];
+    const oldOT=new Map((w.overtimeImports||[]).map(r=>[r.from+'|'+r.to,r]));g.overtime.forEach(r=>{const k=r.from+'|'+r.to,old=oldOT.get(k);if(!old||old.hours!==r.hours||old.amount!==r.amount)overtime++});
+    w.overtimeImports=merge(w.overtimeImports,g.overtime.map(r=>({from:r.from,to:r.to,hours:r.hours,amount:r.amount,rate:r.rate,source:'payroll',sheets:[...new Set(r.sources.map(s=>plan.sheets.find(x=>x.id===s.sheet)?.name||''))],estimated:!!r.estimated})),r=>r.from+'|'+r.to);
+    // The total may reflect several days; this is the source's observed hourly rate, retained with its period.
+    w.overtimeRateHistory=merge(w.overtimeRateHistory,g.overtime.map(r=>({from:r.from,to:r.to,rate:r.rate,source:'payroll'})),r=>r.from);
+  });return {added,updated,overtime};
+}
+
 root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,outRange,onStaff,provAmt,provOf,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,DROPPED,celebs,nameDayOn,birthOn,NAMEDAYS,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,rekeyPay,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
   byId,P,W,T,SP,PSEUDO,pname,isWork,nextWork,isOffice,isPM,pmProjects,managersOf,ov,isOff,rate,dutyOn,dutiesFor,schedule,whatDoes,taskIdsOf,hasJob,isExt,dayCost,extDemo,weekDays,dayBlock,dayKey,personText,personDayText,personWeek};
-Object.assign(root.ErgoCore,{repricePast,workerSpecs,taskSpecs,canTask,manualOn,teamOf,saveTeam,setPlacement,placeTeam});
+Object.assign(root.ErgoCore,{PAYROLL_PROVINCES,payrollName,payrollPeriod,payrollScan,payrollTargets,payrollPlan,applyPayroll,wageAt,overtimeRateAt,setWage,validPayDate,repricePast,workerSpecs,taskSpecs,canTask,manualOn,teamOf,saveTeam,setPlacement,placeTeam});
 })(typeof window!=='undefined'?window:globalThis);
+
 
 </script>
 <script>
@@ -4497,6 +4638,72 @@ function projForm(p,pre){
   <div class="acts">${isNew?'':`<button class="btn danger" data-act="delproj" data-id="${p.id}">Διαγραφή</button>`}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="saveproj">Αποθήκευση</button></div>`);
 }
 
+/* Bulk payroll import. Workbook contents stay in the browser until confirmation. */
+const {wageAt,overtimeRateAt,setWage,payrollScan,payrollTargets,payrollPlan,applyPayroll,validPayDate}=ErgoCore;
+const payrollButton=setup=>`<label class="btn payroll-pick">Εισαγωγή προσωπικού από Excel<input type="file" data-payroll-file="${setup?'guide':'workers'}" accept=".xlsx" aria-label="Εισαγωγή προσωπικού από Excel"></label>`;
+const payrollWorkers=()=>UI.payroll?.setup&&UI.g?.mode==='fresh'?[]:S.workers;
+async function payrollPick(file,setup=false){
+  if(!isAdmin()){toast('Η εισαγωγή προσωπικού γίνεται από τον διαχειριστή.');return}
+  if(!/\.xlsx$/i.test(file.name)){toast('Διάλεξε αρχείο Excel .xlsx.');return}
+  if(setup)guideRead();
+  try {toast('Διαβάζω τα φύλλα του Excel…');const books=await readXlsx(await file.arrayBuffer()),year=+(file.name.match(/\b(20\d{2})\b/)||[])[1]||+TODAY.slice(0,4);
+    const scan=payrollScan(books,{year});if(!scan.aliases.length)throw new Error('Δεν βρέθηκαν εργαζόμενοι στις στήλες A–B ή G–H–I.');
+    UI.payroll={setup,file:file.name,books,scan,year,options:{premium:20,mapping:{},adjust:{},names:{},wages:{},overtime:{},sheets:{}}};payrollForm();
+  }catch(e){toast(e.message&&e.message!=='zip'?e.message:'Το αρχείο δεν διαβάστηκε. Αποθήκευσέ το ως .xlsx και δοκίμασε ξανά.')}
+}
+function payrollDirty(){const x=UI.payroll;if(!x)return;x.dirty=true;
+  const b=document.querySelector('[data-act=payroll-apply]');if(b)b.disabled=true;const c=document.getElementById('pay_confirm');if(c){c.checked=false;c.disabled=true}const m=document.getElementById('pay_dirty');if(m)m.hidden=false;
+}
+function payrollRead(changed){const x=UI.payroll,m=document.querySelector('.modal.payroll');if(!x||!m)return;
+  m.querySelectorAll('[data-pay-map]').forEach(e=>x.options.mapping[e.dataset.payMap]=e.value);
+  m.querySelectorAll('[data-pay-adjust]').forEach(e=>x.options.adjust[e.dataset.payAdjust]=e.checked);
+  for(const [attr,key] of [['payName','names'],['payWage','wages'],['payOt','overtime']])m.querySelectorAll('[data-'+attr.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+']').forEach(e=>{if(key==='overtime'||e===changed||e.dataset.payEdited)x.options[key][e.dataset[attr]]=e.value});
+  m.querySelectorAll('[data-pay-sheet]').forEach(e=>{const id=e.dataset.paySheet;x.options.sheets[id]=x.options.sheets[id]||{};x.options.sheets[id][e.dataset.k]=e.value});
+}
+function payrollForm(){const x=UI.payroll;if(!x)return;const previous=document.querySelector('.modal.payroll'),scroll=previous?.scrollTop||0,opened=new Map(previous?[...previous.querySelectorAll('[data-pay-detail]')].map(e=>[e.dataset.payDetail,e.open]):[]);const workers=payrollWorkers(),plan=payrollPlan(x.scan,workers,x.options);x.plan=plan;x.dirty=false;
+  const defaults=payrollTargets(x.scan,workers),targets=new Map();x.scan.aliases.forEach(a=>{const t=defaults[a.id];if(t)targets.set(t,t.startsWith('w:')?'Υπάρχων: '+workers.find(w=>w.id===t.slice(2)).name:'Νέος: '+a.name)});
+  workers.filter(w=>!isExt(w)).forEach(w=>targets.set('w:'+w.id,'Υπάρχων: '+w.name));
+  const options=[['','Διάλεξε εργαζόμενο'],['skip','Να μην εισαχθεί'],...targets];
+  const aliases=x.scan.aliases.map(a=>{const target=Object.hasOwn(x.options.mapping,a.id)?x.options.mapping[a.id]:defaults[a.id],adjust=Object.hasOwn(x.options.adjust,a.id)?x.options.adjust[a.id]:a.province;
+    return `<div class="pay-alias"><div><b>${h(a.raw)}</b><small>${a.wages.length} μεροκάματα · ${a.overtime.length} υπερωρίες${a.place?' · '+h(a.place):''}</small></div><label>Προσθήκη / αντιστοίχιση<select data-pay-map="${h(a.id)}">${options.map(([k,n])=>`<option value="${h(k)}"${k===target?' selected':''}>${h(n)}</option>`).join('')}</select></label>${a.wages.length?`<label class="ck"><input type="checkbox" data-pay-adjust="${h(a.id)}"${adjust?' checked':''}> Αφαίρεση επαρχίας (${eur(x.options.premium)})</label>`:''}</div>`}).join('');
+  const groups=plan.groups.map(g=>`<details class="pay-person" data-pay-detail="${h(g.key)}"${g.changes.some(r=>r.wage==null)||!g.changes.length&&!g.workerId?' open':''}><summary>${h(g.name)} <span class="note">· ${g.workerId?'υπάρχων':'νέος'} · ${g.changes.length} τιμές · ${g.overtime.length} υπερωρίες</span></summary>
+    <label>Όνομα στην εφαρμογή<input data-pay-name="${h(g.key)}" value="${h(g.name)}"${g.workerId?' disabled':''}></label>
+    ${g.workerId?`<p class="note">Σημερινό βασικό μεροκάματο: ${eur(wageAt(workers.find(w=>w.id===g.workerId)))}. Οι ειδικότητες και η ομάδα του διατηρούνται.</p>`:'<p class="note">Η ειδικότητα και η ομάδα ορίζονται μετά την εισαγωγή.</p>'}
+    <h3>Βασικό μεροκάματο — από την πρώτη μέρα της εβδομάδας</h3>
+    ${g.changes.map(r=>`<label class="pay-change"><span>Από ${fmtSX(r.from)}${r.values.length>1?`<small class="pay-attention">Διαφορά στην ίδια εβδομάδα: ${r.values.map(eur).join(' / ')}</small>`:''}</span><input type="number" min="0" step="0.01" data-pay-wage="${h(g.key+'|'+r.from)}" value="${r.wage??''}" aria-label="Βασικό μεροκάματο από ${h(r.from)}" placeholder="Διάλεξε ποσό"></label>`).join('')||'<p class="pay-attention">Δεν υπάρχει μεροκάματο A–B. Διάλεξε αντιστοίχιση με άλλον εργαζόμενο.</p>'}
+    <h3>Υπερωρίες από G–H–I</h3>${g.overtime.map(r=>`<div class="pay-ot"><span>${fmtSX(r.from)} – ${fmtSX(r.to)}</span>${r.choices.length>1?`<label>Διαφορετικές εγγραφές για την ίδια περίοδο<select data-pay-ot="${h(g.key+'|'+r.from+'|'+r.to)}"><option value="">Διάλεξε μία εγγραφή</option>${r.choices.map((q,i)=>`<option value="${i}"${r.hours===q.hours&&r.amount===q.amount?' selected':''}>${nf(q.hours)} ώρες · ${money(q.amount)}</option>`).join('')}</select></label>`:`<b>${nf(r.hours)} ώρες · ${money(r.amount)}</b>`}</div>`).join('')||'<p class="note">Δεν υπάρχουν εγγραφές.</p>'}
+    <details><summary>Γραμμές προέλευσης μεροκάματου</summary>${g.wageRows.map(r=>`<p class="note">${h(plan.sheets.find(s=>s.id===r.sheet).name)} · A${r.row}/B${r.row} · ${h(r.raw)} → ${eur(r.wage)} βασικό${r.province?' (αφαιρέθηκε επαρχία)':''}</p>`).join('')}</details>
+  </details>`).join('');
+  x.rendering=true;openModal(`<h2>Εισαγωγή προσωπικού</h2><p class="note">${h(x.file)} · ${x.scan.sheets.length} φύλλα. Διαβάζονται A–B για τα μεροκάματα και G–H–I για τις υπερωρίες.</p>
+    <div class="pay-summary"><b>${plan.groups.filter(g=>!g.workerId).length} νέα άτομα</b><span>${plan.groups.filter(g=>g.workerId).length} υπάρχοντα</span><span>${plan.groups.reduce((n,g)=>n+g.overtime.length,0)} εγγραφές υπερωριών</span></div>
+    <p class="note">Οι αυξήσεις και μειώσεις ισχύουν από την πρώτη ημέρα της εβδομάδας. Τα ονόματα επαρχίας ενώνονται με το ίδιο άτομο και αφαιρείται η προσαύξηση· στα έργα επαρχίας η εφαρμογή την προσθέτει μία φορά.</p>
+    <p class="note">Οι παλιές υπερωρίες αποθηκεύονται με περίοδο, ώρες, ποσό και τιμή ώρας. Η εξόφλησή τους μένει αδιευκρίνιστη και δεν προστίθενται στα σημερινά υπόλοιπα πληρωμών.</p>
+    <div class="form"><label>Έτος φύλλων<input id="pay_year" type="number" min="2000" max="2100" value="${x.year}"></label><label>Προσαύξηση επαρχίας στο αρχείο (€)<input id="pay_premium" type="number" min="0" step="0.01" value="${x.options.premium}"></label></div>
+    <details class="pay-section" data-pay-detail="aliases"><summary>1. Αντιστοίχιση ονομάτων · ${x.scan.aliases.length} γραφές</summary><p class="note">Ενοποίησε εδώ διαφορετική γραφή ή ορθογραφία του ίδιου ατόμου. Αριθμοί και περιγραφές στα ονόματα διατηρούνται. Έλεγξε ιδιαίτερα μη σημειωμένες αλλαγές τόπου εργασίας.</p>${aliases}</details>
+    <details class="pay-section" data-pay-detail="sheets"><summary>2. Ημερομηνίες και περίοδοι φύλλων</summary><p class="note">Όπου λείπει η περίοδος υπερωρίας προτείνεται η εβδομάδα του φύλλου. Μπορείς να τη διορθώσεις.</p>${plan.sheets.map(s=>`<div class="pay-sheet"><b>${h(s.name)}</b><div class="form"><label>Μεροκάματο από<input type="date" data-pay-sheet="${s.id}" data-k="from" value="${s.from}"></label><label>Υπερωρίες από<input type="date" data-pay-sheet="${s.id}" data-k="otFrom" value="${s.otFrom}"></label><label>Υπερωρίες έως<input type="date" data-pay-sheet="${s.id}" data-k="otTo" value="${s.otTo}"></label></div>${s.estimated?'<small class="pay-attention">Η περίοδος υπερωριών δεν αναφέρεται στο φύλλο.</small>':''}</div>`).join('')}</details>
+    <h3>3. Προεπισκόπηση ανά εργαζόμενο</h3>${groups}
+    ${plan.skipped.length?`<details><summary>Φύλλα που δεν διαβάστηκαν · ${plan.skipped.length}</summary>${plan.skipped.map(s=>`<p>${h(s.name)}: ${h(s.reason)}</p>`).join('')}</details>`:''}
+    ${plan.errors.length?`<div class="pay-errors" role="alert"><b>Χρειάζονται ${plan.errors.length} διορθώσεις</b><ul>${plan.errors.map(e=>`<li>${h(e)}</li>`).join('')}</ul></div>`:''}
+    <p id="pay_dirty" class="pay-attention" hidden>Πάτησε «Ενημέρωση προεπισκόπησης» για να ελέγξεις τις αλλαγές πριν από την εισαγωγή.</p>
+    <label class="ck pay-confirm"><input id="pay_confirm" type="checkbox"> Έλεγξα τις αντιστοιχίσεις, τα βασικά μεροκάματα και τις περιόδους υπερωριών.</label>
+    <div class="acts"><button class="btn" data-act="payroll-cancel">Άκυρο</button><span class="grow"></span><button class="btn" data-act="payroll-refresh">Ενημέρωση προεπισκόπησης</button><button class="btn pri" data-act="payroll-apply"${plan.errors.length||!plan.groups.length?' disabled':''}>${x.setup?'Προσθήκη στον οδηγό':'Εισαγωγή προσωπικού'}</button></div>`,'payroll');x.rendering=false;
+  const m=document.querySelector('.modal.payroll');if(m){m.querySelectorAll('[data-pay-detail]').forEach(e=>{if(opened.has(e.dataset.payDetail))e.open=opened.get(e.dataset.payDetail)});m.scrollTop=scroll}
+}
+function payrollApply(){const x=UI.payroll;if(x?.dirty){payrollRead();payrollForm();toast('Η προεπισκόπηση ενημερώθηκε. Έλεγξε τις αλλαγές.');return}if(!x||!document.getElementById('pay_confirm')?.checked){toast('Έλεγξε την προεπισκόπηση και τσέκαρε την επιβεβαίωση.');return}
+  payrollRead();const plan=payrollPlan(x.scan,payrollWorkers(),x.options);if(plan.errors.length){payrollForm();return}
+  try {if(x.setup){const g=UI.g;g.payroll=plan;g.people=g.people.filter(r=>!r.payrollKey);
+      plan.groups.filter(r=>!r.workerId).forEach(r=>g.people.push({...gPerson(),name:r.name,spec:GEN.name,wage:String(wageAt({wageBase:0,wageHistory:r.changes})),payrollKey:r.key}));
+      g.people=g.people.filter(r=>r.name||r.phone);if(!g.people.length)g.people=[gPerson()];UI.payroll=null;closeModal();guideRender();toast('Το προσωπικό και το ιστορικό θα αποθηκευτούν με την ολοκλήρωση του οδηγού.');return}
+    const result=applyPayroll(S,plan);plan.groups.filter(g=>g.workerId).forEach(g=>ErgoCore.repricePast(g.workerId));UI.hmsg='Εισαγωγή μισθοδοσίας από Excel';UI.payroll=null;
+    commit('Προστέθηκαν '+result.added+' άτομα, ενημερώθηκαν '+result.updated+' και πέρασαν '+result.overtime+' εγγραφές υπερωριών.');
+  }catch(e){toast(e.message)}
+}
+function payrollArchive(wid){const workers=wid?S.workers.filter(w=>w.id===wid):S.workers;
+  const rows=workers.flatMap(w=>(w.overtimeImports||[]).map(r=>({w,...r}))).sort((a,b)=>b.from.localeCompare(a.from)||a.w.name.localeCompare(b.w.name));
+  openModal(`<h2>Ιστορικό υπερωριών Excel</h2><p class="note">${rows.length} εγγραφές · ${nf(rows.reduce((n,r)=>n+r.hours,0))} ώρες · ${money(rows.reduce((n,r)=>n+r.amount,0))}. Η κατάσταση εξόφλησης δεν έχει εισαχθεί. Τα ποσά δεν μετρούν στα τρέχοντα υπόλοιπα.</p>
+    <div class="pay-archive">${rows.map(r=>`<article class="pay-ot"><div><b>${h(r.w.name)}</b><small>${fmtSX(r.from)} – ${fmtSX(r.to)}</small><small>${h((r.sheets||[]).join(' · '))}${r.estimated?' · περίοδος από την εβδομάδα φύλλου':''}</small></div><div><b>${nf(r.hours)} ώρες · ${money(r.amount)}</b><small>${money(r.rate)} / ώρα</small></div></article>`).join('')||'<p>Δεν υπάρχουν εισαγμένες υπερωρίες.</p>'}</div><div class="acts"><span class="grow"></span><button class="btn pri" data-act="close">Κλείσιμο</button></div>`,'payroll');
+}
+
 /* Προσωπικό */
 function vWorkers(R){
   const ws_=viewStart(TODAY),we_=add(ws_,6);
@@ -4505,23 +4712,26 @@ function vWorkers(R){
   const left=w=>w.to&&w.to<TODAY,gone=S.workers.filter(w=>!isExt(w)&&left(w));
   const span=w=>w.from||w.to?`<div class="note">${w.from?'Από '+fmtSX(w.from):''}${w.from&&w.to?' · ':''}${w.to?(left(w)?'Αποχώρησε ':'Έως ')+fmtSX(w.to):''}</div>`:'';
   const rows=S.specialties.map(sp=>{const ws=S.workers.filter(w=>w.specialtyId===sp.id&&!isExt(w)&&!left(w));if(!ws.length&&S.workers.some(w=>w.specialtyId===sp.id))return '';
-    return `<tr class="grp"><td colspan="6">${h(sp.name)} <span class="note">· ${ws.length}${sp.office?' · γραφείο':''}</span></td></tr>`+(ws.length?ws.map(w=>`<tr><td><b>${h(w.name)}</b>${langTag(w)}${rateOn()&&!sp.office?stars(w):''}${span(w)}${availNote(w)}${isPM(w)?`<div class="note">${S.projects.filter(p=>(p.managers||[]).includes(w.id)).map(p=>h(p.name)).join(', ')||'Χωρίς έργο'}</div>`:''}</td><td>${roleTag(w.role)}</td><td class="n mono">${eur(w.wage)}${rateInfo(w)}</td><td class="mono">${h(w.phone||'')}</td><td class="n mono">${nf(mdw[w.id]||0)}</td>
+    return `<tr class="grp"><td colspan="6">${h(sp.name)} <span class="note">· ${ws.length}${sp.office?' · γραφείο':''}</span></td></tr>`+(ws.length?ws.map(w=>`<tr><td><b>${h(w.name)}</b>${langTag(w)}${rateOn()&&!sp.office?stars(w):''}${span(w)}${availNote(w)}${isPM(w)?`<div class="note">${S.projects.filter(p=>(p.managers||[]).includes(w.id)).map(p=>h(p.name)).join(', ')||'Χωρίς έργο'}</div>`:''}</td><td>${roleTag(w.role)}</td><td class="n mono">${eur(wageAt(w))}${rateInfo(w)}</td><td class="mono">${h(w.phone||'')}</td><td class="n mono">${nf(mdw[w.id]||0)}</td>
       <td style="white-space:nowrap"><button class="btn sm" data-act="editworker" data-id="${w.id}">Επεξεργασία</button>${isPM(w)&&hasF('pm')?` <button class="btn sm" data-act="pmw" data-id="${w.id}">Έργα</button>`:isOffice(w)?'':` <button class="btn sm" data-act="rates" data-id="${w.id}">Μεροκάματο ανά έργο</button>`}</td></tr>`).join(''):'<tr><td colspan="6" class="note">Κανένας εργαζόμενος.</td></tr>')}).join('');
-  return `<div class="bar"><h1 class="grow">Προσωπικό</h1><button class="btn" data-act="newspec">${ico('plus')}Ειδικότητα</button><button class="btn pri" data-act="newworker">${ico('plus')}Νέος εργαζόμενος</button></div>
+  return `<div class="bar"><h1 class="grow">Προσωπικό</h1>${isAdmin()?payrollButton(false):''}<button class="btn" data-act="newspec">${ico('plus')}Ειδικότητα</button><button class="btn pri" data-act="newworker">${ico('plus')}Νέος εργαζόμενος</button></div>
   ${peopleNote()}
   <section class="panel scroll"><table><thead><tr><th>Όνομα</th><th>Ρόλος</th><th class="n">Μεροκάματο</th><th>Τηλέφωνο</th><th class="n">Μεροκ. εβδ.</th><th></th></tr></thead><tbody>${rows}</tbody></table></section>
   ${gone.length?`<details class="auxiliary"><summary>Αποχώρησαν · ${gone.length}</summary><div class="crew-list">${gone.map(w=>`<button class="crew-row" data-act="editworker" data-id="${w.id}"><span><b>${h(w.name)}</b><small>${h(SP(w.specialtyId)?.name||'')}${w.from?' · από '+fmtSX(w.from):''} · έως ${fmtSX(w.to)}</small></span>${ico('edit')}</button>`).join('')}</div></details>`:''}
   <p class="note">Οι εξωτερικοί συνεργάτες είναι στη σελίδα «Συνεργάτες». Αρχιεργάτες και τεχνίτες μπορούν να είναι υπεύθυνοι εργασίας. Οι ειδικότητες γραφείου δεν μπαίνουν σε συνεργεία έργων, έχουν δικά τους καθήκοντα κάθε μέρα.</p>`;
 }
 function workerForm(w){
-  const isNew=!w;w=w||{id:uid('w'),name:'',specialtyId:siteSpecs()[0]?.id,role:'voith',wage:defWage('voith'),phone:'',off:[],rates:{}};
+  const isNew=!w;const wageChanges=(w?.wageHistory||[]).slice().sort((a,b)=>a.from.localeCompare(b.from)).filter((r,i,rs)=>!i||r.wage!==rs[i-1].wage);w=w||{id:uid('w'),name:'',specialtyId:siteSpecs()[0]?.id,role:'voith',wage:defWage('voith'),phone:'',off:[],rates:{}};
   openModal(`<h2>${isNew?'Νέος εργαζόμενος':'Επεξεργασία εργαζομένου'}</h2><form class="form" id="wf" data-id="${w.id}" data-new="${isNew?1:0}">
   <label class="full">Ονοματεπώνυμο<input id="h_name" value="${h(w.name)}"></label>
   <label>Κύρια ειδικότητα${sel('h_spec',specOpts(true),w.specialtyId)}</label>
   <label>Ρόλος${sel('h_role',Object.entries(ROLES).filter(([k])=>k!=='ext'),w.role)}</label>
   <label class="full" id="h_team_label"${isOffice(w)?' hidden':''}>Σταθερή ομάδα${sel('h_team',[['','Χωρίς ομάδα'],...(S.teams||[]).map(g=>[g.id,g.name])],teamOf(w.id)?.id||'')}<span class="note">Τις ομάδες τις φτιάχνεις από Άτομα → Ομάδες.</span></label>
   ${workerSkillFields(w)}
-  <label>Βασικό μεροκάματο (€)<input id="h_wage" type="number" min="0" step="5" value="${+w.wage||0}"></label>
+  <label>Βασικό μεροκάματο (€)<input id="h_wage" type="number" min="0" step="0.01" value="${wageAt(w)}"></label>
+  ${!isNew?`<label>Η αλλαγή μεροκάματου ισχύει από<input id="h_wage_from" type="date" value="${TODAY}"></label>`:''}
+  ${wageChanges.length?`<details class="full"><summary>Ιστορικό βασικού μεροκάματου · ${wageChanges.length} αλλαγές</summary>${wageChanges.map(r=>`<p class="note">Από ${fmtSX(r.from)} · ${eur(r.wage)}</p>`).join('')}</details>`:''}
+  ${(w.overtimeImports||[]).length?`<div class="full"><button type="button" class="btn" data-act="payroll-archive" data-id="${w.id}">Ιστορικό υπερωριών Excel · ${w.overtimeImports.length}</button></div>`:''}
   <label>Κινητό<input id="h_phone" type="tel" value="${h(w.phone)}"></label>
   <label>Ξεκίνησε<input id="h_from" type="date" value="${h(w.from||'')}"></label>
   <label>Σταμάτησε<input id="h_to" type="date" value="${h(w.to||'')}"><span class="note">Κενό όσο δουλεύει. Από την επόμενη μέρα δεν μπαίνει στο πρόγραμμα ούτε πληρώνεται.</span></label>
@@ -5186,7 +5396,7 @@ function vPartners(R){
   <p class="note">Οι συνεργάτες δεν είναι στη μισθοδοσία. Τους ορίζεις υπεύθυνους σε μια εργασία και μπαίνουν στο πρόγραμμα μόνο τις μέρες που δουλεύουν για εσένα. Όσοι πληρώνονται κατ' αποκοπή παίρνουν την τιμή της εργασίας, μοιρασμένη στις μέρες της για το κόστος του έργου. Οι πληρωμές τους γίνονται από τα Μεροκάματα.</p>`;
 }
 function partnerForm(w){
-  const isNew=!w;w=w||{id:uid('w'),name:'',company:'',afm:'',specialtyId:siteSpecs()[0]?.id,role:'ext',pay:'job',wage:0,phone:'',off:[],rates:{}};
+  const isNew=!w;const wageChanges=(w?.wageHistory||[]).slice().sort((a,b)=>a.from.localeCompare(b.from)).filter((r,i,rs)=>!i||r.wage!==rs[i-1].wage);w=w||{id:uid('w'),name:'',company:'',afm:'',specialtyId:siteSpecs()[0]?.id,role:'ext',pay:'job',wage:0,phone:'',off:[],rates:{}};
   openModal(`<h2>${isNew?'Νέος συνεργάτης':'Επεξεργασία συνεργάτη'}</h2><form class="form" id="xf" data-id="${w.id}" data-new="${isNew?1:0}">
   <label class="full">Επωνυμία<input id="x_company" value="${h(w.company)}" placeholder="π.χ. Αλουμίνια Παπαγεωργίου"></label>
   <label>Ειδικότητα${sel('x_spec',specOpts(),w.specialtyId)}</label>
@@ -5241,7 +5451,7 @@ const weekAmt=(rec,live)=>rec&&rec.lock?+rec.earned||0:live;
 // μπόνους δύσκολης εργασίας: μόνο πρόταση, μπαίνει στο ποσό όταν το δεχτεί το γραφείο (rec.bonus)
 const recBonus=rec=>r2(rec&&rec.bonus||0);
 // υπερωρίες της εβδομάδας: ώρες × (μεροκάματο / 8). Η τιμή ώρας κρατιέται όπως ήταν όταν γράφτηκαν (rec.ot={h,rate})
-const otRate=w=>(+w.wage||0)/8;
+const otRate=(w,d=TODAY)=>overtimeRateAt(w,d);
 const recOt=rec=>rec&&rec.ot&&rec.ot.h?r2(rec.ot.h*rec.ot.rate):0;
 const recEmpty=rec=>!rec.pays.length&&!rec.lock&&rec.bonus==null&&!rec.bonusOff&&!(rec.ot&&rec.ot.h);
 function bonusSug(R,ws,wid){const pct=+rateCfg().bonus||0;if(!rateOn()||!pct)return null;const we=add(ws,6);
@@ -5261,7 +5471,7 @@ function payData(R,ws){
   const E=earnedAll(R)[ws]||{},C=carryIn(R,ws);
   return S.workers.filter(w=>!(isExt(w)&&w.pay==='job')).map(w=>{
     const e=E[w.id]||{amount:0,days:0,parts:{}},rec=S.payments[ws+'|'+w.id],live=r2(e.amount);
-    const wages=r2(weekAmt(rec,live)),bonus=recBonus(rec),ot=recOt(rec),otH=rec&&rec.ot?+rec.ot.h||0:0,otR=rec&&rec.ot&&rec.ot.h?rec.ot.rate:otRate(w),amount=r2(wages+bonus+ot),days=rec&&rec.lock?+rec.days||0:e.days,carry=C[w.id]||0,paid=r2(paySum(rec)),due=r2(amount+carry);
+    const wages=r2(weekAmt(rec,live)),bonus=recBonus(rec),ot=recOt(rec),otH=rec&&rec.ot?+rec.ot.h||0:0,otR=rec&&rec.ot&&rec.ot.h?rec.ot.rate:otRate(w,add(ws,6)),amount=r2(wages+bonus+ot),days=rec&&rec.lock?+rec.days||0:e.days,carry=C[w.id]||0,paid=r2(paySum(rec)),due=r2(amount+carry);
     const sug=rec&&(rec.bonus!=null||rec.bonusOff)?null:bonusSug(R,ws,w.id);
     return {w,days,wages,bonus,ot,otH,otR,sug,amount,live,parts:Object.values(e.parts),carry,paid,pays:rec?rec.pays:[],due,rest:r2(due-paid),lock:!!(rec&&rec.lock)};
   }).filter(r=>r.days||Math.abs(r.carry)>=0.5||r.pays.length||r.bonus||r.ot);
@@ -5317,7 +5527,7 @@ function payForm(wid){
   <div class="acts">${VIBER?`<button class="btn" data-act="payviber" data-id="${wid}">${ico('send')}Στείλε του την κατάσταση</button>`:''}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savepay">Καταχώριση πληρωμής</button></div>`);
 }
 function otForm(wid){const R=schedule(),ws=UI.payWeek,r=payData(R,ws).find(x=>x.w.id===wid);if(!r)return;
-  openModal(`<h2>Υπερωρίες: ${h(r.w.name)}</h2><p class="note">Εβδομάδα ${fmtS(ws)} – ${fmtS(add(ws,6))}. Η ώρα πληρώνεται όσο το μεροκάματο δια 8: ${money(r.w.wage)} / 8 = <b>${money(r.otR)}</b>.</p>
+  openModal(`<h2>Υπερωρίες: ${h(r.w.name)}</h2><p class="note">Εβδομάδα ${fmtS(ws)} – ${fmtS(add(ws,6))}. Προτεινόμενη τιμή ώρας: <b>${money(r.otR)}</b>, από το μεροκάματο της περιόδου / 8 ή από εισαγμένη υπερωρία της ίδιας περιόδου. Μπορείς να την αλλάξεις.</p>
   <form class="form" id="otf" data-id="${wid}" data-rate="${r.otR}"><label>Ώρες υπερωρίας την εβδομάδα<input id="ot_h" type="number" min="0" step="0.5" inputmode="decimal" value="${r.otH||''}"></label>
   <p class="payafter" id="ot_after">${r.otH?`${nf(r.otH)} × ${money(r.otR)} = <b>${money(r.ot)}</b>`:'Γράψε πόσες ώρες.'}</p></form>
   <div class="acts">${r.otH?'<button class="btn" data-act="otdel">Χωρίς υπερωρίες</button>':''}<span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="otsave">Αποθήκευση</button></div>`)}
@@ -5358,7 +5568,7 @@ function vPay(R){
     +(Math.abs(r.carry)>=0.5?(r.carry>0?' + '+money(r.carry)+' από πριν':' − '+money(-r.carry)+' προκαταβολή'):'')
     +(r.paid?', πληρώθηκαν '+money(r.paid):'')+(Math.abs(r.rest)<0.5?', εξοφλήθηκε':r.rest>0?', μένουν '+money(r.rest):', προκαταβολή '+money(-r.rest))).join('\n')
     +'\n\nΣύνολο: '+money(total)+(otT?' (υπερωρίες '+money(otT)+')':'')+(carry?'\nΑπό πριν: '+money(carry):'')+'\nΠληρώθηκαν: '+money(paid)+'\nΜένουν: '+money(left);
-  return `<div class="pagehead"><div><h1>Πληρωμές</h1><p class="note">${past?'Ημέρα πληρωμής:':pday===TODAY?'Σήμερα πληρώνεις:':'Επόμενη πληρωμή:'} ${fmt(pday)}</p></div><div class="bgrp"><button class="btn" data-act="pweek" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="pweek" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="pweek" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div></div>
+  return `<div class="pagehead"><div><h1>Πληρωμές</h1>${S.workers.some(w=>(w.overtimeImports||[]).length)?'<button class="btn sm" data-act="payroll-archive">Ιστορικό υπερωριών Excel</button>':''}<p class="note">${past?'Ημέρα πληρωμής:':pday===TODAY?'Σήμερα πληρώνεις:':'Επόμενη πληρωμή:'} ${fmt(pday)}</p></div><div class="bgrp"><button class="btn" data-act="pweek" data-dir="-1" aria-label="Προηγούμενη εβδομάδα">${ico('cl')}</button><button class="btn" data-act="pweek" data-dir="0">${fmtS(ws)} – ${fmtS(add(ws,6))}</button><button class="btn" data-act="pweek" data-dir="1" aria-label="Επόμενη εβδομάδα">${ico('cr')}</button></div></div>
   <textarea id="paytext" rows="8" hidden readonly>${h(txt)}</textarea>
   <div class="kpis">
     <div class="kpi"><span class="lbl">Σύνολο εβδομάδας</span><span class="v">${money(total)}</span><span class="s">${nf(rows.reduce((s,r)=>s+r.days,0))} μεροκάματα${otT?' και '+money(otT)+' υπερωρίες':''}</span></div>
@@ -5566,7 +5776,7 @@ function impApply(){const I=UI.imp,X=impPlan(),M=I.map,f=document.getElementById
   const upW=document.getElementById('imp_wage')?.checked;
   const wid=X.rows.map((r,i)=>{const v=M.w[i];if(v==='skip')return null;
     if(v==='new'){const w={id:uid('w'),name:titleGr(r.name),specialtyId:gsp,specialtyIds:[gsp],spec2:'',role:'texn',wage:r.wage||defWage('texn'),phone:'',off:[],rates:{}};S.workers.push(w);nw.push(w.name);return w.id}
-    if(upW&&r.wage&&W(v))W(v).wage=r.wage;return v});
+    if(upW&&r.wage&&W(v)){setWage(W(v),r.wage,X.cols.map(c=>c.d).sort()[0]||TODAY);ErgoCore.repricePast(v);}return v});
   f.querySelectorAll('[data-impfrom]:checked').forEach(c=>{const w=W(wid[+c.dataset.impfrom]);if(w){w.from=c.dataset.d;if(w.to&&w.to<w.from)w.to=''}});
   f.querySelectorAll('[data-impto]:checked').forEach(c=>{const w=W(wid[+c.dataset.impto]);if(w&&!(w.from&&w.from>c.dataset.d))w.to=c.dataset.d});
   const dates=X.cols.map(c=>c.d).filter(d=>S.settings.workdays.includes(dow(d)));
@@ -5814,7 +6024,7 @@ const gSpecs=g=>g.specs.filter(x=>x.on||(g.mode==='keep'&&x.ex));
 function guideRead(){const g=UI.g,m=document.querySelector('.modal.guide');if(!g||!m)return;const v=id=>(m.querySelector('#'+id)||{}).value||'';
   if(g.step===0){g.co=v('g1_co');g.owner=v('g1_own');g.oph=v('g1_oph');g.wd=[...m.querySelectorAll('[data-gwd]:checked')].map(x=>+x.dataset.gwd);const md=m.querySelector('[name=g1_mode]:checked');if(md)g.mode=md.value}
   if(g.step===1)m.querySelectorAll('[data-gsp]').forEach(x=>{if(!x.disabled)g.specs[+x.dataset.gsp].on=x.checked});
-  if(g.step===2)g.people=[...m.querySelectorAll('[data-gp]')].map(r=>{const o={};r.querySelectorAll('[data-k]').forEach(x=>o[x.dataset.k]=x.value.trim());return o});
+  if(g.step===2)g.people=[...m.querySelectorAll('[data-gp]')].map(r=>{const o={...g.people[+r.dataset.gp]};r.querySelectorAll('[data-k]').forEach(x=>o[x.dataset.k]=x.value.trim());return o});
   if(g.step===3)g.projs=[...m.querySelectorAll('[data-gpr]')].map(r=>{const o={};r.querySelectorAll('[data-k]').forEach(x=>o[x.dataset.k]=x.value.trim());return o});
 }
 function guideStep(){const g=UI.g;
@@ -5851,7 +6061,7 @@ function guideStep(){const g=UI.g;
     return `<h2>Τα άτομα της εταιρείας</h2><p class="note">Όσοι δουλεύουν στα έργα και στο γραφείο. Αν αφήσεις κενό το μεροκάματο, μπαίνει το συνηθισμένο για τον ρόλο. Τους εξωτερικούς συνεργάτες τους βάζεις μετά, από τη σελίδα Συνεργάτες.</p>
     ${nSite>lim?`<p class="warnline">${ico('info')}<span>${nSite} άτομα στα έργα, και το πακέτο ${h(planOf().name)} φτάνει έως ${lim}. Η εφαρμογή δουλεύει κανονικά.</span></p>`:''}
     <div class="gps">${g.people.map(row).join('')}</div>
-    <div class="bar"><button type="button" class="btn" data-act="g-add">${ico('plus')}Άλλο άτομο</button><button type="button" class="btn" data-act="g-paste">Επικόλληση από Excel</button></div>
+    <div class="bar">${payrollButton(true)}<button type="button" class="btn" data-act="g-add">${ico('plus')}Άλλο άτομο</button><button type="button" class="btn" data-act="g-paste">Επικόλληση από Excel</button></div>
     ${g.paste?`<div class="fs gpaste"><span class="fl">Επικόλληση από Excel</span><textarea id="g3_paste" rows="5" placeholder="Γιώργος Παπαδόπουλος	Χτίστης	95	694 120 3381"></textarea>
       <span class="note">Αντέγραψε τις γραμμές από το Excel και επικόλλησέ τες εδώ: όνομα, ειδικότητα, ρόλο, μεροκάματο και κινητό, με όποια σειρά. Νέες ειδικότητες προστίθενται μόνες τους.</span>
       <div class="bar"><button type="button" class="btn pri" data-act="g-parse">Πρόσθεσε στη λίστα</button></div></div>`:''}`}
@@ -5885,7 +6095,7 @@ function guideRender(){const g=UI.g,last=g.step===G_STEPS.length-1,done=g.step>=
   const m=document.querySelector('.modal.guide');
   if(m){m.innerHTML=html;m.scrollTop=0;const f=m.querySelector('input:not([type=radio]):not([type=checkbox]),select');if(f&&g.step!==1)f.focus({preventScroll:true})}else openModal(html,'guide');
 }
-function guideFinish(){const g=UI.g,fresh=g.mode==='fresh',o=fresh?blankState(S):S;
+function guideFinish(){const g=UI.g,fresh=g.mode==='fresh',o=fresh?blankState(S):JSON.parse(JSON.stringify(S));
   o.settings.company=Object.assign({},o.settings.company||{},{name:g.co.trim()});
   o.settings.ownerName=g.owner.trim();o.settings.ownerPhone=g.oph.trim();o.settings.workdays=g.wd.slice();
   const sp=o.specialties;let nsp=0;
@@ -5894,18 +6104,19 @@ function guideFinish(){const g=UI.g,fresh=g.mode==='fresh',o=fresh?blankState(S)
     if(!s){s={id:uid('s'),name:n,...(off?{office:true}:{}),...(pm?{pm:true}:{})};const gi=sp.findIndex(x=>x.id==='gen');if(!off&&gi>=0)sp.splice(gi,0,s);else sp.push(s);nsp++}
     return s};
   g.specs.filter(x=>x.on).forEach(x=>mkS(x.n,x.o,x.pm));
-  let nw=0,skip=0;const fw=x=>fold(x).replace(/\s+/g,' ');
+  let nw=0,skip=0;const importedIds={};const fw=x=>fold(x).replace(/\s+/g,' ');
   g.people.filter(r=>r.name).forEach(r=>{
-    if(o.workers.some(w=>fw(w.name)===fw(r.name))){skip++;return}
+    const existing=o.workers.find(w=>fw(w.name)===fw(r.name));if(existing){if(r.payrollKey)importedIds[r.payrollKey]=existing.id;skip++;return}
     const off=!!r.spec&&g.specs.some(x=>x.o&&sameSpec(x.n,r.spec)),s=r.spec&&!sameSpec(r.spec,GEN.name)?mkS(r.spec,off,false):sp.find(x=>x.id==='gen');
     const role=s.office?'ypal':(r.role&&r.role!=='ypal'?r.role:'voith');
-    o.workers.push({id:uid('w'),name:r.name.replace(/\s+/g,' '),specialtyId:s.id,role,wage:r.wage!==''&&r.wage!=null?+r.wage||0:defWage(role),phone:r.phone||'',off:[],rates:{}});nw++});
+    o.workers.push({id:uid('w'),name:r.name.replace(/\s+/g,' '),specialtyId:s.id,role,wage:r.wage!==''&&r.wage!=null?+r.wage||0:defWage(role),phone:r.phone||'',off:[],rates:{},...(r.payrollKey?{wageBase:0}:{})});if(r.payrollKey)importedIds[r.payrollKey]=o.workers.at(-1).id;nw++});
+  if(g.payroll){const plan={...g.payroll,groups:g.payroll.groups.filter(r=>r.workerId||importedIds[r.key]).map(r=>({...r,workerId:r.workerId||importedIds[r.key]}))};try{if(plan.groups.length)applyPayroll(o,plan);g.people.filter(r=>r.payrollKey&&importedIds[r.payrollKey]&&r.wage!=='').forEach(r=>{const w=o.workers.find(w=>w.id===importedIds[r.payrollKey]);if(w&&+r.wage!==wageAt(w))setWage(w,+r.wage,TODAY)})}catch(e){toast(e.message);return}}
   const pms=o.workers.filter(w=>(sp.find(s=>s.id===w.specialtyId)||{}).pm),cols=['p1','p2','p3','p4','p5','p6'];let p1='',np=0;
   g.projs.filter(r=>r.name).forEach(r=>{const p={id:uid('p'),name:r.name,location:r.location||'',budget:0,color:cols[o.projects.length%6],managers:pms.length===1?[pms[0].id]:[],...(r.due?{due:r.due}:{})};
     o.projects.push(p);np++;if(!p1)p1=p.id});
   o.setup={done:TODAY};
   g.res={fresh,sp:nsp,w:nw,p:np,skip,p1};g.step=G_STEPS.length;
-  if(fresh){setS(o);UI.day=null;UI.week=null;UI.proj='';UI.person=''}
+  setS(o);if(g.payroll)g.payroll.groups.filter(r=>r.workerId).forEach(r=>ErgoCore.repricePast(r.workerId));if(fresh){UI.day=null;UI.week=null;UI.proj='';UI.person=''}
   UI.hmsg='Οδηγός πρώτης ρύθμισης'+(fresh?' από την αρχή':'')+`: ${nw} άτομα, ${np} έργα`;
   commit('Ο οδηγός πέρασε '+(nw===1?'1 άτομο':nw+' άτομα')+' και '+(np===1?'1 έργο':np+' έργα')+'.');
   guideRender();
@@ -5973,7 +6184,7 @@ function sendForm(d,week){
   <div class="scroll" style="max-height:50vh;margin-top:10px"><table>${rows}</table></div>
   ${SERVER?'':'<div class="acts"><span class="grow"></span><button class="btn" data-act="close">Κλείσιμο</button></div>'}`);
 }
-function openModal(html,cls){document.getElementById('modal').innerHTML=`<div class="modal-bg" data-act="bg"><div class="modal${cls?' '+cls:''}" role="dialog" aria-modal="true">${html}</div></div>`;const f=document.querySelector('.modal input:not([type=radio]):not([type=checkbox]):not([hidden]),.modal select,.modal input:checked');f&&f.focus()}
+function openModal(html,cls){document.getElementById('modal').innerHTML=`<div class="modal-bg" data-act="bg"><div class="modal${cls?' '+cls:''}" role="dialog" aria-modal="true">${html}</div></div>`;const f=cls==='payroll'?null:document.querySelector('.modal input:not([type=radio]):not([type=checkbox]):not([hidden]),.modal select,.modal input:checked');f&&f.focus()}
 function closeModal(){document.getElementById('modal').innerHTML='';if(UI.wxDirty&&UI.tab!=='settings'){UI.wxDirty=false;render()}}
 
 /* ---------- Ενέργειες ---------- */
@@ -6354,6 +6565,10 @@ document.addEventListener('click',e=>{
     case 'editworker':workerForm(W(id));break;
     case 'rates':ratesForm(W(id));break;
     case 'saverates':{const f=document.getElementById('rf');const w=W(f.dataset.id);w.rates={};f.querySelectorAll('[data-rate]').forEach(i=>{if(i.value!=='')w.rates[i.dataset.rate]=+i.value});ErgoCore.repricePast(w.id);UI.hmsg='Μεροκάματα ανά έργο: '+w.name;commit('Τα μεροκάματα ανά έργο αποθηκεύτηκαν.');break}
+    case 'payroll-cancel':{const setup=UI.payroll?.setup;UI.payroll=null;closeModal();if(setup)guideRender();break}
+    case 'payroll-refresh':payrollRead();payrollForm();break;
+    case 'payroll-apply':payrollApply();break;
+    case 'payroll-archive':payrollArchive(id||'');break;
     case 'saveworker':{const f=document.getElementById('wf');const g=x=>document.getElementById(x).value;
       const v={id:f.dataset.id,name:g('h_name').trim(),specialtyId:g('h_spec'),role:g('h_role'),wage:+g('h_wage')||0,phone:g('h_phone').trim(),...(document.getElementById('h_amka')?{amka:g('h_amka').replace(/\s/g,'')}:{}),off:g('h_off').split(/[,\s]+/).filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)),...(document.getElementById('h_rate')?{rating:+g('h_rate')}:{})};
       if(f.querySelector('.xed'))v.exp=readExp(f);
@@ -6369,7 +6584,7 @@ document.addEventListener('click',e=>{
       if(v.amka&&!okAmka(v.amka)){toast('Ο ΑΜΚΑ έχει 11 ψηφία.');break}
       if(SP(v.specialtyId)?.office)v.role='ypal';else if(v.role==='ypal'||v.role==='ext')v.role='voith';
       const teamId=document.getElementById('h_team')?.value||'';(S.teams||[]).forEach(g=>{g.workerIds=(g.workerIds||[]).filter(id=>id!==v.id);if(g.id===teamId&&!SP(v.specialtyId)?.office)g.workerIds.push(v.id)});
-      UI.hmsg=(f.dataset.new==='1'?'Νέος εργαζόμενος: ':'Αλλαγές στον εργαζόμενο ')+v.name;if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else{Object.assign(W(v.id),v);ErgoCore.repricePast(v.id)}commit('Ο εργαζόμενος αποθηκεύτηκε.');break}
+      UI.hmsg=(f.dataset.new==='1'?'Νέος εργαζόμενος: ':'Αλλαγές στον εργαζόμενο ')+v.name;if(f.dataset.new==='1')S.workers.push({...v,rates:{}});else{const w=W(v.id),changed=v.wage!==wageAt(w);if(changed){const from=document.getElementById('h_wage_from')?.value||TODAY;if(!validPayDate(from)){toast('Διάλεξε ημερομηνία ισχύος του μεροκάματου.');break}setWage(w,v.wage,from)}delete v.wage;Object.assign(w,v);ErgoCore.repricePast(v.id)}commit('Ο εργαζόμενος αποθηκεύτηκε.');break}
     case 'delworker':if(el.dataset.sure){UI.hmsg='Διαγραφή εργαζόμενου: '+(W(id)?.name||'');S.workers=S.workers.filter(w=>w.id!==id);S.duties=S.duties.filter(x=>x.workerId!==id);(S.appts||[]).forEach(a=>{a.people=(a.people||[]).filter(x=>x!==id)});
       S.cpay=(S.cpay||[]).filter(x=>x.workerId!==id);S.tasks.forEach(t=>{if(t.responsibleId===id){const l=S.workers.find(w=>w.role!=='voith'&&!isOffice(w)&&!isExt(w)&&canTask(w,t));t.responsibleId=l?l.id:''}});commit('Ο εργαζόμενος διαγράφηκε.')}else{el.dataset.sure=1;el.textContent='Σίγουρα; Πάτα ξανά'}break;
     case 'newspec':openModal(`<h2>Νέα ειδικότητα</h2><form class="form" id="sf"><label class="full">Όνομα<input id="sp_name" placeholder="π.χ. Μονωτές ή Λογιστήριο"></label><label class="full ck"><input type="checkbox" id="sp_office"> <span>Ειδικότητα γραφείου (δεν μπαίνει σε συνεργεία έργων)</span></label><label class="full ck"><input type="checkbox" id="sp_pm"> <span>Διαχείριση έργων (ορίζεται σε έργα, μπορεί σε πολλά μαζί)</span></label></form><div class="acts"><span class="grow"></span><button class="btn" data-act="close">Άκυρο</button><button class="btn pri" data-act="savespec">Αποθήκευση</button></div>`);break;
@@ -6431,6 +6646,14 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
+  if(UI.payroll?.rendering&&t.closest?.('.modal.payroll'))return;
+  if(t.dataset.payrollFile&&t.files?.[0]){const file=t.files[0];t.value='';payrollPick(file,t.dataset.payrollFile==='guide');return}
+  if(t.id==='pay_year'){payrollRead();const x=UI.payroll,year=+t.value;if(year<2000||year>2100){toast('Διάλεξε έτος από 2000 έως 2100.');return}x.year=year;x.scan=payrollScan(x.books,{year});x.options.sheets={};x.options.wages={};payrollDirty();return}
+  if(t.id==='pay_premium'){payrollRead();UI.payroll.options.premium=Math.max(0,+t.value||0);payrollDirty();return}
+  if(t.matches?.('[data-pay-map],[data-pay-adjust],[data-pay-name],[data-pay-wage],[data-pay-ot],[data-pay-sheet]')){payrollRead(t);
+    if(t.dataset.payWage||t.dataset.payName||t.dataset.paySheet){payrollDirty();return}
+    payrollForm();return}
+
   if(t.dataset.placement){if(t.value==='current')return;const placement=t.value.startsWith('p:')?{type:'project',projectId:t.value.slice(2)}:{type:t.value},result=setPlacement(t.dataset.placement,t.dataset.d,placement);if(result.err){toast(result.err);render()}else commit('Η ανάθεση αποθηκεύτηκε.');return}
   if(t.id==='s_schedule_mode'){S.settings.scheduleMode=t.value;if(t.value==='manual')S.settings.manualFrom=TODAY;commit(t.value==='manual'?'Το πρόγραμμα συμπληρώνεται από εσένα.':'Οι αυτόματες προτάσεις ενεργοποιήθηκαν.');return}
   if(t.id==='xin'&&t.files&&t.files[0]){const f=t.files[0];t.value='';xlsxPick(f);return}
@@ -6518,7 +6741,7 @@ document.addEventListener('change',e=>{
 });
 // το «μένουν» στις φόρμες πληρωμής αλλάζει καθώς γράφεται το ποσό
 function updPay(){const f=document.getElementById('payf'),o=document.getElementById('p_after');if(f&&o)o.innerHTML=payAfter(+f.dataset.rest,num(document.getElementById('p_amount').value))}
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='q')searchRun(t.value);else if(t.id==='cq')cliFilter(t.value);else if(t.id==='p_amount')updPay();else if(t.id==='ot_h'){const f=document.getElementById('otf'),v=num(t.value),rt=+f.dataset.rate;document.getElementById('ot_after').innerHTML=v>0?`${nf(v)} × ${money(rt)} = <b>${money(r2(v*rt))}</b>`:'Γράψε πόσες ώρες.'}
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.payWage||t.dataset.payName)t.dataset.payEdited='1';if(t.matches?.('[data-pay-wage],[data-pay-name],[data-pay-sheet],#pay_premium,#pay_year'))payrollDirty();if(t.id==='q')searchRun(t.value);else if(t.id==='cq')cliFilter(t.value);else if(t.id==='p_amount')updPay();else if(t.id==='ot_h'){const f=document.getElementById('otf'),v=num(t.value),rt=+f.dataset.rate;document.getElementById('ot_after').innerHTML=v>0?`${nf(v)} × ${money(rt)} = <b>${money(r2(v*rt))}</b>`:'Γράψε πόσες ώρες.'}
   else if(t.id==='ml_from'||t.id==='ml_to'){const fr=document.getElementById('ml_from'),to=document.getElementById('ml_to'),n=document.getElementById('ml_days');if(t===fr&&to&&(!to.value||to.value<fr.value))to.value=fr.value;if(n)n.textContent=lvCount()}
   else if(t.id==='c_amount'){const f=document.getElementById('cpf'),o=document.getElementById('c_after');if(f&&o)o.innerHTML=cAfter(+f.dataset.rest,num(t.value))}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){guideRead();closeModal();setNav()}
@@ -6566,4 +6789,5 @@ setInterval(()=>{const ae=document.activeElement;if(!SERVER||!AUTH.user||isWorke
 boot();
 })();
 </script>
+
 
