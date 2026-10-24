@@ -1041,8 +1041,11 @@ function undoTarget(hist){hist=hist||[];const U=undoneIds(hist);for(let i=hist.l
 const availOn=()=>hasF('avail');
 const isRest=(w,d)=>availOn()&&Array.isArray(w.days)&&w.days.length>0&&!w.days.includes(dow(d));
 const isLeave=(w,d)=>(w.off||[]).includes(d)||ov(d,w.id)?.type==='off';
-const isOff=(w,d)=>isLeave(w,d)||isRest(w,d);
-const offWord=(w,d,l)=>tx(l,isLeave(w,d)?(S.overrides[d+'|'+w.id]?.why==='absent'?'Απουσία':'Άδεια'):'Ρεπό');
+// πότε ξεκίνησε και πότε σταμάτησε (w.from / w.to): έξω από αυτές τις μέρες δεν μπαίνει στο πρόγραμμα και δεν πληρώνεται
+const outRange=(w,d)=>!!(w&&(w.from&&d<w.from||w.to&&d>w.to));
+const onStaff=(w,a,b=a)=>!(w&&(w.to&&w.to<a||w.from&&w.from>b));
+const isOff=(w,d)=>isLeave(w,d)||isRest(w,d)||outRange(w,d);
+const offWord=(w,d,l)=>tx(l,outRange(w,d)?(w.to&&d>w.to?'Αποχώρησε':'Δεν έχει ξεκινήσει'):isLeave(w,d)?(S.overrides[d+'|'+w.id]?.why==='absent'?'Απουσία':'Άδεια'):'Ρεπό');
 // Πολλές ειδικότητες, με συμβατότητα για τα παλιά αρχεία με κύρια και spec2.
 const workerSpecs=w=>w?[...new Set([w.specialtyId,...(Array.isArray(w.specialtyIds)?w.specialtyIds:[w.spec2])].filter(Boolean))]:[];
 const sp2=w=>workerSpecs(w).find(id=>id!==w.specialtyId)||null;
@@ -1070,6 +1073,7 @@ function setPlacement(wid,d,placement){
   if(d<nextWork(S.settings.start||TODAY))return {err:'Η ημέρα προηγείται της αρχής του προγράμματος. Άλλαξε πρώτα την ημερομηνία έναρξης στις ρυθμίσεις.'};
   if(!['project','tasks','task','gen','off','none','auto'].includes(type))return {err:'Διάλεξε πού θα δουλέψει.'};
   if(type==='none'&&isOffice(w))return {err:'Για εργαζόμενο γραφείου καταχώρισε άδεια ή απουσία.'};
+  if(['project','tasks','task','gen'].includes(type)&&outRange(w,d))return {err:w.to&&d>w.to?'Ο εργαζόμενος έχει αποχωρήσει εκείνη την ημέρα.':'Ο εργαζόμενος δεν έχει ξεκινήσει ακόμη εκείνη την ημέρα.'};
   if(['project','tasks','task','gen'].includes(type)&&(isOffice(w)||isRest(w,d)))return {err:'Ο εργαζόμενος είναι στο γραφείο ή έχει ρεπό εκείνη την ημέρα.'};
   if(type==='project'&&(!P(placement.projectId)||P(placement.projectId).closed||isExt(w)&&w.pay==='job'))return {err:'Διάλεξε ανοιχτό έργο. Για συνεργάτη κατ’ αποκοπή διάλεξε συγκεκριμένη εργασία.'};
   if((type==='tasks'||type==='task')&&(!taskIdsOf(placement).length||taskIdsOf(placement).some(id=>!T(id)||T(id).status==='done')))return {err:'Διάλεξε ανοιχτή εργασία.'};
@@ -1096,7 +1100,10 @@ function projectRows(d,old=[]){
     return {date:d,taskId:null,projectId,workerId:w.id,wage:previous?previous.wage:rate(w,projectId),manual:true};
   });
 }
-const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return +(r!==''&&r!=null?r:w.wage)||0};
+// έργα στην επαρχία: όλοι όσοι δουλεύουν εκεί (εκτός γραφείου) παίρνουν επιπλέον ποσό στο μεροκάματο (Ρυθμίσεις, 20 €)
+const provAmt=()=>{const v=S&&S.settings&&S.settings.provAmt;return v===''||v==null?20:+v||0};
+const provOf=(w,pid)=>{const p=pid&&P(pid);return p&&p.prov&&!isOffice(w)&&!isExt(w)?provAmt():0};
+const rate=(w,pid)=>{const r=w.rates&&w.rates[pid];return (+(r!==''&&r!=null?r:w.wage)||0)+provOf(w,pid)};
 /* ---------- Υπενθυμίσεις ----------
    Τι έχει να κάνει ο καθένας κάθε μέρα, και ο εργολάβος. Αποθηκεύονται στο S.duties (τα παλιά «καθήκοντα γραφείου»).
    Συχνότητα: κάθε εργάσιμη (daily), συγκεκριμένες μέρες (days), κάθε μήνα (month, μέρα dom) ή μία φορά (once, date).
@@ -1205,7 +1212,7 @@ function apConflicts(a){
 /* ---------- Αυτόματος προγραμματισμός ---------- */
 // περασμένες μέρες: καταγράφονται όπως έγιναν (S.past[ημέρα]) και δεν ξαναϋπολογίζονται.
 // Αν αλλάξει κάτι γι' αυτή τη μέρα (άδεια ή χειροκίνητη ανάθεση), αλλάζουν μόνο τα άτομα που αφορά.
-const dayFp=d=>Object.keys(S.overrides||{}).filter(k=>k.startsWith(d+'|')).sort().map(k=>k+JSON.stringify(S.overrides[k])).join(';')+'#'+S.workers.filter(w=>(w.off||[]).includes(d)).map(w=>w.id).sort().join(',');
+const dayFp=d=>Object.keys(S.overrides||{}).filter(k=>k.startsWith(d+'|')).sort().map(k=>k+JSON.stringify(S.overrides[k])).join(';')+'#'+S.workers.filter(w=>(w.off||[]).includes(d)||outRange(w,d)).map(w=>w.id).sort().join(',');
 function packDay(R,d){const D=R.byDay[d],ids=xs=>xs.filter(Boolean).map(w=>w.id);
   return {fp:dayFp(d),
     j:D.jobs.map(j=>({t:j.task.id,tt:j.task.title,p:j.task.projectId,sp:j.task.specialtyId,l:j.lead?j.lead.id:null,h:ids(j.helpers),x:[...(j.extra||[])],f:[...(j.forced||[])],m:[...(j.multi||[])],s:j.sub?1:0,k:j.short?1:0,n:j.dayNo,r:j.rain?1:0})),
@@ -1626,7 +1633,7 @@ function myView(R,w,ws,l){l=l||langOf(w);const o=personWeek(R,w,ws,l);o.lang=isO
   if(o.feats.diary)o.diary=myDiary(R,w);
   if(o.feats.leave)o.leave=myLeave(w.id).map(r=>({id:r.id,from:r.from,to:r.to,note:r.note,st:r.st,days:leaveDays(w,r.from,r.to).length}));
   return o}
-root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,DROPPED,celebs,nameDayOn,birthOn,NAMEDAYS,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,rekeyPay,officeDemo,demo,migrate,
+root.ErgoCore={I18N,langOn,langOf,ER,hiName,tx,fmtX,fmtSX,tlitL,nameL,spL,mergeLang,projProg,CLI_K,cliList,cliById,cliByName,cliOfP,cliOfA,cliProjects,cliAppts,cliUpcoming,projDone,cliState,cliLast,cliHistory,cliFromAppts,cliNew,cliImport,cliAddLog,cliDel,cliDemo,DAYS_L,MON_G,fmtL,CL_DAYS,CL_MSG,CL_TOK,clientOn,shareOf,clientOpt,byShare,clientPhotoOk,clientView,CL_CSS,clientHtml,clientDoc,clientGone,newTok,clientDemo,DIARY_TXT,diaryOn,diaryList,diaryOf,diaryPhotos,addDiary,editDiary,delDiary,diaryPrune,diaryRefs,mergeDiary,wxLogFill,wxOf,diaryFin,diaryDays,diaryDay,myDiary,delMyDiary,diaryDemo,wxLogDemo,ATT_R,gpsOn,siteOf,yardOf,siteFor,distM,distS,parseLL,attList,attOf,attProjects,attDist,attWhere,ATT_W,attWS,toMin,attMin,hrsS,hrsL,hmOf,tStr,addAtt,setAtt,delAtt,markAbsent,isAbsent,attDay,attSt,attMissing,attPrune,mergeAtt,attPub,attDemoSites,attDemoFill,COST_K,LOW_M,isJob,profitOf,pctS,addCost,matOn,matLead,matBy,matTodo,matState,matWhen,orderMat,profitDemo,EQ_KINDS,EXP_LABELS,expWarn,expIn,expState,expWhen,expAll,expSoon,expNext,eqWhere,eqDemo,myView,fieldEffect,pruneField,canReport,progressOf,addProgress,leaveDays,addLeave,cancelLeave,decideLeave,myLeave,mergeField,xlsx,okAmka,accReport,PRESETS,GEN,blankState,sameSpec,parsePeople,planHas,isOn,dayFp,packDay,freezePast,pastPending,SUM_D,sumCfg,weekSum,weekSumText,stamp,undoneIds,undoTarget,availOn,isRest,isLeave,offWord,outRange,onStaff,provAmt,provOf,sp2,canSpec,BRAND,PLANS,FEATS,planIx,planOf,hasF,DROPPED,celebs,nameDayOn,birthOn,NAMEDAYS,needPlan,planPeople,RATE_D,rateCfg,rateOn,wRate,tDiff,isHard,setState,today,ROLES,DAYS,MONTHS,upGR,voc,pad,ds,pd,add,dow,fmt,fmtS,eur,h,uid,short,weekStart,weekFrom,viewStart,rekeyPay,officeDemo,demo,migrate,
   setWeather,getWeather,wxDefaults,wxCfg,hasLL,locKey,projLoc,wxLocs,wxUrl,wxParse,wxDay,isWet,rainy,wxKind,wxText,wxFor,
   easter,HOLIDAYS,holDefaults,holName,sign,
   OWNER,ownerName,apPerson,apptsOn,apTime,apConflicts,apDemo,ownerW,anyone,monthDay,doneKey,isDone,remDemo,dutyLine,
