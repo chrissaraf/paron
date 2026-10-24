@@ -58,6 +58,7 @@ install -d -m 750 "$CONF"
 rm -rf "$APP.new" && mkdir -p "$APP.new"
 cp -r "$SRC"/{server,src,public,build.js,package.json,index.html} "$APP.new"/
 [ -f "$SRC/README.md" ] && cp "$SRC/README.md" "$APP.new"/
+[ -d "$SRC/estiasi" ] && cp -r "$SRC/estiasi" "$APP.new"/   # σελίδα εστίασης, όταν ο κλάδος είναι εστίαση
 rm -rf "$APP.old"; if [ -d "$APP" ]; then mv "$APP" "$APP.old"; fi
 mv "$APP.new" "$APP"; chown -R root:root "$APP"; chmod -R a+rX "$APP"
 
